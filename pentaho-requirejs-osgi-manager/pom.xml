@@ -1,7 +1,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  
+
   <groupId>pentaho</groupId>
   <artifactId>pentaho-requirejs-osgi-manager</artifactId>
   <packaging>bundle</packaging>
@@ -14,7 +14,7 @@
     <!-- recommend only setting this to a specific version upon migration to maintenance -->
     <version>RELEASE</version>
   </parent>
-  
+
   <name>Pentaho Community Edition Project: ${project.artifactId}</name>
   <description>a Pentaho open source project</description>
   <url>http://www.pentaho.com</url>
@@ -27,7 +27,7 @@
       <comments>A business-friendly OSS license</comments>
     </license>
   </licenses>
-  
+
   <developers>
     <developer>
       <name>Bryan Rosander</name>
@@ -37,7 +37,7 @@
       </roles>
     </developer>
   </developers>
-  
+
   <properties>
     <mockito-all.version>1.9.5</mockito-all.version>
     <cxf.version>2.6.15</cxf.version>
@@ -53,91 +53,76 @@
   </scm>
 
   <dependencies>
-      <dependency>
-          <groupId>org.apache.felix</groupId>
-          <artifactId>org.apache.felix.framework</artifactId>
-          <version>${felix.version}</version>
-      </dependency>
-      <dependency>
-          <groupId>com.googlecode.json-simple</groupId>
-          <artifactId>json-simple</artifactId>
-          <version>${json-simple.version}</version>
-      </dependency>
-      <dependency>
-          <groupId>org.apache.cxf</groupId>
-          <artifactId>cxf-rt-frontend-jaxrs</artifactId>
-          <version>${cxf.version}</version>
-      </dependency>
-      <dependency>
-          <groupId>org.apache.cxf</groupId>
-          <artifactId>cxf-rt-frontend-jaxws</artifactId>
-          <version>${cxf.version}</version>
-      </dependency>
-      <dependency>
-          <groupId>org.apache.cxf</groupId>
-          <artifactId>cxf-rt-transports-http</artifactId>
-          <version>${cxf.version}</version>
-      </dependency>
-      <dependency>
-          <groupId>org.apache.cxf</groupId>
-          <artifactId>cxf-rt-transports-http-jetty</artifactId>
-          <version>${cxf.version}</version>
-      </dependency>
+    <dependency>
+      <groupId>org.apache.felix</groupId>
+      <artifactId>org.apache.felix.framework</artifactId>
+      <version>${felix.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.googlecode.json-simple</groupId>
+      <artifactId>json-simple</artifactId>
+      <version>${json-simple.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.cxf</groupId>
+      <artifactId>cxf-rt-frontend-jaxrs</artifactId>
+      <version>${cxf.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.cxf</groupId>
+      <artifactId>cxf-rt-frontend-jaxws</artifactId>
+      <version>${cxf.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.cxf</groupId>
+      <artifactId>cxf-rt-transports-http</artifactId>
+      <version>${cxf.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.cxf</groupId>
+      <artifactId>cxf-rt-transports-http-jetty</artifactId>
+      <version>${cxf.version}</version>
+    </dependency>
   </dependencies>
 
-    <build>
-        <finalName>${project.artifactId}</finalName>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.0</version>
-                <configuration>
-                    <source>1.6</source>
-                    <target>1.6</target>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.felix</groupId>
-                <artifactId>maven-bundle-plugin</artifactId>
-                <version>2.3.7</version>
-                <extensions>true</extensions>
-                <configuration>
-                    <instructions>
-                        <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
-                    </instructions>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.felix</groupId>
-                <artifactId>maven-bundle-plugin</artifactId>
-                <extensions>true</extensions>
-                <configuration>
-                    <instructions>
-                        <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
-                        <Import-Package>
-                            javax.ws.rs.*;version="[1.1,3)",
-                            org.apache.cxf.*;version="[2,4)",
-                            *
-                        </Import-Package>
-                    </instructions>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
-  
-    <distributionManagement>
-      <repository>
-        <id>pentaho.public.release.repo</id>
-        <name>Pentaho Public Release Repository</name>
-        <url>${pentaho.public.release.repo}</url>
-      </repository>
-      <snapshotRepository>
-        <id>pentaho.public.snapshot.repo</id>
-        <name>Pentaho Public Snapshot Repository</name>
-        <url>${pentaho.public.snapshot.repo}</url>
-      </snapshotRepository>
-    </distributionManagement>
+  <build>
+    <finalName>${project.artifactId}</finalName>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.0</version>
+        <configuration>
+          <source>1.6</source>
+          <target>1.6</target>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.felix</groupId>
+        <artifactId>maven-bundle-plugin</artifactId>
+        <version>2.3.7</version>
+        <extensions>true</extensions>
+        <configuration>
+          <instructions>
+            <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
+          </instructions>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+  <distributionManagement>
+    <repository>
+      <id>pentaho.public.release.repo</id>
+      <name>Pentaho Public Release Repository</name>
+      <url>${pentaho.public.release.repo}</url>
+    </repository>
+    <snapshotRepository>
+      <id>pentaho.public.snapshot.repo</id>
+      <name>Pentaho Public Snapshot Repository</name>
+      <url>${pentaho.public.snapshot.repo}</url>
+    </snapshotRepository>
+  </distributionManagement>
 
   <!-- this is for bootstrapping only; you should really just add this to your settings.xml -->
   <repositories>
@@ -154,16 +139,16 @@
         <checksumPolicy>fail</checksumPolicy>
       </snapshots>
     </repository>
-      <repository>
-          <id>oss.sonatype.org</id>
-          <name>repo.pentaho.org</name>
-          <url>http://repository.pentaho.org/artifactory/pentaho</url>
-      </repository>
-      <repository>
-          <id>repo.pentaho.org</id>
-          <name>repo.pentaho.org</name>
-          <url>http://repository.pentaho.org/artifactory/pentaho</url>
-      </repository>
+    <repository>
+      <id>oss.sonatype.org</id>
+      <name>repo.pentaho.org</name>
+      <url>http://repository.pentaho.org/artifactory/pentaho</url>
+    </repository>
+    <repository>
+      <id>repo.pentaho.org</id>
+      <name>repo.pentaho.org</name>
+      <url>http://repository.pentaho.org/artifactory/pentaho</url>
+    </repository>
   </repositories>
 
 </project>
