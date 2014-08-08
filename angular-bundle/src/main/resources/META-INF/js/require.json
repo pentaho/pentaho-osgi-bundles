@@ -1,0 +1,12 @@
+{
+  "paths": {
+    "angular": "/angular-bundle/angular",
+    "angular-route": "/angular-bundle/angular-route"
+    "angular-resource": "/angular-bundle/angular-resource"
+  },
+  "shim" : {
+    "angular" : { "exports": "angular" },
+    "angular-route" : { "deps": ["angular"] },
+    "angular-resource" : { "deps": ["angular"] }
+  }
+}
