@@ -155,6 +155,11 @@
       </snapshots>
     </repository>
       <repository>
+          <id>oss.sonatype.org</id>
+          <name>repo.pentaho.org</name>
+          <url>http://repository.pentaho.org/artifactory/pentaho</url>
+      </repository>
+      <repository>
           <id>repo.pentaho.org</id>
           <name>repo.pentaho.org</name>
           <url>http://repository.pentaho.org/artifactory/pentaho</url>
