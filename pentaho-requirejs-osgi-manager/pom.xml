@@ -7,14 +7,6 @@
   <packaging>bundle</packaging>
   <version>TRUNK-SNAPSHOT</version>
 
-  <parent>
-    <groupId>org.pentaho</groupId>
-    <!-- TODO: change this to the pentaho-ee-jar-parent-pom to add the Proguard obfuscation -->
-    <artifactId>pentaho-ce-jar-parent-pom</artifactId>
-    <!-- recommend only setting this to a specific version upon migration to maintenance -->
-    <version>RELEASE</version>
-  </parent>
-
   <name>Pentaho Community Edition Project: ${project.artifactId}</name>
   <description>a Pentaho open source project</description>
   <url>http://www.pentaho.com</url>
@@ -39,10 +31,24 @@
   </developers>
 
   <properties>
-    <mockito-all.version>1.9.5</mockito-all.version>
+    <junit.version>4.11</junit.version>
+    <mockito.version>1.9.5</mockito.version>
     <cxf.version>2.6.15</cxf.version>
     <felix.version>4.0.3</felix.version>
     <json-simple.version>1.1.1</json-simple.version>
+    <pentaho.resolve.repo>http://nexus.pentaho.org/content/groups/omni/</pentaho.resolve.repo>
+    <pentaho.artifactory.resolve.repo>http://repository.pentaho.org/artifactory/repo</pentaho.artifactory.resolve.repo>
+    <pentaho.artifactory.resolve.repo.2>http://repo.pentaho.org/artifactory/repo</pentaho.artifactory.resolve.repo.2>
+
+    <pentaho.resolve.repo>http://nexus.pentaho.org/content/groups/omni/</pentaho.resolve.repo>
+    <pentaho.public.release.repo>http://nexus.pentaho.org/content/repositories/public-release/</pentaho.public.release.repo>
+
+    <!--<pentaho.public.snapshot.repo>http://nexus.pentaho.org/content/repositories/public-snapshot/</pentaho.public.snapshot.repo>-->
+    <pentaho.public.snapshot.repo>http://repository.pentaho.org:8082/artifactory/pentaho</pentaho.public.snapshot.repo>
+    <!--<pentaho.public.snapshot.repo>file:///Users/nbaker/.m2/repository</pentaho.public.snapshot.repo>-->
+
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
   </properties>
 
   <scm>
@@ -83,11 +89,43 @@
       <artifactId>cxf-rt-transports-http-jetty</artifactId>
       <version>${cxf.version}</version>
     </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>${junit.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-all</artifactId>
+      <version>${mockito.version}</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>
     <finalName>${project.artifactId}</finalName>
     <plugins>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>cobertura-maven-plugin</artifactId>
+        <version>2.6</version>
+        <configuration>
+          <formats>
+            <format>html</format>
+            <format>xml</format>
+          </formats>
+          <check>
+            <branchRate>80</branchRate>
+            <lineRate>90</lineRate>
+            <haltOnFailure>false</haltOnFailure>
+            <totalBranchRate>80</totalBranchRate>
+            <totalLineRate>90</totalLineRate>
+            <packageLineRate>90</packageLineRate>
+            <packageBranchRate>80</packageBranchRate>
+          </check>
+        </configuration>
+      </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
@@ -112,6 +150,13 @@
   </build>
 
   <distributionManagement>
+    <!-- if you plan on releasing anything that inherits this parent pom
+      you will need your Maven settings.xml to have the appropriate entries ...
+      we recommend something like this: <servers> <server> <id>pentaho.public.release.repo</id>
+      <username>YOUR_REPO_USERNAME</username> <password>YOUR_REPO_PASSWORD</password>
+      </server> <server> <id>pentaho.public.snapshot.repo</id> <username>YOUR_REPO_USERNAME</username>
+      <password>YOUR_REPO_PASSWORD</password> </server> </servers> requests for
+      repo credentials should be made to buildteam@pentaho.com -->
     <repository>
       <id>pentaho.public.release.repo</id>
       <name>Pentaho Public Release Repository</name>
@@ -124,12 +169,11 @@
     </snapshotRepository>
   </distributionManagement>
 
-  <!-- this is for bootstrapping only; you should really just add this to your settings.xml -->
   <repositories>
     <repository>
       <id>pentaho.resolve.repo</id>
       <name>Pentaho Group Resolve Repository</name>
-      <url>http://nexus.pentaho.org/content/groups/omni/</url>
+      <url>${pentaho.resolve.repo}</url>
       <releases>
         <updatePolicy>always</updatePolicy>
         <checksumPolicy>fail</checksumPolicy>
@@ -139,16 +183,33 @@
         <checksumPolicy>fail</checksumPolicy>
       </snapshots>
     </repository>
+
     <repository>
-      <id>oss.sonatype.org</id>
-      <name>repo.pentaho.org</name>
-      <url>http://repository.pentaho.org/artifactory/pentaho</url>
+      <id>pentaho.artifactory.resolve.repo</id>
+      <name>Pentaho legacy Resolve Repository</name>
+      <url>${pentaho.artifactory.resolve.repo}</url>
+      <releases>
+        <updatePolicy>always</updatePolicy>
+        <checksumPolicy>fail</checksumPolicy>
+      </releases>
+      <snapshots>
+        <updatePolicy>always</updatePolicy>
+        <checksumPolicy>fail</checksumPolicy>
+      </snapshots>
     </repository>
+
     <repository>
-      <id>repo.pentaho.org</id>
-      <name>repo.pentaho.org</name>
-      <url>http://repository.pentaho.org/artifactory/pentaho</url>
+      <id>pentaho.artifactory.resolve.repo.2</id>
+      <name>Pentaho legacy Resolve Repository</name>
+      <url>${pentaho.artifactory.resolve.repo.2}</url>
+      <releases>
+        <updatePolicy>always</updatePolicy>
+        <checksumPolicy>fail</checksumPolicy>
+      </releases>
+      <snapshots>
+        <updatePolicy>always</updatePolicy>
+        <checksumPolicy>fail</checksumPolicy>
+      </snapshots>
     </repository>
   </repositories>
-
 </project>

@@ -44,7 +44,7 @@ public class RequireJsConfigServlet extends HttpServlet {
     InputStreamReader inputStreamReader = null;
     BufferedReader reader = null;
     try {
-      inputStream = getClass().getClassLoader().getResourceAsStream( "/js/require.js" );
+      inputStream = getClass().getClassLoader().getResourceAsStream( "js/require.js" );
       inputStreamReader = new InputStreamReader( inputStream );
       reader = new BufferedReader( inputStreamReader );
       String line = null;
