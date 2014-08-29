@@ -1,7 +1,7 @@
 {
   "paths": {
     "angular": "/angular-bundle/angular",
-    "angular-route": "/angular-bundle/angular-route"
+    "angular-route": "/angular-bundle/angular-route",
     "angular-resource": "/angular-bundle/angular-resource"
   },
   "shim" : {
