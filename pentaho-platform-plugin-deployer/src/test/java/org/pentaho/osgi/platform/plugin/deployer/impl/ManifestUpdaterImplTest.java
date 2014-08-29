@@ -1,0 +1,91 @@
+/*! ******************************************************************************
+ *
+ * Pentaho Data Integration
+ *
+ * Copyright (C) 2002-2014 by Pentaho : http://www.pentaho.com
+ *
+ *******************************************************************************
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ ******************************************************************************/
+
+package org.pentaho.osgi.platform.plugin.deployer.impl;
+
+import org.junit.Test;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.jar.Manifest;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
+/**
+ * Created by bryan on 8/27/14.
+ */
+public class ManifestUpdaterImplTest {
+  @Test
+  public void testConstructor() {
+    ManifestUpdaterImpl manifest = new ManifestUpdaterImpl();
+    assertNotNull( manifest.getExportServices() );
+    assertNotNull( manifest.getImports() );
+  }
+
+  @Test
+  public void testJoinMultiple() {
+    ManifestUpdaterImpl manifest = new ManifestUpdaterImpl();
+    assertEquals( "test..1..2", manifest.join( Arrays.asList( "test", "1", "2" ), ".." ) );
+  }
+
+  @Test
+  public void testJoinNone() {
+    ManifestUpdaterImpl manifest = new ManifestUpdaterImpl();
+    assertEquals( "", manifest.join( Arrays.<String>asList(), ".." ) );
+  }
+
+  @Test
+  public void testGetImportString() {
+    ManifestUpdaterImpl manifestUpdater = new ManifestUpdaterImpl();
+    manifestUpdater.getImports().put( "test1", null );
+    manifestUpdater.getImports().put( "test2", "abc" );
+    assertEquals( "test1,test2;version=\"abc\"", manifestUpdater.getImportString() );
+  }
+
+  @Test
+  public void testWriteNoOriginalManifest() throws IOException {
+    ManifestUpdaterImpl manifestUpdater = new ManifestUpdaterImpl();
+    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream( );
+    manifestUpdater.write( null, byteArrayOutputStream, "test", "test.symbolic", "version" );
+    Manifest manifest = new Manifest( new ByteArrayInputStream( byteArrayOutputStream.toByteArray() ) );
+    assertEquals( "test.symbolic", manifest.getMainAttributes().getValue( "Bundle-SymbolicName" ) );
+    assertEquals( "test", manifest.getMainAttributes().getValue( "Bundle-Name" ) );
+    assertEquals( "version", manifest.getMainAttributes().getValue( "Bundle-Version" ) );
+  }
+
+  @Test
+  public void testWriteOriginalManifest() throws IOException {
+    ManifestUpdaterImpl manifestUpdater = new ManifestUpdaterImpl();
+    Manifest original = new Manifest( );
+    original.getMainAttributes().putValue( "test", "ing" );
+    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream( );
+    manifestUpdater.write( original, byteArrayOutputStream, "test", "test.symbolic", "version" );
+    Manifest manifest = new Manifest( new ByteArrayInputStream( byteArrayOutputStream.toByteArray() ) );
+    assertEquals( "test.symbolic", manifest.getMainAttributes().getValue( "Bundle-SymbolicName" ) );
+    assertEquals( "test", manifest.getMainAttributes().getValue( "Bundle-Name" ) );
+    assertEquals( "version", manifest.getMainAttributes().getValue( "Bundle-Version" ) );
+    assertEquals( "version", manifest.getMainAttributes().getValue( "Bundle-Version" ) );
+  }
+}
