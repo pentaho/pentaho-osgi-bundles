@@ -78,7 +78,7 @@ public class RequireJsConfigServletTest {
     when( requireJsConfigManager.getRequireJsConfig() ).thenReturn( testConfig );
     requireJsConfigServlet.doGet( request, response );
     assertTrue( outputStream.toString( "UTF-8" ).contains( testConfig ) );
-    assertTrue( outputStream.toString( "UTF-8" ).endsWith( "require.config(requireConfig);" ) );
+    assertTrue( outputStream.toString( "UTF-8" ).endsWith( "require.config(requireCfg);" ) );
   }
 
   @Test
@@ -96,7 +96,7 @@ public class RequireJsConfigServletTest {
     when( requireJsConfigManager.getRequireJsConfig() ).thenReturn( testConfig );
     requireJsConfigServlet.doGet( request, response );
     assertTrue( outputStream.toString( "UTF-8" ).contains( testConfig ) );
-    assertTrue( outputStream.toString( "UTF-8" ).endsWith( "require.config(requireConfig);" ) );
+    assertTrue( outputStream.toString( "UTF-8" ).endsWith( "require.config(requireCfg);" ) );
   }
 
   @Test
@@ -114,6 +114,6 @@ public class RequireJsConfigServletTest {
     when( requireJsConfigManager.getRequireJsConfig() ).thenReturn( testConfig );
     requireJsConfigServlet.doGet( request, response );
     assertTrue( outputStream.toString( "UTF-8" ).contains( testConfig ) );
-    assertFalse( outputStream.toString( "UTF-8" ).endsWith( "require.config(requireConfig);" ) );
+    assertFalse( outputStream.toString( "UTF-8" ).endsWith( "require.config(requireCfg);" ) );
   }
 }

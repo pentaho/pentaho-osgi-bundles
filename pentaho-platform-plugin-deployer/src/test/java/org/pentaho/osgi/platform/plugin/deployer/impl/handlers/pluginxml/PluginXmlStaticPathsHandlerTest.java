@@ -20,7 +20,7 @@
  *
  ******************************************************************************/
 
-package org.pentaho.osgi.platform.plugin.deployer.impl;
+package org.pentaho.osgi.platform.plugin.deployer.impl.handlers.pluginxml;
 
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
@@ -37,15 +37,14 @@ import org.w3c.dom.NodeList;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Mockito.*;
 
@@ -101,10 +100,10 @@ public class PluginXmlStaticPathsHandlerTest {
     assertEquals( 2, propertyNodes.getLength() );
     Node aliasNode = propertyNodes.item( 0 );
     Node pathNode = propertyNodes.item( 1 );
-    assertEquals( "alias", ((Attr)aliasNode.getAttributes().getNamedItem( "name" )).getValue() );
-    assertEquals( "/common-ui/resources", ((Attr)aliasNode.getAttributes().getNamedItem( "value" )).getValue() );
-    assertEquals( "path", ((Attr)pathNode.getAttributes().getNamedItem( "name" )).getValue() );
-    assertEquals( "/test-plugin/resources", ((Attr)pathNode.getAttributes().getNamedItem( "value" )).getValue() );
+    assertEquals( "alias", ( (Attr) aliasNode.getAttributes().getNamedItem( "name" ) ).getValue() );
+    assertEquals( "/content/common-ui/resources", ( (Attr) aliasNode.getAttributes().getNamedItem( "value" ) ).getValue() );
+    assertEquals( "path", ( (Attr) pathNode.getAttributes().getNamedItem( "name" ) ).getValue() );
+    assertEquals( "/test-plugin/resources", ( (Attr) pathNode.getAttributes().getNamedItem( "value" ) ).getValue() );
   }
 
   @Test
@@ -126,7 +125,7 @@ public class PluginXmlStaticPathsHandlerTest {
     verifyNoMoreInteractions( pluginMetadata );
   }
 
-  private Node makeMockNode( final Map<String, String> attributes ) {
+  public static Node makeMockNode( final Map<String, String> attributes ) {
     NamedNodeMap namedNodeMap = mock( NamedNodeMap.class );
     final List<String> keys = new ArrayList<String>( attributes.keySet() );
     when( namedNodeMap.getLength() ).thenReturn( attributes.size() );

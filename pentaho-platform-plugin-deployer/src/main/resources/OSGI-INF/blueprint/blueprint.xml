@@ -33,7 +33,11 @@
     </bean>
   </service>
 
-  <bean id="pluginXmlStaticPathsHandler" class="org.pentaho.osgi.platform.plugin.deployer.impl.PluginXmlStaticPathsHandler"/>
+  <bean id="pluginXmlStaticPathsHandler" class="org.pentaho.osgi.platform.plugin.deployer.impl.handlers.pluginxml.PluginXmlStaticPathsHandler"/>
   <service id="pluginXmlStaticPathsHandlerService" ref="pluginXmlStaticPathsHandler" interface="org.pentaho.osgi.platform.plugin.deployer.api.PluginFileHandler"/>
+
+  <bean id="pluginXmlExternalResourcesHandler" class="org.pentaho.osgi.platform.plugin.deployer.impl.handlers.pluginxml.PluginXmlExternalResourcesHandler"/>
+  <service id="pluginXmlExternalResourcesHandlerService" ref="pluginXmlExternalResourcesHandler" interface="org.pentaho.osgi.platform.plugin.deployer.api.PluginFileHandler"/>
+
   <reference-list id="pluginFileHandlers" interface="org.pentaho.osgi.platform.plugin.deployer.api.PluginFileHandler" availability="optional" />
 </blueprint>

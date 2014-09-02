@@ -86,7 +86,7 @@ public class PluginZipFileProcessor {
     File dir = Files.createTempDir();
     PluginMetadata pluginMetadata = null;
     try {
-      pluginMetadata = new PluginMetadataImpl();
+      pluginMetadata = new PluginMetadataImpl( dir );
     } catch ( ParserConfigurationException e ) {
       throw new IOException( e );
     }
@@ -115,16 +115,6 @@ public class PluginZipFileProcessor {
           } catch ( Exception e ) {
             throw new IOException( e );
           }
-        } else if ( pluginFileHandlers != null ) {
-          for ( PluginFileHandler pluginFileHandler : pluginFileHandlers ) {
-            if ( pluginFileHandler.handles( name ) ) {
-              try {
-                pluginFileHandler.handle( name, zipBytes, pluginMetadata );
-              } catch ( PluginHandlingException e ) {
-                throw new IOException( e );
-              }
-            }
-          }
         }
         if ( shouldOutput ) {
           File outFile = new File( dir.getAbsolutePath() + "/" + zipEntry.getName() );
@@ -149,14 +139,43 @@ public class PluginZipFileProcessor {
               }
             }
           }
-          /*ZipEntry outEntry = new ZipEntry( zipEntry );
-          zipOutputStream.putNextEntry( outEntry );
-          zipOutputStream.write( zipBytes );
-          zipOutputStream.closeEntry();*/
         }
       }
+
+      if ( pluginFileHandlers != null ) {
+        Stack<File> fileStack = new Stack<File>();
+        fileStack.push( dir );
+        int dirPathLength = dir.getAbsolutePath().length();
+        while ( fileStack.size() > 0 ) {
+          File currentFile = fileStack.pop();
+          String currentPath = currentFile.getAbsolutePath();
+          if ( currentPath.length() == dirPathLength ) {
+            currentPath = "";
+          } else {
+            currentPath = currentPath.substring( dirPathLength + 1 );
+          }
+          for ( PluginFileHandler pluginFileHandler : pluginFileHandlers ) {
+            if ( pluginFileHandler.handles( currentPath ) ) {
+              try {
+                pluginFileHandler.handle( currentPath, currentFile, pluginMetadata );
+              } catch ( PluginHandlingException e ) {
+                throw new IOException( e );
+              }
+            }
+          }
+
+          if ( currentFile.isDirectory() ) {
+            File[] dirFiles = currentFile.listFiles();
+            for ( File file : dirFiles ) {
+              fileStack.push( file );
+            }
+          }
+        }
+      }
+
       int tries = 100;
-      File blueprintDir = new File( dir.getAbsolutePath() + "/" + BLUEPRINT.substring( 0, BLUEPRINT.lastIndexOf( '/' ) ) );
+      File blueprintDir =
+        new File( dir.getAbsolutePath() + "/" + BLUEPRINT.substring( 0, BLUEPRINT.lastIndexOf( '/' ) ) );
       while ( !blueprintDir.mkdirs() && tries > 0 ) {
         tries--;
       }

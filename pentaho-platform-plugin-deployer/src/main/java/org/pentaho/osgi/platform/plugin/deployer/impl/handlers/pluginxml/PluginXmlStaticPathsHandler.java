@@ -20,21 +20,22 @@
  *
  ******************************************************************************/
 
-package org.pentaho.osgi.platform.plugin.deployer.impl;
+package org.pentaho.osgi.platform.plugin.deployer.impl.handlers.pluginxml;
 
 import org.pentaho.osgi.platform.plugin.deployer.api.PluginHandlingException;
 import org.pentaho.osgi.platform.plugin.deployer.api.PluginMetadata;
-import org.pentaho.osgi.platform.plugin.deployer.api.XmlPluginFileHandler;
+import org.pentaho.osgi.platform.plugin.deployer.impl.handlers.PluginXmlFileHandler;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
+import java.io.File;
 import java.util.List;
 import java.util.Map;
 
 /**
  * Created by bryan on 8/26/14.
  */
-public class PluginXmlStaticPathsHandler extends XmlPluginFileHandler {
+public class PluginXmlStaticPathsHandler extends PluginXmlFileHandler {
   public static final String BLUEPRINT_BEAN_NS = "http://www.osgi.org/xmlns/blueprint/v1.0.0";
   public static final String BEAN = "bean";
   public static final String PROPERTY = "property";
@@ -58,18 +59,9 @@ public class PluginXmlStaticPathsHandler extends XmlPluginFileHandler {
     super( "plugin", "static-paths", "static-path" );
   }
 
-  @Override public boolean handles( String fileName ) {
-    if ( fileName != null ) {
-      String[] splitName = fileName.split( "/" );
-      if ( splitName.length == 2 && "plugin.xml".equals( splitName[ 1 ] ) ) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  @Override protected void handle( String fileName, List<Node> nodes, PluginMetadata pluginMetadata ) throws PluginHandlingException {
-    String topLevelFolder = fileName.split( "/" )[0];
+  @Override protected void handle( String relativePath, List<Node> nodes, PluginMetadata pluginMetadata )
+    throws PluginHandlingException {
+    String topLevelFolder = relativePath.split( "/" )[ 0 ];
     Document blueprint = pluginMetadata.getBlueprint();
     boolean foundResources = false;
     for ( Node node : nodes ) {
@@ -77,6 +69,7 @@ public class PluginXmlStaticPathsHandler extends XmlPluginFileHandler {
       String url = attributes.get( "url" );
       String localFolder = attributes.get( "localFolder" );
       if ( url != null && localFolder != null ) {
+        url = "/content" + url;
         foundResources = true;
         Node bean = blueprint.createElementNS( BLUEPRINT_BEAN_NS, BEAN );
 
@@ -106,7 +99,8 @@ public class PluginXmlStaticPathsHandler extends XmlPluginFileHandler {
       imports.put( "org.ops4j.pax.web.extender.whiteboard", null );
       imports.put( "org.ops4j.pax.web.extender.whiteboard.runtime", null );
       imports.put( "org.osgi.service.blueprint", "[1.0.0,2.0.0)" );
-      pluginMetadata.getManifestUpdater().getExportServices().add( "org.ops4j.pax.web.extender.whiteboard.ResourceMapping" );
+      pluginMetadata.getManifestUpdater().getExportServices()
+        .add( "org.ops4j.pax.web.extender.whiteboard.ResourceMapping" );
     }
   }
 

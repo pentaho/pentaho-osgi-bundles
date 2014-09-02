@@ -22,11 +22,13 @@
 
 package org.pentaho.osgi.platform.plugin.deployer.api;
 
+import java.io.File;
+
 /**
  * Created by bryan on 8/26/14.
  */
 public interface PluginFileHandler {
   public boolean handles( String fileName );
 
-  public void handle( String fileName, byte[] file, PluginMetadata pluginMetadata ) throws PluginHandlingException;
+  public void handle( String relativePath, File file, PluginMetadata pluginMetadata ) throws PluginHandlingException;
 }
