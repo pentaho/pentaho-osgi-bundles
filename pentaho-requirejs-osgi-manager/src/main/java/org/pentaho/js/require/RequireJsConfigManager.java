@@ -27,8 +27,6 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
-import org.osgi.framework.BundleEvent;
-import org.osgi.framework.BundleListener;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -36,7 +34,9 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
@@ -48,7 +48,9 @@ import java.util.concurrent.Future;
  */
 public class RequireJsConfigManager {
   public static final String REQUIRE_JSON_PATH = "META-INF/js/require.json";
+  public static final String EXTERNAL_RESOURCES_JSON_PATH = "META-INF/js/externalResources.json";
   private final Map<Long, JSONObject> configMap = new HashMap<Long, JSONObject>();
+  private final Map<Long, RequireJsConfiguration> requireConfigMap = new HashMap<Long, RequireJsConfiguration>();
   private final JSONParser parser = new JSONParser();
   private BundleContext bundleContext;
   private ExecutorService executorService = Executors.newCachedThreadPool();
@@ -66,48 +68,89 @@ public class RequireJsConfigManager {
   public boolean updateBundleContext( Bundle bundle ) throws IOException, ParseException {
     boolean shouldInvalidate = updateBundleContextStopped( bundle );
     URL configFileUrl = bundle.getResource( REQUIRE_JSON_PATH );
-    if ( configFileUrl == null ) {
+    URL externalResourcesUrl = bundle.getResource( EXTERNAL_RESOURCES_JSON_PATH );
+    if ( configFileUrl == null && externalResourcesUrl == null ) {
       return shouldInvalidate;
     } else {
-      URLConnection urlConnection = configFileUrl.openConnection();
-      InputStream inputStream = urlConnection.getInputStream();
-      InputStreamReader inputStreamReader = null;
-      BufferedReader bufferedReader = null;
-      StringBuilder sb = new StringBuilder();
-      try {
-        inputStreamReader = new InputStreamReader( urlConnection.getInputStream() );
-        bufferedReader = new BufferedReader( inputStreamReader );
-        JSONObject jsonObject = (JSONObject) parser.parse( bufferedReader );
-        synchronized( configMap ) {
-          configMap.put( bundle.getBundleId(), jsonObject );
-        }
-      } finally {
-        if ( bufferedReader != null ) {
-          bufferedReader.close();
-        }
-        if ( inputStreamReader != null ) {
-          inputStreamReader.close();
-        }
-        if ( inputStream != null ) {
-          inputStream.close();
+      JSONObject requireJsonObject = null;
+      if ( configFileUrl != null ) {
+        URLConnection urlConnection = configFileUrl.openConnection();
+        InputStream inputStream = urlConnection.getInputStream();
+        InputStreamReader inputStreamReader = null;
+        BufferedReader bufferedReader = null;
+        StringBuilder sb = new StringBuilder();
+        try {
+          inputStreamReader = new InputStreamReader( urlConnection.getInputStream() );
+          bufferedReader = new BufferedReader( inputStreamReader );
+          requireJsonObject = (JSONObject) parser.parse( bufferedReader );
+        } finally {
+          if ( bufferedReader != null ) {
+            bufferedReader.close();
+          }
+          if ( inputStreamReader != null ) {
+            inputStreamReader.close();
+          }
+          if ( inputStream != null ) {
+            inputStream.close();
+          }
         }
       }
-      return true;
+      JSONObject externalResourceJsonObject = null;
+      if ( externalResourcesUrl != null ) {
+        URLConnection urlConnection = externalResourcesUrl.openConnection();
+        InputStream inputStream = urlConnection.getInputStream();
+        InputStreamReader inputStreamReader = null;
+        BufferedReader bufferedReader = null;
+        StringBuilder sb = new StringBuilder();
+        try {
+          inputStreamReader = new InputStreamReader( urlConnection.getInputStream() );
+          bufferedReader = new BufferedReader( inputStreamReader );
+          externalResourceJsonObject = (JSONObject) parser.parse( bufferedReader );
+        } finally {
+          if ( bufferedReader != null ) {
+            bufferedReader.close();
+          }
+          if ( inputStreamReader != null ) {
+            inputStreamReader.close();
+          }
+          if ( inputStream != null ) {
+            inputStream.close();
+          }
+        }
+      }
+      boolean result = false;
+      synchronized ( configMap ) {
+        if ( requireJsonObject != null ) {
+          configMap.put( bundle.getBundleId(), requireJsonObject );
+          result = true;
+        }
+        if ( externalResourceJsonObject != null ) {
+          List<String> requireJsList = (List<String>) externalResourceJsonObject.get( "requirejs" );
+          if ( requireJsList != null ) {
+            requireConfigMap.put( bundle.getBundleId(), new RequireJsConfiguration( bundle, requireJsList ) );
+            result = true;
+          }
+        }
+      }
+      return result;
     }
   }
 
   public boolean updateBundleContextStopped( Bundle bundle ) {
     JSONObject bundleConfig = null;
-    synchronized( configMap ) {
+    RequireJsConfiguration requireJsConfiguration = null;
+    synchronized ( configMap ) {
       bundleConfig = configMap.remove( bundle.getBundleId() );
+      requireJsConfiguration = requireConfigMap.remove( bundle.getBundleId() );
     }
-    return bundleConfig != null;
+    return bundleConfig != null || requireJsConfiguration != null;
   }
 
   public void invalidateCache( boolean shouldInvalidate ) {
     if ( shouldInvalidate ) {
-      synchronized( configMap ) {
-        cache = executorService.submit( new RebuildCacheCallable( new HashMap<Long, JSONObject>( this.configMap ) ) );
+      synchronized ( configMap ) {
+        cache = executorService.submit( new RebuildCacheCallable( new HashMap<Long, JSONObject>( this.configMap ),
+          new ArrayList<RequireJsConfiguration>( requireConfigMap.values() ) ) );
         lastModified = System.currentTimeMillis();
       }
     }

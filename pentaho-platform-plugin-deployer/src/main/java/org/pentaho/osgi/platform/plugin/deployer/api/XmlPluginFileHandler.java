@@ -29,6 +29,7 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -44,16 +45,16 @@ public abstract class XmlPluginFileHandler implements PluginFileHandler {
     this.interestedPath = interestedPath;
   }
 
-  @Override public void handle( String fileName, byte[] file, PluginMetadata pluginMetadata )
+  @Override public void handle( String relativePath, File file, PluginMetadata pluginMetadata )
     throws PluginHandlingException {
     try {
-      handle( fileName, getNodes( XMLUtils.parse( file ), 0 ), pluginMetadata );
+      handle( relativePath, getNodes( XMLUtils.parse( file ), 0 ), pluginMetadata );
     } catch ( Exception e ) {
       throw new PluginHandlingException( e );
     }
   }
 
-  protected abstract void handle( String fileName, List<Node> nodes, PluginMetadata pluginMetadata )
+  protected abstract void handle( String relativePath, List<Node> nodes, PluginMetadata pluginMetadata )
     throws PluginHandlingException;
 
   protected List<Node> getNodes( Node node, int startIndex ) {

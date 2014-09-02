@@ -25,6 +25,7 @@ package org.pentaho.osgi.platform.plugin.deployer.impl;
 import org.apache.cxf.helpers.XMLUtils;
 import org.pentaho.osgi.platform.plugin.deployer.api.ManifestUpdater;
 import org.pentaho.osgi.platform.plugin.deployer.api.PluginMetadata;
+import org.pentaho.osgi.platform.plugin.deployer.impl.handlers.pluginxml.PluginXmlStaticPathsHandler;
 import org.w3c.dom.Document;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -36,6 +37,8 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 
@@ -45,10 +48,12 @@ import java.io.OutputStream;
 public class PluginMetadataImpl implements PluginMetadata {
   private final ManifestUpdater manifestUpdater = new ManifestUpdaterImpl();
   private final Document blueprint;
+  private final File rootDirectory;
 
-  public PluginMetadataImpl() throws ParserConfigurationException {
+  public PluginMetadataImpl( File rootDirectory ) throws ParserConfigurationException {
     blueprint = XMLUtils.newDocument();
     blueprint.appendChild( blueprint.createElementNS( PluginXmlStaticPathsHandler.BLUEPRINT_BEAN_NS, "blueprint" ) );
+    this.rootDirectory = rootDirectory;
   }
 
   @Override public ManifestUpdater getManifestUpdater() {
@@ -70,5 +75,15 @@ public class PluginMetadataImpl implements PluginMetadata {
     } catch ( TransformerException e ) {
       throw new IOException( e );
     }
+  }
+
+  @Override public FileWriter getFileWriter( String path ) throws IOException {
+    File resultFile = new File( rootDirectory.getAbsolutePath() + "/" + path );
+    File parentDir = resultFile.getParentFile();
+    int tries = 100;
+    while ( !parentDir.exists() && tries-- > 0 ) {
+      parentDir.mkdirs();
+    }
+    return new FileWriter( resultFile );
   }
 }

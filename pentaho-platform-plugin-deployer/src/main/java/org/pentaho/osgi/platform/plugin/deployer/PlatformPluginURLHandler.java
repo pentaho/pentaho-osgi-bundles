@@ -24,14 +24,10 @@ package org.pentaho.osgi.platform.plugin.deployer;
 
 import org.osgi.service.url.AbstractURLStreamHandlerService;
 import org.pentaho.osgi.platform.plugin.deployer.api.PluginFileHandler;
-import org.pentaho.osgi.platform.plugin.deployer.impl.PluginXmlStaticPathsHandler;
 
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.Arrays;
 import java.util.List;
 
 /**

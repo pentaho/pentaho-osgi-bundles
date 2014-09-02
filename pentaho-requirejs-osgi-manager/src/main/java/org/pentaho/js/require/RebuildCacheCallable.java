@@ -24,9 +24,16 @@ package org.pentaho.js.require;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.osgi.framework.Bundle;
 
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -38,9 +45,23 @@ import java.util.concurrent.Callable;
  */
 public class RebuildCacheCallable implements Callable<String> {
   private final Map<Long, JSONObject> configMap;
+  private final List<RequireJsConfiguration> requireJsConfigurations;
 
-  public RebuildCacheCallable( Map<Long, JSONObject> configMap ) {
+  public RebuildCacheCallable( Map<Long, JSONObject> configMap, List<RequireJsConfiguration> requireJsConfigurations ) {
     this.configMap = configMap;
+    this.requireJsConfigurations = new ArrayList<RequireJsConfiguration>( requireJsConfigurations );
+    Collections.sort( this.requireJsConfigurations, new Comparator<RequireJsConfiguration>() {
+      @Override public int compare( RequireJsConfiguration o1, RequireJsConfiguration o2 ) {
+        long longResult = o1.getBundle().getBundleId() - o2.getBundle().getBundleId();
+        if ( longResult < 0L ) {
+          return -1;
+        } else if ( longResult > 0L ) {
+          return 1;
+        } else {
+          return 0;
+        }
+      }
+    } );
   }
 
   private Object merge( String key, Object value1, Object value2 ) throws Exception {
@@ -107,6 +128,53 @@ public class RebuildCacheCallable implements Callable<String> {
     for ( Long bundleId : bundleIds ) {
       result = merge( result, configMap.get( bundleId ) );
     }
-    return result.toJSONString();
+    StringBuilder sb = new StringBuilder( result.toJSONString() );
+    sb.append( ";" );
+    for ( RequireJsConfiguration requireJsConfiguration : requireJsConfigurations ) {
+      sb.append( "\n\n/* Following configurations are from bundle " );
+      Bundle bundle = requireJsConfiguration.getBundle();
+      StringBuilder bundleNameSb = new StringBuilder( "[" );
+      bundleNameSb.append( bundle.getBundleId() );
+      bundleNameSb.append( "] - " );
+      bundleNameSb.append( bundle.getSymbolicName() );
+      bundleNameSb.append( ":" );
+      bundleNameSb.append( bundle.getVersion() );
+      String bundleName = bundleNameSb.toString();
+      sb.append( bundleName );
+      sb.append( "*/\n" );
+      for ( String config : requireJsConfiguration.getRequireConfigurations() ) {
+        URL configURL = bundle.getResource( config );
+        URLConnection urlConnection = null;
+        InputStream inputStream = null;
+        InputStreamReader inputStreamReader = null;
+        BufferedReader bufferedReader = null;
+        try {
+          urlConnection = configURL.openConnection();
+          inputStream = urlConnection.getInputStream();
+          inputStreamReader = new InputStreamReader( inputStream );
+          bufferedReader = new BufferedReader( inputStreamReader );
+          String input = null;
+          while ( ( input = bufferedReader.readLine() ) != null ) {
+            sb.append( input );
+            sb.append( "\n" );
+          }
+        } finally {
+          if ( bufferedReader != null ) {
+            bufferedReader.close();
+          }
+          if ( inputStreamReader != null ) {
+            inputStreamReader.close();
+          }
+          if ( inputStream != null ) {
+            inputStream.close();
+          }
+        }
+      }
+      sb.append( "/* End of bundle " );
+      sb.append( bundleName );
+      sb.append( "*/\n" );
+    }
+
+    return sb.toString();
   }
 }

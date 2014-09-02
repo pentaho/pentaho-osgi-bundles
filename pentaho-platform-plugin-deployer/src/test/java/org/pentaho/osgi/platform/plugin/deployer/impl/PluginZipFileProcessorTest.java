@@ -28,6 +28,7 @@ import org.mockito.ArgumentMatcher;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.pentaho.osgi.platform.plugin.deployer.api.PluginFileHandler;
+import org.pentaho.osgi.platform.plugin.deployer.impl.handlers.pluginxml.PluginXmlStaticPathsHandler;
 
 import java.io.IOException;
 import java.util.ArrayList;

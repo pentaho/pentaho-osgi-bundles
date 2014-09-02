@@ -2,7 +2,7 @@
  *
  * Pentaho Data Integration
  *
- * Copyright (C) 2002-2014 by Pentaho : http://www.pentaho.com
+ * Copyright (C) 2002-2013 by Pentaho : http://www.pentaho.com
  *
  *******************************************************************************
  *
@@ -20,22 +20,28 @@
  *
  ******************************************************************************/
 
-package org.pentaho.osgi.platform.plugin.deployer;
+package org.pentaho.js.require;
 
 import org.junit.Test;
+import org.osgi.framework.Bundle;
 
-import java.io.IOException;
-import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
 
 /**
- * Created by bryan on 8/26/14.
+ * Created by bryan on 9/2/14.
  */
-public class PlatformPluginURLHandlerTest {
+public class RequireJsConfigurationTest {
   @Test
-  public void testUrlHandler() throws IOException {
-    PlatformPluginURLHandler platformPluginURLHandler = new PlatformPluginURLHandler();
-    assertTrue( platformPluginURLHandler.openConnection( new URL( "http://www.pentaho.com" ) ) instanceof  PlatformPluginBundlingURLConnection );
+  public void testConstructor() {
+    Bundle bundle = mock( Bundle.class );
+    List<String> configs = new ArrayList<String>();
+    configs.add( "test" );
+    RequireJsConfiguration configuration = new RequireJsConfiguration( bundle, configs );
+    assertEquals( bundle, configuration.getBundle() );
+    assertEquals( configs, configuration.getRequireConfigurations() );
   }
 }

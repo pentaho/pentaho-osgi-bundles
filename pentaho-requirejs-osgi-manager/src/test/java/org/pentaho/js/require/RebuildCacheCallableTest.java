@@ -25,9 +25,12 @@ package org.pentaho.js.require;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
+import org.junit.Before;
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
@@ -36,6 +39,13 @@ import static org.junit.Assert.assertEquals;
  * Created by bryan on 8/15/14.
  */
 public class RebuildCacheCallableTest {
+  private List<RequireJsConfiguration> requireJsConfigurations;
+
+  @Before
+  public void setup() {
+    requireJsConfigurations = new ArrayList<RequireJsConfiguration>(  );
+  }
+
   @Test
   public void testCall() throws Exception {
     String nullTestKey = "null";
@@ -70,7 +80,10 @@ public class RebuildCacheCallableTest {
     expected.put( nullTestKey, "a" );
     expected.put( objectKey, new JSONObject() );
     expected.put( dupKey, "e" );
-    String config = new RebuildCacheCallable( configMap ).call();
+    String config = new RebuildCacheCallable( configMap, requireJsConfigurations ).call();
+    if ( config.endsWith( ";" ) ) {
+      config = config.substring( 0, config.length() - 1 );
+    }
     Object configValue = JSONValue.parse( config );
     testEquals( expected, (JSONObject) configValue );
   }
@@ -88,7 +101,7 @@ public class RebuildCacheCallableTest {
     array2.add( "2" );
     array2.add( 3L );
     object2.put( objectKey, array2 );
-    String config = new RebuildCacheCallable( configMap ).call();
+    String config = new RebuildCacheCallable( configMap, requireJsConfigurations ).call();
   }
 
   @Test( expected = Exception.class )
@@ -101,7 +114,7 @@ public class RebuildCacheCallableTest {
     JSONObject object2 = new JSONObject();
     configMap.put( 2L, object2 );
     object2.put( objectKey, new JSONObject(  ) );
-    String config = new RebuildCacheCallable( configMap ).call();
+    String config = new RebuildCacheCallable( configMap, requireJsConfigurations ).call();
   }
 
   @Test( expected = Exception.class )
@@ -114,7 +127,7 @@ public class RebuildCacheCallableTest {
     JSONObject object2 = new JSONObject();
     configMap.put( 2L, object2 );
     object2.put( objectKey, "B" );
-    String config = new RebuildCacheCallable( configMap ).call();
+    String config = new RebuildCacheCallable( configMap, requireJsConfigurations ).call();
   }
 
   @Test( expected = Exception.class )
@@ -127,7 +140,7 @@ public class RebuildCacheCallableTest {
     JSONObject object2 = new JSONObject();
     configMap.put( 2L, object2 );
     object2.put( objectKey, new JSONArray() );
-    String config = new RebuildCacheCallable( configMap ).call();
+    String config = new RebuildCacheCallable( configMap, requireJsConfigurations ).call();
   }
 
   @Test( expected = Exception.class )
@@ -140,7 +153,7 @@ public class RebuildCacheCallableTest {
     JSONObject object2 = new JSONObject();
     configMap.put( 2L, object2 );
     object2.put( new Object(), new JSONArray() );
-    String config = new RebuildCacheCallable( configMap ).call();
+    String config = new RebuildCacheCallable( configMap, requireJsConfigurations ).call();
   }
 
   public static void testEquals( Object object1, Object object2 ) {

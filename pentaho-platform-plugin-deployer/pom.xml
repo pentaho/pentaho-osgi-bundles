@@ -37,6 +37,7 @@
     <felix.version>4.0.3</felix.version>
     <cxf.version>2.6.15</cxf.version>
     <guava.version>17.0</guava.version>
+    <json-simple.version>1.1.1</json-simple.version>
     <pentaho.resolve.repo>http://nexus.pentaho.org/content/groups/omni/</pentaho.resolve.repo>
     <pentaho.artifactory.resolve.repo>http://repository.pentaho.org/artifactory/repo</pentaho.artifactory.resolve.repo>
     <pentaho.artifactory.resolve.repo.2>http://repo.pentaho.org/artifactory/repo</pentaho.artifactory.resolve.repo.2>
@@ -89,6 +90,11 @@
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
       <version>${guava.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.googlecode.json-simple</groupId>
+      <artifactId>json-simple</artifactId>
+      <version>${json-simple.version}</version>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
@@ -150,7 +156,9 @@
             <Private-Package>
               org.apache.karaf.util,
               org.pentaho.osgi.platform.plugin.deployer,
-              org.pentaho.osgi.platform.plugin.deployer.impl
+              org.pentaho.osgi.platform.plugin.deployer.impl,
+              org.pentaho.osgi.platform.plugin.deployer.impl.handlers,
+              org.pentaho.osgi.platform.plugin.deployer.impl.handlers.pluginxml
             </Private-Package>
           </instructions>
         </configuration>

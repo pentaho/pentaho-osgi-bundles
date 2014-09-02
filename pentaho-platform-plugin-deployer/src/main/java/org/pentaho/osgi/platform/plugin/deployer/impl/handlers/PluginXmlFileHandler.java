@@ -20,22 +20,29 @@
  *
  ******************************************************************************/
 
-package org.pentaho.osgi.platform.plugin.deployer;
+package org.pentaho.osgi.platform.plugin.deployer.impl.handlers;
 
-import org.junit.Test;
+import org.pentaho.osgi.platform.plugin.deployer.api.PluginHandlingException;
+import org.pentaho.osgi.platform.plugin.deployer.api.PluginMetadata;
+import org.pentaho.osgi.platform.plugin.deployer.api.XmlPluginFileHandler;
+import org.w3c.dom.Node;
 
-import java.io.IOException;
-import java.net.URL;
-
-import static org.junit.Assert.assertTrue;
+import java.util.List;
 
 /**
- * Created by bryan on 8/26/14.
+ * Created by bryan on 8/29/14.
  */
-public class PlatformPluginURLHandlerTest {
-  @Test
-  public void testUrlHandler() throws IOException {
-    PlatformPluginURLHandler platformPluginURLHandler = new PlatformPluginURLHandler();
-    assertTrue( platformPluginURLHandler.openConnection( new URL( "http://www.pentaho.com" ) ) instanceof  PlatformPluginBundlingURLConnection );
+public abstract class PluginXmlFileHandler extends XmlPluginFileHandler {
+  public PluginXmlFileHandler( String... interestedPath ) {
+    super( interestedPath );
+  }
+  @Override public boolean handles( String fileName ) {
+    if ( fileName != null ) {
+      String[] splitName = fileName.split( "/" );
+      if ( splitName.length == 2 && "plugin.xml".equals( splitName[ 1 ] ) ) {
+        return true;
+      }
+    }
+    return false;
   }
 }
