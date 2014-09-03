@@ -128,6 +128,12 @@ public class RebuildCacheCallable implements Callable<String> {
     for ( Long bundleId : bundleIds ) {
       result = merge( result, configMap.get( bundleId ) );
     }
+    if ( !result.containsKey( "paths" ) ) {
+      result.put( "paths", new JSONObject(  ) );
+    }
+    if ( !result.containsKey( "shim" ) ) {
+      result.put( "shim", new JSONObject(  ) );
+    }
     StringBuilder sb = new StringBuilder( result.toJSONString() );
     sb.append( ";" );
     for ( RequireJsConfiguration requireJsConfiguration : requireJsConfigurations ) {
