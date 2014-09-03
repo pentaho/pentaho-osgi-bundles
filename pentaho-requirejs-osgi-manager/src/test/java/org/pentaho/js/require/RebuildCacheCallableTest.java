@@ -80,6 +80,8 @@ public class RebuildCacheCallableTest {
     expected.put( nullTestKey, "a" );
     expected.put( objectKey, new JSONObject() );
     expected.put( dupKey, "e" );
+    expected.put( "shim", new JSONObject(  ) );
+    expected.put( "paths", new JSONObject(  ) );
     String config = new RebuildCacheCallable( configMap, requireJsConfigurations ).call();
     if ( config.endsWith( ";" ) ) {
       config = config.substring( 0, config.length() - 1 );
