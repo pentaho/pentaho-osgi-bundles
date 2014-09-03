@@ -72,11 +72,6 @@
       <version>3.2.8</version>
     </dependency>
     <dependency>
-      <groupId>org.apache.cxf</groupId>
-      <artifactId>cxf-rt-bindings-xml</artifactId>
-      <version>${cxf.version}</version>
-    </dependency>
-    <dependency>
       <groupId>org.apache.karaf</groupId>
       <artifactId>org.apache.karaf.util</artifactId>
       <version>${karaf.version}</version>
