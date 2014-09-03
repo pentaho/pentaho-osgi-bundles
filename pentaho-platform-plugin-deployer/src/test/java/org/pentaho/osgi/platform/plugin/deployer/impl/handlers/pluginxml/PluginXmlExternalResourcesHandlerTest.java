@@ -24,11 +24,13 @@ package org.pentaho.osgi.platform.plugin.deployer.impl.handlers.pluginxml;
 
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
+import org.junit.Before;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.pentaho.osgi.platform.plugin.deployer.api.PluginHandlingException;
 import org.pentaho.osgi.platform.plugin.deployer.api.PluginMetadata;
+import org.pentaho.osgi.platform.plugin.deployer.impl.JSONUtil;
 import org.w3c.dom.Node;
 
 import java.io.FileWriter;
@@ -47,13 +49,22 @@ import static org.mockito.Mockito.*;
  * Created by bryan on 9/2/14.
  */
 public class PluginXmlExternalResourcesHandlerTest {
+  private JSONUtil jsonUtil;
+
+  @Before
+  public void setup() {
+    jsonUtil = mock( JSONUtil.class );
+  }
+
   @Test
   public void testHandleNoNodesDoesntDoAnything() throws PluginHandlingException {
     PluginXmlExternalResourcesHandler pluginXmlExternalResourcesHandler = new PluginXmlExternalResourcesHandler();
+    pluginXmlExternalResourcesHandler.setJsonUtil( jsonUtil );
     PluginMetadata pluginMetadata = mock( PluginMetadata.class );
     List<Node> nodes = new ArrayList<Node>();
     pluginXmlExternalResourcesHandler.handle( "plugin.xml", nodes, pluginMetadata );
     verifyNoMoreInteractions( pluginMetadata );
+    verifyNoMoreInteractions( jsonUtil );
   }
 
   @Test
@@ -67,6 +78,7 @@ public class PluginXmlExternalResourcesHandlerTest {
     Node node2 = PluginXmlStaticPathsHandlerTest.makeMockNode( node2Props );
     when( node2.getTextContent() ).thenReturn( "/test/content/2" );
     PluginXmlExternalResourcesHandler pluginXmlExternalResourcesHandler = new PluginXmlExternalResourcesHandler();
+    pluginXmlExternalResourcesHandler.setJsonUtil( new JSONUtil() );
     PluginMetadata pluginMetadata = mock( PluginMetadata.class );
     FileWriter fileWriter = mock( FileWriter.class );
     final StringBuilder sb = new StringBuilder( );

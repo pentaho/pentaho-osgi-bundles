@@ -13,6 +13,8 @@
   ">
   <bean id="platformPluginDeploymentListener" class="org.pentaho.osgi.platform.plugin.deployer.PlatformPluginDeploymentListener" />
 
+  <bean id="jsonUtil" class="org.pentaho.osgi.platform.plugin.deployer.impl.JSONUtil" />
+
   <service ref="platformPluginDeploymentListener" auto-export="interfaces" depends-on="platformPluginDeploymentListener" />
 
   <service id="platformPluginURLHandler" interface="org.osgi.service.url.URLStreamHandlerService">
@@ -33,10 +35,14 @@
     </bean>
   </service>
 
-  <bean id="pluginXmlStaticPathsHandler" class="org.pentaho.osgi.platform.plugin.deployer.impl.handlers.pluginxml.PluginXmlStaticPathsHandler"/>
+  <bean id="pluginXmlStaticPathsHandler" class="org.pentaho.osgi.platform.plugin.deployer.impl.handlers.pluginxml.PluginXmlStaticPathsHandler">
+    <property name="jsonUtil" ref="jsonUtil"/>
+  </bean>
   <service id="pluginXmlStaticPathsHandlerService" ref="pluginXmlStaticPathsHandler" interface="org.pentaho.osgi.platform.plugin.deployer.api.PluginFileHandler"/>
 
-  <bean id="pluginXmlExternalResourcesHandler" class="org.pentaho.osgi.platform.plugin.deployer.impl.handlers.pluginxml.PluginXmlExternalResourcesHandler"/>
+  <bean id="pluginXmlExternalResourcesHandler" class="org.pentaho.osgi.platform.plugin.deployer.impl.handlers.pluginxml.PluginXmlExternalResourcesHandler">
+    <property name="jsonUtil" ref="jsonUtil"/>
+  </bean>
   <service id="pluginXmlExternalResourcesHandlerService" ref="pluginXmlExternalResourcesHandler" interface="org.pentaho.osgi.platform.plugin.deployer.api.PluginFileHandler"/>
 
   <reference-list id="pluginFileHandlers" interface="org.pentaho.osgi.platform.plugin.deployer.api.PluginFileHandler" availability="optional" />

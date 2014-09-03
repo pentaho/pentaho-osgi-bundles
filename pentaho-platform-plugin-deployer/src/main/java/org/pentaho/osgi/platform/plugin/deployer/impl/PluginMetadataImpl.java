@@ -22,12 +22,12 @@
 
 package org.pentaho.osgi.platform.plugin.deployer.impl;
 
-import org.apache.cxf.helpers.XMLUtils;
 import org.pentaho.osgi.platform.plugin.deployer.api.ManifestUpdater;
 import org.pentaho.osgi.platform.plugin.deployer.api.PluginMetadata;
 import org.pentaho.osgi.platform.plugin.deployer.impl.handlers.pluginxml.PluginXmlStaticPathsHandler;
 import org.w3c.dom.Document;
 
+import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Result;
@@ -51,7 +51,7 @@ public class PluginMetadataImpl implements PluginMetadata {
   private final File rootDirectory;
 
   public PluginMetadataImpl( File rootDirectory ) throws ParserConfigurationException {
-    blueprint = XMLUtils.newDocument();
+    blueprint = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
     blueprint.appendChild( blueprint.createElementNS( PluginXmlStaticPathsHandler.BLUEPRINT_BEAN_NS, "blueprint" ) );
     this.rootDirectory = rootDirectory;
   }

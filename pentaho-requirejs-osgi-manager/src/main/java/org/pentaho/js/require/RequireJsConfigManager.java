@@ -49,6 +49,7 @@ import java.util.concurrent.Future;
 public class RequireJsConfigManager {
   public static final String REQUIRE_JSON_PATH = "META-INF/js/require.json";
   public static final String EXTERNAL_RESOURCES_JSON_PATH = "META-INF/js/externalResources.json";
+  public static final String STATIC_RESOURCES_JSON_PATH = "META-INF/js/staticResources.json";
   private final Map<Long, JSONObject> configMap = new HashMap<Long, JSONObject>();
   private final Map<Long, RequireJsConfiguration> requireConfigMap = new HashMap<Long, RequireJsConfiguration>();
   private final JSONParser parser = new JSONParser();
@@ -72,52 +73,10 @@ public class RequireJsConfigManager {
     if ( configFileUrl == null && externalResourcesUrl == null ) {
       return shouldInvalidate;
     } else {
-      JSONObject requireJsonObject = null;
-      if ( configFileUrl != null ) {
-        URLConnection urlConnection = configFileUrl.openConnection();
-        InputStream inputStream = urlConnection.getInputStream();
-        InputStreamReader inputStreamReader = null;
-        BufferedReader bufferedReader = null;
-        StringBuilder sb = new StringBuilder();
-        try {
-          inputStreamReader = new InputStreamReader( urlConnection.getInputStream() );
-          bufferedReader = new BufferedReader( inputStreamReader );
-          requireJsonObject = (JSONObject) parser.parse( bufferedReader );
-        } finally {
-          if ( bufferedReader != null ) {
-            bufferedReader.close();
-          }
-          if ( inputStreamReader != null ) {
-            inputStreamReader.close();
-          }
-          if ( inputStream != null ) {
-            inputStream.close();
-          }
-        }
-      }
-      JSONObject externalResourceJsonObject = null;
-      if ( externalResourcesUrl != null ) {
-        URLConnection urlConnection = externalResourcesUrl.openConnection();
-        InputStream inputStream = urlConnection.getInputStream();
-        InputStreamReader inputStreamReader = null;
-        BufferedReader bufferedReader = null;
-        StringBuilder sb = new StringBuilder();
-        try {
-          inputStreamReader = new InputStreamReader( urlConnection.getInputStream() );
-          bufferedReader = new BufferedReader( inputStreamReader );
-          externalResourceJsonObject = (JSONObject) parser.parse( bufferedReader );
-        } finally {
-          if ( bufferedReader != null ) {
-            bufferedReader.close();
-          }
-          if ( inputStreamReader != null ) {
-            inputStreamReader.close();
-          }
-          if ( inputStream != null ) {
-            inputStream.close();
-          }
-        }
-      }
+      JSONObject requireJsonObject = loadJsonObject( configFileUrl );
+      JSONObject externalResourceJsonObject = loadJsonObject( externalResourcesUrl );
+      JSONObject staticResourceJsonObject = loadJsonObject( bundle.getResource( STATIC_RESOURCES_JSON_PATH ) );
+
       boolean result = false;
       synchronized ( configMap ) {
         if ( requireJsonObject != null ) {
@@ -127,12 +86,57 @@ public class RequireJsConfigManager {
         if ( externalResourceJsonObject != null ) {
           List<String> requireJsList = (List<String>) externalResourceJsonObject.get( "requirejs" );
           if ( requireJsList != null ) {
+            if ( staticResourceJsonObject != null ) {
+              List<String> translatedList = new ArrayList<String>( requireJsList.size() );
+              for ( String element : requireJsList ) {
+                boolean found = false;
+                for ( Object key : staticResourceJsonObject.keySet() ) {
+                  String strKey = key.toString();
+                  if ( element.startsWith( strKey ) ) {
+                    String value = staticResourceJsonObject.get( key ).toString();
+                    translatedList.add( value + element.substring( strKey.length() ) );
+                    found = true;
+                    break;
+                  }
+                }
+                if ( !found ) {
+                  translatedList.add( element );
+                }
+              }
+              requireJsList = translatedList;
+            }
             requireConfigMap.put( bundle.getBundleId(), new RequireJsConfiguration( bundle, requireJsList ) );
             result = true;
           }
         }
       }
       return result;
+    }
+  }
+
+  private JSONObject loadJsonObject( URL url ) throws IOException, ParseException {
+    if ( url == null ) {
+      return null;
+    }
+    URLConnection urlConnection = url.openConnection();
+    InputStream inputStream = urlConnection.getInputStream();
+    InputStreamReader inputStreamReader = null;
+    BufferedReader bufferedReader = null;
+    StringBuilder sb = new StringBuilder();
+    try {
+      inputStreamReader = new InputStreamReader( urlConnection.getInputStream() );
+      bufferedReader = new BufferedReader( inputStreamReader );
+      return (JSONObject) parser.parse( bufferedReader );
+    } finally {
+      if ( bufferedReader != null ) {
+        bufferedReader.close();
+      }
+      if ( inputStreamReader != null ) {
+        inputStreamReader.close();
+      }
+      if ( inputStream != null ) {
+        inputStream.close();
+      }
     }
   }
 

@@ -22,9 +22,9 @@
 
 package org.pentaho.osgi.platform.plugin.deployer.impl.handlers.pluginxml;
 
-import org.json.simple.JSONValue;
 import org.pentaho.osgi.platform.plugin.deployer.api.PluginHandlingException;
 import org.pentaho.osgi.platform.plugin.deployer.api.PluginMetadata;
+import org.pentaho.osgi.platform.plugin.deployer.impl.JSONUtil;
 import org.pentaho.osgi.platform.plugin.deployer.impl.handlers.PluginXmlFileHandler;
 import org.w3c.dom.Node;
 
@@ -42,8 +42,14 @@ public class PluginXmlExternalResourcesHandler extends PluginXmlFileHandler {
   public static final String EXTERNAL_RESOURCES_FILE = "META-INF/js/externalResources.json";
   private static final String LIST_DELIMITER = ",\n    ";
 
+  private JSONUtil jsonUtil;
+
   public PluginXmlExternalResourcesHandler() {
     super( "plugin", "external-resources", "file" );
+  }
+
+  public void setJsonUtil( JSONUtil jsonUtil ) {
+    this.jsonUtil = jsonUtil;
   }
 
   @Override protected void handle( String relativePath, List<Node> nodes, PluginMetadata pluginMetadata )
@@ -58,36 +64,18 @@ public class PluginXmlExternalResourcesHandler extends PluginXmlFileHandler {
           contextFiles = new ArrayList<String>();
           contextMap.put( context, contextFiles );
         }
-        String path = node.getTextContent();
-        int index = path.indexOf( '/' );
-        if ( index >= 0 ) {
-          path = path.substring( index );
+        String contextFile = node.getTextContent();
+        if ( !contextFile.startsWith( "/" ) ) {
+          contextFile = "/" + contextFile;
         }
-        contextFiles.add( path );
+        contextFiles.add( contextFile );
       }
 
       // Pretty print the map while still escaping all variables
       FileWriter fileWriter = null;
       try {
-        StringBuilder sb = new StringBuilder();
-        for ( Map.Entry<String, List<String>> entry : contextMap.entrySet() ) {
-          sb.append( "  " );
-          sb.append( JSONValue.toJSONString( entry.getKey() ) );
-          sb.append( " : [\n    " );
-          for ( String path : entry.getValue() ) {
-            sb.append( JSONValue.toJSONString( path ) );
-            sb.append( LIST_DELIMITER );
-          }
-          sb.setLength( sb.length() - LIST_DELIMITER.length() );
-          sb.append( " ],\n" );
-        }
-        if ( sb.length() > 0 ) {
-          sb.setLength( sb.length() - 2 );
-        }
         fileWriter = pluginMetadata.getFileWriter( EXTERNAL_RESOURCES_FILE );
-        fileWriter.write( "{\n" );
-        fileWriter.write( sb.toString() );
-        fileWriter.write( "\n}\n" );
+        fileWriter.write( jsonUtil.prettyPrintMapStringListString( contextMap ) );
       } catch ( IOException e ) {
         throw new PluginHandlingException( e );
       } finally {

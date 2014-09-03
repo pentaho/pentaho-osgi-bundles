@@ -23,13 +23,12 @@
 package org.pentaho.osgi.platform.plugin.deployer.impl;
 
 import com.google.common.io.Files;
-import org.apache.cxf.helpers.FileUtils;
-import org.apache.cxf.helpers.XMLUtils;
 import org.pentaho.osgi.platform.plugin.deployer.api.PluginFileHandler;
 import org.pentaho.osgi.platform.plugin.deployer.api.PluginHandlingException;
 import org.pentaho.osgi.platform.plugin.deployer.api.PluginMetadata;
 import org.w3c.dom.Document;
 
+import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -112,7 +111,8 @@ public class PluginZipFileProcessor {
         } else if ( BLUEPRINT.equals( name ) ) {
           shouldOutput = false;
           try {
-            blueprint = XMLUtils.parse( zipBytes );
+            blueprint =
+              DocumentBuilderFactory.newInstance().newDocumentBuilder().parse( new ByteArrayInputStream( zipBytes ) );
           } catch ( Exception e ) {
             throw new IOException( e );
           }
@@ -271,13 +271,16 @@ public class PluginZipFileProcessor {
       recursiveDelete( dir );
     }
   }
+
   private void recursiveDelete( File file ) {
     if ( file.isDirectory() ) {
       for ( File child : file.listFiles() ) {
         recursiveDelete( child );
       }
     }
-    FileUtils.delete( file );
+    if ( !file.delete() ) {
+      file.deleteOnExit();
+    }
   }
 }
 

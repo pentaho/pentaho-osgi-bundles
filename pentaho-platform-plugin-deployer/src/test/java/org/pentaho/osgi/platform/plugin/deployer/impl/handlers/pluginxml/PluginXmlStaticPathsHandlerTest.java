@@ -22,12 +22,14 @@
 
 package org.pentaho.osgi.platform.plugin.deployer.impl.handlers.pluginxml;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.pentaho.osgi.platform.plugin.deployer.api.ManifestUpdater;
 import org.pentaho.osgi.platform.plugin.deployer.api.PluginHandlingException;
 import org.pentaho.osgi.platform.plugin.deployer.api.PluginMetadata;
+import org.pentaho.osgi.platform.plugin.deployer.impl.JSONUtil;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
@@ -38,6 +40,8 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -52,6 +56,13 @@ import static org.mockito.Mockito.*;
  * Created by bryan on 8/26/14.
  */
 public class PluginXmlStaticPathsHandlerTest {
+  private JSONUtil jsonUtil;
+
+  @Before
+  public void setup() {
+    jsonUtil = mock( JSONUtil.class );
+  }
+
   @Test
   public void testHandlesNull() {
     assertFalse( new PluginXmlStaticPathsHandler().handles( null ) );
@@ -70,7 +81,7 @@ public class PluginXmlStaticPathsHandlerTest {
 
   @Test
   public void testResourceMapping()
-    throws ParserConfigurationException, PluginHandlingException, TransformerException {
+    throws ParserConfigurationException, PluginHandlingException, TransformerException, IOException {
     Map<String, String> mockNode1Values = new HashMap<String, String>();
     mockNode1Values.put( "url", "/common-ui/resources" );
     mockNode1Values.put( "localFolder", "resources" );
@@ -84,6 +95,8 @@ public class PluginXmlStaticPathsHandlerTest {
         .asList( makeMockNode( mockNode1Values ), makeMockNode( mockNode2Values ), makeMockNode( mockNode3Values ),
           makeMockNode( mockNode4Values ) ) );
     PluginMetadata pluginMetadata = mock( PluginMetadata.class );
+    FileWriter fileWriter = mock( FileWriter.class );
+    when( pluginMetadata.getFileWriter( anyString() ) ).thenReturn( fileWriter );
     Document document = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
     Node blueprintNode = document.createElementNS( PluginXmlStaticPathsHandler.BLUEPRINT_BEAN_NS, "blueprint" );
     document.appendChild( blueprintNode );
@@ -91,6 +104,7 @@ public class PluginXmlStaticPathsHandlerTest {
     ManifestUpdater manifestUpdater = mock( ManifestUpdater.class );
     when( pluginMetadata.getManifestUpdater() ).thenReturn( manifestUpdater );
     PluginXmlStaticPathsHandler pluginXmlStaticPathsHandler = new PluginXmlStaticPathsHandler();
+    pluginXmlStaticPathsHandler.setJsonUtil( new JSONUtil() );
     pluginXmlStaticPathsHandler.handle( "test-plugin/plugin.xml", nodes, pluginMetadata );
     NodeList nodeList = document.getElementsByTagNameNS( PluginXmlStaticPathsHandler.BLUEPRINT_BEAN_NS, "bean" );
     assertEquals( 1, nodeList.getLength() );
@@ -120,9 +134,11 @@ public class PluginXmlStaticPathsHandlerTest {
           makeMockNode( mockNode4Values ) ) );
     PluginMetadata pluginMetadata = mock( PluginMetadata.class );
     PluginXmlStaticPathsHandler pluginXmlStaticPathsHandler = new PluginXmlStaticPathsHandler();
+    pluginXmlStaticPathsHandler.setJsonUtil( jsonUtil );
     pluginXmlStaticPathsHandler.handle( "test-plugin/plugin.xml", nodes, pluginMetadata );
     verify( pluginMetadata ).getBlueprint();
     verifyNoMoreInteractions( pluginMetadata );
+    verifyNoMoreInteractions( jsonUtil );
   }
 
   public static Node makeMockNode( final Map<String, String> attributes ) {

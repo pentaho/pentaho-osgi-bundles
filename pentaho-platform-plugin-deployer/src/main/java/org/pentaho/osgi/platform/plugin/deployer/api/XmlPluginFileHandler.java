@@ -22,13 +22,13 @@
 
 package org.pentaho.osgi.platform.plugin.deployer.api;
 
-import org.apache.cxf.helpers.XMLUtils;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -48,7 +48,8 @@ public abstract class XmlPluginFileHandler implements PluginFileHandler {
   @Override public void handle( String relativePath, File file, PluginMetadata pluginMetadata )
     throws PluginHandlingException {
     try {
-      handle( relativePath, getNodes( XMLUtils.parse( file ), 0 ), pluginMetadata );
+      handle( relativePath, getNodes( DocumentBuilderFactory.newInstance().newDocumentBuilder().parse( file ), 0 ),
+        pluginMetadata );
     } catch ( Exception e ) {
       throw new PluginHandlingException( e );
     }
@@ -64,7 +65,7 @@ public abstract class XmlPluginFileHandler implements PluginFileHandler {
       if ( nodeList != null ) {
         for ( int i = 0; i < nodeList.getLength(); i++ ) {
           Node potential = nodeList.item( i );
-          if ( part.equals( potential.getLocalName() ) ) {
+          if ( part.equals( potential.getNodeName() ) ) {
             if ( startIndex == interestedPath.length - 1 ) {
               result.add( nodeList.item( i ) );
             } else {
