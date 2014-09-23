@@ -2,7 +2,8 @@
   "paths": {
     "angular": "/angular-bundle/angular",
     "angular-route": "/angular-bundle/angular-route",
-    "angular-resource": "/angular-bundle/angular-resource"
+    "angular-resource": "/angular-bundle/angular-resource",
+    "test-resource": "/hi"
   },
   "shim" : {
     "angular" : { "exports": "angular" },

@@ -116,4 +116,29 @@ public class RequireJsConfigServletTest {
     assertTrue( outputStream.toString( "UTF-8" ).contains( testConfig ) );
     assertFalse( outputStream.toString( "UTF-8" ).endsWith( "require.config(requireCfg);" ) );
   }
+
+
+
+
+  @Test
+  public void testSetContextRoot() throws ServletException, IOException {
+
+    HttpServletRequest request = mock( HttpServletRequest.class );
+    when( request.getParameter( "config" ) ).thenReturn( "false" );
+    HttpServletResponse response = mock( HttpServletResponse.class );
+    final ByteArrayOutputStream outputStream = new ByteArrayOutputStream(  );
+    when( response.getOutputStream() ).thenReturn( new ServletOutputStream() {
+      @Override public void write( int b ) throws IOException {
+        outputStream.write( b );
+      }
+    } );
+    String testConfig = "TEST_CONFIG";
+    when( requireJsConfigManager.getRequireJsConfig() ).thenReturn( testConfig );
+    when( requireJsConfigManager.getContextRoot() ).thenReturn("/test/root/");
+
+    requireJsConfigServlet.doGet( request, response );
+    String output = outputStream.toString( "UTF-8" );
+    assertTrue( output.contains( "requireCfg.baseUrl = '/test/root/" ) );
+
+  }
 }

@@ -22,6 +22,7 @@
 
 package org.pentaho.js.require;
 
+import org.apache.commons.lang.StringUtils;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -57,6 +58,7 @@ public class RequireJsConfigManager {
   private ExecutorService executorService = Executors.newCachedThreadPool();
   private volatile Future<String> cache;
   private volatile long lastModified;
+  private String contextRoot = "/";
 
   public BundleContext getBundleContext() {
     return bundleContext;
@@ -154,7 +156,7 @@ public class RequireJsConfigManager {
     if ( shouldInvalidate ) {
       synchronized ( configMap ) {
         cache = executorService.submit( new RebuildCacheCallable( new HashMap<Long, JSONObject>( this.configMap ),
-          new ArrayList<RequireJsConfiguration>( requireConfigMap.values() ) ) );
+            new ArrayList<RequireJsConfiguration>( requireConfigMap.values() ) ) );
         lastModified = System.currentTimeMillis();
       }
     }
@@ -163,14 +165,25 @@ public class RequireJsConfigManager {
   public String getRequireJsConfig() {
     Future<String> cache = null;
     String result = null;
-    while ( result == null || cache != this.cache ) {
+    int tries = 3;
+    Exception lastException = null;
+    while ( tries-- > 0 && ( result == null || cache != this.cache ) ) {
       cache = this.cache;
       try {
         result = cache.get();
       } catch ( InterruptedException e ) {
         // ignore
       } catch ( ExecutionException e ) {
+        lastException = e;
         invalidateCache( true );
+      }
+    }
+    if ( result == null ) {
+      result = "// Error computing RequireJS Config: ";
+      if ( lastException != null ) {
+        result += lastException.getCause().getMessage();
+      } else {
+        result += "unknown error";
       }
     }
     return result;
@@ -202,5 +215,16 @@ public class RequireJsConfigManager {
     }
     updateBundleContext( bundleContext.getBundle() );
     invalidateCache( true );
+  }
+
+  public String getContextRoot() {
+    return this.contextRoot;
+  }
+
+  public void setContextRoot( String contextRoot ) {
+    // ensure that the given string is properly bounded with slashes
+    contextRoot = ( contextRoot.startsWith( "/" ) == false ) ? "/" + contextRoot : contextRoot;
+    contextRoot = ( contextRoot.endsWith( "/" ) == false ) ? contextRoot + "/" : contextRoot;
+    this.contextRoot = contextRoot;
   }
 }

@@ -86,11 +86,14 @@ public class RequireJsConfigServlet extends HttpServlet {
     PrintWriter printWriter = new PrintWriter( resp.getOutputStream() );
     try {
       printWriter.write( requireJs );
-      printWriter.write( "\nvar CONTEXT_PATH = '/';\n" );
+      printWriter.write( "\nif(typeof CONTEXT_PATH == 'undefined'){\n" );
+      printWriter.write( "\twindow.CONTEXT_PATH = '/';\n" );
+      printWriter.write( "}\n" );
       printWriter.write( "\nrequireCfg = " );
       printWriter.write( manager.getRequireJsConfig() );
       printWriter.write( "\n" );
       String config = req.getParameter( "config" );
+      printWriter.write( "requireCfg.baseUrl = '" + manager.getContextRoot() + "';\n" );
       if ( config == null || Boolean.valueOf( config ) ) {
         printWriter.write( "require.config(requireCfg);" );
       }

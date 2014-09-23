@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-           xmlns:cm="http://aries.apache.org/blueprint/xmlns/blueprint-cm/v1.1.0"
-           xmlns:cxf="http://cxf.apache.org/blueprint/core"
+           xmlns:cm="http://aries.apache.org/blueprint/xmlns/blueprint-cm/v1.1.0" xmlns:cxf="http://cxf.apache.org/blueprint/core"
            xmlns:jaxrs="http://cxf.apache.org/blueprint/jaxrs" xmlns:jaxws="http://cxf.apache.org/blueprint/jaxws"
            xsi:schemaLocation="
   http://www.osgi.org/xmlns/blueprint/v1.0.0 http://www.osgi.org/xmlns/blueprint/v1.0.0/blueprint.xsd
@@ -12,24 +11,15 @@
   http://camel.apache.org/schema/blueprint http://camel.apache.org/schema/blueprint/camel-blueprint.xsd
   http://aries.apache.org/blueprint/xmlns/blueprint-cm/v1.1.0 http://aries.apache.org/schemas/blueprint-cm/blueprint-cm-1.1.0.xsd
   ">
+  <bean id="webjarsDeploymentListener" class="org.pentaho.osgi.platform.webjars.PentahoWebjarsTransformer" />
 
-  <cm:property-placeholder persistent-id="org.pentaho.requirejs" update-strategy="reload">
-    <cm:default-properties>
-      <cm:property name="context.root" value="/"/>
-    </cm:default-properties>
-  </cm:property-placeholder>
+  <service ref="webjarsDeploymentListener" auto-export="interfaces" />
 
-  <bean id="configManager" class="org.pentaho.js.require.RequireJsConfigManager" scope="singleton" init-method="init">
-    <property name="bundleContext" ref="blueprintBundleContext"/>
-    <property name="contextRoot" value="${context.root}"/>
-  </bean>
-
-  <service interface="javax.servlet.http.HttpServlet">
+  <service id="webjarsURLHandler" interface="org.osgi.service.url.URLStreamHandlerService">
     <service-properties>
-      <entry key="alias" value="/requirejs-manager/js/require-init.js"/>
+      <entry key="url.handler.protocol" value="pentaho-webjars" />
     </service-properties>
-    <bean class="org.pentaho.js.require.RequireJsConfigServlet">
-      <property name="manager" ref="configManager"/>
-    </bean>
+    <bean class="org.pentaho.osgi.platform.webjars.WebjarsUrlHandler"/>
   </service>
+
 </blueprint>

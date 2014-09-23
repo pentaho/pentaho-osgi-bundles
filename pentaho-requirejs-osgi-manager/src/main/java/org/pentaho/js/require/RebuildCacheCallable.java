@@ -64,11 +64,28 @@ public class RebuildCacheCallable implements Callable<String> {
     } );
   }
 
+  private JSONObject toRelativePathedObject( JSONObject jsonObject) {
+
+    jsonObject.keySet();
+    for ( Object key : jsonObject.keySet() ) {
+      Object val = jsonObject.get( key );
+      if ( val instanceof String ) {
+        String strVal = (String) val;
+        if ( strVal.startsWith( "/" ) ) {
+          strVal = strVal.substring( 1 );
+          jsonObject.put( key, strVal );
+        }
+      }
+
+    }
+    return jsonObject;
+  }
+
   private Object merge( String key, Object value1, Object value2 ) throws Exception {
     if ( value1 == null ) {
-      return value2;
+      return value2 instanceof JSONObject ? toRelativePathedObject( (JSONObject) value2 ) : value2;
     } else if ( value2 == null ) {
-      return value1;
+      return value2 instanceof JSONObject ? toRelativePathedObject( (JSONObject) value1 ) : value1;
     } else {
       if ( value1 instanceof JSONObject ) {
         if ( value2 instanceof JSONObject ) {
@@ -129,10 +146,10 @@ public class RebuildCacheCallable implements Callable<String> {
       result = merge( result, configMap.get( bundleId ) );
     }
     if ( !result.containsKey( "paths" ) ) {
-      result.put( "paths", new JSONObject(  ) );
+      result.put( "paths", new JSONObject() );
     }
     if ( !result.containsKey( "shim" ) ) {
-      result.put( "shim", new JSONObject(  ) );
+      result.put( "shim", new JSONObject() );
     }
     StringBuilder sb = new StringBuilder( result.toJSONString() );
     sb.append( ";" );

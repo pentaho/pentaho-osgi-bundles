@@ -1,0 +1,143 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>pentaho</groupId>
+  <artifactId>pentaho-osgi-bundles</artifactId>
+  <packaging>pom</packaging>
+  <version>1.0-SNAPSHOT</version>
+
+  <parent>
+    <groupId>org.pentaho</groupId>
+    <artifactId>pentaho-ce-jar-parent-pom</artifactId>
+    <version>RELEASE</version>
+  </parent>
+
+  <name>Pentaho Community Edition Project: ${project.artifactId}</name>
+  <description>Parent project for Pentaho OSGI Bundles</description>
+  <url>http://www.pentaho.com</url>
+
+  <licenses>
+    <license>
+      <name>Apache License, Version 2.0</name>
+      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <distribution>repo</distribution>
+      <comments>A business-friendly OSS license</comments>
+    </license>
+  </licenses>
+
+  <developers>
+    <developer>
+      <name>Bryan Rosander</name>
+      <email>brosander@pentaho.com</email>
+      <roles>
+        <role>developer</role>
+      </roles>
+    </developer>
+    <developer>
+        <name>Nick Baker</name>
+        <email>nbaker@pentaho.com</email>
+        <roles>
+            <role>developer</role>
+        </roles>
+    </developer>
+  </developers>
+
+  <properties>
+    <junit.version>4.11</junit.version>
+    <mockito.version>1.9.5</mockito.version>
+    <karaf.version>2.3.5</karaf.version>
+    <felix.version>4.0.3</felix.version>
+    <cxf.version>2.6.15</cxf.version>
+    <guava.version>17.0</guava.version>
+    <json-simple.version>1.1.1</json-simple.version>
+    <pentaho.resolve.repo>http://nexus.pentaho.org/content/groups/omni/</pentaho.resolve.repo>
+    <pentaho.artifactory.resolve.repo>http://repository.pentaho.org/artifactory/repo</pentaho.artifactory.resolve.repo>
+    <pentaho.artifactory.resolve.repo.2>http://repo.pentaho.org/artifactory/repo</pentaho.artifactory.resolve.repo.2>
+
+    <pentaho.resolve.repo>http://nexus.pentaho.org/content/groups/omni/</pentaho.resolve.repo>
+    <pentaho.public.release.repo>http://nexus.pentaho.org/content/repositories/public-release/</pentaho.public.release.repo>
+
+    <!--<pentaho.public.snapshot.repo>http://nexus.pentaho.org/content/repositories/public-snapshot/</pentaho.public.snapshot.repo>-->
+    <pentaho.public.snapshot.repo>http://repository.pentaho.org:8082/artifactory/pentaho</pentaho.public.snapshot.repo>
+    <!--<pentaho.public.snapshot.repo>file:///Users/nbaker/.m2/repository</pentaho.public.snapshot.repo>-->
+
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+  </properties>
+  
+  <modules>
+      <module>angular-bundle</module>
+      <module>pentaho-i18n-bundle</module>
+      <module>pentaho-i18n-webservice-bundle</module>
+      <module>pentaho-platform-plugin-deployer</module>
+      <module>pentaho-requirejs-osgi-manager</module>
+      <module>pentaho-server-bundle</module>
+      <module>pentaho-webjars-deployer</module>
+  </modules>
+  
+  <scm>
+    <connection>scm:git:git@github.com:${github.user}/${project.artifactId}.git</connection>
+    <url>scm:git:git@github.com:${github.user}/${project.artifactId}.git</url>
+    <developerConnection>scm:git:git@github.com:${github.user}/${project.artifactId}.git</developerConnection>
+    <tag>HEAD</tag>
+  </scm>
+
+
+  <!-- this is for bootstrapping only; you should really just add this to your settings.xml -->
+  <repositories>
+    <repository>
+      <id>pentaho.resolve.repo</id>
+      <name>Pentaho Group Resolve Repository</name>
+      <url>http://nexus.pentaho.org/content/groups/omni/</url>
+      <releases>
+        <updatePolicy>always</updatePolicy>
+        <checksumPolicy>fail</checksumPolicy>
+      </releases>
+      <snapshots>
+        <updatePolicy>always</updatePolicy>
+        <checksumPolicy>fail</checksumPolicy>
+      </snapshots>
+    </repository>
+    <repository>
+      <id>repo.pentaho.org</id>
+      <name>repo.pentaho.org</name>
+      <url>http://repository.pentaho.org/artifactory/pentaho</url>
+    </repository>
+  </repositories>
+
+  <build>
+    <finalName>${project.artifactId}</finalName>
+    <plugins>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>cobertura-maven-plugin</artifactId>
+        <version>2.6</version>
+        <configuration>
+          <formats>
+            <format>html</format>
+            <format>xml</format>
+          </formats>
+          <check>
+            <branchRate>80</branchRate>
+            <lineRate>90</lineRate>
+            <haltOnFailure>false</haltOnFailure>
+            <totalBranchRate>80</totalBranchRate>
+            <totalLineRate>90</totalLineRate>
+            <packageLineRate>90</packageLineRate>
+            <packageBranchRate>80</packageBranchRate>
+          </check>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.0</version>
+        <configuration>
+          <source>1.6</source>
+          <target>1.6</target>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>

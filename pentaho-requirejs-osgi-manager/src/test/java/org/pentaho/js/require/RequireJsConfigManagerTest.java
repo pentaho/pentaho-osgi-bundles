@@ -79,7 +79,7 @@ public class RequireJsConfigManagerTest {
   @Test
   public void testUpdateBundleContext() throws IOException, ParseException {
     when( bundle.getResource( RequireJsConfigManager.REQUIRE_JSON_PATH ) ).thenReturn( this.getClass().getClassLoader()
-      .getResource( "org/pentaho/js/require/RequireJsConfigManagerTest.testUpdateBundleContext.json" ) );
+        .getResource( "org/pentaho/js/require/RequireJsConfigManagerTest.testUpdateBundleContext.json" ) );
     assertTrue( requireJsConfigManager.updateBundleContext( bundle ) );
   }
 
@@ -87,7 +87,7 @@ public class RequireJsConfigManagerTest {
   public void testUpdateBundleContextStopped() throws IOException, ParseException {
     when( bundle.getBundleId() ).thenReturn( 1L );
     when( bundle.getResource( RequireJsConfigManager.REQUIRE_JSON_PATH ) ).thenReturn( this.getClass().getClassLoader()
-      .getResource( "org/pentaho/js/require/RequireJsConfigManagerTest.testUpdateBundleContextStopped.json" ) );
+        .getResource( "org/pentaho/js/require/RequireJsConfigManagerTest.testUpdateBundleContextStopped.json" ) );
     requireJsConfigManager.updateBundleContext( bundle );
     assertTrue( requireJsConfigManager.updateBundleContextStopped( bundle ) );
   }
@@ -110,7 +110,7 @@ public class RequireJsConfigManagerTest {
   @Test
   public void testGetRequireJsConfig() throws IOException, ParseException {
     when( bundle.getResource( RequireJsConfigManager.REQUIRE_JSON_PATH ) ).thenReturn( this.getClass().getClassLoader()
-      .getResource( "org/pentaho/js/require/RequireJsConfigManagerTest.testGetRequireJsConfig.json" ) );
+        .getResource( "org/pentaho/js/require/RequireJsConfigManagerTest.testGetRequireJsConfig.json" ) );
     requireJsConfigManager.updateBundleContext( bundle );
     requireJsConfigManager.invalidateCache( true );
     String config = requireJsConfigManager.getRequireJsConfig();
@@ -118,19 +118,53 @@ public class RequireJsConfigManagerTest {
       config = config.substring( 0, config.length() - 1 );
     }
     RebuildCacheCallableTest.testEquals( JSONValue.parse( new InputStreamReader( this.getClass().getClassLoader()
-      .getResourceAsStream( "org/pentaho/js/require/RequireJsConfigManagerTest.testGetRequireJsConfig.json" ) ) ),
-      JSONValue.parse( config ) );
+            .getResourceAsStream( "org/pentaho/js/require/RequireJsConfigManagerTest.testGetRequireJsConfig.json" ) ) ),
+        JSONValue.parse( config ) );
+  }
+
+  @Test
+  /**
+   * Ensure that all paths provided in absolute form are converted to relative.
+   */
+  public void testGetRequireJsConfigRel() throws IOException, ParseException {
+    when( bundle.getResource( RequireJsConfigManager.REQUIRE_JSON_PATH ) ).thenReturn( this.getClass().getClassLoader()
+        .getResource( "org/pentaho/js/require/RequireJsConfigManagerTest.testGetRequireJsConfigRel.abs.json" ) );
+    requireJsConfigManager.updateBundleContext( bundle );
+    requireJsConfigManager.invalidateCache( true );
+    String config = requireJsConfigManager.getRequireJsConfig();
+    if ( config.endsWith( ";" ) ) {
+      config = config.substring( 0, config.length() - 1 );
+    }
+
+    RebuildCacheCallableTest.testEquals( JSONValue.parse( new InputStreamReader( this.getClass().getClassLoader()
+            .getResourceAsStream(
+                "org/pentaho/js/require/RequireJsConfigManagerTest.testGetRequireJsConfigRel.rel.json" ) ) ),
+        JSONValue.parse( config ) );
   }
 
   @Test
   public void testExternalResources() throws IOException, ParseException {
-    when( bundle.getResource( RequireJsConfigManager.EXTERNAL_RESOURCES_JSON_PATH ) ).thenReturn( this.getClass().getClassLoader()
-      .getResource( "org/pentaho/js/require/RequireJsConfigManagerTest.testExternalResources.json" ) );
+    when( bundle.getResource( RequireJsConfigManager.EXTERNAL_RESOURCES_JSON_PATH ) )
+        .thenReturn( this.getClass().getClassLoader()
+            .getResource( "org/pentaho/js/require/RequireJsConfigManagerTest.testExternalResources.json" ) );
     requireJsConfigManager.updateBundleContext( bundle );
-    when( bundle.getResource( "/common-ui/resources/web/common-ui-require-js-cfg.js" ) ).thenReturn( this.getClass().getClassLoader()
-      .getResource( "org/pentaho/js/require/RequireJsConfigManagerTest.testExternalResources.internal" ) );
+    when( bundle.getResource( "/common-ui/resources/web/common-ui-require-js-cfg.js" ) )
+        .thenReturn( this.getClass().getClassLoader()
+            .getResource( "org/pentaho/js/require/RequireJsConfigManagerTest.testExternalResources.internal" ) );
     requireJsConfigManager.invalidateCache( true );
     String config = requireJsConfigManager.getRequireJsConfig();
     assertTrue( config.contains( "internal_test" ) );
   }
+
+
+  @Test
+  public void testContextRoot() throws IOException, ParseException {
+    String[] contextPermutations = new String[] { "fake/root", "/fake/root", "fake/root/" };
+    for ( String contextPermutation : contextPermutations ) {
+      requireJsConfigManager.setContextRoot( contextPermutation );
+      assertEquals( "/fake/root/", requireJsConfigManager.getContextRoot() );
+    }
+  }
+
+
 }
