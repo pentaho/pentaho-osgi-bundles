@@ -105,15 +105,8 @@ public class WebjarsURLConnection extends URLConnection {
       version = parts[ 2 ];
 
       // version needs to be coerced into OSGI form Major.Minor.Patch.Classifier
-      // TODO: find or create a versioning class
-      String classifier = null;
-      if ( version.contains( "-" ) ) {
-        classifier = version.substring( version.indexOf( "-" ) + 1 );
-        // escape the dots
-        classifier = classifier.replaceAll( "\\.","_" );
-      }
-      version = version.substring( 0, version.indexOf( "-" ) );
-      Pattern pattern = Pattern.compile( "([0-9]+)(?:\\.([0-9]*)(?:\\.([0-9]*))?)?" );
+      // TODO: Extract to a version class
+      Pattern pattern = Pattern.compile( "([0-9]+)?(?:\\.([0-9]*)(?:\\.([0-9]*))?)?[\\.-]?(.*)" );
       Matcher m = pattern.matcher( version );
       if ( m.matches() == false ) {
         version = "0.0.0";
@@ -121,17 +114,35 @@ public class WebjarsURLConnection extends URLConnection {
         String major = m.group( 1 );
         String minor = m.group( 2 );
         String patch = m.group( 3 );
-
-        StringBuilder sb = new StringBuilder( major );
-        if ( minor != null ) {
-          sb.append( "." ).append( minor );
-        }
-        if ( patch != null ) {
-          sb.append( "." ).append( patch );
-        }
+        String classifier = m.group( 4 );
+        // classifiers cannot have a '.'
         if ( classifier != null ) {
-          sb.append( "." ).append( classifier );
+          classifier = classifier.replaceAll( "\\.", "_" );
         }
+
+        StringBuilder sb = new StringBuilder();
+        if ( major != null ) {
+          sb.append( major );
+
+          if ( minor != null ) {
+            sb.append( "." ).append( minor );
+
+            if ( patch != null ) {
+              sb.append( "." ).append( patch );
+            }
+          }
+
+          if ( classifier != null ) {
+            sb.append( "." ).append( classifier );
+          }
+        } else {
+          // likely something like TRUNK-SNAPSHOT
+          sb.append( "0.0.0" );
+          if ( classifier != null ) {
+            sb.append( "." ).append( classifier );
+          }
+        }
+
         version = sb.toString();
       }
 
