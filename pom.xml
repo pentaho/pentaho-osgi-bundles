@@ -70,6 +70,8 @@
       <module>angular-bundle</module>
       <module>pentaho-i18n-bundle</module>
       <module>pentaho-i18n-webservice-bundle</module>
+      <module>pentaho-notification-bundle</module>
+      <module>pentaho-notification-webservice-bundle</module>
       <module>pentaho-platform-plugin-deployer</module>
       <module>pentaho-requirejs-osgi-manager</module>
       <module>pentaho-server-bundle</module>
