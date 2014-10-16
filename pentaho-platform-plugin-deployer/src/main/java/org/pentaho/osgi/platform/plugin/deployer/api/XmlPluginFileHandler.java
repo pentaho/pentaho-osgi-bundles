@@ -27,9 +27,14 @@ import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
 
-import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathFactory;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -39,44 +44,40 @@ import java.util.Map;
  * Created by bryan on 8/26/14.
  */
 public abstract class XmlPluginFileHandler implements PluginFileHandler {
-  private final String[] interestedPath;
+  private final String xpath;
 
-  protected XmlPluginFileHandler( String... interestedPath ) {
-    this.interestedPath = interestedPath;
+  protected XmlPluginFileHandler( String xpath ) {
+    this.xpath = xpath;
   }
 
   @Override public void handle( String relativePath, File file, PluginMetadata pluginMetadata )
     throws PluginHandlingException {
+    FileInputStream fileInputStream = null;
     try {
-      handle( relativePath, getNodes( DocumentBuilderFactory.newInstance().newDocumentBuilder().parse( file ), 0 ),
-        pluginMetadata );
+      XPath xPath = XPathFactory.newInstance().newXPath();
+      fileInputStream = new FileInputStream( file );
+      InputSource inputSource = new InputSource( fileInputStream );
+      NodeList nodeList = (NodeList) xPath.evaluate( xpath, inputSource, XPathConstants.NODESET );
+      List<Node> nodes = new ArrayList<Node>( nodeList.getLength() );
+      for ( int i = 0; i < nodeList.getLength(); i++ ) {
+        nodes.add( nodeList.item( i ) );
+      }
+      handle( relativePath, nodes, pluginMetadata );
     } catch ( Exception e ) {
       throw new PluginHandlingException( e );
+    } finally {
+      if ( fileInputStream != null ) {
+        try {
+          fileInputStream.close();
+        } catch ( IOException e ) {
+          //Ignore
+        }
+      }
     }
   }
 
   protected abstract void handle( String relativePath, List<Node> nodes, PluginMetadata pluginMetadata )
     throws PluginHandlingException;
-
-  protected List<Node> getNodes( Node node, int startIndex ) {
-    List<Node> result = new ArrayList<Node>();
-    for ( String part : interestedPath ) {
-      NodeList nodeList = node.getChildNodes();
-      if ( nodeList != null ) {
-        for ( int i = 0; i < nodeList.getLength(); i++ ) {
-          Node potential = nodeList.item( i );
-          if ( part.equals( potential.getNodeName() ) ) {
-            if ( startIndex == interestedPath.length - 1 ) {
-              result.add( nodeList.item( i ) );
-            } else {
-              result.addAll( getNodes( nodeList.item( i ), startIndex + 1 ) );
-            }
-          }
-        }
-      }
-    }
-    return result;
-  }
 
   protected Map<String, String> getAttributes( Node node ) {
     Map<String, String> result = new HashMap<String, String>();

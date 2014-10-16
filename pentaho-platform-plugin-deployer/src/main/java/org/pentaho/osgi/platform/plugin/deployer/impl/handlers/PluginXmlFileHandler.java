@@ -33,8 +33,8 @@ import java.util.List;
  * Created by bryan on 8/29/14.
  */
 public abstract class PluginXmlFileHandler extends XmlPluginFileHandler {
-  public PluginXmlFileHandler( String... interestedPath ) {
-    super( interestedPath );
+  public PluginXmlFileHandler( String xpath ) {
+    super( xpath );
   }
   @Override public boolean handles( String fileName ) {
     if ( fileName != null ) {
