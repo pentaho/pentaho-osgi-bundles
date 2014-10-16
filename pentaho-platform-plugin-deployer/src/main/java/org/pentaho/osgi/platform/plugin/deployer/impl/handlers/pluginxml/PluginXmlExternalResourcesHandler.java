@@ -45,7 +45,7 @@ public class PluginXmlExternalResourcesHandler extends PluginXmlFileHandler {
   private JSONUtil jsonUtil;
 
   public PluginXmlExternalResourcesHandler() {
-    super( "plugin", "external-resources", "file" );
+    super( "//external-resources/file" );
   }
 
   public void setJsonUtil( JSONUtil jsonUtil ) {

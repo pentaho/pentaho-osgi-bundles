@@ -29,7 +29,6 @@ import org.pentaho.osgi.platform.plugin.deployer.impl.handlers.PluginXmlFileHand
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
-import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
@@ -62,12 +61,12 @@ public class PluginXmlStaticPathsHandler extends PluginXmlFileHandler {
 
   private JSONUtil jsonUtil;
 
-  public void setJsonUtil( JSONUtil jsonUtil ) {
-    this.jsonUtil = jsonUtil;
+  public PluginXmlStaticPathsHandler() {
+    super( "//static-path" );
   }
 
-  public PluginXmlStaticPathsHandler() {
-    super( "plugin", "static-paths", "static-path" );
+  public void setJsonUtil( JSONUtil jsonUtil ) {
+    this.jsonUtil = jsonUtil;
   }
 
   @Override protected void handle( String relativePath, List<Node> nodes, PluginMetadata pluginMetadata )
@@ -75,7 +74,7 @@ public class PluginXmlStaticPathsHandler extends PluginXmlFileHandler {
     String topLevelFolder = relativePath.split( "/" )[ 0 ];
     Document blueprint = pluginMetadata.getBlueprint();
     boolean foundResources = false;
-    Map<String, String> urlToResourceMapping = new HashMap<String, String>(  );
+    Map<String, String> urlToResourceMapping = new HashMap<String, String>();
     for ( Node node : nodes ) {
       Map<String, String> attributes = getAttributes( node );
       String url = attributes.get( "url" );
