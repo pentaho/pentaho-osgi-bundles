@@ -45,6 +45,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
+import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
@@ -229,11 +230,11 @@ public class PluginZipFileProcessor {
       while ( dirStack.size() > 0 ) {
         File currentDir = dirStack.pop();
         String dirName = currentDir.getAbsolutePath().substring( dir.getAbsolutePath().length() ) + "/";
-        if ( dirName.startsWith( "/" ) ) {
+        if ( dirName.startsWith( "/" ) || dirName.startsWith( "\\" ) ) {
           dirName = dirName.substring( 1 );
         }
         if ( dirName.length() > 0 && !createdEntries.contains( dirName ) ) {
-          ZipEntry zipEntry = new ZipEntry( dirName );
+          ZipEntry zipEntry = new ZipEntry( dirName.replaceAll( Pattern.quote("\\"), "/" ) );
           zipOutputStream.putNextEntry( zipEntry );
           zipOutputStream.closeEntry();
         }
@@ -247,7 +248,7 @@ public class PluginZipFileProcessor {
               FileInputStream fileInputStream = null;
               try {
                 fileInputStream = new FileInputStream( childFile );
-                ZipEntry childZipEntry = new ZipEntry( fileName );
+                ZipEntry childZipEntry = new ZipEntry( fileName.replaceAll( Pattern.quote("\\"), "/" ) );
                 zipOutputStream.putNextEntry( childZipEntry );
                 while ( ( len = fileInputStream.read( buffer ) ) != -1 ) {
                   zipOutputStream.write( buffer, 0, len );
