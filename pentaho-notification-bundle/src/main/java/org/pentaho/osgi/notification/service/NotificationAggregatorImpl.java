@@ -95,7 +95,13 @@ public class NotificationAggregatorImpl implements NotificationAggregator {
 
   @Override public List<NotificationObject> getNotificationsBlocking( Set<String> types, MatchCondition matchCondition,
                                                                       long maxBlockTime ) {
-    long endTime = System.currentTimeMillis() + maxBlockTime;
+    long endTime = 0;
+    if ( maxBlockTime > 0 ) {
+      endTime = System.currentTimeMillis() + maxBlockTime;
+    }
+    if ( endTime <= 0 ) {
+      endTime = Long.MAX_VALUE;
+    }
     FilteringQueuedNotificationListenerImpl filteringNotificationListener =
       new FilteringQueuedNotificationListenerImpl( types, matchCondition );
     try {
