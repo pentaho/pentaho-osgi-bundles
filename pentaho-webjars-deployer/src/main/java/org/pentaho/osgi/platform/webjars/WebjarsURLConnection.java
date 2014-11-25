@@ -19,6 +19,7 @@ package org.pentaho.osgi.platform.webjars;
 
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.osgi.framework.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -132,7 +133,7 @@ public class WebjarsURLConnection extends URLConnection {
             }
           }
 
-          if ( classifier != null ) {
+          if ( !StringUtils.isEmpty( classifier ) ) {
             sb.append( "." ).append( classifier );
           }
         } else {
