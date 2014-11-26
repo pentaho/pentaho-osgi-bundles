@@ -19,8 +19,8 @@ package org.pentaho.osgi.platform.webjars;
 
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
 import org.osgi.framework.Constants;
+import org.osgi.framework.Version;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -97,55 +97,16 @@ public class WebjarsURLConnection extends URLConnection {
   private void transform( URL url, PipedOutputStream pipedOutputStream ) throws IOException {
 
     String artifactName = "unknown";
-    String version = "0.0.0";
+    Version version = new Version( 0, 0, 0 );
     if ( url.getProtocol().equals( "file" ) ) {
       artifactName = url.getFile();
     } else if ( url.getProtocol().equals( "mvn" ) ) {
       String[] parts = url.getPath().split( "/" );
       artifactName = parts[ 1 ];
-      version = parts[ 2 ];
+      String versionPart = parts[ 2 ];
 
       // version needs to be coerced into OSGI form Major.Minor.Patch.Classifier
-      // TODO: Extract to a version class
-      Pattern pattern = Pattern.compile( "([0-9]+)?(?:\\.([0-9]*)(?:\\.([0-9]*))?)?[\\.-]?(.*)" );
-      Matcher m = pattern.matcher( version );
-      if ( m.matches() == false ) {
-        version = "0.0.0";
-      } else {
-        String major = m.group( 1 );
-        String minor = m.group( 2 );
-        String patch = m.group( 3 );
-        String classifier = m.group( 4 );
-        // classifiers cannot have a '.'
-        if ( classifier != null ) {
-          classifier = classifier.replaceAll( "\\.", "_" );
-        }
-
-        StringBuilder sb = new StringBuilder();
-        if ( major != null ) {
-          sb.append( major );
-
-          if ( minor != null ) {
-            sb.append( "." ).append( minor );
-
-            if ( patch != null ) {
-              sb.append( "." ).append( patch );
-            }
-          }
-
-          if ( !StringUtils.isEmpty( classifier ) ) {
-            sb.append( "." ).append( classifier );
-          }
-        } else {
-          // likely something like TRUNK-SNAPSHOT
-          sb.append( "0.0.0" );
-          if ( classifier != null ) {
-            sb.append( "." ).append( classifier );
-          }
-        }
-
-        version = sb.toString();
-      }
+      version = VersionParser.parseVersion( versionPart );
 
     }
 
@@ -162,13 +123,14 @@ public class WebjarsURLConnection extends URLConnection {
             "org.osgi.service.http,org.apache.felix.http.api,org.ops4j.pax.web.extender.whiteboard.runtime," +
                 "org.ops4j.pax.web.extender.whiteboard" );
 
-    manifest.getMainAttributes().put( new Attributes.Name( Constants.BUNDLE_VERSION ), version );
+    manifest.getMainAttributes().put( new Attributes.Name( Constants.BUNDLE_VERSION ), version.toString() );
 
     JarOutputStream jarOutputStream = new JarOutputStream( pipedOutputStream, manifest );
 
     ZipEntry entry;
     String moduleName = "unknown";
     String moduleVersion = "unknown";
+    boolean foundRJs = false;
 
     while ( ( entry = jarInputStream.getNextJarEntry() ) != null ) {
       String name = entry.getName();
@@ -182,7 +144,7 @@ public class WebjarsURLConnection extends URLConnection {
           logger.error( "Webjars structure isn't right" );
           continue;
         }
-
+        foundRJs = true;
         logger.info( "found WEBJARS config" );
         moduleName = matcher.group( 1 );
         moduleVersion = matcher.group( 2 );
@@ -208,17 +170,18 @@ public class WebjarsURLConnection extends URLConnection {
       }
 
     }
-    // Add Blueprint file
-
-    ZipEntry newEntry = new ZipEntry( "OSGI-INF/blueprint/blueprint.xml" );
-    String blueprintTemplate = IOUtils.toString( getClass().getResourceAsStream(
-        "/org/pentaho/osgi/platform/webjars/blueprint-template.xml" ) );
-    blueprintTemplate = blueprintTemplate.replaceAll( "\\{path\\}",
-        "META-INF/resources/webjars/" + moduleName + "/" + moduleVersion );
-    blueprintTemplate = blueprintTemplate.replace( "{versioned_name}", moduleName + "/" + moduleVersion );
-    blueprintTemplate = blueprintTemplate.replace( "{name}", moduleName );
-    jarOutputStream.putNextEntry( newEntry );
-    jarOutputStream.write( blueprintTemplate.getBytes( "UTF-8" ) );
+    // Add Blueprint file if we found a require-js configuration.
+    if( foundRJs ) {
+      ZipEntry newEntry = new ZipEntry( "OSGI-INF/blueprint/blueprint.xml" );
+      String blueprintTemplate = IOUtils.toString( getClass().getResourceAsStream(
+          "/org/pentaho/osgi/platform/webjars/blueprint-template.xml" ) );
+      blueprintTemplate = blueprintTemplate.replaceAll( "\\{path\\}",
+          "META-INF/resources/webjars/" + moduleName + "/" + moduleVersion );
+      blueprintTemplate = blueprintTemplate.replace( "{versioned_name}", moduleName + "/" + moduleVersion );
+      blueprintTemplate = blueprintTemplate.replace( "{name}", moduleName );
+      jarOutputStream.putNextEntry( newEntry );
+      jarOutputStream.write( blueprintTemplate.getBytes( "UTF-8" ) );
+    }
     // Process webjars into our form
     jarOutputStream.closeEntry();
 
