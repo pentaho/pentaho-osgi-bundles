@@ -1,24 +1,19 @@
-/*! ******************************************************************************
+/*
+ * This program is free software; you can redistribute it and/or modify it under the
+ * terms of the GNU Lesser General Public License, version 2.1 as published by the Free Software
+ * Foundation.
  *
- * Pentaho Data Integration
+ * You should have received a copy of the GNU Lesser General Public License along with this
+ * program; if not, you can obtain a copy at http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html
+ * or from the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * Copyright (C) 2002-2014 by Pentaho : http://www.pentaho.com
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Lesser General Public License for more details.
  *
- *******************************************************************************
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with
- * the License. You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- ******************************************************************************/
+ * Copyright 2014 Pentaho Corporation. All rights reserved.
+ */
 
 package org.pentaho.osgi.i18n.webservice;
 
@@ -27,12 +22,18 @@ import org.pentaho.osgi.i18n.LocalizationService;
 import javax.jws.WebService;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.ListResourceBundle;
 import java.util.Locale;
 import java.util.ResourceBundle;
+import java.util.regex.Pattern;
 
 /**
  * Created by bryan on 9/5/14.
@@ -47,6 +48,14 @@ public class LocalizationWebservice implements LocalizationService {
     return localizationService.getResourceBundle( key, name, locale );
   }
 
+  @Override public List<ResourceBundle> getResourceBundles( Pattern keyRegex, Pattern nameRegex, Locale locale ) {
+    return localizationService.getResourceBundles( keyRegex, nameRegex, locale );
+  }
+
+  @Override public List<ResourceBundle> getResourceBundles( Pattern keyRegex, Locale locale ) {
+    return localizationService.getResourceBundles( keyRegex, locale );
+  }
+
   public void setLocalizationService( LocalizationService localizationService ) {
     this.localizationService = localizationService;
   }
@@ -55,7 +64,10 @@ public class LocalizationWebservice implements LocalizationService {
   @Path( "/{key}/{name}/{language}" )
   public ResourceBundle getResourceBundleService( @PathParam( "key" ) String key, @PathParam( "name" ) String name,
                                                   @PathParam( "language" ) String localeString ) {
-    name = name.replaceAll( "\\.", "/" );
+    return getResourceBundle( key, name.replaceAll( "\\.", "/" ), getLocale( localeString ) );
+  }
+
+  private static Locale getLocale( String localeString ) {
     String[] splitLocale;
     if ( localeString == null || localeString.trim().length() == 0 ) {
       splitLocale = new String[] { };
@@ -70,6 +82,33 @@ public class LocalizationWebservice implements LocalizationService {
     } else {
       locale = Locale.getDefault();
     }
-    return getResourceBundle( key, name, locale );
+    return locale;
+  }
+
+  @POST
+  @Path( "/wildcard" )
+  public ResourceBundle getResourceBundle( ResourceBundleRequest resourceBundleRequest ) {
+    final List<ResourceBundle> resourceBundles = new ArrayList<ResourceBundle>(  );
+    for ( ResourceBundleWildcard resourceBundleWildcard : resourceBundleRequest.getWildcards() ) {
+      Pattern keyPattern = Pattern.compile( resourceBundleWildcard.getKeyRegex() );
+      if ( resourceBundleWildcard.getNameRegex() != null ) {
+        Pattern namePattern = Pattern.compile( resourceBundleWildcard.getNameRegex() );
+        resourceBundles.addAll(
+          getResourceBundles( keyPattern, namePattern, getLocale( resourceBundleRequest.getLocale() ) ) );
+      } else {
+        resourceBundles.addAll( getResourceBundles( keyPattern, getLocale( resourceBundleRequest.getLocale() ) ) );
+      }
+    }
+    return new ListResourceBundle() {
+      @Override protected Object[][] getContents() {
+        List<Object[]> entries = new ArrayList<Object[]>();
+        for ( ResourceBundle resourceBundle : resourceBundles ) {
+          for ( String key : Collections.list( resourceBundle.getKeys() ) ) {
+            entries.add( new Object[]{ key, resourceBundle.getString( key ) } );
+          }
+        }
+        return entries.toArray( new Object[entries.size()][] );
+      }
+    };
   }
 }

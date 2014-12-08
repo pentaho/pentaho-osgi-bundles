@@ -1,35 +1,37 @@
-/*! ******************************************************************************
+/*
+ * This program is free software; you can redistribute it and/or modify it under the
+ * terms of the GNU Lesser General Public License, version 2.1 as published by the Free Software
+ * Foundation.
  *
- * Pentaho Data Integration
+ * You should have received a copy of the GNU Lesser General Public License along with this
+ * program; if not, you can obtain a copy at http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html
+ * or from the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * Copyright (C) 2002-2014 by Pentaho : http://www.pentaho.com
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Lesser General Public License for more details.
  *
- *******************************************************************************
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with
- * the License. You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- ******************************************************************************/
+ * Copyright 2014 Pentaho Corporation. All rights reserved.
+ */
 
 package org.pentaho.osgi.i18n.webservice;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.pentaho.osgi.i18n.LocalizationService;
 
+import java.util.Arrays;
+import java.util.ListResourceBundle;
 import java.util.Locale;
 import java.util.ResourceBundle;
+import java.util.regex.Pattern;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -82,5 +84,65 @@ public class LocalizationWebserviceTest {
       .getResourceBundle( eq( key ), eq( name.replaceAll( "\\.", "/" ) ), eq( new Locale( "en", "US" ) ) ) )
       .thenReturn( resourceBundle );
     assertEquals( resourceBundle, localizationWebservice.getResourceBundleService( key, name, localeString ) );
+  }
+
+  @Test
+  public void testWebserviceWildcard() {
+    final String propKey1 = "prop-1";
+    final String propValue1 = "value-1";
+    final String propKey2 = "prop-2";
+    final String propValue2 = "value-2";
+    final String keyRegex1 = "testKey1";
+    final String keyRegex2 = "testKey2";
+    final String nameRegex1 = "testName1";
+    String localeString = "en_US";
+    final ResourceBundle resourceBundle1 = new ListResourceBundle() {
+      @Override protected Object[][] getContents() {
+        return new Object[][]{
+          { propKey1, propValue1 }
+        };
+      }
+    };
+    final ResourceBundle resourceBundle2 = new ListResourceBundle() {
+      @Override protected Object[][] getContents() {
+        return new Object[][]{
+          { propKey2, propValue2 }
+        };
+      }
+    };
+
+    ResourceBundleRequest resourceBundleRequest = new ResourceBundleRequest();
+    resourceBundleRequest.setLocale( localeString );
+    ResourceBundleWildcard resourceBundleWildcard1 = new ResourceBundleWildcard();
+    resourceBundleWildcard1.setKeyRegex( keyRegex1 );
+    resourceBundleWildcard1.setNameRegex( nameRegex1 );
+    ResourceBundleWildcard resourceBundleWildcard2 = new ResourceBundleWildcard();
+    resourceBundleWildcard2.setKeyRegex( keyRegex2 );
+    resourceBundleRequest.setWildcards( Arrays.asList(resourceBundleWildcard1, resourceBundleWildcard2) );
+    when( localizationService.getResourceBundles( any( Pattern.class ), any( Pattern.class ), any( Locale.class ) ) ).thenAnswer(
+      new Answer<Object>() {
+        @Override public Object answer( InvocationOnMock invocation ) throws Throwable {
+          Pattern keyPattern = (Pattern) invocation.getArguments()[0];
+          assertTrue( keyPattern.matcher( keyRegex1 ).matches() );
+          Pattern namePattern = (Pattern) invocation.getArguments()[1];
+          assertTrue( namePattern.matcher( nameRegex1 ).matches() );
+          Locale locale = (Locale) invocation.getArguments()[2];
+          assertEquals( "en_us", locale.getLanguage() );
+          return Arrays.asList( resourceBundle1 );
+        }
+      } );
+    when( localizationService.getResourceBundles( any( Pattern.class ), any( Locale.class ) ) ).thenAnswer(
+      new Answer<Object>() {
+        @Override public Object answer( InvocationOnMock invocation ) throws Throwable {
+          Pattern keyPattern = (Pattern) invocation.getArguments()[ 0 ];
+          assertTrue( keyPattern.matcher( keyRegex2 ).matches() );
+          Locale locale = (Locale) invocation.getArguments()[ 1 ];
+          assertEquals( "en_us", locale.getLanguage() );
+          return Arrays.asList( resourceBundle2 );
+        }
+      } );
+    ResourceBundle resourceBundle = localizationWebservice.getResourceBundle( resourceBundleRequest );
+    assertEquals( propValue1, resourceBundle.getString( propKey1 ) );
+    assertEquals( propValue2, resourceBundle.getString( propKey2 ) );
   }
 }

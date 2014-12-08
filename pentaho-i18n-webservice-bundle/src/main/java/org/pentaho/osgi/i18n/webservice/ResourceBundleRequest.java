@@ -15,18 +15,32 @@
  * Copyright 2014 Pentaho Corporation. All rights reserved.
  */
 
-package org.pentaho.osgi.i18n;
+package org.pentaho.osgi.i18n.webservice;
 
+import javax.xml.bind.annotation.XmlRootElement;
 import java.util.List;
-import java.util.Locale;
-import java.util.ResourceBundle;
-import java.util.regex.Pattern;
 
 /**
- * Created by bryan on 9/5/14.
+ * Created by bryan on 12/8/14.
  */
-public interface LocalizationService {
-  public ResourceBundle getResourceBundle( String key, String name, Locale locale );
-  public List<ResourceBundle> getResourceBundles( Pattern keyRegex, Pattern nameRegex, Locale locale );
-  public List<ResourceBundle> getResourceBundles( Pattern keyRegex, Locale locale );
+@XmlRootElement
+public class ResourceBundleRequest {
+  private List<ResourceBundleWildcard> wildcards;
+  private String locale;
+
+  public String getLocale() {
+    return locale;
+  }
+
+  public void setLocale( String locale ) {
+    this.locale = locale;
+  }
+
+  public List<ResourceBundleWildcard> getWildcards() {
+    return wildcards;
+  }
+
+  public void setWildcards( List<ResourceBundleWildcard> wildcards ) {
+    this.wildcards = wildcards;
+  }
 }
