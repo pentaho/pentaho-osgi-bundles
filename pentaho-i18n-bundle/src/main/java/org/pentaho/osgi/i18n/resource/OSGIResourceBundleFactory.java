@@ -1,24 +1,19 @@
-/*! ******************************************************************************
+/*
+ * This program is free software; you can redistribute it and/or modify it under the
+ * terms of the GNU Lesser General Public License, version 2.1 as published by the Free Software
+ * Foundation.
  *
- * Pentaho Data Integration
+ * You should have received a copy of the GNU Lesser General Public License along with this
+ * program; if not, you can obtain a copy at http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html
+ * or from the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * Copyright (C) 2002-2014 by Pentaho : http://www.pentaho.com
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Lesser General Public License for more details.
  *
- *******************************************************************************
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with
- * the License. You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- ******************************************************************************/
+ * Copyright 2014 Pentaho Corporation. All rights reserved.
+ */
 
 package org.pentaho.osgi.i18n.resource;
 
@@ -31,12 +26,14 @@ import java.util.ResourceBundle;
  */
 public class OSGIResourceBundleFactory {
   private final int priority;
+  private final String defaultName;
   private final String relativeName;
   private final URL propertyFileUrl;
   private ResourceBundle previousParent = null;
   private OSGIResourceBundle previousResult = null;
 
-  public OSGIResourceBundleFactory( String relativeName, URL propertyFileUrl, int priority ) {
+  public OSGIResourceBundleFactory( String defaultName, String relativeName, URL propertyFileUrl, int priority ) {
+    this.defaultName = defaultName;
     this.priority = priority;
     this.relativeName = relativeName;
     this.propertyFileUrl = propertyFileUrl;
@@ -45,7 +42,7 @@ public class OSGIResourceBundleFactory {
   public synchronized OSGIResourceBundle getBundle( ResourceBundle parent ) throws IOException {
     if ( previousResult == null || previousParent != parent ) {
       previousParent = parent;
-      previousResult = new OSGIResourceBundle( parent, propertyFileUrl );
+      previousResult = new OSGIResourceBundle( defaultName, parent, propertyFileUrl );
     }
     return previousResult;
   }

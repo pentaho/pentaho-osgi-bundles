@@ -1,24 +1,19 @@
-/*! ******************************************************************************
+/*
+ * This program is free software; you can redistribute it and/or modify it under the
+ * terms of the GNU Lesser General Public License, version 2.1 as published by the Free Software
+ * Foundation.
  *
- * Pentaho Data Integration
+ * You should have received a copy of the GNU Lesser General Public License along with this
+ * program; if not, you can obtain a copy at http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html
+ * or from the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- * Copyright (C) 2002-2014 by Pentaho : http://www.pentaho.com
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Lesser General Public License for more details.
  *
- *******************************************************************************
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with
- * the License. You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- ******************************************************************************/
+ * Copyright 2014 Pentaho Corporation. All rights reserved.
+ */
 
 package org.pentaho.osgi.i18n.impl;
 
@@ -43,13 +38,16 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.regex.Pattern;
 
 /**
  * Created by bryan on 9/4/14.
@@ -106,6 +104,7 @@ public class LocalizationManager implements LocalizationService {
             }
             int lastSlash = name.lastIndexOf( '/' );
             String path = "/";
+            String defaultName = name;
             name = name + "*.properties";
             if ( lastSlash >= 0 ) {
               path = name.substring( 0, lastSlash );
@@ -113,7 +112,7 @@ public class LocalizationManager implements LocalizationService {
             }
             Enumeration<URL> urlEnumeration = bundle.findEntries( path, name, false );
             while ( urlEnumeration.hasMoreElements() ) {
-              bundles.add( createResourceBundleFactory( path, urlEnumeration.nextElement(), priority ) );
+              bundles.add( createResourceBundleFactory( defaultName, path, urlEnumeration.nextElement(), priority ) );
             }
           }
           configEntry.put( key, bundles );
@@ -135,7 +134,8 @@ public class LocalizationManager implements LocalizationService {
     }
   }
 
-  private OSGIResourceBundleFactory createResourceBundleFactory( String path, URL url, int priority )
+  private OSGIResourceBundleFactory createResourceBundleFactory( String defaultName, String path, URL url,
+                                                                 int priority )
     throws IOException {
     String name = url.getPath();
     int lastSlash = name.lastIndexOf( '/' );
@@ -143,7 +143,7 @@ public class LocalizationManager implements LocalizationService {
       name = name.substring( lastSlash );
     }
 
-    return new OSGIResourceBundleFactory( path + name, url, priority );
+    return new OSGIResourceBundleFactory( defaultName, path + name, url, priority );
   }
 
   private JSONObject loadJsonObject( URL url ) throws IOException, ParseException {
@@ -189,6 +189,53 @@ public class LocalizationManager implements LocalizationService {
       log.error( e.getMessage(), e );
     }
     return null;
+  }
+
+  @Override public List<ResourceBundle> getResourceBundles( Pattern keyRegex, Pattern nameRegex, Locale locale ) {
+    if ( cache == null ) {
+      return null;
+    }
+    List<ResourceBundle> result = new ArrayList<ResourceBundle>();
+    try {
+      for ( Map.Entry<String, Map<String, OSGIResourceBundle>> entry : cache.get().entrySet() ) {
+        if ( keyRegex.matcher( entry.getKey() ).matches() ) {
+          Map<String, OSGIResourceBundle> factoryMap = entry.getValue();
+          Map<String, OSGIResourceBundle> matchingMap = factoryMap;
+          Set<String> defaultNames = new HashSet<String>();
+          if ( nameRegex != null ) {
+            matchingMap = new HashMap<String, OSGIResourceBundle>();
+            for ( Map.Entry<String, OSGIResourceBundle> factoryEntry : factoryMap.entrySet() ) {
+              OSGIResourceBundle factoryEntryValue = factoryEntry.getValue();
+              String defaultName = factoryEntryValue.getDefaultName();
+              if ( nameRegex.matcher( defaultName ).matches() ) {
+                defaultNames.add( defaultName );
+                matchingMap.put( factoryEntry.getKey(), factoryEntryValue );
+              }
+            }
+          } else {
+            for ( OSGIResourceBundle osgiResourceBundle : factoryMap.values() ) {
+              defaultNames.add( osgiResourceBundle.getDefaultName() );
+            }
+          }
+          for ( String defaultName : defaultNames ) {
+            for ( String candidate : getCandidateNames( defaultName, locale ) ) {
+              OSGIResourceBundle bundle = matchingMap.get( candidate );
+              if ( bundle != null ) {
+                result.add( bundle );
+                continue;
+              }
+            }
+          }
+        }
+      }
+    } catch ( Exception e ) {
+      log.error( e.getMessage(), e );
+    }
+    return result;
+  }
+
+  @Override public List<ResourceBundle> getResourceBundles( Pattern keyRegex, Locale locale ) {
+    return getResourceBundles( keyRegex, null, locale );
   }
 
   private List<String> getCandidateNames( String name, Locale locale ) {

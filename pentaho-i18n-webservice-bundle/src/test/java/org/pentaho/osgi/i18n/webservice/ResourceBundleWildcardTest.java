@@ -15,18 +15,27 @@
  * Copyright 2014 Pentaho Corporation. All rights reserved.
  */
 
-package org.pentaho.osgi.i18n;
+package org.pentaho.osgi.i18n.webservice;
 
-import java.util.List;
-import java.util.Locale;
-import java.util.ResourceBundle;
-import java.util.regex.Pattern;
+import org.junit.Test;
 
-/**
- * Created by bryan on 9/5/14.
- */
-public interface LocalizationService {
-  public ResourceBundle getResourceBundle( String key, String name, Locale locale );
-  public List<ResourceBundle> getResourceBundles( Pattern keyRegex, Pattern nameRegex, Locale locale );
-  public List<ResourceBundle> getResourceBundles( Pattern keyRegex, Locale locale );
+import static org.junit.Assert.*;
+
+public class ResourceBundleWildcardTest {
+
+  @Test
+  public void testSetNameRegex() throws Exception {
+    ResourceBundleWildcard resourceBundleWildcard = new ResourceBundleWildcard();
+    String regex = "test-regex";
+    resourceBundleWildcard.setKeyRegex( regex );
+    assertEquals( regex, resourceBundleWildcard.getKeyRegex() );
+  }
+
+  @Test
+  public void testSetKeyRegex() throws Exception {
+    ResourceBundleWildcard resourceBundleWildcard = new ResourceBundleWildcard();
+    String regex = "test-regex";
+    resourceBundleWildcard.setNameRegex( regex );
+    assertEquals( regex, resourceBundleWildcard.getNameRegex() );
+  }
 }
