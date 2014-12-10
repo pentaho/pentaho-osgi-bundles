@@ -51,16 +51,6 @@
     <cxf.version>2.6.15</cxf.version>
     <guava.version>17.0</guava.version>
     <json-simple.version>1.1.1</json-simple.version>
-    <pentaho.resolve.repo>http://nexus.pentaho.org/content/groups/omni/</pentaho.resolve.repo>
-    <pentaho.artifactory.resolve.repo>http://repository.pentaho.org/artifactory/repo</pentaho.artifactory.resolve.repo>
-    <pentaho.artifactory.resolve.repo.2>http://repo.pentaho.org/artifactory/repo</pentaho.artifactory.resolve.repo.2>
-
-    <pentaho.resolve.repo>http://nexus.pentaho.org/content/groups/omni/</pentaho.resolve.repo>
-    <pentaho.public.release.repo>http://nexus.pentaho.org/content/repositories/public-release/</pentaho.public.release.repo>
-
-    <!--<pentaho.public.snapshot.repo>http://nexus.pentaho.org/content/repositories/public-snapshot/</pentaho.public.snapshot.repo>-->
-    <pentaho.public.snapshot.repo>http://repository.pentaho.org:8082/artifactory/pentaho</pentaho.public.snapshot.repo>
-    <!--<pentaho.public.snapshot.repo>file:///Users/nbaker/.m2/repository</pentaho.public.snapshot.repo>-->
 
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -85,6 +75,8 @@
         <module>pentaho-requirejs-osgi-manager</module>
         <module>pentaho-server-bundle</module>
         <module>pentaho-webjars-deployer</module>
+        <module>pentaho-osgi-utils-api</module>
+        <module>pentaho-osgi-utils-impl</module>
       </modules>
     </profile>
   </profiles>
@@ -96,28 +88,6 @@
     <tag>HEAD</tag>
   </scm>
 
-
-  <!-- this is for bootstrapping only; you should really just add this to your settings.xml -->
-  <repositories>
-    <repository>
-      <id>pentaho.resolve.repo</id>
-      <name>Pentaho Group Resolve Repository</name>
-      <url>http://nexus.pentaho.org/content/groups/omni/</url>
-      <releases>
-        <updatePolicy>always</updatePolicy>
-        <checksumPolicy>fail</checksumPolicy>
-      </releases>
-      <snapshots>
-        <updatePolicy>always</updatePolicy>
-        <checksumPolicy>fail</checksumPolicy>
-      </snapshots>
-    </repository>
-    <repository>
-      <id>repo.pentaho.org</id>
-      <name>repo.pentaho.org</name>
-      <url>http://repository.pentaho.org/artifactory/pentaho</url>
-    </repository>
-  </repositories>
 
   <build>
     <finalName>${project.artifactId}</finalName>
