@@ -10,11 +10,11 @@
 
   <packaging>bundle</packaging>
 
-
   <parent>
-    <groupId>org.pentaho</groupId>
-    <artifactId>pentaho-ce-jar-parent-pom</artifactId>
-    <version>1.0.3</version>
+    <groupId>pentaho</groupId>
+    <artifactId>pentaho-osgi-bundles</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <relativePath>../pom.xml</relativePath>
   </parent>
 
   <properties>
