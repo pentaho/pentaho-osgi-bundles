@@ -24,13 +24,17 @@ package org.pentaho.osgi.notification.webservice;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.pentaho.osgi.notification.api.MatchCondition;
 import org.pentaho.osgi.notification.api.MatchConditionException;
 import org.pentaho.osgi.notification.api.NotificationAggregator;
 import org.pentaho.osgi.notification.api.NotificationObject;
+import org.pentaho.osgi.notification.api.listeners.FilteringNotificationListenerImpl;
 
+import javax.ws.rs.container.AsyncResponse;
+import javax.ws.rs.container.TimeoutHandler;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -40,7 +44,10 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anySet;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 /**
@@ -59,29 +66,49 @@ public class NotificationServiceTest {
 
   @Test
   public void testGetNotification() {
+    AsyncResponse asyncResponse = mock( AsyncResponse.class );
     NotificationRequestWrapper notificationRequestWrapper = new NotificationRequestWrapper();
     NotificationRequest notificationRequest = new NotificationRequest();
     notificationRequest.setNotificationType( "test-type" );
     NotificationRequestEntry notificationRequestEntry = new NotificationRequestEntry( "test-id", 10L );
     notificationRequest.setEntries( Arrays.asList(notificationRequestEntry) );
     notificationRequestWrapper.setRequests( Arrays.asList( notificationRequest ) );
-    final List<NotificationObject> result = new ArrayList<NotificationObject>();
-    NotificationObject notificationObject = mock( NotificationObject.class );
-    result.add( notificationObject );
-    when( notificationAggregator
-      .getNotificationsBlocking( anySet(), any( MatchCondition.class ), eq( NotificationService.TIMEOUT ) ) ).thenAnswer( new Answer<Object>() {
-
-      @Override public Object answer( InvocationOnMock invocation ) throws Throwable {
-        List<String> typeList = new ArrayList<String>(
-          (java.util.Collection<String>) invocation.getArguments()[0] );
-        assertEquals( 1, typeList.size() );
-        assertEquals( "test-type", typeList.get( 0 ) );
-        NotificationRequestMatchCondition notificationRequestMatchCondition =
-          (NotificationRequestMatchCondition) invocation.getArguments()[1];
-        assertTrue( notificationRequestMatchCondition.matches( new NotificationObject( "test-type", "test-id", 10L, new Object() ) ) );
-        return result;
+    final NotificationObject notificationObject = mock( NotificationObject.class );
+    when( notificationObject.getType() ).thenReturn( "test-type" );
+    when( notificationObject.getId() ).thenReturn( "test-id" );
+    when( notificationObject.getSequence() ).thenReturn( 11L );
+    doAnswer( new Answer<Void>() {
+      @Override public Void answer( InvocationOnMock invocation ) throws Throwable {
+        ((FilteringNotificationListenerImpl)invocation.getArguments()[0]).notify( notificationObject );
+        return null;
       }
-    } );
-    assertEquals( result, service.getNotifications( notificationRequestWrapper ).getNotificationObjects() );
+    } ).when( notificationAggregator ).registerFilteringListener( any( FilteringNotificationListenerImpl.class ) );
+    ArgumentCaptor<NotificationResponse> notificationResponseArgumentCaptor = ArgumentCaptor.forClass( NotificationResponse.class );
+    service.getNotifications( asyncResponse, notificationRequestWrapper );
+    verify( asyncResponse ).resume( notificationResponseArgumentCaptor.capture() );
+    List<NotificationObject> notificationObjects =
+      notificationResponseArgumentCaptor.getValue().getNotificationObjects();
+    assertEquals( 1, notificationObjects.size() );
+    assertEquals( notificationObject, notificationObjects.get( 0 ) );
+  }
+
+  @Test
+  public void testGetNotificationTimeout() {
+    final AsyncResponse asyncResponse = mock( AsyncResponse.class );
+    NotificationRequestWrapper notificationRequestWrapper = new NotificationRequestWrapper();
+    NotificationRequest notificationRequest = new NotificationRequest();
+    notificationRequest.setNotificationType( "test-type" );
+    NotificationRequestEntry notificationRequestEntry = new NotificationRequestEntry( "test-id", 10L );
+    notificationRequest.setEntries( Arrays.asList( notificationRequestEntry ) );
+    notificationRequestWrapper.setRequests( Arrays.asList( notificationRequest ) );
+    doAnswer( new Answer<Void>() {
+      @Override public Void answer( InvocationOnMock invocation ) throws Throwable {
+        ( ( TimeoutHandler ) invocation.getArguments()[0] ).handleTimeout( asyncResponse );
+        ( ( TimeoutHandler ) invocation.getArguments()[0] ).handleTimeout( asyncResponse );
+        return null;
+      }
+    } ).when( asyncResponse ).setTimeoutHandler( any( TimeoutHandler.class ) );
+      service.getNotifications( asyncResponse, notificationRequestWrapper );
+    verify( asyncResponse, times( 1 ) ).resume( any( NotificationResponse.class ) );
   }
 }

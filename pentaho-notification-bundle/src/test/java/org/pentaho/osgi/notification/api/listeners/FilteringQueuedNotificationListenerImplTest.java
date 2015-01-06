@@ -20,9 +20,13 @@
  *
  ******************************************************************************/
 
-package org.pentaho.osgi.notification.api;
+package org.pentaho.osgi.notification.api.listeners;
 
 import org.junit.Test;
+import org.pentaho.osgi.notification.api.MatchCondition;
+import org.pentaho.osgi.notification.api.NotificationListener;
+import org.pentaho.osgi.notification.api.NotificationObject;
+import org.pentaho.osgi.notification.api.Notifier;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -32,6 +36,7 @@ import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 /**
@@ -42,12 +47,13 @@ public class FilteringQueuedNotificationListenerImplTest {
   public void testNotifyNotMatching() {
     String type = "test-type";
     MatchCondition matchCondition = mock( MatchCondition.class );
-    FilteringQueuedNotificationListenerImpl filteringQueuedNotificationListener =
-      new FilteringQueuedNotificationListenerImpl( new HashSet<String>( Arrays.asList( type ) ), matchCondition );
+    NotificationListener delegate = mock( NotificationListener.class );
+    FilteringNotificationListenerImpl filteringQueuedNotificationListener =
+      new FilteringNotificationListenerImpl( new HashSet<String>( Arrays.asList( type ) ), matchCondition, delegate );
     NotificationObject notificationObject = mock( NotificationObject.class );
     when( matchCondition.matches( notificationObject ) ).thenReturn( false );
     filteringQueuedNotificationListener.notify( notificationObject );
-    assertNull( filteringQueuedNotificationListener.getQueuedNotifications().poll() );
+    verifyNoMoreInteractions( delegate );
   }
 
   @Test
@@ -55,13 +61,14 @@ public class FilteringQueuedNotificationListenerImplTest {
     String type = "test-type";
     MatchCondition matchCondition = mock( MatchCondition.class );
     Object object = new Object();
-    FilteringQueuedNotificationListenerImpl filteringQueuedNotificationListener =
-      new FilteringQueuedNotificationListenerImpl( new HashSet<String>( Arrays.asList( type ) ), matchCondition );
+    NotificationListener delegate = mock( NotificationListener.class );
+    FilteringNotificationListenerImpl filteringQueuedNotificationListener =
+      new FilteringNotificationListenerImpl( new HashSet<String>( Arrays.asList( type ) ), matchCondition, delegate );
     NotificationObject notificationObject = mock( NotificationObject.class );
     when( notificationObject.getObject() ).thenReturn( object );
     when( matchCondition.matches( notificationObject ) ).thenReturn( false );
     filteringQueuedNotificationListener.notify( notificationObject );
-    assertNull( filteringQueuedNotificationListener.getQueuedNotifications().poll() );
+    verifyNoMoreInteractions( delegate );
   }
 
   @Test
@@ -69,21 +76,23 @@ public class FilteringQueuedNotificationListenerImplTest {
     String type = "test-type";
     MatchCondition matchCondition = mock( MatchCondition.class );
     Object object = new Object();
-    FilteringQueuedNotificationListenerImpl filteringQueuedNotificationListener =
-      new FilteringQueuedNotificationListenerImpl( new HashSet<String>( Arrays.asList( type ) ), matchCondition );
+    NotificationListener delegate = mock( NotificationListener.class );
+    FilteringNotificationListenerImpl filteringQueuedNotificationListener =
+      new FilteringNotificationListenerImpl( new HashSet<String>( Arrays.asList( type ) ), matchCondition, delegate );
     NotificationObject notificationObject = mock( NotificationObject.class );
     when( notificationObject.getObject() ).thenReturn( object );
     when( matchCondition.matches( notificationObject ) ).thenReturn( true );
     filteringQueuedNotificationListener.notify( notificationObject );
-    assertEquals( notificationObject, filteringQueuedNotificationListener.getQueuedNotifications().poll() );
+    verify( delegate ).notify( notificationObject );
   }
 
   @Test
   public void testRegisterNotMatching() {
     String type = "test-type";
     MatchCondition matchCondition = mock( MatchCondition.class );
-    FilteringQueuedNotificationListenerImpl filteringQueuedNotificationListener =
-      new FilteringQueuedNotificationListenerImpl( new HashSet<String>( Arrays.asList( type ) ), matchCondition );
+    NotificationListener delegate = mock( NotificationListener.class );
+    FilteringNotificationListenerImpl filteringQueuedNotificationListener =
+      new FilteringNotificationListenerImpl( new HashSet<String>( Arrays.asList( type ) ), matchCondition, delegate );
     Notifier notifier = mock( Notifier.class );
     filteringQueuedNotificationListener.registerWithIfRelevant( notifier );
     verify( notifier, never() ).register( filteringQueuedNotificationListener );
@@ -93,8 +102,9 @@ public class FilteringQueuedNotificationListenerImplTest {
   public void testRegisterMatching() {
     String type = "test-type";
     MatchCondition matchCondition = mock( MatchCondition.class );
-    FilteringQueuedNotificationListenerImpl filteringQueuedNotificationListener =
-      new FilteringQueuedNotificationListenerImpl( new HashSet<String>( Arrays.asList( type ) ), matchCondition );
+    NotificationListener delegate = mock( NotificationListener.class );
+    FilteringNotificationListenerImpl filteringQueuedNotificationListener =
+      new FilteringNotificationListenerImpl( new HashSet<String>( Arrays.asList( type ) ), matchCondition, delegate );
     Notifier notifier = mock( Notifier.class );
     when( notifier.getEmittedTypes() ).thenReturn( new HashSet<String>( Arrays.asList( type ) ) );
     filteringQueuedNotificationListener.registerWithIfRelevant( notifier );
@@ -105,8 +115,9 @@ public class FilteringQueuedNotificationListenerImplTest {
   public void testUnRegisterMatching() {
     String type = "test-type";
     MatchCondition matchCondition = mock( MatchCondition.class );
-    FilteringQueuedNotificationListenerImpl filteringQueuedNotificationListener =
-      new FilteringQueuedNotificationListenerImpl( new HashSet<String>( Arrays.asList( type ) ), matchCondition );
+    NotificationListener delegate = mock( NotificationListener.class );
+    FilteringNotificationListenerImpl filteringQueuedNotificationListener =
+      new FilteringNotificationListenerImpl( new HashSet<String>( Arrays.asList( type ) ), matchCondition, delegate );
     Notifier notifier = mock( Notifier.class );
     when( notifier.getEmittedTypes() ).thenReturn( new HashSet<String>( Arrays.asList( type ) ) );
     filteringQueuedNotificationListener.registerWithIfRelevant( notifier );
