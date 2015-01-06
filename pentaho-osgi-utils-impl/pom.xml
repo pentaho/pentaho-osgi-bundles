@@ -65,6 +65,7 @@
         <configuration>
           <instructions>
             <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
+            <Bundle-Activator>org.pentaho.osgi.impl.BeanFactoryActivator</Bundle-Activator>
           </instructions>
         </configuration>
       </plugin>
