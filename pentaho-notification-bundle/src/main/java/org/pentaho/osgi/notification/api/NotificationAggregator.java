@@ -22,6 +22,8 @@
 
 package org.pentaho.osgi.notification.api;
 
+import org.pentaho.osgi.notification.api.listeners.FilteringNotificationListenerImpl;
+
 import java.util.List;
 import java.util.Set;
 
@@ -33,4 +35,8 @@ public interface NotificationAggregator {
 
   public List<NotificationObject> getNotificationsBlocking( Set<String> types, MatchCondition matchCondition,
                                                 long maxBlockTime );
+
+  public void registerFilteringListener( FilteringNotificationListenerImpl filteringNotificationListener );
+
+  public void unregisterFilteringListener( FilteringNotificationListenerImpl filteringNotificationListener );
 }

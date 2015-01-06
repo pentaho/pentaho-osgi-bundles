@@ -33,6 +33,7 @@ import org.pentaho.osgi.notification.api.NotificationObject;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
@@ -47,7 +48,7 @@ public class NotificationAggregatorImplTest {
   @Test
   public void testNonBlockingReturnsEmptyListWithNoNotifiers() {
     NotificationAggregatorImpl notificationAggregator = new NotificationAggregatorImpl();
-    assertEquals( 0, notificationAggregator.getNotifications( null, null ).size() );
+    assertEquals( 0, notificationAggregator.getNotifications( (Set<String>) null, null ).size() );
   }
 
   @Test
@@ -85,7 +86,7 @@ public class NotificationAggregatorImplTest {
   @Test(timeout = 1000L)
   public void testBlockingReturnsAfterTimeout() {
     NotificationAggregatorImpl notificationAggregator = new NotificationAggregatorImpl();
-    assertEquals( 0, notificationAggregator.getNotificationsBlocking( null, null, 500L ).size() );
+    assertEquals( 0, notificationAggregator.getNotificationsBlocking( new HashSet<String>(  ), null, 500L ).size() );
   }
 
   @Test

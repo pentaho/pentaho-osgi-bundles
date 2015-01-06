@@ -15,10 +15,13 @@
                              update-strategy="reload">
     </cm:property-placeholder>
 
-    <cxf:bus id="notificationServiceBus">
+    <cxf:bus bus="notificationServiceBus">
+      <cxf:properties>
+        <entry key="org.apache.cxf.transport.http.async.usePolicy" value="ALWAYS" />
+      </cxf:properties>
     </cxf:bus>
 
-    <jaxrs:server address="/notificationService" id="notificationService">
+    <jaxrs:server address="/notificationService" id="notificationService" bus="notificationServiceBus">
         <jaxrs:serviceBeans>
             <ref component-id="notificationServiceImpl" />
         </jaxrs:serviceBeans>
@@ -39,4 +42,7 @@
 
     <service id="resources" ref="resourceMapping" interface="org.ops4j.pax.web.extender.whiteboard.ResourceMapping" />
     <reference id="notificationAggregatorRef" interface="org.pentaho.osgi.notification.api.NotificationAggregator"/>
+    <reference-list id="executorServiceRefList" interface="java.util.concurrent.ExecutorService" availability="optional">
+      <reference-listener ref="notificationServiceImpl" bind-method="setExecutorService"/>
+    </reference-list>
 </blueprint>

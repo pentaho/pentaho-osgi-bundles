@@ -22,12 +22,13 @@
 
 package org.pentaho.osgi.notification.service;
 
-import org.pentaho.osgi.notification.api.FilteringQueuedNotificationListenerImpl;
-import org.pentaho.osgi.notification.api.NotifierWithHistory;
 import org.pentaho.osgi.notification.api.MatchCondition;
 import org.pentaho.osgi.notification.api.NotificationAggregator;
 import org.pentaho.osgi.notification.api.NotificationObject;
 import org.pentaho.osgi.notification.api.Notifier;
+import org.pentaho.osgi.notification.api.NotifierWithHistory;
+import org.pentaho.osgi.notification.api.listeners.FilteringNotificationListenerImpl;
+import org.pentaho.osgi.notification.api.listeners.QueuedNotificationListenerImpl;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -44,16 +45,16 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  * Created by bryan on 9/18/14.
  */
 public class NotificationAggregatorImpl implements NotificationAggregator {
-  private final Set<NotifierWithHistory> notifiers = new CopyOnWriteArraySet<NotifierWithHistory>();
-  private final Set<FilteringQueuedNotificationListenerImpl> notificationListeners =
-    new HashSet<FilteringQueuedNotificationListenerImpl>();
+  private final Set<Notifier> notifiers = new CopyOnWriteArraySet<Notifier>();
+  private final Set<FilteringNotificationListenerImpl> notificationListeners =
+    new HashSet<FilteringNotificationListenerImpl>();
   private final ReadWriteLock readWriteLock = new ReentrantReadWriteLock();
 
   public void addNotifier( NotifierWithHistory notifier ) {
-    notifiers.add( (NotifierWithHistory) notifier );
+    notifiers.add( notifier );
     readWriteLock.readLock().lock();
     try {
-      for ( FilteringQueuedNotificationListenerImpl notificationListener : notificationListeners ) {
+      for ( FilteringNotificationListenerImpl notificationListener : notificationListeners ) {
         notificationListener.registerWithIfRelevant( notifier );
       }
     } finally {
@@ -75,14 +76,16 @@ public class NotificationAggregatorImpl implements NotificationAggregator {
     return result;
   }
 
-  protected List<NotificationObject> getNotifications( List<Notifier> eligibleNotifiers, Set<String> types,
+  protected List<NotificationObject> getNotifications( List<Notifier> eligibleNotifiers,
                                                        MatchCondition matchCondition ) {
     List<NotificationObject> notifications = new ArrayList<NotificationObject>();
     for ( Notifier notifier : eligibleNotifiers ) {
-      for ( NotificationObject previousNotificationObject : ( (NotifierWithHistory) notifier )
-        .getPreviousNotificationObjects() ) {
-        if ( matchCondition == null || matchCondition.matches( previousNotificationObject ) ) {
-          notifications.add( previousNotificationObject );
+      if ( notifier instanceof NotifierWithHistory ) {
+        for ( NotificationObject previousNotificationObject : ( (NotifierWithHistory) notifier )
+          .getPreviousNotificationObjects() ) {
+          if ( matchCondition == null || matchCondition.matches( previousNotificationObject ) ) {
+            notifications.add( previousNotificationObject );
+          }
         }
       }
     }
@@ -90,7 +93,7 @@ public class NotificationAggregatorImpl implements NotificationAggregator {
   }
 
   @Override public List<NotificationObject> getNotifications( Set<String> types, MatchCondition matchCondition ) {
-    return getNotifications( getEligibleNotifiers( types ), types, matchCondition );
+    return getNotifications( getEligibleNotifiers( types ), matchCondition );
   }
 
   @Override public List<NotificationObject> getNotificationsBlocking( Set<String> types, MatchCondition matchCondition,
@@ -102,22 +105,13 @@ public class NotificationAggregatorImpl implements NotificationAggregator {
     if ( endTime <= 0 ) {
       endTime = Long.MAX_VALUE;
     }
-    FilteringQueuedNotificationListenerImpl filteringNotificationListener =
-      new FilteringQueuedNotificationListenerImpl( types, matchCondition );
+    QueuedNotificationListenerImpl queuedNotificationListener = new QueuedNotificationListenerImpl();
+    FilteringNotificationListenerImpl filteringNotificationListener =
+      new FilteringNotificationListenerImpl( types, matchCondition, queuedNotificationListener );
     try {
-      readWriteLock.writeLock().lock();
-      try {
-        notificationListeners.add( filteringNotificationListener );
-      } finally {
-        readWriteLock.writeLock().unlock();
-      }
-      List<Notifier> eligibleNotifiers = getEligibleNotifiers( types );
-      for ( Notifier notifier : eligibleNotifiers ) {
-        filteringNotificationListener.registerWithIfRelevant( notifier );
-      }
       List<NotificationObject> notifications =
-        getNotifications( eligibleNotifiers, types, matchCondition );
-      BlockingQueue<NotificationObject> blockingQueue = filteringNotificationListener.getQueuedNotifications();
+        registerFilteringListenerAndReturnPrevious( filteringNotificationListener );
+      BlockingQueue<NotificationObject> blockingQueue = queuedNotificationListener.getQueuedNotifications();
       while ( notifications.size() == 0 && System.currentTimeMillis() < endTime ) {
         try {
           NotificationObject notificationObject =
@@ -133,13 +127,42 @@ public class NotificationAggregatorImpl implements NotificationAggregator {
       }
       return notifications;
     } finally {
-      readWriteLock.writeLock().lock();
-      try {
-        notificationListeners.remove( filteringNotificationListener );
-      } finally {
-        readWriteLock.writeLock().unlock();
-      }
-      filteringNotificationListener.unregisterWithAll();
+      unregisterFilteringListener( filteringNotificationListener );
     }
+  }
+
+  @Override public void registerFilteringListener(
+    FilteringNotificationListenerImpl filteringNotificationListener ) {
+    for ( NotificationObject notificationObject : registerFilteringListenerAndReturnPrevious(
+      filteringNotificationListener ) ) {
+      filteringNotificationListener.notify( notificationObject );
+    }
+  }
+
+  private List<NotificationObject> registerFilteringListenerAndReturnPrevious(
+    FilteringNotificationListenerImpl filteringNotificationListener ) {
+    readWriteLock.writeLock().lock();
+    try {
+      notificationListeners.add( filteringNotificationListener );
+    } finally {
+      readWriteLock.writeLock().unlock();
+    }
+
+    List<Notifier> eligibleNotifiers = getEligibleNotifiers( filteringNotificationListener.getTypes() );
+    for ( Notifier notifier : eligibleNotifiers ) {
+      filteringNotificationListener.registerWithIfRelevant( notifier );
+    }
+    return getNotifications( eligibleNotifiers, filteringNotificationListener.getMatchCondition() );
+  }
+
+  @Override public void unregisterFilteringListener(
+    FilteringNotificationListenerImpl filteringNotificationListener ) {
+    readWriteLock.writeLock().lock();
+    try {
+      notificationListeners.remove( filteringNotificationListener );
+    } finally {
+      readWriteLock.writeLock().unlock();
+    }
+    filteringNotificationListener.unregisterWithAll();
   }
 }
