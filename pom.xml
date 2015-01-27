@@ -77,7 +77,6 @@
         <module>pentaho-webjars-deployer</module>
         <module>pentaho-osgi-utils-api</module>
         <module>pentaho-osgi-utils-impl</module>
-        <module>pentaho-jms-bundle</module>
       </modules>
     </profile>
   </profiles>
