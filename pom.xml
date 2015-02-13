@@ -10,7 +10,7 @@
   <parent>
     <groupId>org.pentaho</groupId>
     <artifactId>pentaho-ce-jar-parent-pom</artifactId>
-    <version>1.0.4</version>
+    <version>1.0.8</version>
   </parent>
 
   <name>Pentaho Community Edition Project: ${project.artifactId}</name>
