@@ -28,6 +28,8 @@ import javax.script.Invocable;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
+
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PipedInputStream;
@@ -99,7 +101,13 @@ public class WebjarsURLConnection extends URLConnection {
     String artifactName = "unknown";
     Version version = new Version( 0, 0, 0 );
     if ( url.getProtocol().equals( "file" ) ) {
-      artifactName = url.getFile();
+      String filePath = url.getFile();
+      int start = filePath.lastIndexOf( '/' );
+      if(start >= 0) {
+        artifactName = filePath.substring( filePath.lastIndexOf( '/' ) + 1, filePath.length() );  
+      } else {
+        artifactName = filePath;
+      }
     } else if ( url.getProtocol().equals( "mvn" ) ) {
       String[] parts = url.getPath().split( "/" );
       artifactName = parts[ 1 ];
