@@ -8,6 +8,8 @@ import org.slf4j.LoggerFactory;
 import java.util.concurrent.CountDownLatch;
 
 /**
+ * Lifecycle event operating on a CountDownLatch.
+ * <p/>
  * Created by nbaker on 2/5/15.
  */
 public class CountdownLatchLifecycleEvent<T> implements IPhasedLifecycleEvent<T> {
@@ -18,7 +20,8 @@ public class CountdownLatchLifecycleEvent<T> implements IPhasedLifecycleEvent<T>
   private IPhasedLifecycleManager<T> manager;
   private Logger logger = LoggerFactory.getLogger( getClass() );
 
-  public CountdownLatchLifecycleEvent( int phase, T notificationObject, CountDownLatch latch, IPhasedLifecycleManager<T> manager ) {
+  public CountdownLatchLifecycleEvent( int phase, T notificationObject, CountDownLatch latch,
+                                       IPhasedLifecycleManager<T> manager ) {
     this.phase = phase;
     this.notificationObject = notificationObject;
     this.latch = latch;

@@ -10,6 +10,9 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 
 /**
+ * Base Implementation of the IPhasedLifecycleManager based on a CoundDownLatch mechanism. A Synchronous executor will
+ * be used if one is not supplied. Subclasses must implement the getNotificationObject() method.
+ * <p/>
  * Created by nbaker on 2/5/15.
  */
 public abstract class BaseCountdownLatchLifecycleManager<T> implements IPhasedLifecycleManager<T> {
@@ -21,7 +24,7 @@ public abstract class BaseCountdownLatchLifecycleManager<T> implements IPhasedLi
   private Executor executorService;
   private boolean terminated;
 
-  public BaseCountdownLatchLifecycleManager( ) {
+  public BaseCountdownLatchLifecycleManager() {
 
   }
 
@@ -35,18 +38,22 @@ public abstract class BaseCountdownLatchLifecycleManager<T> implements IPhasedLi
   }
 
   @Override public void addLifecycleListener( IPhasedLifecycleListener<T> listener ) {
+    checkTerminated();
     listeners.add( listener );
   }
 
   @Override public void removeLifecycleListener( IPhasedLifecycleListener<T> listener ) {
+    checkTerminated();
     listeners.remove( listener );
   }
 
   @Override public int getListenerCount() {
+    checkTerminated();
     return listeners.size();
   }
 
   @Override public synchronized int advanceAndWait() throws InterruptedException {
+    checkTerminated();
     latch.await();
     phase++;
     notifyListenersAndWait();
@@ -54,8 +61,9 @@ public abstract class BaseCountdownLatchLifecycleManager<T> implements IPhasedLi
   }
 
   @Override public synchronized int retreatAndWait() throws InterruptedException {
+    checkTerminated();
     latch.await();
-    if( phase - 1 < 0 ){
+    if ( phase - 1 < 0 ) {
       return 0;
     }
     phase--;
@@ -64,12 +72,14 @@ public abstract class BaseCountdownLatchLifecycleManager<T> implements IPhasedLi
   }
 
   @Override public synchronized void setPhaseAndWait( int phase ) throws InterruptedException {
+    checkTerminated();
     latch.await();
     this.phase = phase;
     notifyListenersAndWait();
   }
 
   @Override public synchronized int advance() throws InterruptedException {
+    checkTerminated();
     latch.await();
     phase++;
     notifyListeners();
@@ -77,8 +87,9 @@ public abstract class BaseCountdownLatchLifecycleManager<T> implements IPhasedLi
   }
 
   @Override public synchronized int retreat() throws InterruptedException {
+    checkTerminated();
     latch.await();
-    if( phase - 1 < 0 ){
+    if ( phase - 1 < 0 ) {
       return 0;
     }
     phase--;
@@ -87,6 +98,7 @@ public abstract class BaseCountdownLatchLifecycleManager<T> implements IPhasedLi
   }
 
   @Override public void terminate() {
+    checkTerminated();
     this.terminated = true;
     try {
       if ( lockingThread != null ) {
@@ -116,7 +128,8 @@ public abstract class BaseCountdownLatchLifecycleManager<T> implements IPhasedLi
     latch = new CountDownLatch( listeners.size() );
 
     for ( IPhasedLifecycleListener<T> listener : listeners ) {
-      IPhasedLifecycleEvent<T> event = new CountdownLatchLifecycleEvent<T>( phase, getNotificationObject( ), latch, this );
+      IPhasedLifecycleEvent<T> event =
+          new CountdownLatchLifecycleEvent<T>( phase, getNotificationObject(), latch, this );
       getExecutor().execute( new EventRunnable<T>( listener, event ) );
     }
   }
@@ -129,13 +142,14 @@ public abstract class BaseCountdownLatchLifecycleManager<T> implements IPhasedLi
   protected abstract T getNotificationObject();
 
   @Override public synchronized void setPhase( int phase ) {
-
+    checkTerminated();
     this.phase = phase;
     notifyListeners();
 
   }
 
   @Override public void setExecutor( Executor executorService ) {
+    checkTerminated();
     this.executorService = executorService;
   }
 
@@ -164,6 +178,12 @@ public abstract class BaseCountdownLatchLifecycleManager<T> implements IPhasedLi
   private static class SynchronousExecutor implements Executor {
     @Override public void execute( Runnable command ) {
       command.run();
+    }
+  }
+
+  private void checkTerminated() {
+    if ( terminated ) {
+      throw new IllegalStateException( "Manager has been terminated" );
     }
   }
 }
