@@ -9,6 +9,15 @@ import java.util.concurrent.Phaser;
  */
 public class PhaserServiceBarrier implements IServiceBarrier {
   private final Phaser phaser = new Phaser();
+  private String serviceId;
+
+  public PhaserServiceBarrier( ) {
+
+  }
+
+  public PhaserServiceBarrier( String serviceId ) {
+    this.serviceId = serviceId;
+  }
 
   @Override public int hold() {
     return phaser.register();
