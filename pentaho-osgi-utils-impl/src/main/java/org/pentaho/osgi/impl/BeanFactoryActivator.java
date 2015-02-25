@@ -5,6 +5,7 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 import org.osgi.service.cm.ConfigurationAdmin;
 import org.pentaho.osgi.api.BeanFactoryLocator;
+import org.pentaho.osgi.api.ProxyUnwrapper;
 import org.pentaho.osgi.api.IKarafFeatureWatcher;
 
 /**
@@ -20,6 +21,8 @@ public class BeanFactoryActivator implements BundleActivator {
 
     KarafFeatureWatcherImpl karafFeatureWatcher = new KarafFeatureWatcherImpl( bundleContext );
     bundleContext.registerService( IKarafFeatureWatcher.class.getName(), karafFeatureWatcher, null );
+
+    bundleContext.registerService( ProxyUnwrapper.class.getName(), new ProxyUnwrapperImpl( bundleContext ), null );
   }
 
   @Override
