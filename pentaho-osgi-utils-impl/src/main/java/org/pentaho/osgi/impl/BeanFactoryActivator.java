@@ -15,6 +15,7 @@ public class BeanFactoryActivator implements BundleActivator {
 
   @Override
   public void start( BundleContext bundleContext ) throws Exception {
+    bundleContext.registerService( ProxyUnwrapper.class.getName(), new ProxyUnwrapperImpl( bundleContext ), null );
     bundleContext.registerService( BeanFactoryLocator.class.getName(), new BeanFactoryLocatorImpl(), null );
     ServiceReference ref = bundleContext.getServiceReference( ConfigurationAdmin.class.getName() );
     ConfigurationAdmin admin = (ConfigurationAdmin) bundleContext.getService( ref );
@@ -22,7 +23,6 @@ public class BeanFactoryActivator implements BundleActivator {
     KarafFeatureWatcherImpl karafFeatureWatcher = new KarafFeatureWatcherImpl( bundleContext );
     bundleContext.registerService( IKarafFeatureWatcher.class.getName(), karafFeatureWatcher, null );
 
-    bundleContext.registerService( ProxyUnwrapper.class.getName(), new ProxyUnwrapperImpl( bundleContext ), null );
   }
 
   @Override
