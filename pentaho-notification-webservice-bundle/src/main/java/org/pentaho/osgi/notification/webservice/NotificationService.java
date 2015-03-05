@@ -62,7 +62,7 @@ public class NotificationService {
   public synchronized void setExecutorService( ExecutorService executorService ) {
     if ( isLocalExecutor ) {
       isLocalExecutor = false;
-      executorService.shutdown();
+      this.executorService.shutdown();
     }
     this.executorService = executorService;
   }
