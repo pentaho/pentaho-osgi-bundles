@@ -5,8 +5,8 @@ define(["common-ui/angular", "common-ui/angular-resource"], function(angular) {
   var pollerModule = angular.module('NotificationServiceModule', ['ngResource']);
 
   pollerModule.factory('NotificationService', [
-    '$http',
-    function($http) {
+    '$http', '$q',
+    function($http, $q) {
       // {<regNumber>: {
       //    notificationType: <notifType>,
       //    callback:         <callback>,
@@ -28,17 +28,25 @@ define(["common-ui/angular", "common-ui/angular-resource"], function(angular) {
       // If we're currently polling.
       var running = false;
 
+      var cancelPromise = $q.defer();
+
+      function cancelPolling() {
+        running = false;
+        cancelPromise.resolve();
+      }
+
       function singlePoll() {
         var requestData = buildRequestData();
 
         running = true;
+        cancelPromise = $q.defer();
 
         $http({
           method: 'POST',
           url:    '/cxf/notificationService',
           data: { requests: requestData },
           headers: {'Content-Type': 'application/json'},
-          timeout: 60 * 1000
+          timeout: cancelPromise.promise
         })
         .success(function(respData) {
           processResponseData(respData);
@@ -67,8 +75,7 @@ define(["common-ui/angular", "common-ui/angular-resource"], function(angular) {
 
             // For each interestedId, take the minimum sequence, overall registrations.
             mergedInterestedIdsMap[interestedId] = minSequence == null
-              ? sequence
-              : Math.min(minSequence, sequence);
+              ? sequence : Math.min(minSequence, sequence);
           }
         }
 
@@ -145,8 +152,12 @@ define(["common-ui/angular", "common-ui/angular-resource"], function(angular) {
         return newResponseMap;
       }
 
-      function invalidateResponseMap() {
-          responseMap = null;
+      function refreshPollConfig() {
+        cancelPolling();
+        responseMap = null;
+        if(!running && registrationCount >= 1) {
+          singlePoll();
+        }
       }
 
       function register(notifType, interestedIds, callback) {
@@ -165,11 +176,7 @@ define(["common-ui/angular", "common-ui/angular-resource"], function(angular) {
         };
         registrationCount++;
 
-        invalidateResponseMap();
-
-        if(!running && registrationCount === 1) {
-          singlePoll();
-        }
+        refreshPollConfig();
 
         return regNumber;
       }
@@ -179,7 +186,7 @@ define(["common-ui/angular", "common-ui/angular-resource"], function(angular) {
           delete registrations[regNumber];
           registrationCount--;
 
-          invalidateResponseMap();
+          refreshPollConfig();
         }
       }
 
