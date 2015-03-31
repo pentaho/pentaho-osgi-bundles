@@ -44,6 +44,9 @@ define(['notifier', 'angular-mocks'], function(notifier) {
       httpBackend.expectPOST('/cxf/notificationService', {
         'requests' : [{'notificationType': type, 'entries': [{'id': id, 'sequence': 0}, {'id': id2, 'sequence': 0}]}]
       }).respond({"notificationObjects":[{"id":id,"sequence":1408992291626, "type":type}, {"id":id2,"sequence":1408992291626,"type":type}]});
+      httpBackend.expectPOST('/cxf/notificationService', {
+        'requests' : [{'notificationType': type, 'entries': [{'id': id2, 'sequence': 0}]}]
+      }).respond({"notificationObjects":[{"id":id2,"sequence":1408992291627,"type":type}]});;
       var callbackCalled =false;
       var registerId = notificationService.register(type, [id], function(id) {
         callbackCalled = true;
@@ -84,6 +87,12 @@ define(['notifier', 'angular-mocks'], function(notifier) {
       }).respond({"notificationObjects":[{"id":id,"sequence":5,"type":type}]});
       httpBackend.expectPOST('/cxf/notificationService', {
         'requests' : [{'notificationType': type, 'entries': [{'id': id, 'sequence': 0}]}]
+      }).respond({"notificationObjects":[{"id":id,"sequence":5,"type":type}]});
+      httpBackend.expectPOST('/cxf/notificationService', {
+        'requests' : [{'notificationType': type, 'entries': [{'id': id, 'sequence': 0}]}]
+      }).respond({"notificationObjects":[{"id":id,"sequence":5,"type":type}]});
+      httpBackend.expectPOST('/cxf/notificationService', {
+        'requests' : [{'notificationType': type, 'entries': [{'id': id, 'sequence': 6}]}]
       }).respond({"notificationObjects":[{"id":id,"sequence":5,"type":type}]});
       var callbackCalled = 0;
       var callbackCalled2 = 0;
