@@ -79,6 +79,7 @@
         <module>pentaho-osgi-utils-api</module>
         <module>pentaho-osgi-utils-impl</module>
         <module>pentaho-service-coordinator</module>
+        <module>pentaho-capability-manager</module>
       </modules>
     </profile>
   </profiles>
