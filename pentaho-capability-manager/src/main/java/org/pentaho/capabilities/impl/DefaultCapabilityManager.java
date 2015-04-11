@@ -16,10 +16,11 @@ import java.util.Set;
  */
 public class DefaultCapabilityManager implements ICapabilityManager {
 
+  public static final String ID = "default";
   private Map<String, ICapabilityProvider> providers = new HashMap<String, ICapabilityProvider>(  );
 
   private static DefaultCapabilityManager INSTANCE = new DefaultCapabilityManager();
-  private DefaultCapabilityManager(){
+  protected DefaultCapabilityManager(){
 
   }
 
@@ -40,7 +41,7 @@ public class DefaultCapabilityManager implements ICapabilityManager {
   }
 
   @Override public String getId() {
-    return "default";
+    return ID;
   }
 
   @Override public Set<String> listCapabilities() {
