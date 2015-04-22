@@ -18,12 +18,10 @@
 package org.pentaho.osgi.api;
 
 /**
- * User: nbaker
- * Date: 11/30/10
+ * Created by bryan on 4/22/15.
  */
-public interface BeanFactory {
-
-  public Object getInstance(String id);
-
-  public <T> T getInstance(String id, Class<T> classType);
+public class PasswordServiceException extends Exception {
+  public PasswordServiceException( Throwable cause ) {
+    super( cause );
+  }
 }
