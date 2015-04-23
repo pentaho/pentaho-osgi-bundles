@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xmlns:cm="http://aries.apache.org/blueprint/xmlns/blueprint-cm/v1.1.0"
+           xsi:schemaLocation="http://www.osgi.org/xmlns/blueprint/v1.0.0 http://www.osgi.org/xmlns/blueprint/v1.0.0/blueprint.xsd
+  http://aries.apache.org/blueprint/xmlns/blueprint-cm/v1.1.0 http://aries.apache.org/schemas/blueprint-cm/blueprint-cm-1.1.0.xsd">
+  <cm:property-placeholder persistent-id="org.pentaho.osgi.impl"
+                           update-strategy="reload">
+    <cm:default-properties>
+      <cm:property name="saltString" value="_CyPh3r_"/>
+      <cm:property name="algorithm" value="PBEWithMD5AndDES"/>
+      <cm:property name="encryptionKey" value="P3ntah0C1ph3r"/>
+      <cm:property name="iterations" value="19"/>
+    </cm:default-properties>
+  </cm:property-placeholder>
+
+  <bean id="cipherEncryptionServiceImpl" class="org.pentaho.osgi.impl.CipherEncryptionServiceImpl">
+    <argument value="${saltString}"/>
+    <argument value="${algorithm}"/>
+    <argument value="${encryptionKey}"/>
+    <argument value="${iterations}"/>
+  </bean>
+
+  <service ref="cipherEncryptionServiceImpl" interface="org.pentaho.osgi.api.CipherEncryptionService"/>
+</blueprint>

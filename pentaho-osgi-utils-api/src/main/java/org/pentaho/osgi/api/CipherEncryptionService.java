@@ -18,12 +18,9 @@
 package org.pentaho.osgi.api;
 
 /**
- * User: nbaker
- * Date: 11/30/10
+ * Created by bryan on 4/22/15.
  */
-public interface BeanFactory {
-
-  public Object getInstance(String id);
-
-  public <T> T getInstance(String id, Class<T> classType);
+public interface CipherEncryptionService {
+  String encrypt( String clearPassword ) throws PasswordServiceException;
+  String decrypt( String encryptedPassword ) throws PasswordServiceException;
 }
