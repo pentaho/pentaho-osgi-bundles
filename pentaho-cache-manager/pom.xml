@@ -15,6 +15,7 @@
 
     <modules>
         <module>api</module>
+        <module>impl/RI</module>
     </modules>
 
     <developers>
