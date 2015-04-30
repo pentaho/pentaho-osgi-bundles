@@ -151,6 +151,16 @@ public class RebuildCacheCallable implements Callable<String> {
     if ( !result.containsKey( "shim" ) ) {
       result.put( "shim", new JSONObject() );
     }
+    if ( !result.containsKey( "config" ) ) {
+      result.put( "config", new JSONObject() );
+    }
+    Object configObj = result.get( "config" );
+    if ( configObj instanceof Map ) {
+      Map configMap = ( Map ) configObj;
+      if ( !configMap.containsKey( "service" ) ) {
+        configMap.put( "service", new JSONObject() );
+      }
+    }
     StringBuilder sb = new StringBuilder( result.toJSONString() );
     sb.append( ";" );
     for ( RequireJsConfiguration requireJsConfiguration : requireJsConfigurations ) {

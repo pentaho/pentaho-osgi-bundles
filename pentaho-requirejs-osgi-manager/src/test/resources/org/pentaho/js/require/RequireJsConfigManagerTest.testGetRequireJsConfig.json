@@ -8,5 +8,8 @@
     "angular" : { "exports": "angular" },
     "angular-route" : { "deps": ["angular"] },
     "angular-resource" : { "deps": ["angular"] }
+  },
+  "config" : {
+    "service" : {}
   }
 }
