@@ -35,6 +35,9 @@ import java.util.Map;
 public class Constants {
   public static final String PENTAHO_CACHE_PROVIDER = "pentaho.cache.provider";
 
+  public static final String DEFAULT_TEMPLATE = "default";
+  public static final String DEFAULT_TEMPLATE_DESCRIPTION = "Default Cache Template";
+
   public static Map<String, String> convertDictionary( Dictionary<String, ?> dictionary ) {
     Map<String, String> properties = Maps.newHashMapWithExpectedSize( dictionary.size() );
     for ( Enumeration<String> keys = dictionary.keys(); keys.hasMoreElements(); ) {

@@ -26,6 +26,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
+import java.util.Iterator;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -54,6 +55,11 @@ public class PentahoCacheSystemConfiguration {
     Map<String, String> global = Maps.newHashMap();
     Map<String, Template> templateMap = Maps.newHashMap();
 
+    // Define default template (can be overridden)
+    Template defaultTemplate = new Template();
+    templateMap.put( Constants.DEFAULT_TEMPLATE, defaultTemplate );
+    defaultTemplate.description = Constants.DEFAULT_TEMPLATE_DESCRIPTION;
+
     for ( Map.Entry<String, String> entry : config.entrySet() ) {
       String key = entry.getKey(), value = entry.getValue();
       Matcher matcher;
@@ -81,6 +87,18 @@ public class PentahoCacheSystemConfiguration {
       }
     }
 
+    for ( Iterator<Template> iterator = templateMap.values().iterator(); iterator.hasNext(); ) {
+      Template template = iterator.next();
+      if ( Strings.isNullOrEmpty( template.description ) ) {
+        iterator.remove();
+      } else {
+        Map<String, String> properties = Maps.newHashMap();
+        properties.putAll( global );
+        properties.putAll( template.properties );
+        template.properties = properties;
+      }
+    }
+
     this.configuration = ImmutableMap.copyOf( config );
     this.global = ImmutableMap.copyOf( global );
     this.templateMap = ImmutableMap.copyOf( templateMap );
@@ -91,14 +109,10 @@ public class PentahoCacheSystemConfiguration {
     for ( Map.Entry<String, Template> entry : templateMap.entrySet() ) {
       Template template = entry.getValue();
 
-      if ( !Strings.isNullOrEmpty( template.description ) ) {
-        Map<String, String> properties = Maps.newHashMap( global );
-        properties.putAll( template.properties );
+      PentahoCacheTemplateConfiguration templateConfiguration =
+          new PentahoCacheTemplateConfiguration( template.description, template.properties, cacheManager );
 
-        PentahoCacheTemplateConfiguration templateConfiguration =
-          new PentahoCacheTemplateConfiguration( template.description, properties, cacheManager );
-        builder.put( entry.getKey(), templateConfiguration );
-      }
+      builder.put( entry.getKey(), templateConfiguration );
     }
     return builder.build();
   }
@@ -115,7 +129,7 @@ public class PentahoCacheSystemConfiguration {
    * @author nhudak
    */
   private class Template {
-    private final Map<String, String> properties;
+    private Map<String, String> properties;
     private String description;
 
     public Template() {

@@ -37,7 +37,7 @@ import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.emptyIterable;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertThat;
 
@@ -53,6 +53,7 @@ public class GuavaCacheManagerTest {
   private GuavaCacheManager cacheManager;
 
   private MutableConfiguration<String, Map> configuration;
+  public static final String ANONYMOUS_TYPE_CACHE = "ANONYMOUS_TYPE_CACHE";
 
   @Before
   public void setUp() throws Exception {
@@ -74,16 +75,19 @@ public class GuavaCacheManagerTest {
 
   @Test
   public void testGetCache() throws Exception {
-    assertThat( cacheManager.getCacheNames(), not( contains( CACHE_NAME ) ) );
+    Cache cache;
+    assertThat( cacheManager.getCacheNames(), emptyIterable() );
 
-    Cache<String, Map> cache = cacheManager.getCache( CACHE_NAME, String.class, Map.class );
-    assertThat( cache.getName(), is( CACHE_NAME ) );
+    cache = cacheManager.getCache( CACHE_NAME, String.class, Map.class );
+    assertThat( cache, nullValue() );
+
+    cache = cacheManager.createCache( CACHE_NAME, configuration );
     assertThat( cacheManager.getCache( CACHE_NAME, String.class, Map.class ), sameInstance( cache ) );
 
-    String anonymous_type_cache = "ANONYMOUS_TYPE_CACHE";
-    cacheManager.getCache( anonymous_type_cache );
+    cache = cacheManager.createCache( ANONYMOUS_TYPE_CACHE, new MutableConfiguration<Object, Object>() );
+    assertThat( cacheManager.getCache( ANONYMOUS_TYPE_CACHE ), sameInstance( cache ) );
 
-    assertThat( cacheManager.getCacheNames(), containsInAnyOrder( anonymous_type_cache, CACHE_NAME ) );
+    assertThat( cacheManager.getCacheNames(), containsInAnyOrder( ANONYMOUS_TYPE_CACHE, CACHE_NAME ) );
 
     thrown.expect( IllegalArgumentException.class );
     cacheManager.getCache( CACHE_NAME );
