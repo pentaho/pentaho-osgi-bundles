@@ -44,7 +44,7 @@
                 <extensions>true</extensions>
                 <configuration>
                     <instructions>
-                        <Bundle-SymbolicName>${project.name}</Bundle-SymbolicName>
+                        <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
                         <Embed-Dependency>cache-api</Embed-Dependency>
                         <Embed-Transitive>true</Embed-Transitive>
                         <_exportcontents>
