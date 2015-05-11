@@ -22,6 +22,9 @@
 
 package org.pentaho.osgi.notification.webservice;
 
+import org.codehaus.jackson.JsonFactory;
+import org.codehaus.jackson.JsonGenerator;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.pentaho.osgi.notification.api.NotificationAggregator;
 import org.pentaho.osgi.notification.api.NotificationListener;
 import org.pentaho.osgi.notification.api.NotificationObject;
@@ -32,12 +35,18 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.container.AsyncResponse;
 import javax.ws.rs.container.Suspended;
 import javax.ws.rs.container.TimeoutHandler;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.StreamingOutput;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -51,12 +60,26 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @WebService
 public class NotificationService {
   public static final long TIMEOUT = 30 * 1000;
+  private final Map<String, NotificationTypeObjectMapper> mapperConcurrentHashMap =
+    new ConcurrentHashMap<String, NotificationTypeObjectMapper>();
   private NotificationAggregator notificationAggregator;
   private boolean isLocalExecutor = true;
   private ExecutorService executorService = Executors.newCachedThreadPool();
 
   public void setNotificationAggregator( NotificationAggregator notificationAggregator ) {
     this.notificationAggregator = notificationAggregator;
+  }
+
+  public void addNotificationTypeObjectMapper( NotificationTypeObjectMapper mapper, Map properties ) {
+    if ( mapper != null ) {
+      mapperConcurrentHashMap.put( mapper.getType(), mapper );
+    }
+  }
+
+  public void removeNotificationTypeObjectMapper( NotificationTypeObjectMapper mapper, Map properties ) {
+    if ( mapper != null ) {
+      mapperConcurrentHashMap.remove( mapper.getType() );
+    }
   }
 
   public synchronized void setExecutorService( ExecutorService executorService ) {
@@ -81,7 +104,7 @@ public class NotificationService {
     asyncResponse.setTimeoutHandler( new TimeoutHandler() {
       @Override public void handleTimeout( AsyncResponse asyncResponse ) {
         resumeIfFirst( asyncResponse, filteringNotificationListener,
-          new NotificationResponse( new ArrayList<NotificationObject>(  ) ), listenerFired );
+          new NotificationResponse( new ArrayList<NotificationObject>() ), listenerFired );
       }
     } );
 
@@ -98,7 +121,34 @@ public class NotificationService {
                               final FilteringNotificationListenerImpl filteringNotificationListener,
                               final NotificationResponse response, AtomicBoolean listenerFired ) {
     if ( !listenerFired.getAndSet( true ) ) {
-      asyncResponse.resume( response );
+      asyncResponse.resume( new StreamingOutput() {
+        @Override public void write( OutputStream output ) throws IOException, WebApplicationException {
+          ObjectMapper objectMapper = new ObjectMapper();
+          JsonFactory jsonFactory = objectMapper.getJsonFactory();
+          JsonGenerator jsonGenerator = jsonFactory.createJsonGenerator( output );
+          jsonGenerator.writeStartObject();
+          jsonGenerator.writeFieldName( "notificationObjects" );
+          jsonGenerator.writeStartArray();
+          for ( NotificationObject notificationObject : response.getNotificationObjects() ) {
+            jsonGenerator.writeStartObject();
+            jsonGenerator.writeStringField( "id", notificationObject.getId() );
+            String type = notificationObject.getType();
+            jsonGenerator.writeStringField( "type", type );
+            jsonGenerator.writeNumberField( "sequence", notificationObject.getSequence() );
+            jsonGenerator.writeFieldName( "object" );
+            NotificationTypeObjectMapper notificationTypeObjectMapper = mapperConcurrentHashMap.get( type );
+            ObjectMapper notificationObjectMapper = objectMapper;
+            if ( notificationTypeObjectMapper != null ) {
+              notificationObjectMapper = notificationTypeObjectMapper.getObjectMapper();
+            }
+            notificationObjectMapper.writeValue( jsonGenerator, notificationObject.getObject() );
+            jsonGenerator.writeEndObject();
+          }
+          jsonGenerator.writeEndArray();
+          jsonGenerator.writeEndObject();
+          jsonGenerator.flush();
+        }
+      } );
       executorService.submit( new Runnable() {
         @Override public void run() {
           notificationAggregator.unregisterFilteringListener( filteringNotificationListener );
