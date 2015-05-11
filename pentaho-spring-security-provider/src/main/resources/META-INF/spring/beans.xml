@@ -1,0 +1,39 @@
+<beans:beans xmlns="http://www.springframework.org/schema/security"
+             xmlns:beans="http://www.springframework.org/schema/beans"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://www.springframework.org/schema/beans
+		http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+		http://www.springframework.org/schema/security
+		http://www.springframework.org/schema/security/spring-security.xsd">
+
+  <!--<http realm="User Restrict Realm">-->
+    <!--<intercept-url pattern="/camel/**" access="ROLE_USER"/>-->
+    <!--<http-basic/>-->
+    <!--<remember-me/>-->
+  <!--</http>-->
+
+  <!--  set up the user configuration here -->
+  <authentication-manager alias="authenticationManager" id="authenticationManager">
+    <authentication-provider user-service-ref="userDetailsService"/>
+  </authentication-manager>
+
+  <user-service id="userDetailsService">
+    <user name="jim" password="jimspassword" authorities="ROLE_USER, ROLE_ADMIN"/>
+    <user name="bob" password="bobspassword" authorities="ROLE_USER"/>
+    <user name="admin" password="altpassword" authorities="ROLE_USER, ROLE_ADMIN, Authenticated, Admin"/>
+  </user-service>
+
+  <beans:bean class="org.pentaho.osgi.springsecurity.AuthenticationProviderProxy" factory-method="getInstance">
+    <beans:property name="authenticationManager" ref="authenticationManager" />
+  </beans:bean>
+
+  <!--<beans:bean id="accessDecisionManager" class="org.springframework.security.access.vote.AffirmativeBased">-->
+    <!--<beans:constructor-arg>-->
+      <!--<beans:list>-->
+        <!--<beans:bean class="org.springframework.security.access.vote.RoleVoter"/>-->
+      <!--</beans:list>-->
+    <!--</beans:constructor-arg>-->
+    <!--<beans:property name="allowIfAllAbstainDecisions" value="true"/>-->
+  <!--</beans:bean>-->
+
+</beans:beans>
