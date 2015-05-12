@@ -23,11 +23,9 @@
 package org.pentaho.osgi.notification.api;
 
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Created by bryan on 9/18/14.
@@ -36,7 +34,6 @@ public class DelegatingNotifierImpl implements Notifier, NotificationListener, N
   private final Set<String> types;
   private final HasNotificationHistory hasNotificationHistory;
   private final Set<NotificationListener> listeners;
-  private final ReadWriteLock readWriteLock = new ReentrantReadWriteLock();
 
   public DelegatingNotifierImpl( Set<String> types ) {
     this( types, null );
@@ -45,7 +42,7 @@ public class DelegatingNotifierImpl implements Notifier, NotificationListener, N
   public DelegatingNotifierImpl( Set<String> types, HasNotificationHistory hasNotificationHistory ) {
     this.types = types;
     this.hasNotificationHistory = hasNotificationHistory;
-    this.listeners = new HashSet<NotificationListener>();
+    this.listeners = Collections.newSetFromMap( new ConcurrentHashMap<NotificationListener, Boolean>() );
   }
 
   @Override public Set<String> getEmittedTypes() {
@@ -53,34 +50,19 @@ public class DelegatingNotifierImpl implements Notifier, NotificationListener, N
   }
 
   @Override public void register( NotificationListener notificationListener ) {
-    readWriteLock.writeLock().lock();
-    try {
-      listeners.add( notificationListener );
-      for ( NotificationObject notificationObject : getPreviousNotificationObjects() ) {
-        notificationListener.notify( notificationObject );
-      }
-    } finally {
-      readWriteLock.writeLock().unlock();
+    listeners.add( notificationListener );
+    for ( NotificationObject notificationObject : getPreviousNotificationObjects() ) {
+      notificationListener.notify( notificationObject );
     }
   }
 
   @Override public void unregister( NotificationListener notificationListener ) {
-    readWriteLock.writeLock().lock();
-    try {
-      listeners.remove( notificationListener );
-    } finally {
-      readWriteLock.writeLock().unlock();
-    }
+    listeners.remove( notificationListener );
   }
 
   @Override public void notify( NotificationObject notificationObject ) {
-    readWriteLock.readLock().lock();
-    try {
-      for ( NotificationListener listener : listeners ) {
-        listener.notify( notificationObject );
-      }
-    } finally {
-      readWriteLock.readLock().unlock();
+    for ( NotificationListener listener : listeners ) {
+      listener.notify( notificationObject );
     }
   }
 
