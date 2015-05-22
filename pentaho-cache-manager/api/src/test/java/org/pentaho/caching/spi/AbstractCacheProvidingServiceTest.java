@@ -29,10 +29,18 @@ import org.junit.runner.RunWith;
 import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.pentaho.caching.api.Constants;
 
 import javax.cache.configuration.CompleteConfiguration;
+import javax.cache.expiry.AccessedExpiryPolicy;
+import javax.cache.expiry.Duration;
+import javax.cache.expiry.ExpiryPolicy;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 /**
@@ -46,10 +54,17 @@ public class AbstractCacheProvidingServiceTest {
   public void testCreateConfiguration() throws Exception {
     CompleteConfiguration<String, List> configuration = service.createConfiguration(
       String.class, List.class, ImmutableMap.<String, String>builder().
+        put( Constants.CONFIG_TTL, String.valueOf( 60 * 2 ) ).
+        put( Constants.CONFIG_TTL_RESET, Constants.ExpiryFunction.ACCESS.name() ).
         build()
     );
 
     assertThat( configuration.getKeyType(), Matchers.<Class>equalTo( String.class ) );
     assertThat( configuration.getValueType(), Matchers.<Class>equalTo( List.class ) );
+
+    ExpiryPolicy expiryPolicy = configuration.getExpiryPolicyFactory().create();
+    assertThat( expiryPolicy, instanceOf( AccessedExpiryPolicy.class ) );
+    assertThat( expiryPolicy.getExpiryForAccess(), equalTo( new Duration( TimeUnit.MINUTES, 2 ) ) );
+    assertThat( expiryPolicy.getExpiryForUpdate(), nullValue() );
   }
 }
