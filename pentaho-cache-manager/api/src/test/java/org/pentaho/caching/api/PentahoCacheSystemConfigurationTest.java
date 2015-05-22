@@ -1,3 +1,25 @@
+/*! ******************************************************************************
+ *
+ * Pentaho Data Integration
+ *
+ * Copyright (C) 2002-2015 by Pentaho : http://www.pentaho.com
+ *
+ *******************************************************************************
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with
+ * the License. You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ ******************************************************************************/
+
 package org.pentaho.caching.api;
 
 import com.google.common.collect.ImmutableMap;
@@ -13,9 +35,9 @@ import javax.cache.configuration.Configuration;
 import java.util.Collections;
 import java.util.Map;
 
+import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.when;
 
@@ -36,6 +58,7 @@ public class PentahoCacheSystemConfigurationTest {
       .put( "private", "private-value" )
       .put( "global.common", "common-value" )
       .put( "global.override", "global-override-value" )
+      .put( "template.default.override", "default-override-value" )
       .put( "template.first", "First Template Description" )
       .put( "template.first.template-prop", "template private value" )
       .put( "template.first.override", "template-override-value" )
@@ -54,6 +77,15 @@ public class PentahoCacheSystemConfigurationTest {
     ) ) );
 
     Map<String, PentahoCacheTemplateConfiguration> templates = systemConfiguration.createTemplates( cacheManager );
+    assertThat( templates.keySet(), containsInAnyOrder( "first", Constants.DEFAULT_TEMPLATE ) );
+
+    PentahoCacheTemplateConfiguration defaultTemplate = templates.get( Constants.DEFAULT_TEMPLATE );
+    assertThat( defaultTemplate.getDescription(), equalTo( Constants.DEFAULT_TEMPLATE_DESCRIPTION ) );
+    assertThat( defaultTemplate.getProperties(), Matchers.<Map<String, String>>equalTo( ImmutableMap.of(
+      "common", "common-value",
+      "override", "default-override-value"
+    ) ) );
+
     PentahoCacheTemplateConfiguration firstTemplate = templates.get( "first" );
     assertThat( firstTemplate.getDescription(), equalTo( "First Template Description" ) );
     assertThat( firstTemplate.getCacheManager(), equalTo( cacheManager ) );
@@ -69,7 +101,5 @@ public class PentahoCacheSystemConfigurationTest {
     when( cacheManager.createCache( "cacheName", cacheConfiguration ) ).thenReturn( cache );
 
     assertThat( firstTemplate.createCache( "cacheName", String.class, Object.class ), equalTo( cache ) );
-
-    assertThat( templates.get( "second" ), nullValue() );
   }
 }
