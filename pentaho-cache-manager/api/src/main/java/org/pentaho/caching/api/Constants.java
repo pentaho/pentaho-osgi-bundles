@@ -25,9 +25,18 @@ package org.pentaho.caching.api;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
 
+import javax.cache.configuration.Factory;
+import javax.cache.expiry.AccessedExpiryPolicy;
+import javax.cache.expiry.CreatedExpiryPolicy;
+import javax.cache.expiry.Duration;
+import javax.cache.expiry.EternalExpiryPolicy;
+import javax.cache.expiry.ExpiryPolicy;
+import javax.cache.expiry.ModifiedExpiryPolicy;
+import javax.cache.expiry.TouchedExpiryPolicy;
 import java.util.Dictionary;
 import java.util.Enumeration;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author nhudak
@@ -37,6 +46,41 @@ public class Constants {
 
   public static final String DEFAULT_TEMPLATE = "default";
   public static final String DEFAULT_TEMPLATE_DESCRIPTION = "Default Cache Template";
+
+  public static final String CONFIG_TTL = "ttl";
+  public static final String CONFIG_TTL_RESET = "ttl.resetOn";
+  public static final ExpiryFunction CONFIG_TTL_RESET_DEFAULT = ExpiryFunction.TOUCH;
+
+  public enum ExpiryFunction {
+    CREATE {
+      @Override public Factory<? extends ExpiryPolicy> createFactory( Long seconds ) {
+        return CreatedExpiryPolicy.factoryOf( getDuration( seconds ) );
+      }
+    },
+    MODIFY {
+      @Override public Factory<? extends ExpiryPolicy> createFactory( Long seconds ) {
+        return ModifiedExpiryPolicy.factoryOf( getDuration( seconds ) );
+      }
+    },
+    ACCESS {
+      @Override public Factory<? extends ExpiryPolicy> createFactory( Long seconds ) {
+        return AccessedExpiryPolicy.factoryOf( getDuration( seconds ) );
+      }
+    },
+    TOUCH {
+      @Override public Factory<? extends ExpiryPolicy> createFactory( Long seconds ) {
+        return TouchedExpiryPolicy.factoryOf( getDuration( seconds ) );
+      }
+    };
+
+    private static Duration getDuration( Long seconds ) {
+      return new Duration( TimeUnit.SECONDS, seconds );
+    }
+
+    public Factory<? extends ExpiryPolicy> createFactory( Long seconds ) {
+      return EternalExpiryPolicy.factoryOf();
+    }
+  }
 
   public static Map<String, String> convertDictionary( Dictionary<String, ?> dictionary ) {
     Map<String, String> properties = Maps.newHashMapWithExpectedSize( dictionary.size() );

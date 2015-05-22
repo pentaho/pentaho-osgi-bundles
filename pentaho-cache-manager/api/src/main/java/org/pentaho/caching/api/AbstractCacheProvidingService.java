@@ -22,9 +22,19 @@
 
 package org.pentaho.caching.api;
 
+import com.google.common.base.Enums;
+import com.google.common.base.Optional;
+import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
+import com.google.common.primitives.Longs;
+import org.pentaho.caching.api.Constants.ExpiryFunction;
+
 import javax.cache.configuration.CompleteConfiguration;
 import javax.cache.configuration.MutableConfiguration;
 import java.util.Map;
+
+import static org.pentaho.caching.api.Constants.CONFIG_TTL;
+import static org.pentaho.caching.api.Constants.CONFIG_TTL_RESET;
 
 /**
  * @author nhudak
@@ -34,6 +44,21 @@ public abstract class AbstractCacheProvidingService implements PentahoCacheProvi
                                                                            Map<String, String> properties ) {
     MutableConfiguration<K, V> configuration = new MutableConfiguration<K, V>();
     configuration.setTypes( keyType, valueType );
+
+    if ( properties.containsKey( CONFIG_TTL ) ) {
+      Long ttl = Longs.tryParse( Strings.nullToEmpty( properties.get( CONFIG_TTL ) ) );
+      Preconditions.checkArgument( ttl != null, "Template config error", CONFIG_TTL );
+
+      Optional<ExpiryFunction> expiryFunction;
+      if ( properties.containsKey( CONFIG_TTL_RESET ) ) {
+        expiryFunction = Enums.getIfPresent( ExpiryFunction.class, properties.get( CONFIG_TTL_RESET ) );
+      } else {
+        expiryFunction = Optional.of( Constants.CONFIG_TTL_RESET_DEFAULT );
+      }
+      Preconditions.checkArgument( expiryFunction.isPresent(), "Template config error", CONFIG_TTL_RESET );
+
+      configuration.setExpiryPolicyFactory( expiryFunction.get().createFactory( ttl ) );
+    }
 
     return configuration;
   }
