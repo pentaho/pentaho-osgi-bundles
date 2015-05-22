@@ -48,16 +48,19 @@
                         <Embed-Dependency>cache-api</Embed-Dependency>
                         <Embed-Transitive>true</Embed-Transitive>
                         <_exportcontents>
-                            javax.cache;
+                            javax.cache,
                             javax.cache.*;version=${cache-api.version}
                         </_exportcontents>
-                        <Export-Package>org.pentaho.caching.api;version=${version}</Export-Package>
+                        <Export-Package>
+                            org.pentaho.caching.api;version=${version},
+                            org.pentaho.caching.spi;version=${version}
+                        </Export-Package>
                         <Import-Package>
                             org.osgi.framework, org.osgi.service.cm,
-                            com.google.common.*;com.google.common.util.concurrent;
-                            org.osgi.service.blueprint;
-                            !javax.enterprise.util;
-                            !javax.management;
+                            com.google.common.*, com.google.common.util.concurrent,
+                            org.osgi.service.blueprint,
+                            !javax.enterprise.util,
+                            !javax.management
                         </Import-Package>
                     </instructions>
                 </configuration>

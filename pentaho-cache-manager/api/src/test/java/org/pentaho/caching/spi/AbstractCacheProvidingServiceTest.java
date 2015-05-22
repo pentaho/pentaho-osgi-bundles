@@ -20,38 +20,36 @@
  *
  ******************************************************************************/
 
-package org.pentaho.caching.ri;
+package org.pentaho.caching.spi;
 
-import org.junit.Before;
+import com.google.common.collect.ImmutableMap;
+import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-import org.pentaho.caching.api.PentahoCacheSystemConfiguration;
-import org.pentaho.caching.ri.impl.GuavaCacheManager;
 
-import javax.cache.CacheManager;
+import javax.cache.configuration.CompleteConfiguration;
+import java.util.List;
 
-import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertThat;
 
 /**
  * @author nhudak
  */
 @RunWith( MockitoJUnitRunner.class )
-public class HeapCacheProvidingServiceTest {
-
-  @Mock private PentahoCacheSystemConfiguration config;
-  private HeapCacheProvidingService service;
-
-  @Before
-  public void setUp() throws Exception {
-    service = new HeapCacheProvidingService();
-  }
+public class AbstractCacheProvidingServiceTest {
+  @Mock( answer = Answers.CALLS_REAL_METHODS ) AbstractCacheProvidingService service;
 
   @Test
-  public void testCreateCacheManager() throws Exception {
-    CacheManager cacheManager = service.createCacheManager( config );
-    assertThat( cacheManager, instanceOf( GuavaCacheManager.class ) );
+  public void testCreateConfiguration() throws Exception {
+    CompleteConfiguration<String, List> configuration = service.createConfiguration(
+      String.class, List.class, ImmutableMap.<String, String>builder().
+        build()
+    );
+
+    assertThat( configuration.getKeyType(), Matchers.<Class>equalTo( String.class ) );
+    assertThat( configuration.getValueType(), Matchers.<Class>equalTo( List.class ) );
   }
 }

@@ -128,7 +128,7 @@ public class PentahoCacheManagerImpl implements PentahoCacheManager {
     return service.createConfiguration( keyType, valueType, properties );
   }
 
-  @Override public Map<String, PentahoCacheTemplateConfiguration> getTemplates(){
+  @Override public Map<String, PentahoCacheTemplateConfiguration> getTemplates() {
     return systemConfiguration.createTemplates( this );
   }
 }

@@ -55,7 +55,8 @@ public class PentahoCacheTemplateConfiguration {
     return cacheManager;
   }
 
-  public <K, V> Configuration<K, V> createConfiguration( Class<K> keyType, Class<V> valueType ) {
+  public <K, V> Configuration<K, V> createConfiguration( Class<K> keyType, Class<V> valueType )
+    throws IllegalArgumentException {
     return cacheManager.createConfiguration( keyType, valueType, properties );
   }
 
