@@ -22,20 +22,19 @@
 
 package org.pentaho.caching.api;
 
-import javax.cache.CacheManager;
-import javax.cache.configuration.Configuration;
+import javax.cache.configuration.CompleteConfiguration;
+import javax.cache.configuration.MutableConfiguration;
 import java.util.Map;
 
 /**
  * @author nhudak
  */
-public interface PentahoCacheManager extends CacheManager {
-  PentahoCacheSystemConfiguration getSystemConfiguration();
+public abstract class AbstractCacheProvidingService implements PentahoCacheProvidingService {
+  @Override public <K, V> CompleteConfiguration<K, V> createConfiguration( Class<K> keyType, Class<V> valueType,
+                                                                           Map<String, String> properties ) {
+    MutableConfiguration<K, V> configuration = new MutableConfiguration<K, V>();
+    configuration.setTypes( keyType, valueType );
 
-  PentahoCacheProvidingService getService();
-
-  <K, V> Configuration<K, V> createConfiguration( Class<K> keyType, Class<V> valueType,
-                                                  Map<String, String> properties ) throws IllegalArgumentException;
-
-  Map<String, PentahoCacheTemplateConfiguration> getTemplates();
+    return configuration;
+  }
 }

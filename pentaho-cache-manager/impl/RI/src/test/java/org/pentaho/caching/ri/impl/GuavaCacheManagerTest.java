@@ -33,11 +33,8 @@ import javax.cache.configuration.MutableConfiguration;
 import java.util.Map;
 
 import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.emptyIterable;
-import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertThat;
 
@@ -46,77 +43,30 @@ import static org.junit.Assert.assertThat;
  */
 public class GuavaCacheManagerTest {
 
-  public static final String CACHE_NAME = "cache name";
+  public static final String CACHE_NAME = "TYPED_CACHE";
 
   @Rule public ExpectedException thrown = ExpectedException.none();
 
   private GuavaCacheManager cacheManager;
 
-  private MutableConfiguration<String, Map> configuration;
-  public static final String ANONYMOUS_TYPE_CACHE = "ANONYMOUS_TYPE_CACHE";
-
   @Before
   public void setUp() throws Exception {
     cacheManager = new GuavaCacheManager();
+  }
 
-    configuration = new MutableConfiguration<String, Map>();
+  @Test
+  public void testNewCache() throws Exception {
+    MutableConfiguration<String, Map> configuration = new MutableConfiguration<String, Map>();
     configuration.setTypes( String.class, Map.class );
-  }
-
-  @Test
-  public void testCreateCache() throws Exception {
     Cache<String, Map> cache = cacheManager.createCache( CACHE_NAME, configuration );
-    assertThat( cache.getConfiguration( Configuration.class ), equalTo( (Configuration) configuration ) );
+
+    assertThat( cache.getConfiguration( Configuration.class ), sameInstance( (Configuration) configuration ) );
     assertThat( cache.getName(), is( CACHE_NAME ) );
-
-    thrown.expect( IllegalArgumentException.class );
-    cacheManager.createCache( CACHE_NAME, configuration );
-  }
-
-  @Test
-  public void testGetCache() throws Exception {
-    Cache cache;
-    assertThat( cacheManager.getCacheNames(), emptyIterable() );
-
-    cache = cacheManager.getCache( CACHE_NAME, String.class, Map.class );
-    assertThat( cache, nullValue() );
-
-    cache = cacheManager.createCache( CACHE_NAME, configuration );
-    assertThat( cacheManager.getCache( CACHE_NAME, String.class, Map.class ), sameInstance( cache ) );
-
-    cache = cacheManager.createCache( ANONYMOUS_TYPE_CACHE, new MutableConfiguration<Object, Object>() );
-    assertThat( cacheManager.getCache( ANONYMOUS_TYPE_CACHE ), sameInstance( cache ) );
-
-    assertThat( cacheManager.getCacheNames(), containsInAnyOrder( ANONYMOUS_TYPE_CACHE, CACHE_NAME ) );
-
-    thrown.expect( IllegalArgumentException.class );
-    cacheManager.getCache( CACHE_NAME );
-  }
-
-  @Test
-  public void testDestroyCache() throws Exception {
-    cacheManager.destroyCache( CACHE_NAME );
-
-    Cache<String, Map> cache = cacheManager.createCache( CACHE_NAME, configuration );
     assertThat( cacheManager.getCacheNames(), contains( CACHE_NAME ) );
-    assertThat( cache.isClosed(), is( false ) );
 
-    cacheManager.destroyCache( CACHE_NAME );
-    assertThat( cacheManager.getCacheNames(), emptyIterable() );
-    assertThat( cache.isClosed(), is( true ) );
-  }
-
-  @Test
-  public void testClose() throws Exception {
-    Cache<String, Map> cache = cacheManager.createCache( CACHE_NAME, configuration );
-
-    assertThat( cache.isClosed(), is( false ) );
-    assertThat( cacheManager.isClosed(), is( false ) );
-
-    cacheManager.close();
+    cache.close();
 
     assertThat( cache.isClosed(), is( true ) );
-    assertThat( cacheManager.isClosed(), is( true ) );
     assertThat( cacheManager.getCacheNames(), emptyIterable() );
   }
 }
