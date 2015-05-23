@@ -52,8 +52,8 @@
                             javax.cache.*;version=${cache-api.version}
                         </_exportcontents>
                         <Export-Package>
-                            org.pentaho.caching.api;version=${version},
-                            org.pentaho.caching.spi;version=${version}
+                            org.pentaho.caching.api;version=${project.version},
+                            org.pentaho.caching.spi;version=${project.version}
                         </Export-Package>
                         <Import-Package>
                             org.osgi.framework, org.osgi.service.cm,
