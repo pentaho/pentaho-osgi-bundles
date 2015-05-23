@@ -59,32 +59,22 @@
   </properties>
 
 
-  <profiles>
-    <profile>
-      <id>build-all</id>
-      <activation>
-        <property>
-          <name>!skipModuleBuild</name>
-        </property>
-      </activation>
-      <modules>
-        <module>angular-bundle</module>
-        <module>pentaho-i18n-bundle</module>
-        <module>pentaho-i18n-webservice-bundle</module>
-        <module>pentaho-notification-bundle</module>
-        <module>pentaho-notification-webservice-bundle</module>
-        <module>pentaho-platform-plugin-deployer</module>
-        <module>pentaho-requirejs-osgi-manager</module>
-        <module>pentaho-server-bundle</module>
-        <module>pentaho-webjars-deployer</module>
-        <module>pentaho-osgi-utils-api</module>
-        <module>pentaho-osgi-utils-impl</module>
-        <module>pentaho-service-coordinator</module>
-        <module>pentaho-capability-manager</module>
-        <module>pentaho-cache-manager</module>
-      </modules>
-    </profile>
-  </profiles>
+  <modules>
+    <module>angular-bundle</module>
+    <module>pentaho-i18n-bundle</module>
+    <module>pentaho-i18n-webservice-bundle</module>
+    <module>pentaho-notification-bundle</module>
+    <module>pentaho-notification-webservice-bundle</module>
+    <module>pentaho-platform-plugin-deployer</module>
+    <module>pentaho-requirejs-osgi-manager</module>
+    <module>pentaho-server-bundle</module>
+    <module>pentaho-webjars-deployer</module>
+    <module>pentaho-osgi-utils-api</module>
+    <module>pentaho-osgi-utils-impl</module>
+    <module>pentaho-service-coordinator</module>
+    <module>pentaho-capability-manager</module>
+    <module>pentaho-cache-manager</module>
+  </modules>
 
   <scm>
     <connection>scm:git:git@github.com:${github.user}/${project.artifactId}.git</connection>
