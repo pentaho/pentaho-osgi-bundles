@@ -34,9 +34,7 @@ import javax.cache.configuration.CompleteConfiguration;
 import javax.cache.configuration.MutableConfiguration;
 import java.util.Map;
 
-import static org.pentaho.caching.api.Constants.CONFIG_TTL;
-import static org.pentaho.caching.api.Constants.CONFIG_TTL_RESET;
-import static org.pentaho.caching.api.Constants.CONFIG_TTL_RESET_DEFAULT;
+import static org.pentaho.caching.api.Constants.*;
 
 /**
  * @author nhudak
@@ -61,7 +59,9 @@ public abstract class AbstractCacheProvidingService implements PentahoCacheProvi
 
       configuration.setExpiryPolicyFactory( expiryFunction.get().createFactory( ttl ) );
     }
-
+    if ( properties.containsKey( CONFIG_STORE_BY_VALUE ) ) {
+      configuration.setStoreByValue( Boolean.valueOf( properties.get( CONFIG_STORE_BY_VALUE ) ) );
+    }
     return configuration;
   }
 }
