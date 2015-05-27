@@ -51,6 +51,8 @@ public class Constants {
   public static final String CONFIG_TTL_RESET = "ttl.resetOn";
   public static final ExpiryFunction CONFIG_TTL_RESET_DEFAULT = ExpiryFunction.TOUCH;
 
+  public static final String CONFIG_STORE_BY_VALUE = "storeByValue";
+
   public enum ExpiryFunction {
     CREATE {
       @Override public Factory<? extends ExpiryPolicy> createFactory( Long seconds ) {

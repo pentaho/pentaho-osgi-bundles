@@ -41,6 +41,7 @@ import java.util.concurrent.TimeUnit;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 
 /**
@@ -53,15 +54,17 @@ public class AbstractCacheProvidingServiceTest {
   @Test
   public void testCreateConfiguration() throws Exception {
     CompleteConfiguration<String, List> configuration = service.createConfiguration(
-      String.class, List.class, ImmutableMap.<String, String>builder().
-        put( Constants.CONFIG_TTL, String.valueOf( 60 * 2 ) ).
-        put( Constants.CONFIG_TTL_RESET, Constants.ExpiryFunction.ACCESS.name() ).
+        String.class, List.class, ImmutableMap.<String, String>builder().
+          put( Constants.CONFIG_TTL, String.valueOf( 60 * 2 ) ).
+          put( Constants.CONFIG_TTL_RESET, Constants.ExpiryFunction.ACCESS.name() ).
+          put( Constants.CONFIG_STORE_BY_VALUE, "false" ).
         build()
     );
 
     assertThat( configuration.getKeyType(), Matchers.<Class>equalTo( String.class ) );
     assertThat( configuration.getValueType(), Matchers.<Class>equalTo( List.class ) );
 
+    assertFalse( configuration.isStoreByValue() );
     ExpiryPolicy expiryPolicy = configuration.getExpiryPolicyFactory().create();
     assertThat( expiryPolicy, instanceOf( AccessedExpiryPolicy.class ) );
     assertThat( expiryPolicy.getExpiryForAccess(), equalTo( new Duration( TimeUnit.MINUTES, 2 ) ) );
