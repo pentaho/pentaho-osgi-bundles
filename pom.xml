@@ -48,7 +48,7 @@
     <junit.version>4.11</junit.version>
     <mockito.version>1.9.5</mockito.version>
     <hamcrest.version>1.3</hamcrest.version>
-    <karaf.version>3.0.2</karaf.version>
+    <karaf.version>2.3.6</karaf.version>
     <felix.version>4.0.3</felix.version>
     <cxf.version>2.6.15</cxf.version>
     <guava.version>16.0.1</guava.version>
