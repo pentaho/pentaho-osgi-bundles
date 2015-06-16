@@ -1,0 +1,5 @@
+{
+  "paths": {
+    "com.pentaho.profiling.notification.service": "/notifier/notifier"
+  }
+}

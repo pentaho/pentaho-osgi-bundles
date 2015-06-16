@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://www.osgi.org/xmlns/blueprint/v1.0.0 http://www.osgi.org/xmlns/blueprint/v1.0.0/blueprint.xsd">
+
+    <!-- Create Service Factory -->
+    <bean id="cacheManagerFactory" class="org.pentaho.caching.impl.PentahoCacheManagerFactory"
+          scope="singleton" init-method="init">
+        <argument ref="blueprintBundleContext"/>
+    </bean>
+
+    <service id="cacheManagerFactoryService" ref="cacheManagerFactory"
+             interface="org.osgi.service.cm.ManagedServiceFactory">
+        <service-properties>
+            <entry key="service.pid" value="org.pentaho.caching"/>
+        </service-properties>
+    </service>
+</blueprint>

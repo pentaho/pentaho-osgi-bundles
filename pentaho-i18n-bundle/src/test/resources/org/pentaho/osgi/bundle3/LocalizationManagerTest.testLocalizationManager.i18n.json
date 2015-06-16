@@ -1,0 +1,5 @@
+{
+  "testPlugin": [
+    { "name": "org/pentaho/osgi/messages", "priority": "3" }
+  ]
+}

@@ -1,0 +1,5 @@
+{
+  "testPlugin": [
+    "org/pentaho/osgi/messages"
+  ]
+}

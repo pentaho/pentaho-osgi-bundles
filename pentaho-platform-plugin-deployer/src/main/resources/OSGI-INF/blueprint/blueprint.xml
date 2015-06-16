@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xmlns:cm="http://aries.apache.org/blueprint/xmlns/blueprint-cm/v1.1.0" xmlns:cxf="http://cxf.apache.org/blueprint/core"
+           xmlns:jaxrs="http://cxf.apache.org/blueprint/jaxrs" xmlns:jaxws="http://cxf.apache.org/blueprint/jaxws"
+           xsi:schemaLocation="
+  http://www.osgi.org/xmlns/blueprint/v1.0.0 http://www.osgi.org/xmlns/blueprint/v1.0.0/blueprint.xsd
+  http://www.osgi.org/xmlns/blueprint-ext/v1.1.0 https://svn.apache.org/repos/asf/aries/tags/blueprint-0.3.1/blueprint-core/src/main/resources/org/apache/aries/blueprint/ext/blueprint-ext.xsd
+  http://cxf.apache.org/blueprint/jaxws http://cxf.apache.org/schemas/blueprint/jaxws.xsd
+  http://cxf.apache.org/blueprint/jaxrs http://cxf.apache.org/schemas/blueprint/jaxrs.xsd
+  http://cxf.apache.org/blueprint/core http://cxf.apache.org/schemas/blueprint/core.xsd
+  http://camel.apache.org/schema/blueprint http://camel.apache.org/schema/blueprint/camel-blueprint.xsd
+  http://aries.apache.org/blueprint/xmlns/blueprint-cm/v1.1.0 http://aries.apache.org/schemas/blueprint-cm/blueprint-cm-1.1.0.xsd
+  ">
+  <bean id="platformPluginDeploymentListener" class="org.pentaho.osgi.platform.plugin.deployer.PlatformPluginDeploymentListener" />
+
+  <bean id="jsonUtil" class="org.pentaho.osgi.platform.plugin.deployer.impl.JSONUtil" />
+
+  <service ref="platformPluginDeploymentListener" auto-export="interfaces" depends-on="platformPluginDeploymentListener" />
+
+  <service id="platformPluginURLHandler" interface="org.osgi.service.url.URLStreamHandlerService">
+    <service-properties>
+      <entry key="url.handler.protocol" value="pentaho-platform-plugin-file" />
+    </service-properties>
+    <bean class="org.pentaho.osgi.platform.plugin.deployer.PlatformPluginURLHandler">
+      <property name="pluginFileHandlers" ref="pluginFileHandlers"/>
+    </bean>
+  </service>
+
+  <service id="platformPluginURLHandlerMvn" interface="org.osgi.service.url.URLStreamHandlerService">
+    <service-properties>
+      <entry key="url.handler.protocol" value="pentaho-platform-plugin-mvn" />
+    </service-properties>
+    <bean class="org.pentaho.osgi.platform.plugin.deployer.PlatformPluginMavenURLHandler">
+      <property name="pluginFileHandlers" ref="pluginFileHandlers"/>
+    </bean>
+  </service>
+
+  <bean id="pluginXmlStaticPathsHandler" class="org.pentaho.osgi.platform.plugin.deployer.impl.handlers.pluginxml.PluginXmlStaticPathsHandler">
+    <property name="jsonUtil" ref="jsonUtil"/>
+  </bean>
+  <service id="pluginXmlStaticPathsHandlerService" ref="pluginXmlStaticPathsHandler" interface="org.pentaho.osgi.platform.plugin.deployer.api.PluginFileHandler"/>
+
+  <bean id="pluginXmlExternalResourcesHandler" class="org.pentaho.osgi.platform.plugin.deployer.impl.handlers.pluginxml.PluginXmlExternalResourcesHandler">
+    <property name="jsonUtil" ref="jsonUtil"/>
+  </bean>
+  <service id="pluginXmlExternalResourcesHandlerService" ref="pluginXmlExternalResourcesHandler" interface="org.pentaho.osgi.platform.plugin.deployer.api.PluginFileHandler"/>
+
+  <reference-list id="pluginFileHandlers" interface="org.pentaho.osgi.platform.plugin.deployer.api.PluginFileHandler" availability="optional" />
+</blueprint>
