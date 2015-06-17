@@ -20,7 +20,7 @@
   <properties>
     <felix.version>4.4.1</felix.version>
     <dependency.org.apache.felix.org.apache.felix.configadmin.revision>1.6.0</dependency.org.apache.felix.org.apache.felix.configadmin.revision>
-    <dependency.pentaho-kettle.kettle-core.revision>INNOVATION-SNAPSHOT</dependency.pentaho-kettle.kettle-core.revision>
+    <dependency.pentaho-kettle.kettle-core.revision>6.0-SNAPSHOT</dependency.pentaho-kettle.kettle-core.revision>
   </properties>
 
   <dependencies>
@@ -37,7 +37,7 @@
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
-      <version>1.7.7</version>
+      <version>${slf4j-api.version}</version>
     </dependency>
     <dependency>
       <groupId>pentaho</groupId>
@@ -55,9 +55,14 @@
       <version>1.0.1</version>
     </dependency>
     <dependency>
+      <groupId>org.apache.mina</groupId>
+		<artifactId>mina-core</artifactId>
+		<version>2.0.9</version>
+	</dependency>
+    <dependency>
       <groupId>commons-lang</groupId>
       <artifactId>commons-lang</artifactId>
-      <version>2.6</version>
+      <version>${commons-lang.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.karaf.features</groupId>
