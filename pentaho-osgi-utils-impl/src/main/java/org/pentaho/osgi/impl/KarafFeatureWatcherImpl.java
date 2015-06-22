@@ -50,6 +50,7 @@ public class KarafFeatureWatcherImpl implements IKarafFeatureWatcher {
     long entryTime = System.currentTimeMillis();
 
     ServiceReference<FeaturesService> serviceReference = bundleContext.getServiceReference( FeaturesService.class );
+    if(serviceReference != null) {
     FeaturesService featuresService = bundleContext.getService( serviceReference );
 
     ServiceReference<ConfigurationAdmin> serviceReference1 =
@@ -92,6 +93,6 @@ public class KarafFeatureWatcherImpl implements IKarafFeatureWatcher {
     } catch ( Exception e ) {
       throw new FeatureWatcherException( "Unknown error in KarafWatcher", e );
     }
-
+    } 
   }
 }

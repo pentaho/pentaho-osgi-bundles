@@ -23,6 +23,7 @@
 package org.pentaho.osgi.platform.plugin.deployer;
 
 import org.apache.karaf.util.DeployerUtils;
+import org.apache.karaf.util.maven.Parser;
 import org.pentaho.osgi.platform.plugin.deployer.api.PluginFileHandler;
 import org.pentaho.osgi.platform.plugin.deployer.impl.PluginZipFileProcessor;
 
@@ -38,7 +39,6 @@ import java.util.regex.Pattern;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
-import static org.apache.karaf.util.MvnUtils.getMvnPath;
 
 /**
  * Created by bryan on 8/27/14.
@@ -70,7 +70,8 @@ public class PlatformPluginBundlingURLConnection extends URLConnection {
   @Override public InputStream getInputStream() throws IOException {
     final ExceptionPipedInputStream pipedInputStream =
       new ExceptionPipedInputStream( getMaxSize( getURL().getQuery() ) );
-    String mvnPath = getMvnPath( getURL() );
+    Parser parser = new Parser(getURL().toString());
+    String mvnPath = parser.getArtifactPath();
     int lastSlash = mvnPath.lastIndexOf( '/' );
     if ( lastSlash >= 0 ) {
       mvnPath = mvnPath.substring( lastSlash + 1 );
