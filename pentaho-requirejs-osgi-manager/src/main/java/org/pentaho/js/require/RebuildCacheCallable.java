@@ -64,7 +64,7 @@ public class RebuildCacheCallable implements Callable<String> {
     } );
   }
 
-  private JSONObject toRelativePathedObject( JSONObject jsonObject) {
+  private JSONObject toRelativePathedObject( JSONObject jsonObject ) {
 
     jsonObject.keySet();
     for ( Object key : jsonObject.keySet() ) {
@@ -151,15 +151,31 @@ public class RebuildCacheCallable implements Callable<String> {
     if ( !result.containsKey( "shim" ) ) {
       result.put( "shim", new JSONObject() );
     }
+    if ( !result.containsKey( "map" ) ) {
+      result.put( "map", new JSONObject() );
+    }
+    Object mapObj = result.get( "map" );
+    if ( mapObj instanceof Map ) {
+      Map map = (Map) mapObj;
+      if ( !map.containsKey( "*" ) ) {
+        map.put( "*", new JSONObject() );
+      }
+    }
+    if ( !result.containsKey( "bundles" ) ) {
+      result.put( "bundles", new JSONObject() );
+    }
     if ( !result.containsKey( "config" ) ) {
       result.put( "config", new JSONObject() );
     }
     Object configObj = result.get( "config" );
     if ( configObj instanceof Map ) {
-      Map configMap = ( Map ) configObj;
+      Map configMap = (Map) configObj;
       if ( !configMap.containsKey( "service" ) ) {
         configMap.put( "service", new JSONObject() );
       }
+    }
+    if ( !result.containsKey( "packages" ) ) {
+      result.put( "packages", new JSONArray() );
     }
     StringBuilder sb = new StringBuilder( result.toJSONString() );
     sb.append( ";" );

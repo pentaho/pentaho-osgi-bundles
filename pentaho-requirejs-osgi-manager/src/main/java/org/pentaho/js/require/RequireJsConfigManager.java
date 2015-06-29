@@ -22,7 +22,6 @@
 
 package org.pentaho.js.require;
 
-import org.apache.commons.lang.StringUtils;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -156,7 +155,7 @@ public class RequireJsConfigManager {
     if ( shouldInvalidate ) {
       synchronized ( configMap ) {
         cache = executorService.submit( new RebuildCacheCallable( new HashMap<Long, JSONObject>( this.configMap ),
-            new ArrayList<RequireJsConfiguration>( requireConfigMap.values() ) ) );
+          new ArrayList<RequireJsConfiguration>( requireConfigMap.values() ) ) );
         lastModified = System.currentTimeMillis();
       }
     }

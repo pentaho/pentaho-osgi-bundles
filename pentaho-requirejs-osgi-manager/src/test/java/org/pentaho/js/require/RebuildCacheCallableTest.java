@@ -41,9 +41,33 @@ import static org.junit.Assert.assertEquals;
 public class RebuildCacheCallableTest {
   private List<RequireJsConfiguration> requireJsConfigurations;
 
+  public static void testEquals( Object object1, Object object2 ) {
+    if ( object1 instanceof JSONObject && object2 instanceof JSONObject ) {
+      testEquals( (JSONObject) object1, (JSONObject) object2 );
+    } else if ( object1 instanceof JSONArray && object2 instanceof JSONArray ) {
+      testEquals( (JSONArray) object1, (JSONArray) object2 );
+    } else {
+      assertEquals( object1, object2 );
+    }
+  }
+
+  private static void testEquals( JSONObject object1, JSONObject object2 ) {
+    assertEquals( object1.keySet(), object2.keySet() );
+    for ( Object key : object1.keySet() ) {
+      testEquals( object1.get( key ), object2.get( key ) );
+    }
+  }
+
+  private static void testEquals( JSONArray array1, JSONArray array2 ) {
+    assertEquals( array1.size(), array2.size() );
+    for ( int i = 0; i < array1.size(); i++ ) {
+      testEquals( array1.get( i ), array2.get( i ) );
+    }
+  }
+
   @Before
   public void setup() {
-    requireJsConfigurations = new ArrayList<RequireJsConfiguration>(  );
+    requireJsConfigurations = new ArrayList<RequireJsConfiguration>();
   }
 
   @Test
@@ -76,12 +100,17 @@ public class RebuildCacheCallableTest {
     JSONArray expectedArray = new JSONArray();
     expectedArray.addAll( array1 );
     expectedArray.addAll( array2 );
+    expected.put( "bundles", new JSONObject() );
+    expected.put( "packages", new JSONArray() );
+    JSONObject map = new JSONObject();
+    map.put( "*", new JSONObject() );
+    expected.put( "map", map );
     expected.put( arrayKey, expectedArray );
     expected.put( nullTestKey, "a" );
     expected.put( objectKey, new JSONObject() );
     expected.put( dupKey, "e" );
-    expected.put( "shim", new JSONObject(  ) );
-    expected.put( "paths", new JSONObject(  ) );
+    expected.put( "shim", new JSONObject() );
+    expected.put( "paths", new JSONObject() );
     JSONObject configObj = new JSONObject();
     configObj.put( "service", new JSONObject() );
     expected.put( "config", configObj );
@@ -118,7 +147,7 @@ public class RebuildCacheCallableTest {
     object1.put( objectKey, new JSONArray() );
     JSONObject object2 = new JSONObject();
     configMap.put( 2L, object2 );
-    object2.put( objectKey, new JSONObject(  ) );
+    object2.put( objectKey, new JSONObject() );
     String config = new RebuildCacheCallable( configMap, requireJsConfigurations ).call();
   }
 
@@ -159,29 +188,5 @@ public class RebuildCacheCallableTest {
     configMap.put( 2L, object2 );
     object2.put( new Object(), new JSONArray() );
     String config = new RebuildCacheCallable( configMap, requireJsConfigurations ).call();
-  }
-
-  public static void testEquals( Object object1, Object object2 ) {
-    if ( object1 instanceof JSONObject && object2 instanceof JSONObject ) {
-      testEquals( (JSONObject) object1, (JSONObject) object2 );
-    } else if ( object1 instanceof JSONArray && object2 instanceof JSONArray ) {
-      testEquals( (JSONArray) object1, (JSONArray) object2 );
-    } else {
-      assertEquals( object1, object2 );
-    }
-  }
-
-  private static void testEquals( JSONObject object1, JSONObject object2 ) {
-    assertEquals( object1.keySet(), object2.keySet() );
-    for ( Object key : object1.keySet() ) {
-      testEquals( object1.get( key ), object2.get( key ) );
-    }
-  }
-
-  private static void testEquals( JSONArray array1, JSONArray array2 ) {
-    assertEquals( array1.size(), array2.size() );
-    for ( int i = 0; i < array1.size(); i++ ) {
-      testEquals( array1.get( i ), array2.get( i ) );
-    }
   }
 }
