@@ -1,4 +1,7 @@
 {
+  "bundles": {},
+  "map": { "*" : {} },
+  "packages": [],
   "paths": {
     "angular": "angular-bundle/angular",
     "angular-route": "angular-bundle/angular-route",
