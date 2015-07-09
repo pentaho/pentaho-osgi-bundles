@@ -16,6 +16,7 @@
     <modules>
         <module>api</module>
         <module>impl/RI</module>
+        <module>impl/ehcache</module>
     </modules>
 
     <developers>
