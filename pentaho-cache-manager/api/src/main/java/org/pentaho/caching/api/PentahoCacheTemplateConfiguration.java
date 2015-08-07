@@ -22,7 +22,9 @@
 
 package org.pentaho.caching.api;
 
+import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 
 import javax.cache.Cache;
 import javax.cache.configuration.Configuration;
@@ -63,5 +65,20 @@ public class PentahoCacheTemplateConfiguration {
   public <K, V> Cache<K, V> createCache( String cacheName, Class<K> keyType, Class<V> valueType )
     throws IllegalArgumentException {
     return cacheManager.createCache( cacheName, createConfiguration( keyType, valueType ) );
+  }
+
+  /**
+   * Generates a new PentahoCacheTemplateConfiguration which merges the properties in the current
+   * Configuration with those in templateOverrides, replacing existing entries if present.
+   */
+  public PentahoCacheTemplateConfiguration overrideProperties( final Map<String, String> templateOverrides ) {
+    Map<String, String> overriddenProperties =
+        ImmutableMap.<String, String>builder()
+            .putAll( Maps.filterKeys( getProperties(), new Predicate<String>() {
+              @Override public boolean apply( String s ) {
+                return !templateOverrides.containsKey( s );
+              }
+            } ) ).putAll( templateOverrides ).build();
+    return new PentahoCacheTemplateConfiguration( getDescription(), overriddenProperties, getCacheManager() );
   }
 }
