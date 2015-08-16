@@ -1,0 +1,23 @@
+package org.pentaho.platform.proxy.api;
+
+import org.pentaho.platform.api.engine.IPentahoObjectRegistration;
+
+/**
+ * Proxy Registration holding the proxy object as well as a handle by which the proxy can be de-registered with the
+ * system. Created by nbaker on 8/14/15.
+ */
+public interface IProxyRegistration {
+  /**
+   * Return the PentahoSystem ObjectFactory registration. This can be used to de-register the proxy as needed.
+   *
+   * @return registration
+   */
+  IPentahoObjectRegistration getPentahoObjectRegistration();
+
+  /**
+   * Returns the Proxy Wrapper associated with this registration
+   *
+   * @return proxy object
+   */
+  Object getProxyObject();
+}
