@@ -85,6 +85,7 @@
         <module>pentaho-capability-manager</module>
         <module>pentaho-cache-manager</module>
         <module>pentaho-server-bundle</module>
+        <module>pentaho-proxy-factory</module>
       </modules>
     </profile>
     <profile>
@@ -152,15 +153,6 @@
             <packageLineRate>90</packageLineRate>
             <packageBranchRate>80</packageBranchRate>
           </check>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.0</version>
-        <configuration>
-          <source>1.6</source>
-          <target>1.6</target>
         </configuration>
       </plugin>
     </plugins>
