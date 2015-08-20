@@ -20,7 +20,7 @@
   <properties>
     <felix.version>4.4.1</felix.version>
     <dependency.org.apache.felix.org.apache.felix.configadmin.revision>1.6.0</dependency.org.apache.felix.org.apache.felix.configadmin.revision>
-    <dependency.pentaho-kettle.kettle-core.revision>6.0-SNAPSHOT</dependency.pentaho-kettle.kettle-core.revision>
+    <dependency.pentaho-kettle.version>6.0-SNAPSHOT</dependency.pentaho-kettle.version>
   </properties>
 
   <dependencies>
