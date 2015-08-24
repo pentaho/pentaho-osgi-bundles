@@ -22,11 +22,7 @@ public class ProxyFactoryImpl implements IProxyFactory {
   private Logger logger = LoggerFactory.getLogger( getClass() );
 
 
-  @Override
-  @SuppressWarnings( "unchecked" )
-  public <T, K> IProxyRegistration createProxy( T target, List<Class<?>> publishedClasses,
-                                                Map<String, Object> properties )
-      throws ProxyException {
+  @Override public <T, K> K createProxy( T target ) throws ProxyException {
     Class<T> targetClass = (Class<T>) target.getClass();
     logger.debug( "Proxy Request initiated for class: " + targetClass );
 
@@ -65,6 +61,17 @@ public class ProxyFactoryImpl implements IProxyFactory {
       throw new ProxyException(
           "No Proxy Creator found for supplied target class: " + targetClass.getName() );
     }
+    return proxyWrapper;
+  }
+
+  @Override
+  @SuppressWarnings( "unchecked" )
+  public <T, K> IProxyRegistration createAndRegisterProxy( T target, List<Class<?>> publishedClasses,
+                                                           Map<String, Object> properties )
+      throws ProxyException {
+
+    K proxyWrapper = createProxy( target );
+
     Class<K> proxyWrapperClass = (Class<K>) proxyWrapper.getClass();
     IPentahoObjectReference reference =
         new SingletonPentahoObjectReference.Builder<K>( proxyWrapperClass ).object( proxyWrapper )
@@ -77,6 +84,7 @@ public class ProxyFactoryImpl implements IProxyFactory {
   }
 
   public void setCreators( List<IProxyCreator<?>> creators ) {
+    // assign the incoming list as it may be a resizing proxy from OSGI
     this.creators = creators;
   }
 }

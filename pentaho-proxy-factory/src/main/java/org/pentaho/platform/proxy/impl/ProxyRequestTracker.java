@@ -71,7 +71,7 @@ public class ProxyRequestTracker {
       S service = bundleContext.getService( serviceReference );
       try {
         proxyRegistration = proxyFactory
-            .createProxy( service, Collections.<Class<?>>singletonList( clazz ),
+            .createAndRegisterProxy( service, Collections.<Class<?>>singletonList( clazz ),
                 extractPropertiesFromReference( serviceReference ) );
         registrations.put( serviceReference, proxyRegistration );
       } catch ( ProxyException e ) {

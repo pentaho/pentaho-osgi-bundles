@@ -2,7 +2,6 @@ package org.pentaho.platform.proxy.impl;
 
 import edu.emory.mathcs.backport.java.util.Collections;
 import org.junit.Test;
-import org.pentaho.platform.api.engine.IPentahoObjectRegistration;
 import org.pentaho.platform.engine.core.system.PentahoSystem;
 import org.pentaho.platform.proxy.api.IProxyCreator;
 import org.pentaho.platform.proxy.api.IProxyRegistration;
@@ -20,7 +19,14 @@ public class ProxyFactoryImplTest {
   public void testCreateProxyWithNoCreator() throws Exception {
     ProxyFactoryImpl proxyFactory = new ProxyFactoryImpl();
     try{
-      proxyFactory.createProxy( "Hello World", Collections.singletonList( CharSequence.class ), Collections.emptyMap() );
+      proxyFactory.createAndRegisterProxy( "Hello World", Collections.singletonList( CharSequence.class ),
+          Collections.emptyMap() );
+      fail( "Should have thrown a ProxyException" );
+    } catch ( ProxyException e ){
+
+    }
+    try{
+      proxyFactory.createProxy( "Hello World" );
       fail( "Should have thrown a ProxyException" );
     } catch ( ProxyException e ){
 
@@ -38,12 +44,18 @@ public class ProxyFactoryImplTest {
     proxyFactory.setCreators( Collections.singletonList( creator ) );
 
     IProxyRegistration proxy = proxyFactory
-        .createProxy( target, Collections.<Class<?>>singletonList( CharSequence.class ),
-            Collections.<String, Object>singletonMap("key", "master") );
+        .createAndRegisterProxy( target, Collections.<Class<?>>singletonList( CharSequence.class ),
+            Collections.<String, Object>singletonMap( "key", "master" ) );
     assertNotNull( proxy );
 
     CharSequence registeredString = PentahoSystem.get( CharSequence.class, null, Collections.<String, Object>singletonMap( "key", "master" ) );
     assertEquals( "Good Night", registeredString );
+
+    // Test plain create
+    String plainProxy = proxyFactory.createProxy( target );
+    assertNotNull( proxy );
+    assertEquals( "Good Night", plainProxy );
+
   }
 
   @Test
@@ -57,8 +69,8 @@ public class ProxyFactoryImplTest {
     proxyFactory.setCreators( Collections.singletonList( creator ) );
 
     IProxyRegistration proxy = proxyFactory
-        .createProxy( target, Collections.<Class<?>>singletonList( CharSequence.class ),
-            Collections.<String, Object>singletonMap("key", "master") );
+        .createAndRegisterProxy( target, Collections.<Class<?>>singletonList( CharSequence.class ),
+            Collections.<String, Object>singletonMap( "key", "master" ) );
     assertNotNull( proxy );
     assertEquals( "Good Night", proxy.getProxyObject() );
 
@@ -88,7 +100,7 @@ public class ProxyFactoryImplTest {
       proxyFactory.setCreators( Collections.singletonList( creator ) );
 
       IProxyRegistration proxy =
-          proxyFactory.createProxy( ab, Collections.singletonList( IA.class ), Collections.emptyMap() );
+          proxyFactory.createAndRegisterProxy( ab, Collections.singletonList( IA.class ), Collections.emptyMap() );
       assertEquals( "works", proxy.getProxyObject() );
     }
 
@@ -101,7 +113,7 @@ public class ProxyFactoryImplTest {
       proxyFactory.setCreators( Collections.singletonList( creator ) );
 
       IProxyRegistration proxy =
-          proxyFactory.createProxy( ab, Collections.singletonList( IA.class ), Collections.emptyMap() );
+          proxyFactory.createAndRegisterProxy( ab, Collections.singletonList( IA.class ), Collections.emptyMap() );
       assertEquals( "works", proxy.getProxyObject() );
     }
 
@@ -114,7 +126,7 @@ public class ProxyFactoryImplTest {
       proxyFactory.setCreators( Collections.singletonList( creator ) );
 
       IProxyRegistration proxy =
-          proxyFactory.createProxy( ab, Collections.singletonList( IA.class ), Collections.emptyMap() );
+          proxyFactory.createAndRegisterProxy( ab, Collections.singletonList( IA.class ), Collections.emptyMap() );
       assertEquals( "works", proxy.getProxyObject() );
     }
 
@@ -128,7 +140,7 @@ public class ProxyFactoryImplTest {
       proxyFactory.setCreators( Collections.singletonList( creator ) );
 
       IProxyRegistration proxy =
-          proxyFactory.createProxy( ab, Collections.singletonList( IA.class ), Collections.emptyMap() );
+          proxyFactory.createAndRegisterProxy( ab, Collections.singletonList( IA.class ), Collections.emptyMap() );
       assertEquals( "works", proxy.getProxyObject() );
     }
 

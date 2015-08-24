@@ -20,7 +20,7 @@ public interface IProxyFactory {
    * as well as a IPentahoObjectRegistration handle which can be used to remove the proxy from the system as needed.
    * </p>
    *
-   * @param target           Onject which proxying is being requested for
+   * @param target           Object which proxying is being requested for
    * @param publishedClasses List of classes that the proxy should be registered under in PentahoSystem
    * @param properties       Map of properties for the proxy to be registered with
    * @param <T>              Class of the Target
@@ -28,6 +28,21 @@ public interface IProxyFactory {
    * @return IProxyRegistration holding the proxy and a handle to remove it.
    * @throws ProxyException thrown if no creator is available or if something else goes wrong in proxying
    */
-  <T, K> IProxyRegistration createProxy( T target, List<Class<?>> publishedClasses, Map<String, Object> properties )
+  <T, K> IProxyRegistration createAndRegisterProxy( T target, List<Class<?>> publishedClasses,
+                                                    Map<String, Object> properties )
+      throws ProxyException;
+
+  /**
+   * Consults the available IProxyCreator(s) to find the most specific creator for the given target. The order of
+   * creator resolution is as follows:<br/> <ul> <li>Class Hierarchy: Self->Parent->Parent's Parent->etc.</li>
+   * <li>Interfaces: No guaranteed order</li> </ul>
+   *
+   * @param target           Object which proxying is being requested for
+   * @param <T>              Class of the Target
+   * @param <K>              Type of the returned Proxy Object
+   *
+   * @throws ProxyException thrown if no creator is available or if something else goes wrong in proxying
+   */
+  <T, K> K createProxy( T target )
       throws ProxyException;
 }
