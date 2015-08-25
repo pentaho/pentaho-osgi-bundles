@@ -84,6 +84,8 @@
         <module>pentaho-service-coordinator</module>
         <module>pentaho-capability-manager</module>
         <module>pentaho-cache-manager</module>
+        <module>pentaho-server-bundle</module>
+        <module>pentaho-proxy-factory</module>
       </modules>
     </profile>
     <profile>
@@ -107,8 +109,6 @@
         <module>pentaho-service-coordinator</module>
         <module>pentaho-capability-manager</module>
         <module>pentaho-cache-manager</module>
-        <module>pentaho-server-bundle</module>        
-        <module>pentaho-proxy-factory</module>
       </modules>
     </profile>
     <profile>
@@ -120,6 +120,7 @@
       </activation>
       <modules>
         <module>pentaho-server-bundle</module>
+        <module>pentaho-proxy-factory</module>
       </modules>
     </profile>
   </profiles>
