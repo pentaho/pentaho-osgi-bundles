@@ -82,6 +82,7 @@
             <Bundle-Activator>
               org.pentaho.platform.server.osgi.PentahoOSGIActivator
             </Bundle-Activator>
+            <Package-Imports>javax.servlet;version="3.1.0"</Package-Imports>
           </instructions>
         </configuration>
       </plugin>
