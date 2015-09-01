@@ -24,7 +24,9 @@ public class ProxyRequestTrackerTest {
   @Test
   public void testProxyRequestTracker(){
 
-    ProxyFactoryImpl proxyFactory = new ProxyFactoryImpl(null, null);
+    PentahoSystem.clearObjectFactory();
+
+    ProxyFactoryImpl proxyFactory = new ProxyFactoryImpl( null );
     IProxyCreator<String> creator = mock( IProxyCreator.class );
     IProxyCreator<String> creator2 = mock( IProxyCreator.class );
     when( creator.supports( String.class )).thenReturn( true );

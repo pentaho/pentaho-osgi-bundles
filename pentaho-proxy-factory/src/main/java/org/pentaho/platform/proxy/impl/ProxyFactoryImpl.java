@@ -21,19 +21,12 @@ import java.util.Map;
  * Created by nbaker on 8/10/15.
  */
 public class ProxyFactoryImpl implements IProxyFactory {
-  private final ServiceTracker<IProxyCreator, IProxyCreator>
-      creatorServiceTracker;
   private List<IProxyCreator<?>> creators = new ArrayList<>();
   private Logger logger = LoggerFactory.getLogger( getClass() );
   private ProxyUnwrapper proxyUnwrapper;
-  private BundleContext bundleContext;
 
-  public ProxyFactoryImpl( ProxyUnwrapper proxyUnwrapper, BundleContext bundleContext ) {
+  public ProxyFactoryImpl( ProxyUnwrapper proxyUnwrapper ) {
     this.proxyUnwrapper = proxyUnwrapper;
-    this.bundleContext = bundleContext;
-    creatorServiceTracker =
-        new ServiceTracker<IProxyCreator, IProxyCreator>( bundleContext, IProxyCreator.class, null );
-    creatorServiceTracker.open();
   }
 
   @Override public <T, K> K createProxy( T target ) throws ProxyException {
@@ -52,10 +45,10 @@ public class ProxyFactoryImpl implements IProxyFactory {
     logger.debug( "Attempting to find Proxy Creator by class hierarchy: " + targetClass );
     Class<?> parentClass = targetClass;
     K proxyWrapper = null;
-    IProxyCreator[] proxyCreators = creatorServiceTracker.getServices( new IProxyCreator[] {} );
+
     outer:
     while ( parentClass != null ) {
-      for ( IProxyCreator<?> creator : proxyCreators ) {
+      for ( IProxyCreator<?> creator : creators) {
         if ( creator.supports( parentClass ) ) {
           logger.debug( "Proxy creator found for : " + targetClass + " : " + creator.getClass() );
           proxyWrapper = (K) creator.create( target );
@@ -76,7 +69,7 @@ public class ProxyFactoryImpl implements IProxyFactory {
       while ( parentClass != null ) {
         Class<?>[] interfaces = parentClass.getInterfaces();
         for ( Class<?> anInterface : interfaces ) {
-          for ( IProxyCreator<?> creator : proxyCreators ) {
+          for ( IProxyCreator<?> creator : creators ) {
             if ( creator.supports( anInterface ) ) {
               logger.debug( "Proxy creator found for : " + targetClass + " : " + creator.getClass() );
               proxyWrapper = (K) creator.create( target );
