@@ -14,4 +14,8 @@ public class UserDetailsImpl extends User implements UserDetails {
   public UserDetailsImpl( String username, UserAttribute userAttribute ) {
     super( username, userAttribute.getPassword(), userAttribute.getAuthorities() );
   }
+
+  @Override public String toString() {
+    return getUsername();
+  }
 }

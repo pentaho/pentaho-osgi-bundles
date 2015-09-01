@@ -10,7 +10,7 @@
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
-	<artifactId>pentaho-proxy-spring4</artifactId>
+	<artifactId>pentaho-ss2-proxies</artifactId>
 	<packaging>bundle</packaging>
 
 	<name>Pentaho Community Edition Project: ${project.artifactId}</name>
@@ -19,8 +19,8 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<springframework.version>4.1.5.RELEASE</springframework.version>
-		<springsecurity.version>4.0.2.RELEASE</springsecurity.version>
+	  <springframework.version>3.2.14.RELEASE</springframework.version>
+		<springsecurity.version>2.0.8.RELEASE</springsecurity.version>
 	</properties>
 
 	<dependencies>
@@ -47,76 +47,9 @@
 		</dependency>
 		<dependency>
 			<groupId>pentaho</groupId>
-			<artifactId>pentaho-platform-api</artifactId>
-			<version>6.0-SNAPSHOT</version>
-			<exclusions>
-				<exclusion>
-					<groupId>org.springframework.security</groupId>
-					<artifactId>spring-security-core</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.springframework</groupId>
-					<artifactId>*</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		<dependency>
-			<groupId>pentaho</groupId>
-			<artifactId>pentaho-platform-core</artifactId>
-			<version>6.0-SNAPSHOT</version>
-			<exclusions>
-				<exclusion>
-					<groupId>org.springframework.security</groupId>
-					<artifactId>*</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.springframework.ldap</groupId>
-					<artifactId>*</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.springframework</groupId>
-					<artifactId>*</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency>
-		<dependency>
-			<groupId>pentaho</groupId>
-			<artifactId>pentaho-platform-repository</artifactId>
+			<artifactId>pentaho-proxy-factory</artifactId>
 			<version>6.0-SNAPSHOT</version>
 		</dependency>
-		<dependency>
-			<groupId>pentaho</groupId>
-			<artifactId>pentaho-platform-extensions</artifactId>
-			<version>6.0-SNAPSHOT</version>
-			<exclusions>
-				<exclusion>
-					<groupId>org.apache.xbean</groupId>
-					<artifactId>xbean</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.springframework.security</groupId>
-					<artifactId>*</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.springframework.ldap</groupId>
-					<artifactId>*</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>org.springframework</groupId>
-					<artifactId>*</artifactId>
-				</exclusion>
-
-			</exclusions>
-			<!-- -->
-		</dependency>
-
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>${junit.version}</version>
-      <scope>test</scope>
-    </dependency>
-
 		<dependency>
 			<groupId>org.springframework.security</groupId>
 			<artifactId>spring-security-core</artifactId>
@@ -124,13 +57,20 @@
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.security</groupId>
-			<artifactId>spring-security-config</artifactId>
+			<artifactId>spring-security-core</artifactId>
 			<version>${springsecurity.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-core</artifactId>
 			<version>${springframework.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>${junit.version}</version>
+			<scope>test</scope>
 		</dependency>
 
 	</dependencies>
@@ -147,7 +87,7 @@
 					<instructions>
 						<Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
 						<Bundle-Version>${project.version}</Bundle-Version>
-						<Import-Package>org.springframework.security.authentication;version="[3.0.0, 5.0.0)",*</Import-Package>
+						<Bundle-Activator>org.pentaho.proxy.creators.ProxyCreatorActivator</Bundle-Activator>
 					</instructions>
 				</configuration>
 			</plugin>
@@ -155,3 +95,4 @@
 	</build>
 
 </project>
+

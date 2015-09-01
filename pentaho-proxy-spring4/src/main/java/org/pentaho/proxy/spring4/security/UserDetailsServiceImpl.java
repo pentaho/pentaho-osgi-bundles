@@ -2,6 +2,7 @@ package org.pentaho.proxy.spring4.security;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Timer;
 
 import org.pentaho.platform.api.mt.ITenant;
 import org.pentaho.platform.api.mt.ITenantedPrincipleNameResolver;
@@ -23,20 +24,19 @@ public class UserDetailsServiceImpl implements UserDetailsService {
   public UserDetailsServiceImpl( ITenantedPrincipleNameResolver tenantedPrincipleNameResolver,
       Map<String, String> userDefMap ) {
     this.tenantedPrincipleNameResolver = tenantedPrincipleNameResolver;
-    ITenant tenant = new Tenant( "/pentaho/tenant1", true );
+
     for ( String username : userDefMap.keySet() ) {
-      String principleId = tenantedPrincipleNameResolver.getPrincipleId( tenant, username );
+
       UserAttributeEditor userAttributeEditor = new UserAttributeEditor();
       userAttributeEditor.setAsText( userDefMap.get( username ) );
-      userDetailsList.put( principleId, new UserDetailsImpl( principleId, (UserAttribute) userAttributeEditor
+      userDetailsList.put( username, new UserDetailsImpl( username, (UserAttribute) userAttributeEditor
           .getValue() ) );
     }
   }
 
   @Override
   public UserDetails loadUserByUsername( String username ) throws UsernameNotFoundException {
-    String principalId = tenantedPrincipleNameResolver.getPrincipleId( JcrTenantUtils.getCurrentTenant(),
-        username );
+    String principalId = tenantedPrincipleNameResolver.getPrincipleName( username );
     if ( userDetailsList.get( principalId ) == null ) {
       throw new UsernameNotFoundException( "user not found" );
     }

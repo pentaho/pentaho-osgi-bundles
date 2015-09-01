@@ -24,7 +24,7 @@ public class ProxyRequestTrackerTest {
   @Test
   public void testProxyRequestTracker(){
 
-    ProxyFactoryImpl proxyFactory = new ProxyFactoryImpl();
+    ProxyFactoryImpl proxyFactory = new ProxyFactoryImpl(null, null);
     IProxyCreator<String> creator = mock( IProxyCreator.class );
     IProxyCreator<String> creator2 = mock( IProxyCreator.class );
     when( creator.supports( String.class )).thenReturn( true );

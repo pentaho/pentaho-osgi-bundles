@@ -17,7 +17,7 @@ public class ProxyFactoryImplTest {
 
   @Test
   public void testCreateProxyWithNoCreator() throws Exception {
-    ProxyFactoryImpl proxyFactory = new ProxyFactoryImpl();
+    ProxyFactoryImpl proxyFactory = new ProxyFactoryImpl(null, null );
     try{
       proxyFactory.createAndRegisterProxy( "Hello World", Collections.singletonList( CharSequence.class ),
           Collections.emptyMap() );
@@ -35,7 +35,7 @@ public class ProxyFactoryImplTest {
   }
   @Test
   public void testCreateProxy() throws Exception {
-    ProxyFactoryImpl proxyFactory = new ProxyFactoryImpl();
+    ProxyFactoryImpl proxyFactory = new ProxyFactoryImpl(null, null);
     IProxyCreator<String> creator = mock( IProxyCreator.class );
     when( creator.supports( String.class )).thenReturn( true );
 
@@ -60,7 +60,7 @@ public class ProxyFactoryImplTest {
 
   @Test
   public void testProxyRegistration() throws ProxyException {
-    ProxyFactoryImpl proxyFactory = new ProxyFactoryImpl();
+    ProxyFactoryImpl proxyFactory = new ProxyFactoryImpl(null, null);
     IProxyCreator<String> creator = mock( IProxyCreator.class );
     when( creator.supports( String.class )).thenReturn( true );
 
@@ -92,7 +92,7 @@ public class ProxyFactoryImplTest {
   public void testInheritenceScenarios() throws Exception {
 
     { // Interface
-      ProxyFactoryImpl proxyFactory = new ProxyFactoryImpl();
+      ProxyFactoryImpl proxyFactory = new ProxyFactoryImpl(null, null);
       IProxyCreator<String> creator = mock( IProxyCreator.class );
       when( creator.supports( IAB.class ) ).thenReturn( true );
       AB ab = new AB();
@@ -105,7 +105,7 @@ public class ProxyFactoryImplTest {
     }
 
     { // Class
-      ProxyFactoryImpl proxyFactory = new ProxyFactoryImpl();
+      ProxyFactoryImpl proxyFactory = new ProxyFactoryImpl(null, null);
       IProxyCreator<String> creator = mock( IProxyCreator.class );
       when( creator.supports( AB.class ) ).thenReturn( true );
       AB ab = new AB();
@@ -118,7 +118,7 @@ public class ProxyFactoryImplTest {
     }
 
     { // superclass
-      ProxyFactoryImpl proxyFactory = new ProxyFactoryImpl();
+      ProxyFactoryImpl proxyFactory = new ProxyFactoryImpl(null, null);
       IProxyCreator<String> creator = mock( IProxyCreator.class );
       when( creator.supports( AB.class ) ).thenReturn( true );
       ABC ab = new ABC();
@@ -132,7 +132,7 @@ public class ProxyFactoryImplTest {
 
 
     { // multiple interfaces
-      ProxyFactoryImpl proxyFactory = new ProxyFactoryImpl();
+      ProxyFactoryImpl proxyFactory = new ProxyFactoryImpl(null, null);
       IProxyCreator<String> creator = mock( IProxyCreator.class );
       when( creator.supports( IB.class ) ).thenReturn( true );
       ABSeperated ab = new ABSeperated();

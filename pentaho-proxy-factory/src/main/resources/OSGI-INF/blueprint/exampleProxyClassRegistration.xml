@@ -30,5 +30,10 @@
     </bean>
   </service>
 
+  <bean class="org.pentaho.platform.proxy.impl.ProxyFactoryImpl">
+    <property name="creators">
+      <reference-list interface="org.pentaho.platform.proxy.api.IProxyCreator" availability="optional"/>
+    </property>
+  </bean>
 
 </blueprint>

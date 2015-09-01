@@ -86,6 +86,8 @@
         <module>pentaho-cache-manager</module>
         <module>pentaho-server-bundle</module>
         <module>pentaho-proxy-factory</module>
+        <module>pentaho-ss4-proxies</module>
+        <module>pentaho-ss2-proxies</module>
       </modules>
     </profile>
     <profile>
@@ -158,8 +160,4 @@
       </plugin>
     </plugins>
   </build>
-  <modules>
-    <module>pentaho-spring4-proxy</module>
-    <module>pentaho-proxy-wrappers</module>
-  </modules>
 </project>

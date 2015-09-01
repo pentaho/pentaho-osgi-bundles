@@ -1,5 +1,8 @@
 package org.pentaho.platform.proxy.impl;
 
+import org.osgi.framework.BundleContext;
+import org.osgi.util.tracker.ServiceTracker;
+import org.pentaho.osgi.api.ProxyUnwrapper;
 import org.pentaho.platform.api.engine.IPentahoObjectReference;
 import org.pentaho.platform.api.engine.IPentahoObjectRegistration;
 import org.pentaho.platform.engine.core.system.PentahoSystem;
@@ -18,12 +21,30 @@ import java.util.Map;
  * Created by nbaker on 8/10/15.
  */
 public class ProxyFactoryImpl implements IProxyFactory {
+  private final ServiceTracker<IProxyCreator, IProxyCreator>
+      creatorServiceTracker;
   private List<IProxyCreator<?>> creators = new ArrayList<>();
   private Logger logger = LoggerFactory.getLogger( getClass() );
+  private ProxyUnwrapper proxyUnwrapper;
+  private BundleContext bundleContext;
 
+  public ProxyFactoryImpl( ProxyUnwrapper proxyUnwrapper, BundleContext bundleContext ) {
+    this.proxyUnwrapper = proxyUnwrapper;
+    this.bundleContext = bundleContext;
+    creatorServiceTracker =
+        new ServiceTracker<IProxyCreator, IProxyCreator>( bundleContext, IProxyCreator.class, null );
+    creatorServiceTracker.open();
+  }
 
   @Override public <T, K> K createProxy( T target ) throws ProxyException {
     Class<T> targetClass = (Class<T>) target.getClass();
+
+    if( proxyUnwrapper != null ){
+      // make sure we're dealing with the real target, not a proxy from OSGI
+      target = (T) proxyUnwrapper.unwrap( target );
+      targetClass = (Class<T>) target.getClass();
+    }
+
     logger.debug( "Proxy Request initiated for class: " + targetClass );
 
     // Loops through in succession of the class hierarchy to ensure that the most specific ProxyCreator is used.
@@ -31,13 +52,16 @@ public class ProxyFactoryImpl implements IProxyFactory {
     logger.debug( "Attempting to find Proxy Creator by class hierarchy: " + targetClass );
     Class<?> parentClass = targetClass;
     K proxyWrapper = null;
+    IProxyCreator[] proxyCreators = creatorServiceTracker.getServices( new IProxyCreator[] {} );
     outer:
     while ( parentClass != null ) {
-      for ( IProxyCreator<?> creator : creators ) {
+      for ( IProxyCreator<?> creator : proxyCreators ) {
         if ( creator.supports( parentClass ) ) {
           logger.debug( "Proxy creator found for : " + targetClass + " : " + creator.getClass() );
           proxyWrapper = (K) creator.create( target );
-          break outer;
+          if( proxyWrapper != null ) {
+            break outer;
+          }
         }
       }
       parentClass = parentClass.getSuperclass();
@@ -46,15 +70,25 @@ public class ProxyFactoryImpl implements IProxyFactory {
     if ( proxyWrapper == null ) {
       // Not found with Class heriarchy. Lets try the interface chain.
       logger.debug( "Attempting to find Proxy Creator by declared Interfaces: " + targetClass );
-      Class<?>[] interfaces = targetClass.getInterfaces();
-      for ( Class<?> anInterface : interfaces ) {
-        for ( IProxyCreator<?> creator : creators ) {
-          if ( creator.supports( anInterface ) ) {
-            logger.debug( "Proxy creator found for : " + targetClass + " : " + creator.getClass() );
-            proxyWrapper = (K) creator.create( target );
+
+      parentClass = targetClass;
+      outer:
+      while ( parentClass != null ) {
+        Class<?>[] interfaces = parentClass.getInterfaces();
+        for ( Class<?> anInterface : interfaces ) {
+          for ( IProxyCreator<?> creator : proxyCreators ) {
+            if ( creator.supports( anInterface ) ) {
+              logger.debug( "Proxy creator found for : " + targetClass + " : " + creator.getClass() );
+              proxyWrapper = (K) creator.create( target );
+              if( proxyWrapper != null ) {
+                break outer;
+              }
+            }
           }
         }
+        parentClass = parentClass.getSuperclass();
       }
+
     }
     if ( proxyWrapper == null ) {
       // No creator configured for the supplied target.
@@ -70,9 +104,20 @@ public class ProxyFactoryImpl implements IProxyFactory {
                                                            Map<String, Object> properties )
       throws ProxyException {
 
+    publishedClasses = new ArrayList<>( publishedClasses );
     K proxyWrapper = createProxy( target );
 
     Class<K> proxyWrapperClass = (Class<K>) proxyWrapper.getClass();
+    Class parent = proxyWrapperClass;
+    while( parent != null ){
+      publishedClasses.add( parent );
+      parent = parent.getSuperclass();
+    }
+
+    for ( Class<?> aClass : proxyWrapperClass.getInterfaces() ) {
+      publishedClasses.add( aClass );
+    }
+
     IPentahoObjectReference reference =
         new SingletonPentahoObjectReference.Builder<K>( proxyWrapperClass ).object( proxyWrapper )
             .attributes( properties ).build();
