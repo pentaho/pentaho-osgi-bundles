@@ -88,6 +88,7 @@
         <module>pentaho-proxy-factory</module>
         <module>pentaho-ss4-proxies</module>
         <module>pentaho-ss2-proxies</module>
+        <module>pentaho-proxy-spring4</module>
       </modules>
     </profile>
     <profile>
@@ -125,6 +126,7 @@
         <module>pentaho-proxy-factory</module>
         <module>pentaho-ss4-proxies</module>
         <module>pentaho-ss2-proxies</module>
+        <module>pentaho-proxy-spring4</module>
       </modules>
     </profile>
   </profiles>
