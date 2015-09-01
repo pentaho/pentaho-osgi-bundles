@@ -1,6 +1,5 @@
 package org.pentaho.platform.proxy.impl;
 
-import edu.emory.mathcs.backport.java.util.Collections;
 import org.junit.Assert;
 import org.junit.Test;
 import org.osgi.framework.BundleContext;
@@ -8,6 +7,8 @@ import org.osgi.framework.ServiceReference;
 import org.pentaho.platform.engine.core.system.PentahoSystem;
 import org.pentaho.platform.proxy.api.IProxyCreator;
 import org.pentaho.platform.proxy.api.IProxyRegistration;
+
+import java.util.Collections;
 
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
@@ -37,7 +38,7 @@ public class ProxyRequestTrackerTest {
     when( creator.create( target ) ).thenReturn( "Good Night" );
     when( creator2.create( target2 ) ).thenThrow( new RuntimeException( "foobar" ) );
 
-    proxyFactory.setCreators( Collections.singletonList( creator ) );
+    proxyFactory.setCreators( Collections.<IProxyCreator<?>>singletonList( creator ) );
 
     BundleContext bundleContext = mock( BundleContext.class );
     ProxyRequestTracker tracker = new ProxyRequestTracker( bundleContext, proxyFactory );
