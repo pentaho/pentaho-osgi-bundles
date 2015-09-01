@@ -123,6 +123,8 @@
       <modules>
         <module>pentaho-server-bundle</module>
         <module>pentaho-proxy-factory</module>
+        <module>pentaho-ss4-proxies</module>
+        <module>pentaho-ss2-proxies</module>
       </modules>
     </profile>
   </profiles>
