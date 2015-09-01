@@ -1,10 +1,11 @@
 package org.pentaho.platform.proxy.impl;
 
-import edu.emory.mathcs.backport.java.util.Collections;
 import org.junit.Test;
 import org.pentaho.platform.engine.core.system.PentahoSystem;
 import org.pentaho.platform.proxy.api.IProxyCreator;
 import org.pentaho.platform.proxy.api.IProxyRegistration;
+
+import java.util.Collections;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
@@ -19,8 +20,8 @@ public class ProxyFactoryImplTest {
   public void testCreateProxyWithNoCreator() throws Exception {
     ProxyFactoryImpl proxyFactory = new ProxyFactoryImpl( null );
     try{
-      proxyFactory.createAndRegisterProxy( "Hello World", Collections.singletonList( CharSequence.class ),
-          Collections.emptyMap() );
+      proxyFactory.createAndRegisterProxy( "Hello World", Collections.<Class<?>>singletonList( CharSequence.class ),
+          Collections.<String, Object>emptyMap() );
       fail( "Should have thrown a ProxyException" );
     } catch ( ProxyException e ){
 
@@ -41,14 +42,14 @@ public class ProxyFactoryImplTest {
 
     String target = "Hello World";
     when( creator.create( target ) ).thenReturn( "Good Night" );
-    proxyFactory.setCreators( Collections.singletonList( creator ) );
+    proxyFactory.setCreators( Collections.<IProxyCreator<?>>singletonList( creator ) );
 
     IProxyRegistration proxy = proxyFactory
         .createAndRegisterProxy( target, Collections.<Class<?>>singletonList( CharSequence.class ),
             Collections.<String, Object>singletonMap( "key", "master" ) );
     assertNotNull( proxy );
 
-    CharSequence registeredString = PentahoSystem.get( CharSequence.class, null, Collections.<String, Object>singletonMap( "key", "master" ) );
+    CharSequence registeredString = PentahoSystem.get( CharSequence.class, null, Collections.singletonMap( "key", "master" ) );
     assertEquals( "Good Night", registeredString );
 
     // Test plain create
@@ -66,7 +67,7 @@ public class ProxyFactoryImplTest {
 
     String target = "Hello World";
     when( creator.create( target ) ).thenReturn( "Good Night" );
-    proxyFactory.setCreators( Collections.singletonList( creator ) );
+    proxyFactory.setCreators( Collections.<IProxyCreator<?>>singletonList( creator ) );
 
     IProxyRegistration proxy = proxyFactory
         .createAndRegisterProxy( target, Collections.<Class<?>>singletonList( CharSequence.class ),
@@ -77,13 +78,13 @@ public class ProxyFactoryImplTest {
 
     // Found in PentahoSystem
     CharSequence registeredString = PentahoSystem.get( CharSequence.class, null,
-        Collections.<String, Object>singletonMap( "key", "master" ) );
+        Collections.singletonMap( "key", "master" ) );
     assertEquals( "Good Night", registeredString );
 
     // De-register then make sure removed from PentahoSystem.
     proxy.getPentahoObjectRegistration().remove();
     registeredString = PentahoSystem.get( CharSequence.class, null,
-        Collections.<String, Object>singletonMap( "key", "master" ) );
+        Collections.singletonMap( "key", "master" ) );
     assertNull( registeredString );
   }
 
@@ -97,10 +98,10 @@ public class ProxyFactoryImplTest {
       when( creator.supports( IAB.class ) ).thenReturn( true );
       AB ab = new AB();
       when( creator.create( ab ) ).thenReturn( "works" );
-      proxyFactory.setCreators( Collections.singletonList( creator ) );
+      proxyFactory.setCreators( Collections.<IProxyCreator<?>>singletonList( creator ) );
 
       IProxyRegistration proxy =
-          proxyFactory.createAndRegisterProxy( ab, Collections.singletonList( IA.class ), Collections.emptyMap() );
+          proxyFactory.createAndRegisterProxy( ab, Collections.<Class<?>>singletonList( IA.class ), Collections.<String, Object>emptyMap() );
       assertEquals( "works", proxy.getProxyObject() );
     }
 
@@ -110,10 +111,10 @@ public class ProxyFactoryImplTest {
       when( creator.supports( AB.class ) ).thenReturn( true );
       AB ab = new AB();
       when( creator.create( ab ) ).thenReturn( "works" );
-      proxyFactory.setCreators( Collections.singletonList( creator ) );
+      proxyFactory.setCreators( Collections.<IProxyCreator<?>>singletonList( creator ) );
 
       IProxyRegistration proxy =
-          proxyFactory.createAndRegisterProxy( ab, Collections.singletonList( IA.class ), Collections.emptyMap() );
+          proxyFactory.createAndRegisterProxy( ab, Collections.<Class<?>>singletonList( IA.class ), Collections.<String, Object>emptyMap() );
       assertEquals( "works", proxy.getProxyObject() );
     }
 
@@ -123,10 +124,10 @@ public class ProxyFactoryImplTest {
       when( creator.supports( AB.class ) ).thenReturn( true );
       ABC ab = new ABC();
       when( creator.create( ab ) ).thenReturn( "works" );
-      proxyFactory.setCreators( Collections.singletonList( creator ) );
+      proxyFactory.setCreators( Collections.<IProxyCreator<?>>singletonList( creator ) );
 
       IProxyRegistration proxy =
-          proxyFactory.createAndRegisterProxy( ab, Collections.singletonList( IA.class ), Collections.emptyMap() );
+          proxyFactory.createAndRegisterProxy( ab, Collections.<Class<?>>singletonList( IA.class ), Collections.<String, Object>emptyMap() );
       assertEquals( "works", proxy.getProxyObject() );
     }
 
@@ -137,10 +138,10 @@ public class ProxyFactoryImplTest {
       when( creator.supports( IB.class ) ).thenReturn( true );
       ABSeperated ab = new ABSeperated();
       when( creator.create( ab ) ).thenReturn( "works" );
-      proxyFactory.setCreators( Collections.singletonList( creator ) );
+      proxyFactory.setCreators( Collections.<IProxyCreator<?>>singletonList( creator ) );
 
       IProxyRegistration proxy =
-          proxyFactory.createAndRegisterProxy( ab, Collections.singletonList( IA.class ), Collections.emptyMap() );
+          proxyFactory.createAndRegisterProxy( ab, Collections.<Class<?>>singletonList( IA.class ), Collections.<String, Object>emptyMap() );
       assertEquals( "works", proxy.getProxyObject() );
     }
 
