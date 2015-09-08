@@ -70,6 +70,12 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
+      <groupId>org.apache.karaf.bundle</groupId>
+      <artifactId>org.apache.karaf.bundle.core</artifactId>
+      <version>${karaf.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <version>${junit.version}</version>

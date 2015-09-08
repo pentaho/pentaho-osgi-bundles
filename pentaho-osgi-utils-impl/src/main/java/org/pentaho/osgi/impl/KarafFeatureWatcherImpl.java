@@ -24,6 +24,7 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 import org.osgi.service.cm.Configuration;
 import org.osgi.service.cm.ConfigurationAdmin;
+import org.osgi.util.tracker.ServiceTracker;
 import org.pentaho.osgi.api.IKarafFeatureWatcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,6 +49,14 @@ public class KarafFeatureWatcherImpl implements IKarafFeatureWatcher {
   @Override public void waitForFeatures() throws FeatureWatcherException {
 
     long entryTime = System.currentTimeMillis();
+
+    ServiceTracker serviceTracker = new ServiceTracker( bundleContext, FeaturesService.class.getName(), null );
+    serviceTracker.open();
+    try {
+      serviceTracker.waitForService( timeout );
+    } catch ( InterruptedException e ) {
+      logger.debug( "FeaturesService ServiceTracker Interrupted" );
+    }
 
     ServiceReference<FeaturesService> serviceReference = bundleContext.getServiceReference( FeaturesService.class );
     if(serviceReference != null) {
