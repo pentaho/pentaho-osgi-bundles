@@ -124,6 +124,9 @@ public class WebjarsURLConnection extends URLConnection {
     JarInputStream jarInputStream = new JarInputStream( inputStream );
 
     Manifest manifest = jarInputStream.getManifest();
+    if( manifest == null ){
+      manifest = new Manifest(  );
+    }
     manifest.getMainAttributes()
         .put( new Attributes.Name( Constants.BUNDLE_SYMBOLICNAME ), "pentaho-webjars-" + artifactName );
     manifest.getMainAttributes()
@@ -132,6 +135,7 @@ public class WebjarsURLConnection extends URLConnection {
                 "org.ops4j.pax.web.extender.whiteboard" );
 
     manifest.getMainAttributes().put( new Attributes.Name( Constants.BUNDLE_VERSION ), version.toString() );
+    manifest.getMainAttributes().put( new Attributes.Name( Constants.BUNDLE_MANIFESTVERSION), "2" );
 
     JarOutputStream jarOutputStream = new JarOutputStream( pipedOutputStream, manifest );
 
