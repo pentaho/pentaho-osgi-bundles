@@ -189,4 +189,36 @@ public class RebuildCacheCallableTest {
     object2.put( new Object(), new JSONArray() );
     String config = new RebuildCacheCallable( configMap, requireJsConfigurations ).call();
   }
+
+  @Test
+  public void testRelativePathConversion() throws Exception {
+    String objectKey = "object";
+    String moduleKey = "module";
+    String modulePath = "module/path/script";
+
+    Map<Long, JSONObject> configMap = new HashMap<Long, JSONObject>();
+
+    JSONObject object1 = new JSONObject();
+    configMap.put( 1L, object1 );
+
+    JSONObject relativePath = new JSONObject();
+    relativePath.put(moduleKey, modulePath);
+
+    object1.put( objectKey, relativePath );
+
+    JSONObject object2 = new JSONObject();
+    configMap.put( 2L, object2 );
+
+    JSONObject absolutePath = new JSONObject();
+    absolutePath.put(moduleKey, "/" + modulePath);
+
+    object2.put( objectKey, absolutePath );
+
+    String config = new RebuildCacheCallable( configMap, requireJsConfigurations ).call();
+    if ( config.endsWith( ";" ) ) {
+      config = config.substring( 0, config.length() - 1 );
+    }
+    Object configValue = JSONValue.parse( config );
+    testEquals( modulePath, ( (JSONObject) ( (JSONObject) configValue ).get( objectKey ) ).get( moduleKey ) );
+  }
 }

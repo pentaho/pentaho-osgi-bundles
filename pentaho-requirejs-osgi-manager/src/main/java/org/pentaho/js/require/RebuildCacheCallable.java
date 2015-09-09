@@ -89,7 +89,7 @@ public class RebuildCacheCallable implements Callable<String> {
     } else {
       if ( value1 instanceof JSONObject ) {
         if ( value2 instanceof JSONObject ) {
-          return merge( (JSONObject) value1, (JSONObject) value2 );
+          return merge( (JSONObject) value1, toRelativePathedObject( (JSONObject) value2 ) );
         } else {
           throw new Exception( "Cannot merge key " + key + " due to different types." );
         }
