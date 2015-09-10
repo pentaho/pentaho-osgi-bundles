@@ -124,6 +124,9 @@ public class WebjarsURLConnection extends URLConnection {
     JarInputStream jarInputStream = new JarInputStream( inputStream );
 
     Manifest manifest = jarInputStream.getManifest();
+    if( manifest == null ){
+      manifest = new Manifest();
+    }
     manifest.getMainAttributes()
         .put( new Attributes.Name( Constants.BUNDLE_SYMBOLICNAME ), "pentaho-webjars-" + artifactName );
     manifest.getMainAttributes()
