@@ -47,6 +47,7 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.ThreadFactory;
 import java.util.regex.Pattern;
 
 /**
@@ -126,7 +127,15 @@ public class LocalizationManager implements LocalizationService {
     if ( rebuildCache ) {
       synchronized ( configMap ) {
         if ( executorService == null ) {
-          executorService = Executors.newSingleThreadExecutor();
+          executorService = Executors.newSingleThreadExecutor( new ThreadFactory() {
+            @Override
+            public Thread newThread( Runnable r ) {
+              Thread thread = Executors.defaultThreadFactory().newThread( r );
+              thread.setDaemon( true );
+              thread.setName( "Localization pool" );
+              return thread;
+            }
+          } );
         }
         cache = executorService.submit( new OSGIResourceBundleCacheCallable(
           new HashMap<Long, Map<String, List<OSGIResourceBundleFactory>>>( configMap ) ) );

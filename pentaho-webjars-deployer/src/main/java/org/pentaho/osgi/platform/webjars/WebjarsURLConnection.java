@@ -39,6 +39,7 @@ import java.net.URLConnection;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 import java.util.jar.Attributes;
 import java.util.jar.JarInputStream;
 import java.util.jar.JarOutputStream;
@@ -52,7 +53,16 @@ import java.util.zip.ZipEntry;
  */
 public class WebjarsURLConnection extends URLConnection {
 
-  public static final ExecutorService EXECUTOR = Executors.newFixedThreadPool( 5 );
+  public static final ExecutorService EXECUTOR = Executors.newFixedThreadPool(5, new ThreadFactory() {
+    @Override
+    public Thread newThread(Runnable r) {
+      Thread thread = Executors.defaultThreadFactory().newThread(r);
+      thread.setDaemon(true);
+      thread.setName("WebjarsURLConnection pool");
+      return thread;
+    }
+  });
+
   public static final String MANIFEST_MF = "MANIFEST.MF";
   public static final String PENTAHO_RJS_LOCATION = "META-INF/js/require.json";
   public static final String WEBJARS_REQUIREJS_NAME = "webjars-requirejs.js";

@@ -46,10 +46,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -64,7 +61,15 @@ public class NotificationService {
     new ConcurrentHashMap<String, NotificationTypeObjectMapper>();
   private NotificationAggregator notificationAggregator;
   private boolean isLocalExecutor = true;
-  private ExecutorService executorService = Executors.newCachedThreadPool();
+  private static ExecutorService executorService = Executors.newSingleThreadExecutor(new ThreadFactory() {
+    @Override
+    public Thread newThread(Runnable r) {
+      Thread thread = Executors.defaultThreadFactory().newThread(r);
+      thread.setDaemon(true);
+      thread.setName("NotificationService pool");
+      return thread;
+    }
+  });
 
   public void setNotificationAggregator( NotificationAggregator notificationAggregator ) {
     this.notificationAggregator = notificationAggregator;
