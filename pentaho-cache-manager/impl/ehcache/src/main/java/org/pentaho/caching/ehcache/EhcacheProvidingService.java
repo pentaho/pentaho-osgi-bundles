@@ -29,6 +29,9 @@ import org.pentaho.caching.spi.AbstractCacheProvidingService;
 
 import java.net.URI;
 import java.util.Properties;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 
 /**
  *  PentahoCacheProvidingService implementation which leverages the
@@ -39,12 +42,27 @@ public class EhcacheProvidingService extends AbstractCacheProvidingService {
 
   private static final JCacheCachingProvider providerInstance = new JCacheCachingProvider();
 
+  private final ExecutorService executorService = Executors.newSingleThreadExecutor( new ThreadFactory() {
+    private final ThreadFactory threadFactory = Executors.defaultThreadFactory();
+
+    @Override public Thread newThread( Runnable r ) {
+      Thread thread = threadFactory.newThread( r );
+      thread.setName( "ehcache-jcache" );
+      thread.setDaemon( true );
+      return thread;
+    }
+  } );
+
   @Override public javax.cache.CacheManager createCacheManager( PentahoCacheSystemConfiguration systemConfiguration ) {
     return new JCacheManager(
         providerInstance,
         net.sf.ehcache.CacheManager.getInstance(),
         URI.create( getClass().getName() ),
-        new Properties() );
+      new Properties() ) {
+      @Override public ExecutorService getExecutorService() {
+        return executorService;
+      }
+    };
   }
 
 }
