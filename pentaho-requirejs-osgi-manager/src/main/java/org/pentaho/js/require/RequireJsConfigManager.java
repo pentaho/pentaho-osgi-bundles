@@ -38,10 +38,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
 
 /**
  * Created by bryan on 8/5/14.
@@ -54,7 +51,15 @@ public class RequireJsConfigManager {
   private final Map<Long, RequireJsConfiguration> requireConfigMap = new HashMap<Long, RequireJsConfiguration>();
   private final JSONParser parser = new JSONParser();
   private BundleContext bundleContext;
-  private ExecutorService executorService = Executors.newCachedThreadPool();
+  private static ExecutorService executorService = Executors.newSingleThreadExecutor( new ThreadFactory() {
+    @Override
+    public Thread newThread( Runnable r ) {
+      Thread thread = Executors.defaultThreadFactory().newThread( r );
+      thread.setDaemon( true );
+      thread.setName( "RequireJSConfigManager pool" );
+      return thread;
+    }
+  } );
   private volatile Future<String> cache;
   private volatile long lastModified;
   private String contextRoot = "/";
