@@ -24,4 +24,5 @@ public interface BlueprintStateService
 {
   Boolean hasBlueprint( long bundleId );
   Boolean isBlueprintLoaded( long bundleId );
+  Boolean isBlueprintFailed( long bundleId );
 }
