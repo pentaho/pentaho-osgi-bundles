@@ -25,12 +25,16 @@ import org.osgi.framework.ServiceReference;
 import org.osgi.service.cm.Configuration;
 import org.osgi.service.cm.ConfigurationAdmin;
 import org.osgi.util.tracker.ServiceTracker;
+import org.pentaho.capabilities.api.ICapability;
+import org.pentaho.capabilities.api.ICapabilityManager;
+import org.pentaho.capabilities.impl.DefaultCapabilityManager;
 import org.pentaho.osgi.api.IKarafFeatureWatcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -66,10 +70,33 @@ public class KarafFeatureWatcherImpl implements IKarafFeatureWatcher {
         bundleContext.getServiceReference( ConfigurationAdmin.class );
     ConfigurationAdmin configurationAdmin = bundleContext.getService( serviceReference1 );
 
+
     try {
-      Configuration configuration = configurationAdmin.getConfiguration( "org.apache.karaf.features" );
+      List<String> requiredFeatures = new ArrayList<String>();
+
+      // Install extra features
+      Configuration configuration = configurationAdmin.getConfiguration( "org.pentaho.features" );
+      if( configuration != null && configuration.getProperties() != null ) {
+        String extraFeatures = (String) configuration.getProperties().get( "runtimeFeatures" );
+        if( extraFeatures != null ) {
+          String[] fs = extraFeatures.split( "," );
+          requiredFeatures.addAll( Arrays.asList( fs ) );
+        }
+        ICapabilityManager manager= DefaultCapabilityManager.getInstance();
+        if( manager != null ) {
+          for ( String requiredFeature : requiredFeatures ) {
+            ICapability capability = manager.getCapabilityById( requiredFeature );
+            if ( capability != null ) {
+              capability.install();
+            }
+          }
+        }
+      }
+
+      configuration = configurationAdmin.getConfiguration( "org.apache.karaf.features" );
       String featuresBoot = (String) configuration.getProperties().get( "featuresBoot" );
-      String[] requiredFeatures = featuresBoot.split( "," );
+      String[] fs = featuresBoot.split( "," );
+      requiredFeatures.addAll( Arrays.asList( fs ) );
 
       // Loop through to see if features are all installed
       outer:

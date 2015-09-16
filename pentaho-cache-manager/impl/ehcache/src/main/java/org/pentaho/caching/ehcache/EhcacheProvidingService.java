@@ -22,6 +22,7 @@
 
 package org.pentaho.caching.ehcache;
 
+import net.sf.ehcache.config.Configuration;
 import org.ehcache.jcache.JCacheCachingProvider;
 import org.ehcache.jcache.JCacheManager;
 import org.pentaho.caching.api.PentahoCacheSystemConfiguration;
@@ -56,7 +57,7 @@ public class EhcacheProvidingService extends AbstractCacheProvidingService {
   @Override public javax.cache.CacheManager createCacheManager( PentahoCacheSystemConfiguration systemConfiguration ) {
     return new JCacheManager(
         providerInstance,
-        net.sf.ehcache.CacheManager.getInstance(),
+        net.sf.ehcache.CacheManager.newInstance( new Configuration() ),
         URI.create( getClass().getName() ),
       new Properties() ) {
       @Override public ExecutorService getExecutorService() {
