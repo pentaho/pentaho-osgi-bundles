@@ -66,7 +66,8 @@ public class KarafBlueprintWatcherImpl implements IKarafBlueprintWatcher {
           List<String> unloadedBlueprints = new ArrayList<String>();
           for ( Bundle bundle : bundleContext.getBundles() ) {
             if ( blueprintStateService.hasBlueprint( bundle.getBundleId() ) ) {
-              if ( !blueprintStateService.isBlueprintLoaded( bundle.getBundleId() ) ) {
+              if ( !blueprintStateService.isBlueprintLoaded( bundle.getBundleId() ) && !blueprintStateService
+                  .isBlueprintFailed( bundle.getBundleId() ) ) {
                 unloadedBlueprints.add( bundle.getSymbolicName() );
               }
             }

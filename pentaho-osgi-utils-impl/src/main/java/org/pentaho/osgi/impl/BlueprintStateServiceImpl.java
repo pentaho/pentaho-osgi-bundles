@@ -50,6 +50,10 @@ public class BlueprintStateServiceImpl implements BlueprintStateService, Bluepri
     return hasBlueprint( bundleId ) && getState( bundleId ) == BundleState.Active;
   }
 
+  @Override public Boolean isBlueprintFailed( long bundleId ) {
+    return hasBlueprint( bundleId ) && getState( bundleId ) == BundleState.Failure;
+  }
+
   @Override public Boolean hasBlueprint( long bundleId ) {
     if ( bluePrints.size() == 0 ) {
       for ( Bundle bundle : bundleContext.getBundles() ) {
