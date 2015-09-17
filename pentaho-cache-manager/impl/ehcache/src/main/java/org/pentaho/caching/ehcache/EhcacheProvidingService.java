@@ -22,6 +22,7 @@
 
 package org.pentaho.caching.ehcache;
 
+import net.sf.ehcache.CacheManager;
 import net.sf.ehcache.config.Configuration;
 import org.ehcache.jcache.JCacheCachingProvider;
 import org.ehcache.jcache.JCacheManager;
@@ -42,6 +43,7 @@ import java.util.concurrent.ThreadFactory;
 public class EhcacheProvidingService extends AbstractCacheProvidingService {
 
   private static final JCacheCachingProvider providerInstance = new JCacheCachingProvider();
+  private static CacheManager cacheManager;
 
   private final ExecutorService executorService = Executors.newSingleThreadExecutor( new ThreadFactory() {
     private final ThreadFactory threadFactory = Executors.defaultThreadFactory();
@@ -54,10 +56,18 @@ public class EhcacheProvidingService extends AbstractCacheProvidingService {
     }
   } );
 
+  public static CacheManager getCacheManager() {
+    if( cacheManager == null ) {
+      cacheManager = CacheManager.newInstance( new Configuration() );
+    }
+    return cacheManager;
+  }
+
   @Override public javax.cache.CacheManager createCacheManager( PentahoCacheSystemConfiguration systemConfiguration ) {
+
     return new JCacheManager(
         providerInstance,
-        net.sf.ehcache.CacheManager.newInstance( new Configuration() ),
+        getCacheManager(),
         URI.create( getClass().getName() ),
       new Properties() ) {
       @Override public ExecutorService getExecutorService() {
@@ -66,4 +76,15 @@ public class EhcacheProvidingService extends AbstractCacheProvidingService {
     };
   }
 
+  public void shutdown(){
+    try {
+      getCacheManager().shutdown();
+    } catch ( Exception ignored ){
+      // best effort
+    }
+  }
+
+  @Override protected void finalize() throws Throwable {
+    shutdown();
+  }
 }
