@@ -46,6 +46,7 @@
                 <configuration>
                     <instructions>
                         <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
+                        <Bundle-Activator>org.pentaho.caching.ehcache.Activator</Bundle-Activator>
                     </instructions>
                 </configuration>
             </plugin>
