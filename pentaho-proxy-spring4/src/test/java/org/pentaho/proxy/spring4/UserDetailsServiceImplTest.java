@@ -36,7 +36,7 @@ public class UserDetailsServiceImplTest {
     assertNotNull( userDetails );
     assertEquals( "password", userDetails.getPassword() );
     checkAuthorities( userDetails, new String[] { "Administrator", "Authenticated" } );
-    
+
     // check tiffany
     userDetails = userDetailsServiceImpl.loadUserByUsername( "tiffany" );
     assertNotNull( userDetails );
@@ -68,9 +68,8 @@ public class UserDetailsServiceImplTest {
     }
 
     @Override
-    public String getPrincipleName( String arg0 ) {
-      // TODO Auto-generated method stub
-      return null;
+    public String getPrincipleName( String principalName ) {
+      return principalName;
     }
 
     @Override
