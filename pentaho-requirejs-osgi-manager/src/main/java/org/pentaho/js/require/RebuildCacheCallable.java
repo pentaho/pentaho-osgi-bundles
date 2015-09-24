@@ -35,6 +35,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -89,7 +90,7 @@ public class RebuildCacheCallable implements Callable<String> {
     } else {
       if ( value1 instanceof JSONObject ) {
         if ( value2 instanceof JSONObject ) {
-          return merge( (JSONObject) value1, toRelativePathedObject( (JSONObject) value2 ) );
+          return merge( (JSONObject) value1, toRelativePathedObject( (JSONObject) value2 ), key.equals("shim") );
         } else {
           throw new Exception( "Cannot merge key " + key + " due to different types." );
         }
@@ -111,15 +112,26 @@ public class RebuildCacheCallable implements Callable<String> {
   }
 
   private JSONArray merge( JSONArray array1, JSONArray array2 ) {
+    Set hs = new LinkedHashSet<>();
+    hs.addAll( array1 );
+    hs.addAll( array2 );
+
     JSONArray result = new JSONArray();
-    result.addAll( array1 );
-    result.addAll( array2 );
+    result.addAll( hs );
+
     return result;
   }
 
   private JSONObject merge( JSONObject object1, JSONObject object2 ) throws Exception {
+    return this.merge(object1, object2, false);
+  }
+
+  private JSONObject merge( JSONObject object1, JSONObject object2, boolean insideShim ) throws Exception {
     Set<String> keys = new HashSet<String>( object1.keySet().size() );
     for ( Object key : object1.keySet() ) {
+      if ( !( key instanceof String ) ) {
+        throw new Exception( "Key " + key + " was not a String" );
+      }
       keys.add( (String) key );
     }
     for ( Object key : object2.keySet() ) {
@@ -132,6 +144,23 @@ public class RebuildCacheCallable implements Callable<String> {
     for ( String key : keys ) {
       Object value1 = object1.get( key );
       Object value2 = object2.get( key );
+
+      if( insideShim ) {
+        if ( value1 instanceof JSONArray ) {
+          JSONObject deps = new JSONObject();
+          deps.put( "deps", value1 );
+
+          value1 = deps;
+        }
+
+        if ( value2 instanceof JSONArray ) {
+          JSONObject deps = new JSONObject();
+          deps.put( "deps", value2 );
+
+          value2 = deps;
+        }
+      }
+
       result.put( key, merge( key, value1, value2 ) );
     }
     return result;
