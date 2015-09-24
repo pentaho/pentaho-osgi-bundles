@@ -151,6 +151,41 @@ public class RebuildCacheCallableTest {
     String config = new RebuildCacheCallable( configMap, requireJsConfigurations ).call();
   }
 
+  @Test
+  public void testCanMergeArrayJSONObjectIfKeyIsShim() throws Exception {
+    String objectKey = "shim";
+    String moduleKey = "moduleA";
+    String subobjectKey = "deps";
+
+    Map<Long, JSONObject> configMap = new HashMap<Long, JSONObject>();
+
+    JSONObject object1 = new JSONObject();
+    object1.put( moduleKey, new JSONArray() );
+
+    JSONObject shim1 = new JSONObject();
+    shim1.put( objectKey, object1 );
+
+    configMap.put( 1L, shim1 );
+
+    JSONObject subobject2 = new JSONObject();
+    subobject2.put( subobjectKey, new JSONArray() );
+
+    JSONObject object2 = new JSONObject();
+    object2.put( moduleKey, subobject2 );
+
+    JSONObject shim2 = new JSONObject();
+    shim1.put( objectKey, object2 );
+
+    configMap.put( 2L, shim2 );
+
+    String config = new RebuildCacheCallable( configMap, requireJsConfigurations ).call();
+    if ( config.endsWith( ";" ) ) {
+      config = config.substring( 0, config.length() - 1 );
+    }
+    Object configValue = JSONValue.parse( config );
+    testEquals(new JSONArray(), ( (JSONObject) ((JSONObject) ((JSONObject) configValue).get(objectKey)).get(moduleKey)).get(subobjectKey));
+  }
+
   @Test( expected = Exception.class )
   public void testCannotMergeArrayOtherException() throws Exception {
     String objectKey = "object";
