@@ -216,9 +216,6 @@ public class WebjarsURLConnectionTest {
     entry = zipInputStream.getEntry( "META-INF/js/require.json" );
     assertNotNull(entry);
 
-    String reqFile = IOUtils.toString( zipInputStream.getInputStream( entry ), "UTF-8" );
-    System.out.println(reqFile);
-
   }
 
 }

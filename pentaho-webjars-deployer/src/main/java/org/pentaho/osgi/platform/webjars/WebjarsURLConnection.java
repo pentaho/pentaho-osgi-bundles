@@ -91,7 +91,7 @@ public class WebjarsURLConnection extends URLConnection {
 
   public static final String POM_NAME = "pom.xml";
   public static final Pattern POM_PATTERN =
-      Pattern.compile( "META-INF/maven/org.webjars/([^/]+)/" + POM_NAME );
+      Pattern.compile( "META-INF/maven/org.webjars([^/]*)/([^/]+)/" + POM_NAME );
 
   public static final String BOWER_NAME = "bower.json";
   public static final Pattern BOWER_PATTERN =
@@ -412,10 +412,10 @@ public class WebjarsURLConnection extends URLConnection {
 
     config = sb.toString();
 
-    pat = Pattern.compile( "webjars\\.path\\(['\"]{1}(.*)['\"]{1}, ['\"]{1}(.*)['\"]{1}\\)" );
+    pat = Pattern.compile( "webjars\\.path\\(['\"]{1}(.*)['\"]{1}, (['\"]{0,1}[^\\)]+['\"]{0,1})\\)" );
     m = pat.matcher( config );
     while ( m.find() ) {
-      m.appendReplacement( sb, "\"" + moduleName + "/" + moduleVersion + "/" + m.group( 2 ) + "\"" );
+      m.appendReplacement( sb, "\"" + moduleName + "/" + moduleVersion + "/\" + " + m.group( 2 ) );
     }
     m.appendTail( sb );
 
