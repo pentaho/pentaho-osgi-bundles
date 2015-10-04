@@ -4,6 +4,7 @@ import org.pentaho.platform.engine.core.system.PentahoSystem;
 import org.pentaho.platform.proxy.api.IProxyCreator;
 import org.pentaho.platform.proxy.api.IProxyFactory;
 import org.pentaho.platform.proxy.impl.ProxyException;
+import org.pentaho.proxy.creators.ProxyUtils;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.util.ReflectionUtils;
@@ -19,7 +20,7 @@ public class S4AuthenticationProxyCreator implements IProxyCreator<Authenticatio
   private IProxyFactory iProxyFactory;
 
   @Override public boolean supports( Class aClass ) {
-    return "org.springframework.security.Authentication".equals( aClass.getName() );
+    return ProxyUtils.isRecursivelySupported( "org.springframework.security.Authentication", aClass );
   }
 
   @Override public Authentication create( Object o ) {

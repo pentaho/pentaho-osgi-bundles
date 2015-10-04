@@ -1,6 +1,7 @@
 package org.pentaho.proxy.creators.authenticationprovider;
 
 import org.pentaho.platform.proxy.api.IProxyCreator;
+import org.pentaho.proxy.creators.ProxyUtils;
 import org.springframework.security.Authentication;
 import org.springframework.security.GrantedAuthority;
 import org.springframework.security.GrantedAuthorityImpl;
@@ -20,7 +21,7 @@ import java.util.List;
  */
 public class AuthenticationProxyCreator implements IProxyCreator<Authentication> {
   @Override public boolean supports( Class aClass ) {
-    return "org.springframework.security.core.Authentication".equals( aClass.getName() );
+    return ProxyUtils.isRecursivelySupported( "org.springframework.security.core.Authentication", aClass );
   }
 
   @Override public Authentication create( Object o ) {
