@@ -22,4 +22,16 @@
   <service auto-export="all-classes">
     <bean class="org.pentaho.proxy.creators.authenticationprovider.S4AuthenticationProxyCreator" />
   </service>
+
+	<service auto-export="all-classes">
+		<bean class="org.pentaho.proxy.creators.authenticationmanager.S4AuthenticationManagerProxyCreator" />
+	</service>
+
+	<service auto-export="all-classes">
+		<bean class="org.pentaho.proxy.creators.authenticationentrypoint.S4AuthenticationEntryPointProxyCreator" />
+	</service>
+
+	<service auto-export="all-classes">
+		<bean class="org.pentaho.proxy.creators.authenticationentrypoint.S4AuthenticationExceptionProxyCreator" />
+	</service>
 </blueprint>
