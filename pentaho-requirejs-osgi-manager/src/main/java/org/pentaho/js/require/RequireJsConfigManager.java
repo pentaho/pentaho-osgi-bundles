@@ -63,6 +63,7 @@ public class RequireJsConfigManager {
   private volatile Future<String> cache;
   private volatile long lastModified;
   private String contextRoot = "/";
+  private RequireJsBundleListener bundleListener;
 
   public BundleContext getBundleContext() {
     return bundleContext;
@@ -213,12 +214,19 @@ public class RequireJsConfigManager {
   }
 
   public void init() throws Exception {
-    bundleContext.addBundleListener( new RequireJsBundleListener( this ) );
+    bundleListener = new RequireJsBundleListener( this );
+    bundleContext.addBundleListener( bundleListener );
     for ( Bundle bundle : bundleContext.getBundles() ) {
       updateBundleContext( bundle );
     }
     updateBundleContext( bundleContext.getBundle() );
     invalidateCache( true );
+  }
+
+  public void destroy(){
+    if( bundleListener != null ) {
+      bundleContext.removeBundleListener( bundleListener );
+    }
   }
 
   public String getContextRoot() {
