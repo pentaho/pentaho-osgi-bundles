@@ -8,6 +8,9 @@ import org.springframework.security.GrantedAuthorityImpl;
 import org.springframework.security.providers.UsernamePasswordAuthenticationToken;
 import org.springframework.util.ReflectionUtils;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -20,6 +23,9 @@ import java.util.List;
  * Created by nbaker on 8/31/15.
  */
 public class AuthenticationProxyCreator implements IProxyCreator<Authentication> {
+
+  private Logger logger = LoggerFactory.getLogger( getClass() );
+
   @Override public boolean supports( Class aClass ) {
     return ProxyUtils.isRecursivelySupported( "org.springframework.security.core.Authentication", aClass );
   }
@@ -48,9 +54,9 @@ public class AuthenticationProxyCreator implements IProxyCreator<Authentication>
         return new UsernamePasswordAuthenticationToken( principal, credentials,
             authorityList.toArray( new GrantedAuthority[ authorityList.size() ] ) );
       } catch ( IllegalAccessException e ) {
-        e.printStackTrace();
+        logger.error( e.getMessage(), e );
       } catch ( InvocationTargetException e ) {
-        e.printStackTrace();
+        logger.error( e.getMessage() , e );
       }
     }
     return null;

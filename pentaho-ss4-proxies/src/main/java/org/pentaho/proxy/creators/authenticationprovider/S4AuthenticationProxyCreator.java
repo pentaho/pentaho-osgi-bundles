@@ -9,6 +9,9 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.util.ReflectionUtils;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
@@ -16,6 +19,8 @@ import java.lang.reflect.Method;
  * Created by nbaker on 8/31/15.
  */
 public class S4AuthenticationProxyCreator implements IProxyCreator<Authentication> {
+
+  private Logger logger = LoggerFactory.getLogger( getClass() );
 
   private IProxyFactory iProxyFactory;
 
@@ -34,9 +39,9 @@ public class S4AuthenticationProxyCreator implements IProxyCreator<Authenticatio
         Object principal = getPrincipal.invoke( o, new Object[] {} );
         return new UsernamePasswordAuthenticationToken( principal, credentials );
       } catch ( IllegalAccessException e ) {
-        e.printStackTrace();
+        logger.error( e.getMessage(), e );
       } catch ( InvocationTargetException e ) {
-        e.printStackTrace();
+        logger.error( e.getMessage() , e );
       }
     }
     return null;

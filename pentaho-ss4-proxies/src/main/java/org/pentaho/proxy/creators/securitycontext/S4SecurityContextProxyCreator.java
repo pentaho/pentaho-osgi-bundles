@@ -7,10 +7,15 @@ import org.pentaho.platform.proxy.impl.ProxyException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 public class S4SecurityContextProxyCreator implements IProxyCreator<SecurityContext> {
+
+  private Logger logger = LoggerFactory.getLogger( getClass() );
 
   @Override public boolean supports( Class aClass ) {
     // supports legacy spring.security 2.0.8 SecurityContext
@@ -51,7 +56,7 @@ public class S4SecurityContextProxyCreator implements IProxyCreator<SecurityCont
         }
 
       } catch ( InvocationTargetException | IllegalAccessException | ProxyException e ) {
-        e.printStackTrace();
+        logger.error( e.getMessage() , e );
       }
 
       return null;
@@ -70,7 +75,7 @@ public class S4SecurityContextProxyCreator implements IProxyCreator<SecurityCont
         setAuthenticationMethod.invoke( target, auth );
 
       } catch ( InvocationTargetException | IllegalAccessException | ProxyException e ) {
-        e.printStackTrace();
+        logger.error( e.getMessage() , e );
       }
     }
   }
