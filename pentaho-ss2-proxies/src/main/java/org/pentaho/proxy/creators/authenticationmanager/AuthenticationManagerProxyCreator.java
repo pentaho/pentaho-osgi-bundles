@@ -12,10 +12,15 @@ import org.springframework.security.AuthenticationException;
 import org.springframework.security.AuthenticationManager;
 import org.springframework.util.ReflectionUtils;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 public class AuthenticationManagerProxyCreator implements IProxyCreator<AuthenticationManager> {
+
+  private Logger logger = LoggerFactory.getLogger( getClass() );
 
   @Override public boolean supports( Class aClass ) {
     return ProxyUtils.isRecursivelySupported( "org.springframework.security.authentication.AuthenticationManager", aClass );
@@ -49,7 +54,7 @@ public class AuthenticationManagerProxyCreator implements IProxyCreator<Authenti
         }
 
       } catch ( InvocationTargetException | IllegalAccessException | ProxyException e ) {
-        e.printStackTrace();
+        logger.error( e.getMessage() , e );
       }
 
       return null;

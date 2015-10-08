@@ -9,6 +9,9 @@ import org.springframework.security.AuthenticationException;
 import org.springframework.security.providers.AuthenticationProvider;
 import org.springframework.util.ReflectionUtils;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
@@ -16,6 +19,8 @@ import java.lang.reflect.Method;
  * Created by nbaker on 8/31/15.
  */
 public class AuthenticationProviderProxyCreator implements IProxyCreator<AuthenticationProvider> {
+
+  private Logger logger = LoggerFactory.getLogger( getClass() );
 
   private IProxyFactory iProxyFactory;
 
@@ -67,7 +72,7 @@ public class AuthenticationProviderProxyCreator implements IProxyCreator<Authent
           return getFactory().createProxy( retVal );
         }
       } catch ( InvocationTargetException | IllegalAccessException | ProxyException e ) {
-        e.printStackTrace();
+        logger.error( e.getMessage() , e );
       }
       return null;
 

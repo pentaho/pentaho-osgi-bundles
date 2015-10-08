@@ -17,10 +17,15 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.util.ReflectionUtils;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 public class S4AuthenticationEntryPointProxyCreator implements IProxyCreator<AuthenticationEntryPoint> {
+
+  private Logger logger = LoggerFactory.getLogger( getClass() );
 
   @Override public boolean supports( Class aClass ) {
     return ProxyUtils.isRecursivelySupported( "org.springframework.security.ui.AuthenticationEntryPoint", aClass );
@@ -65,7 +70,7 @@ public class S4AuthenticationEntryPointProxyCreator implements IProxyCreator<Aut
             aexProxy );
 
       } catch ( InvocationTargetException | IllegalAccessException | ProxyException e ) {
-        e.printStackTrace();
+        logger.error( e.getMessage() , e );
       }
     }
   }

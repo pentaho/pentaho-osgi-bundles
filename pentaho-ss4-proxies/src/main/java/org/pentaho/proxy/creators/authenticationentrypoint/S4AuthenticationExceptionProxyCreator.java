@@ -9,11 +9,16 @@ import org.pentaho.platform.proxy.impl.ProxyException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 public class S4AuthenticationExceptionProxyCreator implements IProxyCreator<AuthenticationException> {
+
+  private Logger logger = LoggerFactory.getLogger( getClass() );
 
   @Override public boolean supports( Class aClass ) {
     return ProxyUtils.isRecursivelySupported( "org.springframework.security.AuthenticationException", aClass );
@@ -54,7 +59,7 @@ public class S4AuthenticationExceptionProxyCreator implements IProxyCreator<Auth
         }
 
       } catch ( InvocationTargetException | IllegalAccessException | ProxyException e ) {
-        e.printStackTrace();
+        logger.error( e.getMessage(), e );
       }
 
       return null;
@@ -71,7 +76,7 @@ public class S4AuthenticationExceptionProxyCreator implements IProxyCreator<Auth
         return getExtraInformationMethod.invoke( target );
 
       } catch ( InvocationTargetException | IllegalAccessException e ) {
-        e.printStackTrace();
+        logger.error( e.getMessage() , e );
       }
 
       return null;
