@@ -8,6 +8,7 @@ import org.pentaho.proxy.creators.authenticationentrypoint.AuthenticationExcepti
 import org.pentaho.proxy.creators.authenticationmanager.AuthenticationManagerProxyCreator;
 import org.pentaho.proxy.creators.authenticationprovider.AuthenticationProviderProxyCreator;
 import org.pentaho.proxy.creators.authenticationprovider.AuthenticationProxyCreator;
+import org.pentaho.proxy.creators.grantedauthorities.GrantedAuthorityProxyCreator;
 import org.pentaho.proxy.creators.securitycontext.SecurityContextProxyCreator;
 import org.pentaho.proxy.creators.userdetailsservice.UserDetailsServiceCreator;
 
@@ -24,6 +25,7 @@ public class ProxyCreatorActivator implements BundleActivator {
     bundleContext.registerService( IProxyCreator.class, new AuthenticationExceptionProxyCreator(), null );
     bundleContext.registerService( IProxyCreator.class, new AuthenticationManagerProxyCreator(), null );
     bundleContext.registerService( IProxyCreator.class, new SecurityContextProxyCreator(), null );
+    bundleContext.registerService( IProxyCreator.class, new GrantedAuthorityProxyCreator(), null );
   }
 
   @Override public void stop( BundleContext bundleContext ) throws Exception {
