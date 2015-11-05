@@ -70,15 +70,15 @@ import java.util.ArrayList;
  */
 public class WebjarsURLConnection extends URLConnection {
 
-  public static final ExecutorService EXECUTOR = Executors.newFixedThreadPool(5, new ThreadFactory() {
+  public static final ExecutorService EXECUTOR = Executors.newFixedThreadPool( 5, new ThreadFactory() {
     @Override
-    public Thread newThread(Runnable r) {
-      Thread thread = Executors.defaultThreadFactory().newThread(r);
-      thread.setDaemon(true);
-      thread.setName("WebjarsURLConnection pool");
+    public Thread newThread( Runnable r ) {
+      Thread thread = Executors.defaultThreadFactory().newThread( r );
+      thread.setDaemon( true );
+      thread.setName( "WebjarsURLConnection pool" );
       return thread;
     }
-  });
+  } );
 
   private final JSONParser parser = new JSONParser();
 
@@ -102,7 +102,7 @@ public class WebjarsURLConnection extends URLConnection {
       Pattern.compile( "META-INF/resources/webjars/([^/]+)/([^/]+)/" + NPM_NAME );
 
   public static final Pattern JS_PATTERN =
-      Pattern.compile( "META-INF/resources/webjars/([^/]+)/([^/]+)/.*");
+      Pattern.compile( "META-INF/resources/webjars/([^/]+)/([^/]+)/.*" );
 
   private Logger logger = LoggerFactory.getLogger( getClass() );
 
@@ -111,7 +111,6 @@ public class WebjarsURLConnection extends URLConnection {
   }
 
   @Override public void connect() throws IOException {
-
   }
 
   @Override public InputStream getInputStream() throws IOException {
@@ -149,7 +148,7 @@ public class WebjarsURLConnection extends URLConnection {
     if ( url.getProtocol().equals( "file" ) ) {
       String filePath = url.getFile();
       int start = filePath.lastIndexOf( '/' );
-      if(start >= 0) {
+      if ( start >= 0 ) {
         artifactName = filePath.substring( filePath.lastIndexOf( '/' ) + 1, filePath.length() );  
       } else {
         artifactName = filePath;
@@ -169,16 +168,16 @@ public class WebjarsURLConnection extends URLConnection {
     JarInputStream jarInputStream = new JarInputStream( inputStream );
 
     Manifest manifest = jarInputStream.getManifest();
-    if( manifest == null ){
+    if ( manifest == null ) {
       manifest = new Manifest();
-      manifest.getMainAttributes().put(Attributes.Name.MANIFEST_VERSION, "1.0");
+      manifest.getMainAttributes().put( Attributes.Name.MANIFEST_VERSION, "1.0" );
     }
     manifest.getMainAttributes()
         .put( new Attributes.Name( Constants.BUNDLE_SYMBOLICNAME ), "pentaho-webjars-" + artifactName );
     manifest.getMainAttributes()
         .put( new Attributes.Name( Constants.IMPORT_PACKAGE ),
-            "org.osgi.service.http,org.apache.felix.http.api,org.ops4j.pax.web.extender.whiteboard.runtime," +
-                "org.ops4j.pax.web.extender.whiteboard" );
+          "org.osgi.service.http,org.apache.felix.http.api,org.ops4j.pax.web.extender.whiteboard.runtime,"
+            + "org.ops4j.pax.web.extender.whiteboard" );
 
     manifest.getMainAttributes().put( new Attributes.Name( Constants.BUNDLE_VERSION ), version.toString() );
 
@@ -189,7 +188,7 @@ public class WebjarsURLConnection extends URLConnection {
     String moduleVersion = "unknown";
     
     int foundRJs = Integer.MAX_VALUE;
-    ArrayList<String> js_files = new ArrayList<String>();
+    ArrayList<String> js_files = new ArrayList<>();
 
     while ( ( entry = jarInputStream.getNextJarEntry() ) != null ) {
       String name = entry.getName();
@@ -235,13 +234,12 @@ public class WebjarsURLConnection extends URLConnection {
         }
 
         Matcher matcher = POM_PATTERN.matcher( name );
-        if ( matcher.matches() == false ) {
+        if ( !matcher.matches() ) {
           logger.error( "pom.xml location isn't right" );
           continue;
         }
 
         try {
-
           byte[] bytes = IOUtils.toByteArray( jarInputStream );
           Document pom = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse( new ByteArrayInputStream( bytes ) );
 
@@ -249,8 +247,8 @@ public class WebjarsURLConnection extends URLConnection {
           
           String pomConfig = ( String ) xPath.evaluate("/project/properties/requirejs", pom.getDocumentElement(), XPathConstants.STRING);
 
-          moduleName = ( String ) xPath.evaluate("/project/artifactId", pom.getDocumentElement(), XPathConstants.STRING);
-          moduleVersion = ( String ) xPath.evaluate("/project/version", pom.getDocumentElement(), XPathConstants.STRING);
+          moduleName = (String) xPath.evaluate( "/project/artifactId", pom.getDocumentElement(), XPathConstants.STRING );
+          moduleVersion = (String) xPath.evaluate( "/project/version", pom.getDocumentElement(), XPathConstants.STRING );
 
           String convertedConfig = modifyConfigPaths( pomConfig, moduleName, moduleVersion );
 
@@ -264,14 +262,13 @@ public class WebjarsURLConnection extends URLConnection {
         }
 
       } else if ( name.endsWith( BOWER_NAME ) ) {
-
         // next try to generate requirejs.json from bower.json (Bower WebJars)
-        if(foundRJs < 3) {
+        if ( foundRJs < 3 ) {
           continue;
         }
 
         Matcher matcher = BOWER_PATTERN.matcher( name );
-        if ( matcher.matches() == false ) {
+        if ( !matcher.matches() ) {
           logger.error( "bower.json location isn't right" );
           continue;
         }
@@ -284,27 +281,22 @@ public class WebjarsURLConnection extends URLConnection {
         String bowerConfig = new String( bytes, "UTF-8" );
 
         try {
+          requirejs = requirejsFromJson( bowerConfig, moduleName, moduleVersion, dependencies );
 
-          String convertedConfig = requirejsFromJson( bowerConfig, moduleName, moduleVersion );
-
-          addRequireJsToJar(convertedConfig, jarOutputStream);
-          
           foundRJs = 3;
           logger.info( "found bower.json" );
-
+          origin = "bower.json";
         } catch ( Exception e ) {
           logger.error( "error reading bower.json - " + e.getMessage() );
         }
-
       } else if ( name.endsWith( NPM_NAME ) ) {
-
         // next try to generate requirejs.json from package.json (NPM WebJars)
-        if(foundRJs < 4) {
+        if ( foundRJs < 4 ) {
           continue;
         }
 
         Matcher matcher = NPM_PATTERN.matcher( name );
-        if ( matcher.matches() == false ) {
+        if ( !matcher.matches() ) {
           logger.error( "package.json location isn't right" );
           continue;
         }
@@ -328,19 +320,16 @@ public class WebjarsURLConnection extends URLConnection {
         } catch ( Exception e ) {
           logger.error( "error reading package.json - " + e.getMessage() );
         }
-
       } else {
-
         jarOutputStream.putNextEntry( entry );
         IOUtils.copy( jarInputStream, jarOutputStream );
         jarOutputStream.closeEntry();
 
         // store JS filenames for require.json fallback generation on malformed webjars
-        if( foundRJs == Integer.MAX_VALUE && FilenameUtils.getExtension( name ).equals( "js" ) ) {
-          js_files.add(name);
+        if ( foundRJs == Integer.MAX_VALUE && FilenameUtils.getExtension( name ).equals( "js" ) ) {
+          js_files.add( name );
         }
       }
-
     }
 
     int js_count = js_files.size();
@@ -349,11 +338,11 @@ public class WebjarsURLConnection extends URLConnection {
       
       JSONObject paths = new JSONObject();
 
-      while (iterator.hasNext()) {
+      while ( iterator.hasNext() ) {
         String file = iterator.next();
 
         Matcher matcher = JS_PATTERN.matcher( file );
-        if ( matcher.matches() == false ) {
+        if ( !matcher.matches() ) {
           continue;
         }
 
@@ -371,7 +360,7 @@ public class WebjarsURLConnection extends URLConnection {
       }
 
       JSONObject requirejs = new JSONObject();
-      requirejs.put("paths", paths);
+      requirejs.put( "paths", paths );
 
       addRequireJsToJar(requirejs.toJSONString(), jarOutputStream);
       
@@ -391,9 +380,9 @@ public class WebjarsURLConnection extends URLConnection {
       jarOutputStream.putNextEntry( newEntry );
       jarOutputStream.write( blueprintTemplate.getBytes( "UTF-8" ) );
     }
+
     // Process webjars into our form
     jarOutputStream.closeEntry();
-
 
     pipedOutputStream.flush();
     jarOutputStream.close();
@@ -415,120 +404,192 @@ public class WebjarsURLConnection extends URLConnection {
     pat = Pattern.compile( "webjars\\.path\\(['\"]{1}(.*)['\"]{1}, (['\"]{0,1}[^\\)]+['\"]{0,1})\\)" );
     m = pat.matcher( config );
     while ( m.find() ) {
-      m.appendReplacement( sb, "\"" + moduleName + "/" + moduleVersion + "/\" + " + m.group( 2 ) );
+      m.appendReplacement( sb, m.group( 2 ) );
     }
     m.appendTail( sb );
 
     config = sb.toString();
 
-
     ScriptEngineManager factory = new ScriptEngineManager();
     ScriptEngine engine = factory.getEngineByName( "JavaScript" );
-    try {
-      String script = null;
-      try {
-        script = IOUtils.toString(
-            getClass().getResourceAsStream( "/org/pentaho/osgi/platform/webjars/require-js-aggregator.js" ) );
-      } catch ( IOException e ) {
-        e.printStackTrace();
-      }
-      script = script.replace( "{{EXTERNAL_CONFIG}}", config );
+    String script = IOUtils.toString( getClass().getResourceAsStream( "/org/pentaho/osgi/platform/webjars/require-js-aggregator.js" ) );
+    script = script.replace( "{{EXTERNAL_CONFIG}}", config );
 
-      //      Context.enter().getWrapFactory().setJavaPrimitiveWrap( false );
-      engine.eval( script );
+    //      Context.enter().getWrapFactory().setJavaPrimitiveWrap( false );
+    engine.eval( script );
 
-      return ( (Invocable) engine ).invokeFunction( "processConfig", "" ).toString();
-
-    } catch ( ScriptException e ) {
-      return e.getMessage();
-    } catch ( NoSuchMethodException e ) {
-      e.printStackTrace();
-    }
-    return null;
-
+    return (JSONObject) parser.parse( ( (Invocable) engine ).invokeFunction( "processConfig", "" ).toString() );
   }
 
-  private String modifyConfigPaths( String config, String moduleName, String moduleVersion ) throws ParseException {
-    JSONObject cnf = ( JSONObject ) parser.parse( config );
+  private JSONObject requirejsFromPom( Element document, String moduleName, String moduleVersion,
+                                        HashMap<String, String> dependencies )
+    throws ParseException, XPathExpressionException {
+    XPath xPath = XPathFactory.newInstance().newXPath();
 
-    JSONObject paths = ( JSONObject ) cnf.get( "paths" );
+    String pomConfig = (String) xPath.evaluate( "/project/properties/requirejs", document, XPathConstants.STRING );
 
-    Iterator iter = paths.keySet().iterator();
-    while(iter.hasNext()){
-      String key = ( String ) iter.next();
-      paths.put( key, moduleName + "/" + moduleVersion + "/" + paths.get( key ) );
+    JSONObject requirejs = (JSONObject) parser.parse( pomConfig );
+
+    NodeList pomDependencies = (NodeList) xPath.evaluate( "/project/dependencies/dependency[contains(groupId, 'org.webjars')]", document, XPathConstants.NODESET );
+    for ( int i = 0, ic = pomDependencies.getLength(); i != ic; ++i ) {
+      Node dependency = pomDependencies.item( i );
+
+      NodeList dependencyChildNodes = dependency.getChildNodes();
+
+      String dependencyGroupId = null;
+      String dependencyArtifactId = null;
+      String dependencyVersion = null;
+
+      for ( int j = 0, jc = dependencyChildNodes.getLength(); j != jc; ++j ) {
+        Node item = dependencyChildNodes.item( j );
+        String nodeName = item.getNodeName();
+
+        if ( nodeName.equals( "groupId" ) ) {
+          dependencyGroupId = item.getChildNodes().item( 0 ).getNodeValue();
+        }
+
+        if ( nodeName.equals( "artifactId" ) ) {
+          dependencyArtifactId = item.getChildNodes().item( 0 ).getNodeValue();
+        }
+
+        if ( nodeName.equals( "version" ) ) {
+          dependencyVersion = item.getChildNodes().item( 0 ).getNodeValue();
+        }
+      }
+
+      dependencies.put( "pentaho-webjar-deployer:" + dependencyGroupId + "/" + dependencyArtifactId, dependencyVersion );
     }
 
-    return cnf.toJSONString();  
+    return requirejs;
   }
 
   // bower.json and package.json follow very similar format, so it can be parsed by the same method
-  private String requirejsFromJson( String config, String moduleName, String moduleVersion ) throws ParseException {
-    JSONObject json = ( JSONObject ) parser.parse( config );
+  private JSONObject requirejsFromJson( String config, String moduleName, String moduleVersion,
+                                        HashMap<String, String> dependencies ) throws ParseException {
+    JSONObject json = (JSONObject) parser.parse( config );
 
-    JSONObject paths = new JSONObject();
+    HashMap<String, String> paths = new HashMap<>();
 
-    paths.put( moduleName, moduleName + "/" + moduleVersion );
+    extractPaths( json, "files", moduleName, paths );
+    extractPaths( json, "main", moduleName, paths );
 
-    if( json.containsKey( "main" ) ) {
-      try {
-        String file = ( String ) json.get( "main" );
+    HashMap<String, Object> shim = new HashMap<>();
 
-        if( FilenameUtils.getExtension( file ).equals( "js" ) ) {
-          paths.put( moduleName, moduleName + "/" + moduleVersion + "/" + FilenameUtils.removeExtension( file ) );
-        }
-      } catch ( ClassCastException e ) {
-        JSONArray files = (JSONArray) json.get("main");
+    if ( json.containsKey( "dependencies" ) ) {
+      HashMap<String, Object> deps = (HashMap<String, Object>) json.get( "dependencies" );
+      final Set<String> depsKeySet = deps.keySet();
 
-        Iterator<String> iterator = files.iterator();
-        while (iterator.hasNext()) {
-          String file = iterator.next();
+      for ( String key : paths.keySet() ) {
+        HashMap<String, ArrayList<String>> shim_deps = new HashMap<>();
+        shim_deps.put( "deps", new ArrayList<>( depsKeySet ) );
 
-          if( FilenameUtils.getExtension( file ).equals( "js" ) ) {
-            paths.put( moduleName, moduleName + "/" + moduleVersion + "/" + FilenameUtils.removeExtension( file ) );
-            break;
-          }
-        }
+        shim.put( key, shim_deps );
       }
-    }
 
-    if( json.containsKey( "files" ) ) {
-      JSONArray files = (JSONArray) json.get("files");
-
-      Iterator<String> iterator = files.iterator();
-      while (iterator.hasNext()) {
-        String file = iterator.next();
-
-        if( FilenameUtils.getExtension( file ).equals( "js" ) ) {
-          String filename = FilenameUtils.removeExtension( file );
-
-          paths.put( moduleName + "/" + filename, moduleName + "/" + moduleVersion + "/" + filename );
-        }
+      for ( String key : depsKeySet ) {
+        dependencies.put( key, (String) deps.get( key ) );
       }
-    }
-
-    JSONObject shim = new JSONObject();
-
-    if( json.containsKey( "dependencies" ) ) {
-      JSONObject deps = ( JSONObject ) json.get( "dependencies" );
-
-      JSONObject shim_deps = new JSONObject();
-      shim_deps.put( "deps", new ArrayList( deps.keySet() ) );
-
-      shim.put( moduleName, shim_deps );
     }
 
     JSONObject requirejs = new JSONObject();
-    requirejs.put("paths", paths);
-    requirejs.put("shim", shim);
+    requirejs.put( "paths", paths );
+    requirejs.put( "shim", shim );
 
-    return requirejs.toJSONString();  
+    return requirejs;
+  }
+
+  private void extractPaths( JSONObject json, String jsonKey, String moduleName, HashMap<String, String> paths ) {
+    if ( json.containsKey( jsonKey ) ) {
+      Object value = json.get( jsonKey );
+
+      if( value instanceof String ) {
+        pathFromFilename( (String) value, moduleName, paths );
+      } else if ( value instanceof JSONArray ) {
+        JSONArray files = (JSONArray) value;
+
+        for ( Object file : files ) {
+          pathFromFilename( (String) file, moduleName, paths );
+        }
+      }
+    }
+  }
+
+  private void pathFromFilename( String file, String moduleName, HashMap<String, String> paths ) {
+    if ( FilenameUtils.getExtension( file ).equals( "js" ) ) {
+      String filename = FilenameUtils.removeExtension( file );
+      String key = filename.equals( moduleName ) ? "" : filename;
+
+      paths.put( key, filename );
+    } else {
+      paths.put( file, file );
+    }
+  }
+
+  private HashMap<String, HashMap<String, ?>> modifyConfigPaths( JSONObject config, boolean configGenerated, String moduleName,
+                                                     String moduleVersion ) throws ParseException {
+    HashMap<String, HashMap<String, ?>> requirejs = new HashMap<>();
+
+    HashMap<String, String> keyMap = new HashMap<>();
+
+    HashMap<String, String> convertedPaths = new HashMap<>();
+    HashMap<String, Object> convertedShim = new HashMap<>();
+    HashMap<String, Object> convertedMap = new HashMap<>();
+
+    HashMap<String, Object> paths = (HashMap<String, Object>) config.get( "paths" );
+    if ( paths != null ) {
+      for ( String key : paths.keySet() ) {
+        String versionedKey;
+        if( configGenerated ) {
+          versionedKey = moduleName + "/" + key + "/" + moduleVersion;
+        } else {
+          versionedKey = key + "/" + moduleVersion;
+        }
+
+        keyMap.put( key, versionedKey );
+
+        convertedPaths.put( versionedKey, moduleName + "/" + moduleVersion + "/" + paths.get( key ) );
+      }
+
+      requirejs.put( "paths", convertedPaths );
+    }
+
+    HashMap<String, Object> shim = (HashMap<String, Object>) config.get( "shim" );
+    if ( shim != null ) {
+      for ( String key : shim.keySet() ) {
+        String versionedKey = keyMap.get( key );
+
+        if ( versionedKey != null ) {
+          convertedShim.put( versionedKey, shim.get( key ) );
+        } else {
+          convertedShim.put( key, shim.get( key ) );
+        }
+      }
+
+      requirejs.put( "shim", convertedShim );
+    }
+
+    HashMap<String, Object> map = (HashMap<String, Object>) config.get( "map" );
+    if ( map != null ) {
+      for ( String key : map.keySet() ) {
+        String versionedKey = keyMap.get( key );
+
+        if ( versionedKey != null ) {
+          convertedMap.put( versionedKey, map.get( key ) );
+        } else {
+          convertedMap.put( key, map.get( key ) );
+        }
+      }
+    }
+
+    requirejs.put( "map", convertedMap );
+
+    return requirejs;
   }
 
   private void addRequireJsToJar( String config, JarOutputStream jarOutputStream ) throws IOException {
-      ZipEntry newEntry = new ZipEntry( PENTAHO_RJS_LOCATION );
-      jarOutputStream.putNextEntry( newEntry );
-      jarOutputStream.write( config.getBytes( "UTF-8" ) );
-      jarOutputStream.closeEntry();
+    ZipEntry newEntry = new ZipEntry( PENTAHO_RJS_LOCATION );
+    jarOutputStream.putNextEntry( newEntry );
+    jarOutputStream.write( config.getBytes( "UTF-8" ) );
+    jarOutputStream.closeEntry();
   }
 }
