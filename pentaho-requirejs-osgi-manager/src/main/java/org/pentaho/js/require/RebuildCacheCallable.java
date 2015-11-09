@@ -50,7 +50,7 @@ public class RebuildCacheCallable implements Callable<String> {
 
   public RebuildCacheCallable( Map<Long, JSONObject> configMap, List<RequireJsConfiguration> requireJsConfigurations ) {
     this.configMap = configMap;
-    this.requireJsConfigurations = new ArrayList<RequireJsConfiguration>( requireJsConfigurations );
+    this.requireJsConfigurations = new ArrayList<>( requireJsConfigurations );
     Collections.sort( this.requireJsConfigurations, new Comparator<RequireJsConfiguration>() {
       @Override public int compare( RequireJsConfiguration o1, RequireJsConfiguration o2 ) {
         long longResult = o1.getBundle().getBundleId() - o2.getBundle().getBundleId();
@@ -86,11 +86,11 @@ public class RebuildCacheCallable implements Callable<String> {
     if ( value1 == null ) {
       return value2 instanceof JSONObject ? toRelativePathedObject( (JSONObject) value2 ) : value2;
     } else if ( value2 == null ) {
-      return value2 instanceof JSONObject ? toRelativePathedObject( (JSONObject) value1 ) : value1;
+      return value1 instanceof JSONObject ? toRelativePathedObject( (JSONObject) value1 ) : value1;
     } else {
       if ( value1 instanceof JSONObject ) {
         if ( value2 instanceof JSONObject ) {
-          return merge( (JSONObject) value1, toRelativePathedObject( (JSONObject) value2 ), key.equals("shim") );
+          return merge( (JSONObject) value1, toRelativePathedObject( (JSONObject) value2 ), key.equals( "shim" ) );
         } else {
           throw new Exception( "Cannot merge key " + key + " due to different types." );
         }
@@ -112,7 +112,7 @@ public class RebuildCacheCallable implements Callable<String> {
   }
 
   private JSONArray merge( JSONArray array1, JSONArray array2 ) {
-    Set hs = new LinkedHashSet<>();
+    Set<Object> hs = new LinkedHashSet<>();
     hs.addAll( array1 );
     hs.addAll( array2 );
 
@@ -123,11 +123,11 @@ public class RebuildCacheCallable implements Callable<String> {
   }
 
   private JSONObject merge( JSONObject object1, JSONObject object2 ) throws Exception {
-    return this.merge(object1, object2, false);
+    return this.merge( object1, object2, false );
   }
 
   private JSONObject merge( JSONObject object1, JSONObject object2, boolean insideShim ) throws Exception {
-    Set<String> keys = new HashSet<String>( object1.keySet().size() );
+    Set<String> keys = new HashSet<>( object1.keySet().size() );
     for ( Object key : object1.keySet() ) {
       if ( !( key instanceof String ) ) {
         throw new Exception( "Key " + key + " was not a String" );
@@ -145,7 +145,7 @@ public class RebuildCacheCallable implements Callable<String> {
       Object value1 = object1.get( key );
       Object value2 = object2.get( key );
 
-      if( insideShim ) {
+      if ( insideShim ) {
         if ( value1 instanceof JSONArray ) {
           JSONObject deps = new JSONObject();
           deps.put( "deps", value1 );
@@ -211,18 +211,12 @@ public class RebuildCacheCallable implements Callable<String> {
     for ( RequireJsConfiguration requireJsConfiguration : requireJsConfigurations ) {
       sb.append( "\n\n/* Following configurations are from bundle " );
       Bundle bundle = requireJsConfiguration.getBundle();
-      StringBuilder bundleNameSb = new StringBuilder( "[" );
-      bundleNameSb.append( bundle.getBundleId() );
-      bundleNameSb.append( "] - " );
-      bundleNameSb.append( bundle.getSymbolicName() );
-      bundleNameSb.append( ":" );
-      bundleNameSb.append( bundle.getVersion() );
-      String bundleName = bundleNameSb.toString();
+      String bundleName = "[" + bundle.getBundleId() + "] - " + bundle.getSymbolicName() + ":" + bundle.getVersion();
       sb.append( bundleName );
       sb.append( "*/\n" );
       for ( String config : requireJsConfiguration.getRequireConfigurations() ) {
         URL configURL = bundle.getResource( config );
-        URLConnection urlConnection = null;
+        URLConnection urlConnection;
         InputStream inputStream = null;
         InputStreamReader inputStreamReader = null;
         BufferedReader bufferedReader = null;
@@ -231,7 +225,7 @@ public class RebuildCacheCallable implements Callable<String> {
           inputStream = urlConnection.getInputStream();
           inputStreamReader = new InputStreamReader( inputStream );
           bufferedReader = new BufferedReader( inputStreamReader );
-          String input = null;
+          String input;
           while ( ( input = bufferedReader.readLine() ) != null ) {
             sb.append( input );
             sb.append( "\n" );

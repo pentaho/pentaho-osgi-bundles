@@ -38,7 +38,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.ThreadFactory;
 
 /**
  * Created by bryan on 8/5/14.
@@ -223,8 +227,8 @@ public class RequireJsConfigManager {
     invalidateCache( true );
   }
 
-  public void destroy(){
-    if( bundleListener != null ) {
+  public void destroy() {
+    if ( bundleListener != null ) {
       bundleContext.removeBundleListener( bundleListener );
     }
   }
