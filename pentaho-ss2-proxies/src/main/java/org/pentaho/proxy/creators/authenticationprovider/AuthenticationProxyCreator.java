@@ -6,6 +6,7 @@ import org.springframework.security.Authentication;
 import org.springframework.security.GrantedAuthority;
 import org.springframework.security.GrantedAuthorityImpl;
 import org.springframework.security.providers.UsernamePasswordAuthenticationToken;
+import org.springframework.security.providers.anonymous.AnonymousAuthenticationToken;
 import org.springframework.util.ReflectionUtils;
 
 import org.slf4j.Logger;
@@ -57,6 +58,50 @@ public class AuthenticationProxyCreator implements IProxyCreator<Authentication>
         logger.error( e.getMessage(), e );
       } catch ( InvocationTargetException e ) {
         logger.error( e.getMessage() , e );
+      }
+    } else if( "org.springframework.security.authentication.AnonymousAuthenticationToken".equals( className ) ) {
+
+      Method getKeyHash = ReflectionUtils.findMethod( o.getClass(), "getKeyHash" );
+      Method getDetails = ReflectionUtils.findMethod( o.getClass(), "getDetails" );
+      Method getPrincipal = ReflectionUtils.findMethod( o.getClass(), "getPrincipal" );
+      Method getAuthorities = ReflectionUtils.findMethod( o.getClass(), "getAuthorities" );
+
+      try {
+
+        getKeyHash.setAccessible( true );
+        getDetails.setAccessible( true );
+        getPrincipal.setAccessible( true );
+        getAuthorities.setAccessible( true );
+
+        Object keyHash = getKeyHash.invoke( o );
+        Object details = getDetails.invoke( o );
+        Object principal = getPrincipal.invoke( o );
+        Object authoritiesObj = getAuthorities.invoke( o );
+
+        List<GrantedAuthority> authorityList = new ArrayList<GrantedAuthority>();
+
+        if( authoritiesObj != null && authoritiesObj instanceof Collection ) {
+
+          for( Object authorityObj : ( Collection) authoritiesObj ) {
+
+            Method getAuthority = ReflectionUtils.findMethod( authorityObj.getClass(), "getAuthority" );
+            Object authority = getAuthority.invoke( authorityObj );
+            if( authority != null ) {
+              authorityList.add( new GrantedAuthorityImpl( authority.toString() ) );
+            }
+          }
+        }
+
+        AnonymousAuthenticationToken anonymousToken = new AnonymousAuthenticationToken( keyHash.toString(),
+            principal, authorityList.toArray( new GrantedAuthority[ authorityList.size() ] ) );
+        anonymousToken.setDetails( details );
+
+        return anonymousToken;
+
+      } catch ( IllegalAccessException e ) {
+        logger.error( e.getMessage(), e );
+      } catch ( InvocationTargetException e ) {
+        logger.error( e.getMessage(), e );
       }
     }
     return null;
