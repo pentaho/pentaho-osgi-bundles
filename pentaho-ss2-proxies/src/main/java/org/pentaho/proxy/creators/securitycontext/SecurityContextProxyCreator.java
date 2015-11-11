@@ -66,13 +66,18 @@ public class SecurityContextProxyCreator implements IProxyCreator<SecurityContex
 
       try {
 
-        Object auth = ProxyUtils.getInstance().getProxyFactory().createProxy( authentication );
+        if( authentication == null ) {
 
-        if ( setAuthenticationMethod == null ) {
+          setAuthenticationMethod = ProxyUtils.findMethodByName( target.getClass(), "setAuthentication" );
+          setAuthenticationMethod.invoke( target, null );
+
+        } else {
+
+          Object auth = ProxyUtils.getInstance().getProxyFactory().createProxy( authentication );
           setAuthenticationMethod = ProxyUtils.findMethodByName( target.getClass(), "setAuthentication", auth.getClass() );
-        }
 
-        setAuthenticationMethod.invoke( target, auth );
+          setAuthenticationMethod.invoke( target, auth );
+        }
 
       } catch ( InvocationTargetException | IllegalAccessException | ProxyException e ) {
         logger.error( e.getMessage() , e );
