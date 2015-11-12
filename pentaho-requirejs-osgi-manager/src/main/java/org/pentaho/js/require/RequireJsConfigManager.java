@@ -22,6 +22,8 @@
 
 package org.pentaho.js.require;
 
+import org.apache.commons.io.FilenameUtils;
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -48,13 +50,17 @@ import java.util.concurrent.ThreadFactory;
  * Created by bryan on 8/5/14.
  */
 public class RequireJsConfigManager {
+  public static final String PACKAGE_JSON_PATH = "META-INF/js/package.json";
   public static final String REQUIRE_JSON_PATH = "META-INF/js/require.json";
   public static final String EXTERNAL_RESOURCES_JSON_PATH = "META-INF/js/externalResources.json";
   public static final String STATIC_RESOURCES_JSON_PATH = "META-INF/js/staticResources.json";
+
   private final Map<Long, JSONObject> configMap = new HashMap<Long, JSONObject>();
   private final Map<Long, RequireJsConfiguration> requireConfigMap = new HashMap<Long, RequireJsConfiguration>();
+
   private final JSONParser parser = new JSONParser();
   private BundleContext bundleContext;
+
   private static ExecutorService executorService = Executors.newSingleThreadExecutor( new ThreadFactory() {
     @Override
     public Thread newThread( Runnable r ) {
@@ -64,8 +70,10 @@ public class RequireJsConfigManager {
       return thread;
     }
   } );
+
   private volatile Future<String> cache;
   private volatile long lastModified;
+
   private String contextRoot = "/";
   private RequireJsBundleListener bundleListener;
 
@@ -79,50 +87,166 @@ public class RequireJsConfigManager {
 
   public boolean updateBundleContext( Bundle bundle ) throws IOException, ParseException {
     boolean shouldInvalidate = updateBundleContextStopped( bundle );
-    URL configFileUrl = bundle.getResource( REQUIRE_JSON_PATH );
-    URL externalResourcesUrl = bundle.getResource( EXTERNAL_RESOURCES_JSON_PATH );
-    if ( configFileUrl == null && externalResourcesUrl == null ) {
-      return shouldInvalidate;
-    } else {
-      JSONObject requireJsonObject = loadJsonObject( configFileUrl );
-      JSONObject externalResourceJsonObject = loadJsonObject( externalResourcesUrl );
-      JSONObject staticResourceJsonObject = loadJsonObject( bundle.getResource( STATIC_RESOURCES_JSON_PATH ) );
 
-      boolean result = false;
-      synchronized ( configMap ) {
-        if ( requireJsonObject != null ) {
-          configMap.put( bundle.getBundleId(), requireJsonObject );
-          result = true;
-        }
-        if ( externalResourceJsonObject != null ) {
-          List<String> requireJsList = (List<String>) externalResourceJsonObject.get( "requirejs" );
-          if ( requireJsList != null ) {
-            if ( staticResourceJsonObject != null ) {
-              List<String> translatedList = new ArrayList<String>( requireJsList.size() );
-              for ( String element : requireJsList ) {
-                boolean found = false;
-                for ( Object key : staticResourceJsonObject.keySet() ) {
-                  String strKey = key.toString();
-                  if ( element.startsWith( strKey ) ) {
-                    String value = staticResourceJsonObject.get( key ).toString();
-                    translatedList.add( value + element.substring( strKey.length() ) );
-                    found = true;
-                    break;
-                  }
-                }
-                if ( !found ) {
-                  translatedList.add( element );
+    URL packageJsonUrl = bundle.getResource( PACKAGE_JSON_PATH );
+    URL configFileUrl = bundle.getResource( REQUIRE_JSON_PATH );
+
+    URL externalResourcesUrl = bundle.getResource( EXTERNAL_RESOURCES_JSON_PATH );
+    URL staticResourcesUrl = bundle.getResource( STATIC_RESOURCES_JSON_PATH );
+
+    if ( packageJsonUrl != null ) {
+      JSONObject packageJsonObject = loadJsonObject( packageJsonUrl );
+
+      if ( packageJsonObject != null ) {
+        JSONObject requireJsonObject = convertPackageJsonToRequireConfig( packageJsonObject );
+        putInConfigMap( bundle.getBundleId(), requireJsonObject );
+
+        shouldInvalidate = true;
+      }
+    } else if ( configFileUrl != null ) {
+      JSONObject requireJsonObject = loadJsonObject( configFileUrl );
+
+      if ( requireJsonObject != null ) {
+        putInConfigMap( bundle.getBundleId(), requireJsonObject );
+
+        shouldInvalidate = true;
+      }
+    }
+
+    if ( externalResourcesUrl != null ) {
+      JSONObject externalResourceJsonObject = loadJsonObject( externalResourcesUrl );
+      JSONObject staticResourceJsonObject = loadJsonObject( staticResourcesUrl );
+
+      if ( externalResourceJsonObject != null ) {
+        List<String> requireJsList = (List<String>) externalResourceJsonObject.get( "requirejs" );
+
+        if ( requireJsList != null ) {
+          if ( staticResourceJsonObject != null ) {
+            List<String> translatedList = new ArrayList<>( requireJsList.size() );
+
+            for ( String element : requireJsList ) {
+              boolean found = false;
+              for ( Object key : staticResourceJsonObject.keySet() ) {
+                String strKey = key.toString();
+
+                if ( element.startsWith( strKey ) ) {
+                  String value = staticResourceJsonObject.get( key ).toString();
+                  translatedList.add( value + element.substring( strKey.length() ) );
+                  found = true;
+                  break;
                 }
               }
-              requireJsList = translatedList;
+
+              if ( !found ) {
+                translatedList.add( element );
+              }
             }
-            requireConfigMap.put( bundle.getBundleId(), new RequireJsConfiguration( bundle, requireJsList ) );
-            result = true;
+
+            requireJsList = translatedList;
           }
+
+          putInRequireConfigMap( bundle.getBundleId(), new RequireJsConfiguration( bundle, requireJsList ) );
+          shouldInvalidate = true;
         }
       }
-      return result;
     }
+
+    return shouldInvalidate;
+  }
+
+  private synchronized void putInConfigMap( long bundleId, JSONObject config ) {
+    configMap.put( bundleId, config );
+  }
+
+  private synchronized void putInRequireConfigMap( long bundleId, RequireJsConfiguration config ) {
+    requireConfigMap.put( bundleId, config );
+  }
+
+  private JSONObject convertPackageJsonToRequireConfig( JSONObject packageJsonObject ) {
+    String name = (String) packageJsonObject.get( "name" );
+    String version = (String) packageJsonObject.get( "version" );
+
+    String path = (String) packageJsonObject.get( "path" );
+    String main = (String) packageJsonObject.get( "main" );
+
+    JSONObject paths = packageJsonObject.containsKey( "paths" ) ? (JSONObject) packageJsonObject.get( "paths" ) : new JSONObject();
+
+    paths.put( name + "/" + version, path );
+
+    HashMap<String, String> availableModules = new HashMap<>();
+
+    JSONArray packages = new JSONArray();
+    if ( main != null ) {
+      if ( main.equals( "main.js" ) ) {
+        packages.add( name + "/" + version );
+      } else {
+        JSONObject pack = new JSONObject();
+        pack.put( "name", name + "/" + version );
+        pack.put( "location", path );
+        pack.put( "main", FilenameUtils.removeExtension( main ) );
+
+        packages.add( pack );
+      }
+
+      availableModules.put( name, version );
+    }
+
+    if ( packageJsonObject.containsKey( "packages" ) ) {
+      for ( Object pack : (JSONArray) packageJsonObject.get( "packages" ) ) {
+        if ( pack instanceof String ) {
+          packages.add( name + "/" + version + "/" + pack );
+        } else if ( pack instanceof JSONObject ) {
+          if ( ( (JSONObject) pack ).containsKey( "name" ) ) {
+            final String packName = name + "/" + version + "/" + ( (JSONObject) pack ).get( "name" );
+            ( (JSONObject) pack ).put( "name", packName );
+
+            if ( ( (JSONObject) pack ).containsKey( "location" ) ) {
+              final String location = (String) ( (JSONObject) pack ).get( "location" );
+              if ( location != null && !location.startsWith( "/" ) ) {
+                ( (JSONObject) pack ).put( "location", path + "/" + location );
+              }
+            }
+          }
+
+          packages.add( pack );
+        }
+      }
+    }
+
+    JSONObject map = new JSONObject();
+    map.put( name + "/" + version, packageJsonObject.containsKey( "map" ) ? packageJsonObject.get( "map" ) : new JSONObject() );
+
+    JSONObject meta = new JSONObject();
+
+    if ( packageJsonObject.containsKey( "dependencies" ) ) {
+      JSONObject modules = new JSONObject();
+      JSONObject module = new JSONObject();
+      JSONObject ver = new JSONObject();
+
+      ver.put( "dependencies",  packageJsonObject.get( "dependencies" ) );
+      module.put( version, ver );
+      modules.put( name, module );
+      meta.put( "modules", modules );
+    }
+
+    JSONObject artifacts = new JSONObject();
+    JSONObject artifact = new JSONObject();
+    JSONObject ver = new JSONObject();
+
+    ver.put( "modules", availableModules );
+    artifact.put( version, ver );
+    artifacts.put( name, artifact );
+    meta.put( "artifacts", artifacts );
+
+    JSONObject requireJsonObject = new JSONObject();
+    requireJsonObject.put( "paths", paths );
+    requireJsonObject.put( "packages", packages );
+    requireJsonObject.put( "map", map );
+    if ( packageJsonObject.containsKey( "config" ) ) {
+      requireJsonObject.put( "config", packageJsonObject.get( "config" ) );
+    }
+    requireJsonObject.put( "requirejs-osgi-meta", meta );
+    return requireJsonObject;
   }
 
   private JSONObject loadJsonObject( URL url ) throws IOException, ParseException {
@@ -133,7 +257,6 @@ public class RequireJsConfigManager {
     InputStream inputStream = urlConnection.getInputStream();
     InputStreamReader inputStreamReader = null;
     BufferedReader bufferedReader = null;
-    StringBuilder sb = new StringBuilder();
     try {
       inputStreamReader = new InputStreamReader( urlConnection.getInputStream() );
       bufferedReader = new BufferedReader( inputStreamReader );
@@ -152,8 +275,8 @@ public class RequireJsConfigManager {
   }
 
   public boolean updateBundleContextStopped( Bundle bundle ) {
-    JSONObject bundleConfig = null;
-    RequireJsConfiguration requireJsConfiguration = null;
+    JSONObject bundleConfig;
+    RequireJsConfiguration requireJsConfiguration;
     synchronized ( configMap ) {
       bundleConfig = configMap.remove( bundle.getBundleId() );
       requireJsConfiguration = requireConfigMap.remove( bundle.getBundleId() );
@@ -164,9 +287,11 @@ public class RequireJsConfigManager {
   public void invalidateCache( boolean shouldInvalidate ) {
     if ( shouldInvalidate ) {
       synchronized ( configMap ) {
-        cache = executorService.submit( new RebuildCacheCallable( new HashMap<Long, JSONObject>( this.configMap ),
-          new ArrayList<RequireJsConfiguration>( requireConfigMap.values() ) ) );
-        lastModified = System.currentTimeMillis();
+        synchronized ( requireConfigMap ) {
+          cache = executorService.submit( new RebuildCacheCallable( new HashMap<>( this.configMap ),
+            new ArrayList<>( requireConfigMap.values() ) ) );
+          lastModified = System.currentTimeMillis();
+        }
       }
     }
   }
@@ -188,7 +313,7 @@ public class RequireJsConfigManager {
       }
     }
     if ( result == null ) {
-      result = "// Error computing RequireJS Config: ";
+      result = "{}; // Error computing RequireJS Config: ";
       if ( lastException != null ) {
         result += lastException.getCause().getMessage();
       } else {
