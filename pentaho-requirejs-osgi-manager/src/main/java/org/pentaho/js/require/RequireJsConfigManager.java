@@ -22,8 +22,6 @@
 
 package org.pentaho.js.require;
 
-import org.apache.commons.io.FilenameUtils;
-import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -98,7 +96,11 @@ public class RequireJsConfigManager {
       JSONObject packageJsonObject = loadJsonObject( packageJsonUrl );
 
       if ( packageJsonObject != null ) {
-        JSONObject requireJsonObject = convertPackageJsonToRequireConfig( packageJsonObject );
+        RequireJsGenerator gen = new RequireJsGenerator( packageJsonObject );
+        RequireJsGenerator.ArtifactInfo artifactInfo = new RequireJsGenerator.ArtifactInfo( "osgi-bundles", bundle.getSymbolicName(), bundle.getVersion().toString() );
+        final RequireJsGenerator.ModuleInfo moduleInfo = gen.getConvertedConfig( artifactInfo );
+        JSONObject requireJsonObject = moduleInfo.getRequirejs();
+
         putInConfigMap( bundle.getBundleId(), requireJsonObject );
 
         shouldInvalidate = true;
@@ -160,93 +162,6 @@ public class RequireJsConfigManager {
 
   private synchronized void putInRequireConfigMap( long bundleId, RequireJsConfiguration config ) {
     requireConfigMap.put( bundleId, config );
-  }
-
-  private JSONObject convertPackageJsonToRequireConfig( JSONObject packageJsonObject ) {
-    String name = (String) packageJsonObject.get( "name" );
-    String version = (String) packageJsonObject.get( "version" );
-
-    String path = (String) packageJsonObject.get( "path" );
-    String main = (String) packageJsonObject.get( "main" );
-
-    JSONObject paths = packageJsonObject.containsKey( "paths" ) ? (JSONObject) packageJsonObject.get( "paths" ) : new JSONObject();
-
-    paths.put( name + "/" + version, path );
-
-    HashMap<String, String> availableModules = new HashMap<>();
-
-    JSONArray packages = new JSONArray();
-    if ( main != null ) {
-      if ( main.equals( "main.js" ) ) {
-        packages.add( name + "/" + version );
-      } else {
-        JSONObject pack = new JSONObject();
-        pack.put( "name", name + "/" + version );
-        pack.put( "location", path );
-        pack.put( "main", FilenameUtils.removeExtension( main ) );
-
-        packages.add( pack );
-      }
-
-      availableModules.put( name, version );
-    }
-
-    if ( packageJsonObject.containsKey( "packages" ) ) {
-      for ( Object pack : (JSONArray) packageJsonObject.get( "packages" ) ) {
-        if ( pack instanceof String ) {
-          packages.add( name + "/" + version + "/" + pack );
-        } else if ( pack instanceof JSONObject ) {
-          if ( ( (JSONObject) pack ).containsKey( "name" ) ) {
-            final String packName = name + "/" + version + "/" + ( (JSONObject) pack ).get( "name" );
-            ( (JSONObject) pack ).put( "name", packName );
-
-            if ( ( (JSONObject) pack ).containsKey( "location" ) ) {
-              final String location = (String) ( (JSONObject) pack ).get( "location" );
-              if ( location != null && !location.startsWith( "/" ) ) {
-                ( (JSONObject) pack ).put( "location", path + "/" + location );
-              }
-            }
-          }
-
-          packages.add( pack );
-        }
-      }
-    }
-
-    JSONObject map = new JSONObject();
-    map.put( name + "/" + version, packageJsonObject.containsKey( "map" ) ? packageJsonObject.get( "map" ) : new JSONObject() );
-
-    JSONObject meta = new JSONObject();
-
-    if ( packageJsonObject.containsKey( "dependencies" ) ) {
-      JSONObject modules = new JSONObject();
-      JSONObject module = new JSONObject();
-      JSONObject ver = new JSONObject();
-
-      ver.put( "dependencies",  packageJsonObject.get( "dependencies" ) );
-      module.put( version, ver );
-      modules.put( name, module );
-      meta.put( "modules", modules );
-    }
-
-    JSONObject artifacts = new JSONObject();
-    JSONObject artifact = new JSONObject();
-    JSONObject ver = new JSONObject();
-
-    ver.put( "modules", availableModules );
-    artifact.put( version, ver );
-    artifacts.put( name, artifact );
-    meta.put( "artifacts", artifacts );
-
-    JSONObject requireJsonObject = new JSONObject();
-    requireJsonObject.put( "paths", paths );
-    requireJsonObject.put( "packages", packages );
-    requireJsonObject.put( "map", map );
-    if ( packageJsonObject.containsKey( "config" ) ) {
-      requireJsonObject.put( "config", packageJsonObject.get( "config" ) );
-    }
-    requireJsonObject.put( "requirejs-osgi-meta", meta );
-    return requireJsonObject;
   }
 
   private JSONObject loadJsonObject( URL url ) throws IOException, ParseException {

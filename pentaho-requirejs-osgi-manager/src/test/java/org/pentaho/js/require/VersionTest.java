@@ -15,10 +15,11 @@
  * Copyright 2014 Pentaho Corporation. All rights reserved.
  */
 
-package org.pentaho.osgi.platform.webjars;
+package org.pentaho.js.require;
 
 import org.junit.Test;
 import org.osgi.framework.Version;
+import org.pentaho.js.require.RequireJsGenerator;
 
 import static org.junit.Assert.*;
 
@@ -27,52 +28,52 @@ public class VersionTest {
   @Test
   public void testGetVersion() throws Exception {
     {
-      Version v = VersionParser.parseVersion( "1.2.3" );
+      Version v = RequireJsGenerator.VersionParser.parseVersion( "1.2.3" );
       assertEquals("1.2.3", v.toString());
     }
 
     {
-      Version v = VersionParser.parseVersion("1.2");
+      Version v = RequireJsGenerator.VersionParser.parseVersion("1.2");
       assertEquals("1.2.0", v.toString());
     }
 
     {
-      Version v = VersionParser.parseVersion("1");
+      Version v = RequireJsGenerator.VersionParser.parseVersion("1");
       assertEquals("1.0.0", v.toString());
     }
 
     {
-      Version v = VersionParser.parseVersion("1.0-SNAPSHOT");
+      Version v = RequireJsGenerator.VersionParser.parseVersion("1.0-SNAPSHOT");
       assertEquals("1.0.0.SNAPSHOT", v.toString());
     }
 
     {
-      Version v = VersionParser.parseVersion("1.0.2-SNAPSHOT");
+      Version v = RequireJsGenerator.VersionParser.parseVersion("1.0.2-SNAPSHOT");
       assertEquals("1.0.2.SNAPSHOT", v.toString());
     }
 
     {
-      Version v = VersionParser.parseVersion("707ebd9e05");
+      Version v = RequireJsGenerator.VersionParser.parseVersion("707ebd9e05");
       assertEquals("707.0.0.ebd9e05", v.toString());
     }
 
     {
-      Version v = VersionParser.parseVersion("ebd9e05707");
+      Version v = RequireJsGenerator.VersionParser.parseVersion("ebd9e05707");
       assertEquals("0.0.0.ebd9e05707", v.toString());
     }
 
     {
-      Version v = VersionParser.parseVersion("");
+      Version v = RequireJsGenerator.VersionParser.parseVersion("");
       assertEquals("0.0.0", v.toString());
     }
 
     {
-      Version v = VersionParser.parseVersion(null);
+      Version v = RequireJsGenerator.VersionParser.parseVersion(null);
       assertEquals("0.0.0", v.toString());
     }
 
     {
-      Version v = VersionParser.parseVersion("***");
+      Version v = RequireJsGenerator.VersionParser.parseVersion("***");
       assertEquals("0.0.0", v.toString());
     }
 

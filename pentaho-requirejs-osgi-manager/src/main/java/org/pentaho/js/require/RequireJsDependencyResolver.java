@@ -45,9 +45,9 @@ public class RequireJsDependencyResolver {
       availableModules = new HashMap<>();
     }
 
-    HashMap<String, HashMap<String, HashMap<String, ?>>> artifacts;
+    HashMap<String, HashMap<String, HashMap<String, String>>> artifacts;
     if ( meta.containsKey( "artifacts" ) ) {
-      artifacts = (HashMap<String, HashMap<String, HashMap<String, ?>>>) meta.get( "artifacts" );
+      artifacts = (HashMap<String, HashMap<String, HashMap<String, String>>>) meta.get( "artifacts" );
     } else {
       artifacts = new HashMap<>();
     }
@@ -70,25 +70,21 @@ public class RequireJsDependencyResolver {
               final String dependencyArtifact = dependencyId.substring( 24 );
 
               if ( artifacts.containsKey( dependencyArtifact ) ) {
-                HashMap<String, HashMap<String, ?>> artifactInfo = artifacts.get( dependencyArtifact );
+                HashMap<String, HashMap<String, String>> artifactInfo = artifacts.get( dependencyArtifact );
 
                 final ArrayList<String> resolvedArtifacts = resolveVersion( versionRequirement, artifactInfo.keySet() );
 
                 for ( String artifactVersion : resolvedArtifacts ) {
-                  HashMap<String, ?> artifactDetail = artifactInfo.get( artifactVersion );
+                  HashMap<String, String> dependencyModules = artifactInfo.get( artifactVersion );
 
-                  if ( artifactDetail.containsKey( "modules" ) ) {
-                    HashMap<String, String> dependencyModules = (HashMap<String, String>) artifactDetail.get( "modules" );
-
-                    for ( String dependencyModuleId : dependencyModules.keySet() ) {
-                      String dependencyVersionRequirement = dependencyModules.get( dependencyModuleId );
-                      if ( processedDependencies.containsKey( dependencyModuleId ) ) {
-                        dependencyVersionRequirement = dependencyVersionRequirement + " | " + processedDependencies.get( dependencyModuleId );
-                      }
-
-                      processModuleRequirement( dependencyModuleId, dependencyVersionRequirement );
-                      processedDependencies.put( dependencyModuleId, dependencyVersionRequirement );
+                  for ( String dependencyModuleId : dependencyModules.keySet() ) {
+                    String dependencyVersionRequirement = dependencyModules.get( dependencyModuleId );
+                    if ( processedDependencies.containsKey( dependencyModuleId ) ) {
+                      dependencyVersionRequirement = dependencyVersionRequirement + " | " + processedDependencies.get( dependencyModuleId );
                     }
+
+                    processModuleRequirement( dependencyModuleId, dependencyVersionRequirement );
+                    processedDependencies.put( dependencyModuleId, dependencyVersionRequirement );
                   }
                 }
               }
@@ -147,31 +143,27 @@ public class RequireJsDependencyResolver {
     }
 
     for ( String artifact : artifacts.keySet() ) {
-      final HashMap<String, HashMap<String, ?>> artifactInfo = artifacts.get( artifact );
+      final HashMap<String, HashMap<String, String>> artifactInfo = artifacts.get( artifact );
 
       for ( String artifactVersion : artifactInfo.keySet() ) {
-        final HashMap<String, ?> versionInfo = artifactInfo.get( artifactVersion );
+        final HashMap<String, String> modules = artifactInfo.get( artifactVersion );
 
-        if ( versionInfo.containsKey( "modules" ) ) {
-          final HashMap<String, String> modules = (HashMap<String, String>) versionInfo.get( "modules" );
+        for ( String module : modules.keySet() ) {
+          String version = modules.get( module );
 
-          for ( String module : modules.keySet() ) {
-            String version = modules.get( module );
+          HashMap<String, String> moduleMap;
+          if ( !map.containsKey( module + "/" + version ) ) {
+            moduleMap = new HashMap<>();
+            map.put( module + "/" + version, moduleMap );
+          } else {
+            moduleMap = (HashMap<String, String>) map.get( module + "/" + version );
+          }
 
-            HashMap<String, String> moduleMap;
-            if ( !map.containsKey( module + "/" + version ) ) {
-              moduleMap = new HashMap<>();
-              map.put( module + "/" + version, moduleMap );
-            } else {
-              moduleMap = (HashMap<String, String>) map.get( module + "/" + version );
-            }
+          for ( String simblingModule : modules.keySet() ) {
+            if ( !simblingModule.equals( module ) ) {
+              String simblingVersion = modules.get( module );
 
-            for ( String simblingModule : modules.keySet() ) {
-              if ( !simblingModule.equals( module ) ) {
-                String simblingVersion = modules.get( module );
-
-                moduleMap.put( simblingModule, simblingModule + "/" + simblingVersion );
-              }
+              moduleMap.put( simblingModule, simblingModule + "/" + simblingVersion );
             }
           }
         }

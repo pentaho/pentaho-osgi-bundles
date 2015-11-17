@@ -1,0 +1,38 @@
+{
+  "requirejs-osgi-meta": {
+    "modules": {
+      "smart-table": {
+        "2.0.3-1": {
+          "dependencies": {
+            "pentaho-webjar-deployer:org.webjars\/angularjs": "1.2.27"
+          }
+        }
+      },
+      "smart-table-min": {
+        "2.0.3-1": {
+          "dependencies": {
+            "pentaho-webjar-deployer:org.webjars\/angularjs": "1.2.27"
+          }
+        }
+      }
+    },
+    "artifacts": {
+      "org.webjars\/smart-table": {
+        "2.0.3-1": {
+          "smart-table": "2.0.3-1",
+          "smart-table-min": "2.0.3-1"
+        }
+      }
+    }
+  },
+  "paths": {
+    "smart-table-min\/2.0.3-1": "smart-table\/2.0.3-1\/smart-table.min",
+    "smart-table\/2.0.3-1": "smart-table\/2.0.3-1\/smart-table"
+  },
+  "shim": {
+    "smart-table\/2.0.3-1": [
+      "angular"
+    ]
+  },
+  "map": {}
+}

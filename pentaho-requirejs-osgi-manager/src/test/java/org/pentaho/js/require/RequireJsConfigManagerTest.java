@@ -31,9 +31,12 @@ import org.mockito.stubbing.Answer;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleEvent;
+import org.osgi.framework.Version;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.URL;
+import java.util.Enumeration;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -80,6 +83,30 @@ public class RequireJsConfigManagerTest {
   public void testUpdateBundleContext() throws IOException, ParseException {
     when( bundle.getResource( RequireJsConfigManager.REQUIRE_JSON_PATH ) ).thenReturn( this.getClass().getClassLoader()
         .getResource( "org/pentaho/js/require/RequireJsConfigManagerTest.testUpdateBundleContext.json" ) );
+    assertTrue( requireJsConfigManager.updateBundleContext( bundle ) );
+  }
+
+  @Test
+  public void testUpdateBundleNoRequireJsonPath() throws IOException, ParseException {
+    Enumeration<URL> e = new Enumeration<URL>() {
+      boolean more = true;
+
+      @Override public boolean hasMoreElements() {
+        return more;
+      }
+
+      @Override public URL nextElement() {
+        more = false;
+
+        return this.getClass().getClassLoader().getResource( "pom.xml" );
+      }
+    };
+
+    when( bundle.findEntries( "/META-INF/maven", "pom.xml", true ) ).thenReturn( e );
+    when( bundle.getSymbolicName() ).thenReturn( "mock-name" );
+    when( bundle.getVersion() ).thenReturn( new Version( 1, 0, 0 ) );
+    when( bundle.getBundleId() ).thenReturn( 1L );
+
     assertTrue( requireJsConfigManager.updateBundleContext( bundle ) );
   }
 
