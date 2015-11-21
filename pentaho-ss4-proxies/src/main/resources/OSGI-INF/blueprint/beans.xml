@@ -42,4 +42,12 @@
 	<service auto-export="all-classes">
 		<bean class="org.pentaho.proxy.creators.grantedauthorities.S4GrantedAuthorityProxyCreator" />
 	</service>
+
+	<service auto-export="all-classes">
+		<bean class="org.pentaho.proxy.creators.userdetailsservice.S4UserDetailsServiceProxyCreator" />
+	</service>
+
+	<service auto-export="all-classes">
+		<bean class="org.pentaho.proxy.creators.userdetailsservice.S4UserDetailsProxyCreator" />
+	</service>
 </blueprint>
