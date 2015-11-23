@@ -1,5 +1,7 @@
 package org.pentaho.platform.servicecoordination.api;
 
+import java.util.List;
+
 /**
  * Supplies IServiceBarrier instances by service id.
  *
@@ -14,5 +16,7 @@ public interface IServiceBarrierManager {
    * @return
    */
   IServiceBarrier getServiceBarrier( String serviceID );
+  
+  List<IServiceBarrier> getAllServiceBarriers();
 
 }
