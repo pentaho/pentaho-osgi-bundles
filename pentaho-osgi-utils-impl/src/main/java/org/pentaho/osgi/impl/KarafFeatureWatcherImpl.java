@@ -17,6 +17,11 @@
 
 package org.pentaho.osgi.impl;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.karaf.features.Feature;
 import org.apache.karaf.features.FeaturesService;
@@ -29,25 +34,26 @@ import org.pentaho.capabilities.api.ICapability;
 import org.pentaho.capabilities.api.ICapabilityManager;
 import org.pentaho.capabilities.impl.DefaultCapabilityManager;
 import org.pentaho.osgi.api.IKarafFeatureWatcher;
+import org.pentaho.platform.engine.core.system.PentahoSystem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * Created by nbaker on 2/19/15.
  */
 public class KarafFeatureWatcherImpl implements IKarafFeatureWatcher {
   private BundleContext bundleContext;
-  private long timeout = 60 * 1000L;
+  private long timeout;
   private Logger logger = LoggerFactory.getLogger( getClass() );
+  private static final String KARAF_TIMEOUT_PROPERTY = "karafWaitForBoot";
 
   public KarafFeatureWatcherImpl( BundleContext bundleContext ) {
 
     this.bundleContext = bundleContext;
+    // Default timeout to 4 hours per BACKLOG-5526.  Can be overridden in server.properties
+    timeout =
+        PentahoSystem.getApplicationContext().getProperty( KARAF_TIMEOUT_PROPERTY ) == null ? 4 * 60 * 60 * 1000L : Long
+            .valueOf( PentahoSystem.getApplicationContext().getProperty( KARAF_TIMEOUT_PROPERTY ) );
   }
 
   @Override public void waitForFeatures() throws FeatureWatcherException {
@@ -59,7 +65,7 @@ public class KarafFeatureWatcherImpl implements IKarafFeatureWatcher {
     try {
       serviceTracker.waitForService( timeout );
     } catch ( InterruptedException e ) {
-      logger.debug( "FeaturesService ServiceTracker Interrupted" );
+      logger.debug( "FeaturesService " + FeaturesService.class.getName() + " ServiceTracker Interrupted" );
     }
 
     ServiceReference<FeaturesService> serviceReference = bundleContext.getServiceReference( FeaturesService.class );
