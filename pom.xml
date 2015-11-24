@@ -133,7 +133,6 @@
         <module>pentaho-requirejs-osgi-manager</module>
         <module>pentaho-webjars-deployer</module>
         <module>pentaho-osgi-utils-api</module>
-        <module>pentaho-osgi-utils-impl</module>
         <module>pentaho-service-coordinator</module>
         <module>pentaho-capability-manager</module>
         <module>pentaho-cache-manager</module>
@@ -147,6 +146,7 @@
         </property>
       </activation>
       <modules>
+        <module>pentaho-osgi-utils-impl</module>
         <module>pentaho-server-bundle</module>
         <module>pentaho-proxy-factory</module>
         <module>pentaho-ss4-proxies</module>
