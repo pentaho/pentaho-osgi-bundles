@@ -65,9 +65,15 @@ public class RequireJsGenerator {
     requireConfig.put( "paths", paths );
   }
 
-  public ModuleInfo getConvertedConfig( ArtifactInfo artifactInfo )
+  public ModuleInfo getConvertedConfig( ArtifactInfo artifactInfo ) throws ParseException {
+    return this.getConvertedConfig( artifactInfo, true, null );
+  }
+
+  public ModuleInfo getConvertedConfig( ArtifactInfo artifactInfo, boolean isAmdPackage, String exports )
       throws ParseException {
-    final HashMap<String, Object> modules = new HashMap<>();
+    moduleInfo.setAmdPackage( isAmdPackage );
+    moduleInfo.setExports( exports );
+
     final HashMap<String, String> artifactModules = new HashMap<>();
 
     JSONObject convertedConfig = modifyConfigPaths( artifactModules );
@@ -200,32 +206,6 @@ public class RequireJsGenerator {
       HashMap<String, ?> deps = (HashMap<String, ?>) json.get( "dependencies" );
 
       final Set<String> depsKeySet = deps.keySet();
-
-      HashMap<String, Object> shim = new HashMap<>();
-
-      final Set<String> set = paths.keySet();
-      for ( String key : set ) {
-        HashMap<String, ArrayList<String>> shim_deps = new HashMap<>();
-        shim_deps.put( "deps", new ArrayList<>( depsKeySet ) );
-
-        shim.put( key, shim_deps );
-      }
-
-      if ( pck != null ) {
-        HashMap<String, ArrayList<String>> shim_deps = new HashMap<>();
-        shim_deps.put( "deps", new ArrayList<>( depsKeySet ) );
-
-        shim.put( moduleName, shim_deps );
-
-        if ( pck instanceof String ) {
-          shim.put( moduleName + "/main", shim_deps );
-        } else {
-          shim.put( moduleName + "/" + ( (HashMap<String, String>) pck ).get( "main" ), shim_deps );
-        }
-      }
-
-      requireConfig.put( "shim", shim );
-
       for ( String key : depsKeySet ) {
         dependencies.put( key, (String) deps.get( key ) );
       }
@@ -340,7 +320,13 @@ public class RequireJsGenerator {
       moduleDetails.put( "dependencies", dependencies );
     }
 
-    HashMap<String, String> paths = (HashMap<String, String>) requireConfig.get( "paths" );
+    final boolean isAmdPackage = moduleInfo.isAmdPackage();
+    moduleDetails.put( "isAmdPackage", isAmdPackage );
+    if ( !isAmdPackage && moduleInfo.getExports() != null ) {
+      moduleDetails.put( "exports", moduleInfo.getExports() );
+    }
+
+    final HashMap<String, String> paths = (HashMap<String, String>) requireConfig.get( "paths" );
     if ( paths != null ) {
       HashMap<String, String> convertedPaths = new HashMap<>();
 

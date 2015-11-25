@@ -12,10 +12,21 @@
     }
   ],
   "shim": {
+    "smart-table_2.0.3-1": {
+      "deps": [
+        "angular_1.3.0"
+      ]
+    },
     "angular-ui-router.stateHelper\/1.3.1": {
       "deps": [
         "angular",
         "angular-ui-router"
+      ]
+    },
+    "angular_1.3.0": {},
+    "smart-table-min_2.0.3-1": {
+      "deps": [
+        "angular_1.3.0"
       ]
     },
     "smart-table\/2.0.3-1": [
@@ -29,20 +40,30 @@
         "angular",
         "angular-ui-router"
       ]
+    },
+    "angular-ui-router.stateHelper_1.3.1": {
+      "deps": [
+        "angular_1.3.0"
+      ]
     }
   },
   "map": {
-    "angular-ui-router.stateHelper\/1.3.1": {
-      "angular": "angular\/1.3.0"
+    "smart-table_2.0.3-1": {
+      "angular": "angular_1.3.0",
+      "smart-table": "smart-table_2.0.3-1",
+      "smart-table-min": "smart-table-min_2.0.3-1"
     },
-    "smart-table-min\/2.0.3-1": {
-      "angular": "angular\/1.3.0",
-      "smart-table": "smart-table\/2.0.3-1"
+    "angular_1.3.0": {
+      "angular": "angular_1.3.0"
     },
-    "smart-table\/2.0.3-1": {
-      "angular": "angular\/1.3.0",
-      "smart-table-min": "smart-table-min\/2.0.3-1"
+    "smart-table-min_2.0.3-1": {
+      "angular": "angular_1.3.0",
+      "smart-table": "smart-table_2.0.3-1",
+      "smart-table-min": "smart-table-min_2.0.3-1"
     },
-    "angular\/1.3.0": {}
+    "angular-ui-router.stateHelper_1.3.1": {
+      "angular": "angular_1.3.0",
+      "angular-ui-router.stateHelper": "angular-ui-router.stateHelper_1.3.1"
+    }
   }
 }

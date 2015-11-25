@@ -33,13 +33,16 @@ import javax.script.ScriptException;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPathExpressionException;
+import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.ArrayList;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -92,6 +95,71 @@ public class WebjarsURLConnection extends URLConnection {
   private static final Pattern PACKAGE_FILES_PATTERN =
       Pattern.compile( "META-INF/resources/webjars/([^/]+)/([^/]+)/.*" );
 
+  private static final Pattern PACKAGE_JS_FILES_PATTERN =
+      Pattern.compile( "META-INF/resources/webjars/([^/]+)/([^/]+)/.*\\.js" );
+
+  private static final ArrayList<String> JS_KNOWN_GLOBALS;
+
+  static {
+    JS_KNOWN_GLOBALS = new ArrayList<>();
+    JS_KNOWN_GLOBALS.add( "applicationCache" );
+    JS_KNOWN_GLOBALS.add( "caches" );
+    JS_KNOWN_GLOBALS.add( "closed" );
+    JS_KNOWN_GLOBALS.add( "Components" );
+    JS_KNOWN_GLOBALS.add( "console" );
+    JS_KNOWN_GLOBALS.add( "content" );
+    JS_KNOWN_GLOBALS.add( "_content" );
+    JS_KNOWN_GLOBALS.add( "controllers" );
+    JS_KNOWN_GLOBALS.add( "crypto" );
+    JS_KNOWN_GLOBALS.add( "defaultStatus" );
+    JS_KNOWN_GLOBALS.add( "devicePixelRatio" );
+    JS_KNOWN_GLOBALS.add( "dialogArguments" );
+    JS_KNOWN_GLOBALS.add( "directories" );
+    JS_KNOWN_GLOBALS.add( "document" );
+    JS_KNOWN_GLOBALS.add( "frameElement" );
+    JS_KNOWN_GLOBALS.add( "frames" );
+    JS_KNOWN_GLOBALS.add( "fullScreen" );
+    JS_KNOWN_GLOBALS.add( "globalStorage" );
+    JS_KNOWN_GLOBALS.add( "history" );
+    JS_KNOWN_GLOBALS.add( "innerHeight" );
+    JS_KNOWN_GLOBALS.add( "innerWidth" );
+    JS_KNOWN_GLOBALS.add( "length" );
+    JS_KNOWN_GLOBALS.add( "location" );
+    JS_KNOWN_GLOBALS.add( "locationbar" );
+    JS_KNOWN_GLOBALS.add( "localStorage" );
+    JS_KNOWN_GLOBALS.add( "menubar" );
+    JS_KNOWN_GLOBALS.add( "messageManager" );
+    JS_KNOWN_GLOBALS.add( "name" );
+    JS_KNOWN_GLOBALS.add( "navigator" );
+    JS_KNOWN_GLOBALS.add( "opener" );
+    JS_KNOWN_GLOBALS.add( "outerHeight" );
+    JS_KNOWN_GLOBALS.add( "outerWidth" );
+    JS_KNOWN_GLOBALS.add( "pageXOffset" );
+    JS_KNOWN_GLOBALS.add( "pageYOffset" );
+    JS_KNOWN_GLOBALS.add( "sessionStorage" );
+    JS_KNOWN_GLOBALS.add( "parent" );
+    JS_KNOWN_GLOBALS.add( "performance" );
+    JS_KNOWN_GLOBALS.add( "personalbar" );
+    JS_KNOWN_GLOBALS.add( "pkcs11" );
+    JS_KNOWN_GLOBALS.add( "returnValue" );
+    JS_KNOWN_GLOBALS.add( "screen" );
+    JS_KNOWN_GLOBALS.add( "screenX" );
+    JS_KNOWN_GLOBALS.add( "screenY" );
+    JS_KNOWN_GLOBALS.add( "scrollbars" );
+    JS_KNOWN_GLOBALS.add( "scrollMaxX" );
+    JS_KNOWN_GLOBALS.add( "scrollMaxY" );
+    JS_KNOWN_GLOBALS.add( "scrollX" );
+    JS_KNOWN_GLOBALS.add( "scrollY" );
+    JS_KNOWN_GLOBALS.add( "self" );
+    JS_KNOWN_GLOBALS.add( "sessionStorage" );
+    JS_KNOWN_GLOBALS.add( "sidebar" );
+    JS_KNOWN_GLOBALS.add( "status" );
+    JS_KNOWN_GLOBALS.add( "statusbar" );
+    JS_KNOWN_GLOBALS.add( "toolbar" );
+    JS_KNOWN_GLOBALS.add( "top" );
+    JS_KNOWN_GLOBALS.add( "window" );
+  }
+
   private Logger logger = LoggerFactory.getLogger( getClass() );
 
   public WebjarsURLConnection( URL url ) {
@@ -120,7 +188,6 @@ public class WebjarsURLConnection extends URLConnection {
 
 
       return pipedInputStream;
-
     } catch ( Exception e ) {
       logger.error( "Error opening Spring xml url", e );
       throw (IOException) new IOException( "Error opening Spring xml url" ).initCause( e );
@@ -136,11 +203,14 @@ public class WebjarsURLConnection extends URLConnection {
     final boolean isNpmWebjar = artifactInfo.getGroup().equals( "org.webjars.npm" );
     final boolean isBowerWebjar = artifactInfo.getGroup().equals( "org.webjars.bower" );
 
+    ArrayList<String> exportedGlobals = new ArrayList<>();
+    final boolean isAmdPackage = findAmdDefine( url, exportedGlobals );
+
     URLConnection urlConnection = url.openConnection();
     urlConnection.connect();
+
     InputStream inputStream = urlConnection.getInputStream();
     JarInputStream jarInputStream = new JarInputStream( inputStream );
-
     JarOutputStream jarOutputStream =
         new JarOutputStream( pipedOutputStream, getManifest( artifactInfo, jarInputStream ) );
 
@@ -186,7 +256,7 @@ public class WebjarsURLConnection extends URLConnection {
             }
           }
         } else if ( isNpmWebjar && name.endsWith( NPM_NAME ) || isBowerWebjar && name.endsWith( BOWER_NAME ) ) {
-          // try to generate requirejs.json from bower.json (Bower WebJars)
+          // try to generate requirejs.json from package.json (Npm WebJars) or bower.json (Bower WebJars)
           Matcher matcher = isNpmWebjar ? NPM_PATTERN.matcher( name ) : BOWER_PATTERN.matcher( name );
           if ( matcher.matches() ) {
             try {
@@ -225,9 +295,11 @@ public class WebjarsURLConnection extends URLConnection {
 
     if ( requireConfig != null ) {
       try {
-        final RequireJsGenerator.ModuleInfo moduleInfo = requireConfig.getConvertedConfig( artifactInfo );
+        final String exports = !isAmdPackage && !exportedGlobals.isEmpty() ? exportedGlobals.get( 0 ) : null;
+        final RequireJsGenerator.ModuleInfo moduleInfo = requireConfig.getConvertedConfig( artifactInfo, isAmdPackage,
+            exports );
 
-        addRequireJsToJar( JSONObject.toJSONString( moduleInfo.getRequirejs() ), jarOutputStream );
+        addRequireJsToJar( JSONObject.toJSONString( moduleInfo.getRequireJs() ), jarOutputStream );
 
         // Add Blueprint file if we found a require-js configuration.
         ZipEntry newEntry = new ZipEntry( "OSGI-INF/blueprint/blueprint.xml" );
@@ -251,6 +323,63 @@ public class WebjarsURLConnection extends URLConnection {
     jarOutputStream.close();
   }
 
+  private boolean findAmdDefine( URL url, ArrayList<String> exports ) throws IOException {
+    URLConnection urlConnection = url.openConnection();
+    urlConnection.connect();
+
+    InputStream inputStream = urlConnection.getInputStream();
+    JarInputStream jarInputStream = new JarInputStream( inputStream );
+
+    ZipEntry entry;
+    while ( ( entry = jarInputStream.getNextJarEntry() ) != null ) {
+      String name = entry.getName();
+
+      Matcher matcher = PACKAGE_JS_FILES_PATTERN.matcher( name );
+
+      if ( matcher.matches() ) {
+        if ( findAmdDefine( jarInputStream, exports ) ) {
+          return true;
+        }
+      }
+    }
+
+    return false;
+  }
+
+  private boolean findAmdDefine( InputStream is, ArrayList<String> exports ) {
+    final Pattern definePattern =
+        Pattern.compile( "\bdefine\b(\\s*)\\(((\\s*)\"[^\"]+\"(\\s*),)?((\\s*)\\[((\\s*)\"[^\"]+\""
+            + "(\\s*),?)+(\\s*)\\](\\s*),)?((\\s*)function)" );
+
+    final Pattern globalPattern =
+        Pattern.compile( "(\\bwindow\\b|\\bexports\\b)\\.(([a-zA-Z_$][a-zA-Z\\d_$]*\\.)*[a-zA-Z_$][a-zA-Z\\d_$]*)\\s*=\\s*[\\w${][^,;]+" );
+
+    BufferedReader br = new BufferedReader( new InputStreamReader( is ) );
+
+    String line;
+    try {
+      while ( ( line = br.readLine() ) != null ) {
+        Matcher matcher = definePattern.matcher( line );
+        if ( matcher.find() ) {
+          return true;
+        }
+
+        matcher = globalPattern.matcher( line );
+        if ( matcher.find() ) {
+          final String var = matcher.group( 2 );
+          final String varSegment = var.split( "\\.", 2 )[0];
+          if ( !varSegment.startsWith( "on" ) && !JS_KNOWN_GLOBALS.contains( varSegment ) && !exports.contains( var ) ) {
+            exports.add( var );
+          }
+        }
+      }
+    } catch ( IOException ignored ) {
+      // ignored
+    }
+
+    return false;
+  }
+
   private Manifest getManifest( RequireJsGenerator.ArtifactInfo artifactInfo, JarInputStream jarInputStream ) {
     Manifest manifest = jarInputStream.getManifest();
     if ( manifest == null ) {
@@ -264,7 +393,8 @@ public class WebjarsURLConnection extends URLConnection {
             "org.osgi.service.http,org.apache.felix.http.api,org.ops4j.pax.web.extender.whiteboard.runtime,"
                 + "org.ops4j.pax.web.extender.whiteboard" );
 
-    manifest.getMainAttributes().put( new Attributes.Name( Constants.BUNDLE_VERSION ), artifactInfo.getOsgiCompatibleVersion() );
+    manifest.getMainAttributes()
+        .put( new Attributes.Name( Constants.BUNDLE_VERSION ), artifactInfo.getOsgiCompatibleVersion() );
     return manifest;
   }
 
@@ -276,8 +406,7 @@ public class WebjarsURLConnection extends URLConnection {
     return new RequireJsGenerator( pom );
   }
 
-  private RequireJsGenerator moduleFromJsScript( String moduleName, String moduleVersion,
-                                                 JarInputStream jarInputStream )
+  private RequireJsGenerator moduleFromJsScript( String moduleName, String moduleVersion, JarInputStream jarInputStream )
       throws IOException, NoSuchMethodException, ScriptException, ParseException {
     byte[] bytes = IOUtils.toByteArray( jarInputStream );
 
@@ -293,8 +422,7 @@ public class WebjarsURLConnection extends URLConnection {
     return new RequireJsGenerator( json );
   }
 
-  private RequireJsGenerator moduleFromRootPath( String physicalPathNamePart,
-                                                 String physicalPathVersionPart ) {
+  private RequireJsGenerator moduleFromRootPath( String physicalPathNamePart, String physicalPathVersionPart ) {
     return new RequireJsGenerator( physicalPathNamePart, physicalPathVersionPart );
   }
 

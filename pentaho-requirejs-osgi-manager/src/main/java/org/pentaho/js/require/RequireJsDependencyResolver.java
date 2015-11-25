@@ -8,6 +8,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -118,6 +120,15 @@ public class RequireJsDependencyResolver {
       for ( String version : moduleInfo.keySet() ) {
         final HashMap<String, Object> versionInfo = (HashMap<String, Object>) moduleInfo.get( version );
 
+        final boolean isAmdModule =
+            versionInfo.containsKey( "isAmdPackage" ) && ( (Boolean) versionInfo.get( "isAmdPackage" ) ).booleanValue();
+        String exports = null;
+        if ( !isAmdModule && versionInfo.containsKey( "exports" ) ) {
+          exports = (String) versionInfo.get( "exports" );
+        }
+
+        Set<String> moduleShimDependencies = new LinkedHashSet<>();
+
         if ( versionInfo.containsKey( "processed" ) ) {
           final HashMap<String, String> processedDependencies = (HashMap<String, String>) versionInfo.get( "processed" );
 
@@ -138,6 +149,18 @@ public class RequireJsDependencyResolver {
               resolved.put( dependencyModuleId, dependencyResolvedVersion );
 
               moduleMap.put( dependencyModuleId, dependencyModuleId + "_" + dependencyResolvedVersion );
+
+              if ( !isAmdModule ) {
+                final HashMap<String, ?> dependencyInfo =
+                    availableModules.get( dependencyModuleId ).get( dependencyResolvedVersion );
+                final boolean dependencyIsAmdModule =
+                    dependencyInfo.containsKey( "isAmdPackage" ) && ( (Boolean) dependencyInfo.get( "isAmdPackage" ) )
+                        .booleanValue();
+
+                if ( !dependencyIsAmdModule ) {
+                  moduleShimDependencies.add( dependencyModuleId + "_" + dependencyResolvedVersion );
+                }
+              }
             }
           }
 
@@ -145,6 +168,66 @@ public class RequireJsDependencyResolver {
             versionInfo.put( "resolved", resolved );
 
             map.put( module + "_" + version, moduleMap );
+          }
+        }
+
+        if ( !isAmdModule ) {
+          Map<String, Object> shim;
+          if ( !requireConfig.containsKey( "shim" ) ) {
+            shim = new HashMap<>();
+          } else {
+            shim = (HashMap<String, Object>) requireConfig.get( "shim" );
+          }
+
+          JSONObject moduleShim = new JSONObject();
+          if ( shim.containsKey( module + "_" + version ) ) {
+            Object originalShim = shim.get( module + "_" + version );
+
+            if ( originalShim instanceof List ) {
+              moduleShimDependencies.addAll( (List<String>) originalShim );
+            } else if ( originalShim instanceof Map ) {
+              if ( ( (Map) originalShim ).containsKey( "deps" ) ) {
+                moduleShimDependencies.addAll( (List<String>) ( (Map) originalShim ).get( "deps" ) );
+              }
+            }
+          }
+
+          if ( !moduleShimDependencies.isEmpty() ) {
+            moduleShim.put( "deps", new ArrayList<>( moduleShimDependencies ) );
+          }
+
+          if ( exports != null && !moduleShim.containsKey( "exports" ) ) {
+            moduleShim.put( "exports", exports );
+          }
+
+          shim.put( module + "_" + version, moduleShim );
+
+          List<Object> packages = (List<Object>) versionInfo.get( "packages" );
+          if ( packages != null ) {
+            for ( Object pck : packages ) {
+              String pckId;
+              String mainScript;
+              if ( pck instanceof Map ) {
+                pckId = (String) ( (Map) pck ).get( "name" );
+                mainScript = (String) ( (Map) pck ).get( "main" );
+              } else {
+                pckId = (String) pck;
+                mainScript = "main";
+              }
+
+              String convertedName;
+              if ( !pckId.isEmpty() ) {
+                convertedName = module + "_" + version + "/" + pckId;
+              } else {
+                convertedName = module + "_" + version;
+              }
+
+              shim.put( convertedName + "/" + mainScript, moduleShim );
+            }
+          }
+
+          if ( !shim.isEmpty() ) {
+            requireConfig.put( "shim", shim );
           }
         }
       }
