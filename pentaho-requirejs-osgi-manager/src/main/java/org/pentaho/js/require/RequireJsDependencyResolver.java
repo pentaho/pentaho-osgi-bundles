@@ -8,6 +8,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -104,7 +105,13 @@ public class RequireJsDependencyResolver {
       moduleRequirement.resolve();
     }
 
-    HashMap<String, HashMap<String, ?>> map = (HashMap<String, HashMap<String, ?>>) requireConfig.get( "map" );
+    Map<String, HashMap<String, ?>> map;
+    if ( !requireConfig.containsKey( "map" ) ) {
+      map = new HashMap<>();
+    } else {
+      map = (Map<String, HashMap<String, ?>>) requireConfig.get( "map" );
+    }
+
     for ( String module : availableModules.keySet() ) {
       final HashMap<String, HashMap<String, ?>> moduleInfo = availableModules.get( module );
 
@@ -117,11 +124,10 @@ public class RequireJsDependencyResolver {
           final HashMap<String, String> resolved = new HashMap<>();
 
           HashMap<String, String> moduleMap;
-          if ( !map.containsKey( module + "/" + version ) ) {
+          if ( !map.containsKey( module + "_" + version ) ) {
             moduleMap = new HashMap<>();
-            map.put( module + "/" + version, moduleMap );
           } else {
-            moduleMap = (HashMap<String, String>) map.get( module + "/" + version );
+            moduleMap = (HashMap<String, String>) map.get( module + "_" + version );
           }
 
           for ( String dependencyModuleId : processedDependencies.keySet() ) {
@@ -131,12 +137,14 @@ public class RequireJsDependencyResolver {
             if ( dependencyResolvedVersion != null ) {
               resolved.put( dependencyModuleId, dependencyResolvedVersion );
 
-              moduleMap.put( dependencyModuleId, dependencyModuleId + "/" + dependencyResolvedVersion );
+              moduleMap.put( dependencyModuleId, dependencyModuleId + "_" + dependencyResolvedVersion );
             }
           }
 
           if ( !resolved.isEmpty() ) {
             versionInfo.put( "resolved", resolved );
+
+            map.put( module + "_" + version, moduleMap );
           }
         }
       }
@@ -148,26 +156,30 @@ public class RequireJsDependencyResolver {
       for ( String artifactVersion : artifactInfo.keySet() ) {
         final HashMap<String, String> modules = artifactInfo.get( artifactVersion );
 
-        for ( String module : modules.keySet() ) {
-          String version = modules.get( module );
+        final Set<String> moduleIds = modules.keySet();
+
+        for ( String moduleId : moduleIds ) {
+          String version = modules.get( moduleId );
 
           HashMap<String, String> moduleMap;
-          if ( !map.containsKey( module + "/" + version ) ) {
+          if ( !map.containsKey( moduleId + "_" + version ) ) {
             moduleMap = new HashMap<>();
-            map.put( module + "/" + version, moduleMap );
+            map.put( moduleId + "_" + version, moduleMap );
           } else {
-            moduleMap = (HashMap<String, String>) map.get( module + "/" + version );
+            moduleMap = (HashMap<String, String>) map.get( moduleId + "_" + version );
           }
 
-          for ( String simblingModule : modules.keySet() ) {
-            if ( !simblingModule.equals( module ) ) {
-              String simblingVersion = modules.get( module );
+          for ( String simblingModuleId : moduleIds ) {
+            String simblingVersion = modules.get( moduleId );
 
-              moduleMap.put( simblingModule, simblingModule + "/" + simblingVersion );
-            }
+            moduleMap.put( simblingModuleId, simblingModuleId + "_" + simblingVersion );
           }
         }
       }
+    }
+
+    if ( !map.isEmpty() ) {
+      requireConfig.put( "map", map );
     }
   }
 

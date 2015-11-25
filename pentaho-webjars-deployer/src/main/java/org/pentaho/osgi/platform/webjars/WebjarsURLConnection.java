@@ -236,7 +236,7 @@ public class WebjarsURLConnection extends URLConnection {
         blueprintTemplate =
             blueprintTemplate.replaceAll( "\\{path\\}",
                 "META-INF/resources/webjars/" + physicalPathNamePart + "/" + physicalPathVersionPart );
-        blueprintTemplate = blueprintTemplate.replace( "{versioned_name}", moduleInfo.getVersionedName() );
+        blueprintTemplate = blueprintTemplate.replace( "{versioned_name}", moduleInfo.getVersionedPath() );
 
         jarOutputStream.putNextEntry( newEntry );
         jarOutputStream.write( blueprintTemplate.getBytes( "UTF-8" ) );

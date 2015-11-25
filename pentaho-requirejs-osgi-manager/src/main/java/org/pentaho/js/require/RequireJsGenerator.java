@@ -2,6 +2,7 @@ package org.pentaho.js.require;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.SerializationUtils;
 import org.apache.commons.lang.StringUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -25,7 +26,6 @@ import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 import java.io.IOException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -37,9 +37,8 @@ import java.util.regex.Pattern;
 public class RequireJsGenerator {
   private final JSONParser parser = new JSONParser();
 
-  private String moduleName;
-  private String moduleVersion;
-  private String modulePath;
+  private ModuleInfo moduleInfo;
+
   private JSONObject requireConfig;
   private HashMap<String, String> dependencies = new HashMap<>();
 
@@ -57,8 +56,7 @@ public class RequireJsGenerator {
   }
 
   public RequireJsGenerator( String moduleName, String moduleVersion ) {
-    this.moduleName = moduleName;
-    this.moduleVersion = moduleVersion;
+    moduleInfo = new ModuleInfo( moduleName, moduleVersion );
 
     HashMap<String, String> paths = new HashMap<>();
     paths.put( moduleName, "" );
@@ -72,7 +70,7 @@ public class RequireJsGenerator {
     final HashMap<String, Object> modules = new HashMap<>();
     final HashMap<String, String> artifactModules = new HashMap<>();
 
-    JSONObject convertedConfig = modifyConfigPaths( modules, artifactModules );
+    JSONObject convertedConfig = modifyConfigPaths( artifactModules );
 
     HashMap<String, Object> artifactVersion = new HashMap<>();
     artifactVersion.put( artifactInfo.getVersion(), artifactModules );
@@ -81,21 +79,24 @@ public class RequireJsGenerator {
     artifacts.put( artifactInfo.getGroup() + "/" + artifactInfo.getArtifactId(), artifactVersion );
 
     HashMap<String, Object> meta = new HashMap<>();
-    meta.put( "modules", modules );
+    meta.put( "modules", moduleInfo.getModules() );
     meta.put( "artifacts", artifacts );
 
     convertedConfig.put( "requirejs-osgi-meta", meta );
 
-    return new ModuleInfo( moduleName, moduleVersion, convertedConfig );
+    moduleInfo.setRequireJs( convertedConfig );
+
+    return moduleInfo;
   }
 
-  private void requirejsFromPom( Document pom ) throws XPathExpressionException, ParseException {
+  private void requirejsFromPom( Document pom )
+      throws XPathExpressionException, ParseException {
     XPath xPath = XPathFactory.newInstance().newXPath();
 
     final Element document = pom.getDocumentElement();
 
-    moduleName = (String) xPath.evaluate( "/project/artifactId", document, XPathConstants.STRING );
-    moduleVersion = (String) xPath.evaluate( "/project/version", document, XPathConstants.STRING );
+    moduleInfo = new ModuleInfo( (String) xPath.evaluate( "/project/artifactId", document, XPathConstants.STRING ),
+        (String) xPath.evaluate( "/project/version", document, XPathConstants.STRING ) );
 
     String pomConfig = (String) xPath.evaluate( "/project/properties/requirejs", document, XPathConstants.STRING );
 
@@ -137,8 +138,7 @@ public class RequireJsGenerator {
 
   private void requirejsFromJs( String moduleName, String moduleVersion, String jsScript )
       throws IOException, ScriptException, NoSuchMethodException, ParseException {
-    this.moduleName = moduleName;
-    this.moduleVersion = moduleVersion;
+    moduleInfo = new ModuleInfo( moduleName, moduleVersion );
 
     Pattern pat = Pattern.compile( "webjars!(.*).js" );
     Matcher m = pat.matcher( jsScript );
@@ -174,29 +174,31 @@ public class RequireJsGenerator {
 
   // bower.json and package.json follow very similar format, so it can be parsed by the same method
   private void requirejsFromJson( JSONObject json ) {
-    moduleName = (String) json.get( "name" );
-    moduleVersion = (String) json.get( "version" );
+    moduleInfo = new ModuleInfo( (String) json.get( "name" ), (String) json.get( "version" ) );
 
-    modulePath = json.containsKey( "path" ) ? (String) json.get( "path" ) : "";
+    if ( json.containsKey( "path" ) ) {
+      moduleInfo.setPath( (String) json.get( "path" ) );
+    }
 
     JSONObject paths = json.containsKey( "paths" ) ? (JSONObject) json.get( "paths" ) : new JSONObject();
-    paths.put( moduleName, modulePath );
+    paths.put( moduleInfo.getName(), moduleInfo.getPath() );
 
     JSONObject map = json.containsKey( "map" ) ? (JSONObject) json.get( "map" ) : new JSONObject();
 
-    Object pck = extractPackage( json, moduleName, paths, map );
+    Object pck = extractPackage( json, moduleInfo.getName(), paths, map );
 
     requireConfig = new JSONObject();
 
     if ( !map.isEmpty() ) {
       HashMap<String, HashMap<String, String>> topmap = new HashMap<>();
-      topmap.put( moduleName, map );
+      topmap.put( moduleInfo.getName(), map );
 
       requireConfig.put( "map", topmap );
     }
 
     if ( json.containsKey( "dependencies" ) ) {
       HashMap<String, ?> deps = (HashMap<String, ?>) json.get( "dependencies" );
+
       final Set<String> depsKeySet = deps.keySet();
 
       HashMap<String, Object> shim = new HashMap<>();
@@ -248,12 +250,12 @@ public class RequireJsGenerator {
       Object value = json.get( "main" );
 
       if ( value instanceof String ) {
-        pck = packageFromFilename( (String) value, moduleName );
+        pck = packageFromFilename( (String) value );
       } else if ( value instanceof JSONArray ) {
         JSONArray files = (JSONArray) value;
 
         for ( Object file : files ) {
-          final Object pack = packageFromFilename( (String) file, moduleName );
+          final Object pack = packageFromFilename( (String) file );
           if ( pack != null ) {
             pck = pack;
             break;
@@ -268,7 +270,7 @@ public class RequireJsGenerator {
 
       if ( value instanceof String ) {
         // alternate main - basic
-        pck = packageFromFilename( (String) value, moduleName );
+        pck = packageFromFilename( (String) value );
       } else if ( value instanceof HashMap ) {
         // replace specific files - advanced
         HashMap<String, ?> overridePaths = (HashMap<String, ?>) value;
@@ -301,7 +303,13 @@ public class RequireJsGenerator {
     return pck;
   }
 
-  private Object packageFromFilename( String file, String moduleName ) {
+  private Object packageFromFilename( String file ) {
+    if ( file.startsWith( "./" ) ) {
+      file = file.substring( 2 );
+    } else if ( file.startsWith( "/" ) ) {
+      file = file.substring( 1 );
+    }
+
     if ( FilenameUtils.getExtension( file ).equals( "js" ) ) {
       if ( file.equals( "main.js" ) ) {
         return "";
@@ -311,8 +319,8 @@ public class RequireJsGenerator {
 
       HashMap<String, String> pck = new HashMap<>();
       pck.put( "name", "" );
-      if ( !modulePath.isEmpty() ) {
-        pck.put( "location", modulePath );
+      if ( !moduleInfo.getPath().isEmpty() ) {
+        pck.put( "location", moduleInfo.getPath() );
       }
       pck.put( "main", filename );
 
@@ -322,13 +330,15 @@ public class RequireJsGenerator {
     return null;
   }
 
-  private JSONObject modifyConfigPaths( HashMap<String, Object> modules,
-                                                     HashMap<String, String> artifactModules ) throws ParseException {
+  private JSONObject modifyConfigPaths( HashMap<String, String> artifactModules ) throws ParseException {
     JSONObject requirejs = new JSONObject();
 
     HashMap<String, String> keyMap = new HashMap<>();
 
-    String versionedName = moduleName + "/" + moduleVersion;
+    HashMap<String, Object> moduleDetails = new HashMap<>();
+    if ( dependencies != null && !dependencies.isEmpty() ) {
+      moduleDetails.put( "dependencies", dependencies );
+    }
 
     HashMap<String, String> paths = (HashMap<String, String>) requireConfig.get( "paths" );
     if ( paths != null ) {
@@ -337,38 +347,39 @@ public class RequireJsGenerator {
       for ( String key : paths.keySet() ) {
         String versionedKey;
         if ( key.startsWith( "./" ) ) {
-          versionedKey = moduleName + "/" + moduleVersion + key.substring( 1 );
+          versionedKey = moduleInfo.getVersionedName() + key.substring( 1 );
         } else {
-          versionedKey = key + "/" + moduleVersion;
-
-          HashMap<String, Object> moduleDetails = new HashMap<>();
-          if ( dependencies != null && !dependencies.isEmpty() ) {
-            moduleDetails.put( "dependencies", dependencies );
-          }
+          versionedKey = key + "_" + moduleInfo.getVersion();
 
           HashMap<String, Object> module = new HashMap<>();
-          module.put( moduleVersion, moduleDetails );
+          module.put( moduleInfo.getVersion(), moduleDetails );
 
-          modules.put( key, module );
+          moduleInfo.addModuleId( key, module );
 
-          artifactModules.put( key, moduleVersion );
+          artifactModules.put( key, moduleInfo.getVersion() );
         }
 
         keyMap.put( key, versionedKey );
 
         String path = paths.get( key );
-        if ( path.length() > 0 && !path.startsWith( "/" ) ) {
-          path = "/" + path;
+        if ( path.length() > 0 ) {
+          if ( path.startsWith( "/" ) ) {
+            convertedPaths.put( versionedKey, path );
+          } else {
+            convertedPaths.put( versionedKey, moduleInfo.getVersionedPath() + "/" + path );
+          }
+        } else {
+          convertedPaths.put( versionedKey, moduleInfo.getVersionedPath() );
         }
-
-        convertedPaths.put( versionedKey, versionedName + path );
       }
 
       requirejs.put( "paths", convertedPaths );
     }
 
-    JSONArray packages = (JSONArray) requireConfig.get( "packages" );
-    if ( packages != null ) {
+    final JSONArray packages = (JSONArray) requireConfig.get( "packages" );
+    if ( packages != null && !packages.isEmpty() ) {
+      moduleDetails.put( "packages", SerializationUtils.clone( packages ) );
+
       JSONArray convertedPackages = new JSONArray();
 
       for ( Object pack : packages ) {
@@ -377,10 +388,10 @@ public class RequireJsGenerator {
 
           String convertedName;
           if ( !packageName.isEmpty() ) {
-            convertedName = moduleName + "/" + moduleVersion + "/" + packageName;
+            convertedName = moduleInfo.getVersionedName() + "/" + packageName;
           } else {
-            packageName = moduleName;
-            convertedName = moduleName + "/" + moduleVersion;
+            packageName = moduleInfo.getName();
+            convertedName = moduleInfo.getVersionedName();
           }
 
           keyMap.put( packageName, convertedName );
@@ -396,10 +407,10 @@ public class RequireJsGenerator {
 
             String convertedName;
             if ( !packageName.isEmpty() ) {
-              convertedName = moduleName + "/" + moduleVersion + "/" + packageName;
+              convertedName = moduleInfo.getVersionedName() + "/" + packageName;
             } else {
-              packageName = moduleName;
-              convertedName = moduleName + "/" + moduleVersion;
+              packageName = moduleInfo.getName();
+              convertedName = moduleInfo.getVersionedName();
             }
 
             keyMap.put( packageName, convertedName );
@@ -415,9 +426,19 @@ public class RequireJsGenerator {
       requirejs.put( "packages", convertedPackages );
     }
 
-    requirejs.put( "shim", convertSubConfig( keyMap, (HashMap<String, ?>) requireConfig.get( "shim" ) ) );
+    final HashMap<String, ?> shim = (HashMap<String, ?>) requireConfig.get( "shim" );
+    if ( shim != null ) {
+      requirejs.put( "shim", convertSubConfig( keyMap, shim ) );
+    }
 
-    requirejs.put( "map", convertSubConfig( keyMap, (HashMap<String, ?>) requireConfig.get( "map" ) ) );
+    final HashMap<String, ?> map = (HashMap<String, ?>) requireConfig.get( "map" );
+    if ( map != null ) {
+      requirejs.put( "map", convertSubConfig( keyMap, map ) );
+    }
+
+    if ( requireConfig.containsKey( "config" ) ) {
+      requirejs.put( "config", requireConfig.get( "config" ) );
+    }
 
     return requirejs;
   }
@@ -444,25 +465,92 @@ public class RequireJsGenerator {
   public static class ModuleInfo {
     private String name;
     private String version;
+    private String path;
 
-    private String versionedName;
-    private JSONObject requirejs;
+    private boolean isAmdPackage;
+    private String exports;
 
-    public ModuleInfo( String moduleName, String moduleVersion, JSONObject requirejs ) {
+    private String versionedModuleId;
+    private String versionedPath;
+
+    final HashMap<String, Object> modules;
+
+    private JSONObject requireJs;
+
+    public ModuleInfo( String moduleName, String moduleVersion ) {
       this.name = moduleName;
       this.version = moduleVersion;
+      this.isAmdPackage = true;
+      this.exports = null;
 
-      this.versionedName = this.name + "/" + this.version;
+      this.versionedModuleId = this.name + "_" + this.version;
+      this.versionedPath = this.name + "/" + this.version;
 
-      this.requirejs = requirejs;
+      this.modules = new HashMap<>();
     }
 
-    public JSONObject getRequirejs() {
-      return requirejs;
+    public String getName() {
+      return name;
+    }
+
+    public void setName( String name ) {
+      this.name = name;
+    }
+
+    public String getVersion() {
+      return version;
+    }
+
+    public void setVersion( String version ) {
+      this.version = version;
+    }
+
+    public String getPath() {
+      return this.path != null ? this.path : "";
+    }
+
+    public void setPath( String path ) {
+      this.path = path;
+    }
+
+    public boolean isAmdPackage() {
+      return isAmdPackage;
+    }
+
+    public void setAmdPackage( boolean amdPackage ) {
+      isAmdPackage = amdPackage;
+    }
+
+    public String getExports() {
+      return this.exports;
+    }
+
+    public void setExports( String exports ) {
+      this.exports = exports;
+    }
+
+    public void addModuleId( String key, Object module ) {
+      this.modules.put( key, module );
+    }
+
+    public HashMap<String, Object> getModules() {
+      return this.modules;
     }
 
     public String getVersionedName() {
-      return versionedName;
+      return versionedModuleId;
+    }
+
+    public String getVersionedPath() {
+      return versionedPath;
+    }
+
+    public JSONObject getRequireJs() {
+      return requireJs;
+    }
+
+    public void setRequireJs( JSONObject requireJs ) {
+      this.requireJs = requireJs;
     }
   }
 
