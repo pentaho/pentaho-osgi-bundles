@@ -1,6 +1,23 @@
 package org.pentaho.platform.servicecoordination.impl;
 
-import aQute.bnd.osgi.Constants;
+import static junit.framework.Assert.assertNotSame;
+import static junit.framework.Assert.assertSame;
+import static org.junit.Assert.assertNotNull;
+import static org.ops4j.pax.exam.CoreOptions.junitBundles;
+import static org.ops4j.pax.exam.CoreOptions.maven;
+import static org.ops4j.pax.exam.CoreOptions.options;
+import static org.ops4j.pax.exam.CoreOptions.provision;
+import static org.ops4j.pax.tinybundles.core.TinyBundles.bundle;
+import static org.ops4j.pax.tinybundles.core.TinyBundles.withBnd;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+
+import javax.inject.Inject;
+
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.ops4j.pax.exam.Configuration;
@@ -13,22 +30,11 @@ import org.ops4j.pax.exam.spi.reactors.PerMethod;
 import org.pentaho.platform.servicecoordination.api.IServiceBarrier;
 import org.pentaho.platform.servicecoordination.api.IServiceBarrierManager;
 
-import javax.inject.Inject;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
-
-import static junit.framework.Assert.assertNotSame;
-import static junit.framework.Assert.assertSame;
-import static org.junit.Assert.assertNotNull;
-import static org.ops4j.pax.exam.CoreOptions.*;
-import static org.ops4j.pax.tinybundles.core.TinyBundles.bundle;
-import static org.ops4j.pax.tinybundles.core.TinyBundles.withBnd;
+import aQute.bnd.osgi.Constants;
 
 @RunWith(PaxExam.class)
 @ExamReactorStrategy(PerMethod.class)
-public class ServiceBarrierManagerIntegrationTest {
+@Ignore public class ServiceBarrierManagerIntegrationTestIT {
 
 
   @Configuration
