@@ -5,6 +5,8 @@ import org.json.simple.JSONObject;
 
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -17,7 +19,7 @@ public class RequireJsMerger {
     this.requireConfig = createEmptyRequireConfig();
   }
 
-  public void merge( JSONObject requireConfigPartial ) throws Exception {
+  public void merge( Map requireConfigPartial ) throws Exception {
     requireConfig = this.merge( requireConfig, requireConfigPartial );
   }
 
@@ -45,7 +47,7 @@ public class RequireJsMerger {
     return emptyConfig;
   }
 
-  private JSONObject toRelativePathedObject( JSONObject jsonObject ) {
+  private Map toRelativePathedObject( Map jsonObject ) {
     jsonObject.keySet();
 
     for ( Object key : jsonObject.keySet() ) {
@@ -59,39 +61,37 @@ public class RequireJsMerger {
       }
 
     }
+
     return jsonObject;
   }
 
   private Object merge( String key, Object value1, Object value2 ) throws Exception {
     if ( value1 == null ) {
-      return value2 instanceof JSONObject ? toRelativePathedObject( (JSONObject) value2 ) : value2;
+      return value2 instanceof Map ? toRelativePathedObject( (Map) value2 ) : value2;
     } else if ( value2 == null ) {
-      return value1 instanceof JSONObject ? toRelativePathedObject( (JSONObject) value1 ) : value1;
-    } else {
-      if ( value1 instanceof JSONObject ) {
-        if ( value2 instanceof JSONObject ) {
-          return merge( (JSONObject) value1, toRelativePathedObject( (JSONObject) value2 ), key.equals( "shim" ) );
-        } else {
-          throw new Exception( "Cannot merge key " + key + " due to different types." );
-        }
-      } else if ( value2 instanceof JSONObject ) {
-        throw new Exception( "Cannot merge key " + key + " due to different types." );
-      } else if ( value1 instanceof JSONArray ) {
-        if ( value2 instanceof JSONArray ) {
-          return merge( (JSONArray) value1, (JSONArray) value2 );
-        } else {
-          throw new Exception( "Cannot merge key " + key + " due to different types." );
-        }
-      } else if ( value2 instanceof JSONArray ) {
-        throw new Exception( "Cannot merge key " + key + " due to different types." );
+      return value1 instanceof Map ? toRelativePathedObject( (Map) value1 ) : value1;
+    } else if ( value1 instanceof Map ) {
+      if ( value2 instanceof Map ) {
+        return merge( (Map) value1, toRelativePathedObject( (Map) value2 ), key.equals( "shim" ) );
       } else {
-        //TODO Should we warn here?
-        return value2;
+        throw new Exception( "Cannot merge key " + key + " due to different types" );
       }
+    } else if ( value2 instanceof Map ) {
+      throw new Exception( "Cannot merge key " + key + " due to different types" );
+    } else if ( value1 instanceof List ) {
+      if ( value2 instanceof List ) {
+        return merge( (List) value1, (List) value2 );
+      } else {
+        throw new Exception( "Cannot merge key " + key + " due to different types" );
+      }
+    } else if ( value2 instanceof List ) {
+      throw new Exception( "Cannot merge key " + key + " due to different types" );
+    } else {
+      return value2;
     }
   }
 
-  private JSONArray merge( JSONArray array1, JSONArray array2 ) {
+  private JSONArray merge( List array1, List array2 ) {
     Set<Object> hs = new LinkedHashSet<>();
     hs.addAll( array1 );
     hs.addAll( array2 );
@@ -102,38 +102,42 @@ public class RequireJsMerger {
     return result;
   }
 
-  private JSONObject merge( JSONObject object1, JSONObject object2 ) throws Exception {
+  private JSONObject merge( Map object1, Map object2 ) throws Exception {
     return this.merge( object1, object2, false );
   }
 
-  private JSONObject merge( JSONObject object1, JSONObject object2, boolean insideShim ) throws Exception {
+  private JSONObject merge( Map object1, Map object2, boolean insideShim ) throws Exception {
     Set<String> keys = new HashSet<>( object1.keySet().size() );
     for ( Object key : object1.keySet() ) {
       if ( !( key instanceof String ) ) {
         throw new Exception( "Key " + key + " was not a String" );
       }
+
       keys.add( (String) key );
     }
+
     for ( Object key : object2.keySet() ) {
       if ( !( key instanceof String ) ) {
         throw new Exception( "Key " + key + " was not a String" );
       }
+
       keys.add( (String) key );
     }
+
     JSONObject result = new JSONObject();
     for ( String key : keys ) {
       Object value1 = object1.get( key );
       Object value2 = object2.get( key );
 
       if ( insideShim ) {
-        if ( value1 instanceof JSONArray ) {
+        if ( value1 instanceof List ) {
           JSONObject deps = new JSONObject();
           deps.put( "deps", value1 );
 
           value1 = deps;
         }
 
-        if ( value2 instanceof JSONArray ) {
+        if ( value2 instanceof List ) {
           JSONObject deps = new JSONObject();
           deps.put( "deps", value2 );
 
@@ -143,6 +147,7 @@ public class RequireJsMerger {
 
       result.put( key, merge( key, value1, value2 ) );
     }
+
     return result;
   }
 }
