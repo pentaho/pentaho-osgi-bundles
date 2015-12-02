@@ -1,7 +1,6 @@
 package org.pentaho.js.require;
 
 import com.github.zafarkhaja.semver.Version;
-import org.json.simple.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -17,7 +16,7 @@ import java.util.Set;
  * Created by nantunes on 12/11/15.
  */
 public class RequireJsDependencyResolver {
-  public static void processMetaInformation( JSONObject result ) {
+  public static void processMetaInformation( Map<String, Object> result ) {
     if ( !result.containsKey( "requirejs-osgi-meta" ) ) {
       return;
     }
@@ -28,12 +27,12 @@ public class RequireJsDependencyResolver {
     result.remove( "requirejs-osgi-meta" );
   }
 
-  private JSONObject requireConfig;
+  private Map<String, Object> requireConfig;
 
   final HashMap<String, ModuleRequirements> requirements;
   HashMap<String, HashMap<String, HashMap<String, ?>>> availableModules;
 
-  private RequireJsDependencyResolver( JSONObject requireConfig ) {
+  private RequireJsDependencyResolver( Map<String, Object> requireConfig ) {
     this.requireConfig = requireConfig;
 
     requirements = new HashMap<>();
@@ -69,8 +68,8 @@ public class RequireJsDependencyResolver {
           for ( String dependencyId : dependencies.keySet() ) {
             String versionRequirement = dependencies.get( dependencyId );
 
-            if ( dependencyId.startsWith( "pentaho-webjar-deployer:" ) ) {
-              final String dependencyArtifact = dependencyId.substring( 24 );
+            if ( dependencyId.startsWith( "mvn:" ) ) {
+              final String dependencyArtifact = dependencyId.substring( 4 );
 
               if ( artifacts.containsKey( dependencyArtifact ) ) {
                 HashMap<String, HashMap<String, String>> artifactInfo = artifacts.get( dependencyArtifact );
@@ -179,7 +178,7 @@ public class RequireJsDependencyResolver {
             shim = (HashMap<String, Object>) requireConfig.get( "shim" );
           }
 
-          JSONObject moduleShim = new JSONObject();
+          Map<String, Object> moduleShim = new HashMap<>();
           if ( shim.containsKey( module + "_" + version ) ) {
             Object originalShim = shim.get( module + "_" + version );
 

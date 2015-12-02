@@ -47,7 +47,7 @@ public class RequireJsConfigServlet extends HttpServlet {
       inputStream = getClass().getClassLoader().getResourceAsStream( "js/require.js" );
       inputStreamReader = new InputStreamReader( inputStream );
       reader = new BufferedReader( inputStreamReader );
-      String line = null;
+      String line;
       StringBuilder sb = new StringBuilder();
       while ( ( line = reader.readLine() ) != null ) {
         sb.append( line );

@@ -3,6 +3,13 @@
     "modules": {
       "angular-ui-router.stateHelper": {
         "1.3.1": {
+          "packages": [
+            {
+              "name": "",
+              "main": "statehelper"
+            }
+          ],
+          "isAmdPackage": true,
           "dependencies": {
             "angular": ">=1.2.0",
             "angular-ui-router": "~0.2.11"
@@ -19,27 +26,12 @@
     }
   },
   "paths": {
-    "angular-ui-router.stateHelper\/1.3.1": "angular-ui-router.stateHelper\/1.3.1"
+    "angular-ui-router.stateHelper_1.3.1": "angular-ui-router.stateHelper_1.3.1"
   },
   "packages": [
     {
-      "name": "angular-ui-router.stateHelper\/1.3.1",
+      "name": "angular-ui-router.stateHelper_1.3.1",
       "main": "statehelper"
     }
-  ],
-  "shim": {
-    "angular-ui-router.stateHelper\/1.3.1": {
-      "deps": [
-        "angular",
-        "angular-ui-router"
-      ]
-    },
-    "angular-ui-router.stateHelper\/1.3.1\/statehelper": {
-      "deps": [
-        "angular",
-        "angular-ui-router"
-      ]
-    }
-  },
-  "map": {}
+  ]
 }

@@ -3,15 +3,17 @@
     "modules": {
       "smart-table": {
         "2.0.3-1": {
+          "isAmdPackage": true,
           "dependencies": {
-            "pentaho-webjar-deployer:org.webjars\/angularjs": "1.2.27"
+            "mvn:org.webjars\/angularjs": "1.2.27"
           }
         }
       },
       "smart-table-min": {
         "2.0.3-1": {
+          "isAmdPackage": true,
           "dependencies": {
-            "pentaho-webjar-deployer:org.webjars\/angularjs": "1.2.27"
+            "mvn:org.webjars\/angularjs": "1.2.27"
           }
         }
       }
@@ -26,13 +28,12 @@
     }
   },
   "paths": {
-    "smart-table-min\/2.0.3-1": "smart-table\/2.0.3-1\/smart-table.min",
-    "smart-table\/2.0.3-1": "smart-table\/2.0.3-1\/smart-table"
+    "smart-table_2.0.3-1": "smart-table_2.0.3-1\/smart-table",
+    "smart-table-min_2.0.3-1": "smart-table_2.0.3-1\/smart-table.min"
   },
   "shim": {
-    "smart-table\/2.0.3-1": [
+    "smart-table_2.0.3-1": [
       "angular"
     ]
-  },
-  "map": {}
+  }
 }

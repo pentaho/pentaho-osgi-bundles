@@ -76,7 +76,9 @@ public class RebuildCacheCallableTest {
     String arrayKey = "array";
     String objectKey = "object";
     String dupKey = "dup";
-    Map<Long, JSONObject> configMap = new HashMap<Long, JSONObject>();
+
+    Map<Long, Map<String, Object>> configMap = new HashMap<>();
+
     JSONObject object1 = new JSONObject();
     configMap.put( 1L, object1 );
     JSONArray array1 = new JSONArray();
@@ -125,7 +127,9 @@ public class RebuildCacheCallableTest {
   @Test( expected = Exception.class )
   public void testCannotMergeJSONObjectOtherException() throws Exception {
     String objectKey = "object";
-    Map<Long, JSONObject> configMap = new HashMap<Long, JSONObject>();
+
+    Map<Long, Map<String, Object>> configMap = new HashMap<>();
+
     JSONObject object1 = new JSONObject();
     configMap.put( 1L, object1 );
     object1.put( objectKey, new JSONObject() );
@@ -141,7 +145,9 @@ public class RebuildCacheCallableTest {
   @Test( expected = Exception.class )
   public void testCannotMergeArrayJSONObjectException() throws Exception {
     String objectKey = "object";
-    Map<Long, JSONObject> configMap = new HashMap<Long, JSONObject>();
+
+    Map<Long, Map<String, Object>> configMap = new HashMap<>();
+
     JSONObject object1 = new JSONObject();
     configMap.put( 1L, object1 );
     object1.put( objectKey, new JSONArray() );
@@ -157,7 +163,7 @@ public class RebuildCacheCallableTest {
     String moduleKey = "moduleA";
     String subobjectKey = "deps";
 
-    Map<Long, JSONObject> configMap = new HashMap<Long, JSONObject>();
+    Map<Long, Map<String, Object>> configMap = new HashMap<>();
 
     JSONObject object1 = new JSONObject();
     object1.put( moduleKey, new JSONArray() );
@@ -189,7 +195,9 @@ public class RebuildCacheCallableTest {
   @Test( expected = Exception.class )
   public void testCannotMergeArrayOtherException() throws Exception {
     String objectKey = "object";
-    Map<Long, JSONObject> configMap = new HashMap<Long, JSONObject>();
+
+    Map<Long, Map<String, Object>> configMap = new HashMap<>();
+
     JSONObject object1 = new JSONObject();
     configMap.put( 1L, object1 );
     object1.put( objectKey, new JSONArray() );
@@ -202,7 +210,9 @@ public class RebuildCacheCallableTest {
   @Test( expected = Exception.class )
   public void testCannotMergeOtherArrayException() throws Exception {
     String objectKey = "object";
-    Map<Long, JSONObject> configMap = new HashMap<Long, JSONObject>();
+
+    Map<Long, Map<String, Object>> configMap = new HashMap<>();
+
     JSONObject object1 = new JSONObject();
     configMap.put( 1L, object1 );
     object1.put( objectKey, "B" );
@@ -215,7 +225,9 @@ public class RebuildCacheCallableTest {
   @Test( expected = Exception.class )
   public void testCannotMergeObjectKeyException() throws Exception {
     String objectKey = "object";
-    Map<Long, JSONObject> configMap = new HashMap<Long, JSONObject>();
+
+    Map<Long, Map<String, Object>> configMap = new HashMap<>();
+
     JSONObject object1 = new JSONObject();
     configMap.put( 1L, object1 );
     object1.put( objectKey, "B" );
@@ -231,7 +243,7 @@ public class RebuildCacheCallableTest {
     String moduleKey = "module";
     String modulePath = "module/path/script";
 
-    Map<Long, JSONObject> configMap = new HashMap<Long, JSONObject>();
+    Map<Long, Map<String, Object>> configMap = new HashMap<>();
 
     JSONObject object1 = new JSONObject();
     configMap.put( 1L, object1 );

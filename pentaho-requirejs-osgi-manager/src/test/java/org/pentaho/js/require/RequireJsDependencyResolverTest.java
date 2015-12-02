@@ -17,13 +17,13 @@
 
 package org.pentaho.js.require;
 
-import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 
@@ -35,16 +35,15 @@ public class RequireJsDependencyResolverTest {
   }
 
   @Test
-  public void testConfigFromBowerJson() throws IOException, ParseException {
-    JSONObject json =
-        (JSONObject) parser.parse(
-            new InputStreamReader( this.getClass().getClassLoader().getResourceAsStream( "require.meta.json" ) ) );
+  public void testProcessMetaInformation() throws IOException, ParseException {
+    final InputStreamReader requireReader = new InputStreamReader( this.getClass().getClassLoader().getResourceAsStream( "require.meta.json" ) );
 
-    RequireJsDependencyResolver.processMetaInformation( json );
+    Object requireConfig = parser.parse( requireReader );
+    RequireJsDependencyResolver.processMetaInformation( (Map<String, Object>) requireConfig );
 
-    assertEquals( parser
-            .parse( new InputStreamReader( this.getClass().getClassLoader().getResourceAsStream( "require.resolved.json" )
-            ) ),
-        json );
+    final InputStreamReader expectedReader = new InputStreamReader( this.getClass().getClassLoader().getResourceAsStream( "require.resolved.json" ) );
+    final Object expectedRequireConfig = parser.parse( expectedReader );
+
+    assertEquals( expectedRequireConfig, requireConfig );
   }
 }

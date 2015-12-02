@@ -15,14 +15,14 @@
       "smart-table": {
         "2.0.3-1": {
           "dependencies": {
-            "pentaho-webjar-deployer:org.webjars\/angularjs": ">=1.2.27"
+            "mvn:org.webjars\/angularjs": ">=1.2.27"
           }
         }
       },
       "smart-table-min": {
         "2.0.3-1": {
           "dependencies": {
-            "pentaho-webjar-deployer:org.webjars\/angularjs": ">=1.2.27"
+            "mvn:org.webjars\/angularjs": ">=1.2.27"
           }
         }
       }

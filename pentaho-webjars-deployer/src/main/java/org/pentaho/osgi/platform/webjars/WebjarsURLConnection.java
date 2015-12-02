@@ -19,22 +19,12 @@ package org.pentaho.osgi.platform.webjars;
 
 
 import org.apache.commons.io.IOUtils;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 import org.osgi.framework.Constants;
 import org.pentaho.js.require.RequireJsGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.w3c.dom.Document;
-import org.xml.sax.SAXException;
 
-import javax.script.ScriptException;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.xpath.XPathExpressionException;
 import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -70,8 +60,6 @@ public class WebjarsURLConnection extends URLConnection {
       return thread;
     }
   } );
-
-  private final JSONParser parser = new JSONParser();
 
   private static final String MANIFEST_MF = "MANIFEST.MF";
   private static final String PENTAHO_RJS_LOCATION = "META-INF/js/require.json";
@@ -234,7 +222,7 @@ public class WebjarsURLConnection extends URLConnection {
             Matcher matcher = POM_PATTERN.matcher( name );
             if ( matcher.matches() ) {
               try {
-                requireConfig = moduleFromPom( jarInputStream );
+                requireConfig = RequireJsGenerator.parsePom( jarInputStream );
                 wasReadFromPom = true;
               } catch ( Exception ignored ) {
                 // ignored
@@ -247,7 +235,7 @@ public class WebjarsURLConnection extends URLConnection {
             Matcher matcher = MODULE_PATTERN.matcher( name );
             if ( matcher.matches() ) {
               try {
-                requireConfig = moduleFromJsScript( matcher.group( 1 ), matcher.group( 2 ), jarInputStream );
+                requireConfig = RequireJsGenerator.processJsScript( matcher.group( 1 ), matcher.group( 2 ), jarInputStream );
               } catch ( Exception ignored ) {
                 // ignored
               }
@@ -260,7 +248,7 @@ public class WebjarsURLConnection extends URLConnection {
           Matcher matcher = isNpmWebjar ? NPM_PATTERN.matcher( name ) : BOWER_PATTERN.matcher( name );
           if ( matcher.matches() ) {
             try {
-              requireConfig = moduleFromJsonPackage( jarInputStream );
+              requireConfig = RequireJsGenerator.parseJsonPackage( jarInputStream );
             } catch ( Exception ignored ) {
               // ignored
             }
@@ -288,7 +276,7 @@ public class WebjarsURLConnection extends URLConnection {
 
     if ( requireConfig == null ) {
       // in last resort generate requirejs config by mapping the root path
-      requireConfig = moduleFromRootPath( physicalPathNamePart, physicalPathVersionPart );
+      requireConfig = RequireJsGenerator.emptyGenerator( physicalPathNamePart, physicalPathVersionPart );
 
       logger.warn( "malformed webjar " + url.toString() + " deployed using root path mapping" );
     }
@@ -299,7 +287,7 @@ public class WebjarsURLConnection extends URLConnection {
         final RequireJsGenerator.ModuleInfo moduleInfo = requireConfig.getConvertedConfig( artifactInfo, isAmdPackage,
             exports );
 
-        addRequireJsToJar( JSONObject.toJSONString( moduleInfo.getRequireJs() ), jarOutputStream );
+        addRequireJsToJar( moduleInfo.exportRequireJs(), jarOutputStream );
 
         // Add Blueprint file if we found a require-js configuration.
         ZipEntry newEntry = new ZipEntry( "OSGI-INF/blueprint/blueprint.xml" );
@@ -312,7 +300,7 @@ public class WebjarsURLConnection extends URLConnection {
 
         jarOutputStream.putNextEntry( newEntry );
         jarOutputStream.write( blueprintTemplate.getBytes( "UTF-8" ) );
-      } catch ( ParseException e ) {
+      } catch ( Exception e ) {
         logger.error( "error saving " + PENTAHO_RJS_LOCATION + " - " + e.getMessage() );
       }
     }
@@ -396,34 +384,6 @@ public class WebjarsURLConnection extends URLConnection {
     manifest.getMainAttributes()
         .put( new Attributes.Name( Constants.BUNDLE_VERSION ), artifactInfo.getOsgiCompatibleVersion() );
     return manifest;
-  }
-
-  private RequireJsGenerator moduleFromPom( JarInputStream jarInputStream )
-      throws IOException, ParserConfigurationException, SAXException, XPathExpressionException, ParseException {
-    byte[] bytes = IOUtils.toByteArray( jarInputStream );
-
-    Document pom = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse( new ByteArrayInputStream( bytes ) );
-    return new RequireJsGenerator( pom );
-  }
-
-  private RequireJsGenerator moduleFromJsScript( String moduleName, String moduleVersion, JarInputStream jarInputStream )
-      throws IOException, NoSuchMethodException, ScriptException, ParseException {
-    byte[] bytes = IOUtils.toByteArray( jarInputStream );
-
-    return new RequireJsGenerator( moduleName, moduleVersion, new String( bytes, "UTF-8" ) );
-  }
-
-  private RequireJsGenerator moduleFromJsonPackage( JarInputStream jarInputStream ) throws IOException, ParseException {
-    byte[] bytes = IOUtils.toByteArray( jarInputStream );
-
-    String packageConfig = new String( bytes, "UTF-8" );
-
-    JSONObject json = (JSONObject) parser.parse( packageConfig );
-    return new RequireJsGenerator( json );
-  }
-
-  private RequireJsGenerator moduleFromRootPath( String physicalPathNamePart, String physicalPathVersionPart ) {
-    return new RequireJsGenerator( physicalPathNamePart, physicalPathVersionPart );
   }
 
   private void addRequireJsToJar( String config, JarOutputStream jarOutputStream ) throws IOException {

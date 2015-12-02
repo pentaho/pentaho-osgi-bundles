@@ -41,10 +41,11 @@ import java.util.concurrent.Callable;
  * Created by bryan on 8/15/14.
  */
 public class RebuildCacheCallable implements Callable<String> {
-  private final Map<Long, JSONObject> configMap;
+  private final Map<Long, Map<String, Object>> configMap;
   private final List<RequireJsConfiguration> requireJsConfigurations;
 
-  public RebuildCacheCallable( Map<Long, JSONObject> configMap, List<RequireJsConfiguration> requireJsConfigurations ) {
+  public RebuildCacheCallable( Map<Long, Map<String, Object>> configMap,
+                               List<RequireJsConfiguration> requireJsConfigurations ) {
     this.configMap = configMap;
     this.requireJsConfigurations = new ArrayList<>( requireJsConfigurations );
     Collections.sort( this.requireJsConfigurations, new Comparator<RequireJsConfiguration>() {
@@ -69,11 +70,11 @@ public class RebuildCacheCallable implements Callable<String> {
       merger.merge( configMap.get( bundleId ) );
     }
 
-    JSONObject result = merger.getRequireConfig();
+    Map<String, Object> result = merger.getRequireConfig();
 
     RequireJsDependencyResolver.processMetaInformation( result );
 
-    StringBuilder sb = new StringBuilder( result.toJSONString() );
+    StringBuilder sb = new StringBuilder( JSONObject.toJSONString( result ) );
     sb.append( ";" );
 
     for ( RequireJsConfiguration requireJsConfiguration : requireJsConfigurations ) {

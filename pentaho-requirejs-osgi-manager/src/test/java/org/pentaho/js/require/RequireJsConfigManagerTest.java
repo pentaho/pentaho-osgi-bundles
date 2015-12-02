@@ -87,30 +87,6 @@ public class RequireJsConfigManagerTest {
   }
 
   @Test
-  public void testUpdateBundleNoRequireJsonPath() throws IOException, ParseException {
-    Enumeration<URL> e = new Enumeration<URL>() {
-      boolean more = true;
-
-      @Override public boolean hasMoreElements() {
-        return more;
-      }
-
-      @Override public URL nextElement() {
-        more = false;
-
-        return this.getClass().getClassLoader().getResource( "pom.xml" );
-      }
-    };
-
-    when( bundle.findEntries( "/META-INF/maven", "pom.xml", true ) ).thenReturn( e );
-    when( bundle.getSymbolicName() ).thenReturn( "mock-name" );
-    when( bundle.getVersion() ).thenReturn( new Version( 1, 0, 0 ) );
-    when( bundle.getBundleId() ).thenReturn( 1L );
-
-    assertTrue( requireJsConfigManager.updateBundleContext( bundle ) );
-  }
-
-  @Test
   public void testUpdateBundleContextStopped() throws IOException, ParseException {
     when( bundle.getBundleId() ).thenReturn( 1L );
     when( bundle.getResource( RequireJsConfigManager.REQUIRE_JSON_PATH ) ).thenReturn( this.getClass().getClassLoader()

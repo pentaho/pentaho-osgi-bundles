@@ -17,16 +17,12 @@
 
 package org.pentaho.js.require;
 
-import org.apache.commons.io.IOUtils;
-import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.junit.Test;
-import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 import javax.script.ScriptException;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPathExpressionException;
 import java.io.IOException;
@@ -44,10 +40,8 @@ public class RequireJsGeneratorTest {
   @Test
   public void testConfigFromPom()
       throws ParserConfigurationException, IOException, SAXException, XPathExpressionException, ParseException {
-    Document pom = DocumentBuilderFactory.newInstance().newDocumentBuilder()
-        .parse( this.getClass().getClassLoader().getResourceAsStream( "pom.xml" ) );
-
-    RequireJsGenerator moduleInfo = new RequireJsGenerator( pom );
+    RequireJsGenerator moduleInfo = RequireJsGenerator.parsePom( this.getClass().getClassLoader().getResourceAsStream(
+        "pom.xml" ) );
 
     RequireJsGenerator.ArtifactInfo artifactInfo =
         new RequireJsGenerator.ArtifactInfo( "org.webjars", "smart-table", "2.0.3-1" );
@@ -55,47 +49,44 @@ public class RequireJsGeneratorTest {
     assertEquals( parser
             .parse( new InputStreamReader( this.getClass().getClassLoader().getResourceAsStream( "pom.require.json" )
             ) ),
-        moduleInfo.getConvertedConfig( artifactInfo ).getRequirejs() );
+        moduleInfo.getConvertedConfig( artifactInfo ).getRequireJs() );
   }
 
   @Test
   public void testConfigFromJsScript()
       throws IOException, NoSuchMethodException, ScriptException, ParseException {
-    byte[] bytes = IOUtils.toByteArray( this.getClass().getClassLoader().getResourceAsStream( "webjars-requirejs.js" ) );
-
-    RequireJsGenerator moduleInfo = new RequireJsGenerator( "angularjs", "1.3.0-rc.0", new String( bytes, "UTF-8" ) );
+    RequireJsGenerator moduleInfo = RequireJsGenerator.processJsScript( "angularjs", "1.3.0-rc.0", this.getClass().getClassLoader().getResourceAsStream(
+        "webjars-requirejs.js" ) );
 
     RequireJsGenerator.ArtifactInfo artifactInfo =
         new RequireJsGenerator.ArtifactInfo( "org.webjars", "angularjs", "1.3.0-rc.0" );
 
     assertEquals( parser
-            .parse( new InputStreamReader( this.getClass().getClassLoader().getResourceAsStream( "webjars-requirejs.require.json" )
+            .parse( new InputStreamReader(
+                this.getClass().getClassLoader().getResourceAsStream( "webjars-requirejs.require.json" )
             ) ),
-        moduleInfo.getConvertedConfig( artifactInfo ).getRequirejs() );
+        moduleInfo.getConvertedConfig( artifactInfo ).getRequireJs() );
   }
 
   @Test
   public void testConfigFromPackageJson() throws IOException, ParseException {
-    JSONObject json =
-        (JSONObject) parser.parse( new InputStreamReader( this.getClass().getClassLoader().getResourceAsStream( "package.json" ) ) );
-
-    RequireJsGenerator moduleInfo = new RequireJsGenerator( json );
+    RequireJsGenerator moduleInfo = RequireJsGenerator.parseJsonPackage( this.getClass().getClassLoader().getResourceAsStream(
+        "package.json" ) );
 
     RequireJsGenerator.ArtifactInfo artifactInfo =
         new RequireJsGenerator.ArtifactInfo( "org.webjars.npm", "asap", "2.0.3" );
 
     assertEquals( parser
-            .parse( new InputStreamReader( this.getClass().getClassLoader().getResourceAsStream( "package.require.json" )
+            .parse( new InputStreamReader( this.getClass().getClassLoader().getResourceAsStream(
+                "package.require.json" )
             ) ),
-        moduleInfo.getConvertedConfig( artifactInfo ).getRequirejs() );
+        moduleInfo.getConvertedConfig( artifactInfo ).getRequireJs() );
   }
 
   @Test
   public void testConfigFromBowerJson() throws IOException, ParseException {
-    JSONObject json =
-        (JSONObject) parser.parse( new InputStreamReader( this.getClass().getClassLoader().getResourceAsStream( "bower.json" ) ) );
-
-    RequireJsGenerator moduleInfo = new RequireJsGenerator( json );
+    RequireJsGenerator moduleInfo = RequireJsGenerator.parseJsonPackage( this.getClass().getClassLoader().getResourceAsStream(
+        "bower.json" ) );
 
     RequireJsGenerator.ArtifactInfo artifactInfo =
         new RequireJsGenerator.ArtifactInfo( "org.webjars.bower", "angular-ui-router.stateHelper", "1.3.1" );
@@ -103,6 +94,6 @@ public class RequireJsGeneratorTest {
     assertEquals( parser
             .parse( new InputStreamReader( this.getClass().getClassLoader().getResourceAsStream( "bower.require.json" )
             ) ),
-        moduleInfo.getConvertedConfig( artifactInfo ).getRequirejs() );
+        moduleInfo.getConvertedConfig( artifactInfo ).getRequireJs() );
   }
 }

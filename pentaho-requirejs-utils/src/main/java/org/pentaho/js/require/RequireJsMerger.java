@@ -1,8 +1,7 @@
 package org.pentaho.js.require;
 
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -13,35 +12,35 @@ import java.util.Set;
  * Created by nantunes on 12/11/15.
  */
 public class RequireJsMerger {
-  private JSONObject requireConfig;
+  private Map<String, Object> requireConfig;
 
   public RequireJsMerger() {
     this.requireConfig = createEmptyRequireConfig();
   }
 
-  public void merge( Map requireConfigPartial ) throws Exception {
+  public void merge( Map<String, Object> requireConfigPartial ) throws Exception {
     requireConfig = this.merge( requireConfig, requireConfigPartial );
   }
 
-  public JSONObject getRequireConfig() {
+  public Map<String, Object> getRequireConfig() {
     return requireConfig;
   }
 
-  private JSONObject createEmptyRequireConfig() {
-    JSONObject emptyConfig = new JSONObject();
+  private Map<String, Object> createEmptyRequireConfig() {
+    Map<String, Object> emptyConfig = new HashMap<>();
 
-    emptyConfig.put( "paths", new JSONObject() );
-    emptyConfig.put( "packages", new JSONArray() );
-    emptyConfig.put( "bundles", new JSONObject() );
+    emptyConfig.put( "paths", new HashMap<String, Object>() );
+    emptyConfig.put( "packages", new ArrayList<>() );
+    emptyConfig.put( "bundles", new HashMap<String, Object>() );
 
-    final JSONObject map = new JSONObject();
-    map.put( "*", new JSONObject() );
+    final Map<String, Object> map = new HashMap<>();
+    map.put( "*", new HashMap<String, Object>() );
     emptyConfig.put( "map", map );
 
-    emptyConfig.put( "shim", new JSONObject() );
+    emptyConfig.put( "shim", new HashMap<String, Object>() );
 
-    final JSONObject config = new JSONObject();
-    config.put( "service", new JSONObject() );
+    final Map<String, Object> config = new HashMap<>();
+    config.put( "service", new HashMap<String, Object>() );
     emptyConfig.put( "config", config );
 
     return emptyConfig;
@@ -91,22 +90,22 @@ public class RequireJsMerger {
     }
   }
 
-  private JSONArray merge( List array1, List array2 ) {
+  private List<Object> merge( List array1, List array2 ) {
     Set<Object> hs = new LinkedHashSet<>();
     hs.addAll( array1 );
     hs.addAll( array2 );
 
-    JSONArray result = new JSONArray();
+    List<Object> result = new ArrayList<>();
     result.addAll( hs );
 
     return result;
   }
 
-  private JSONObject merge( Map object1, Map object2 ) throws Exception {
+  private Map<String, Object> merge( Map<String, Object> object1, Map<String, Object> object2 ) throws Exception {
     return this.merge( object1, object2, false );
   }
 
-  private JSONObject merge( Map object1, Map object2, boolean insideShim ) throws Exception {
+  private Map<String, Object> merge( Map<String, Object> object1, Map<String, Object> object2, boolean insideShim ) throws Exception {
     Set<String> keys = new HashSet<>( object1.keySet().size() );
     for ( Object key : object1.keySet() ) {
       if ( !( key instanceof String ) ) {
@@ -124,21 +123,21 @@ public class RequireJsMerger {
       keys.add( (String) key );
     }
 
-    JSONObject result = new JSONObject();
+    Map<String, Object> result = new HashMap<>();
     for ( String key : keys ) {
       Object value1 = object1.get( key );
       Object value2 = object2.get( key );
 
       if ( insideShim ) {
         if ( value1 instanceof List ) {
-          JSONObject deps = new JSONObject();
+          Map<String, Object> deps = new HashMap<>();
           deps.put( "deps", value1 );
 
           value1 = deps;
         }
 
         if ( value2 instanceof List ) {
-          JSONObject deps = new JSONObject();
+          Map<String, Object> deps = new HashMap<>();
           deps.put( "deps", value2 );
 
           value2 = deps;
