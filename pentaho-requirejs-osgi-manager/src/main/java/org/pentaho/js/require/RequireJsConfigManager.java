@@ -22,9 +22,7 @@
 
 package org.pentaho.js.require;
 
-import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 
@@ -43,6 +41,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Created by bryan on 8/5/14.
@@ -53,8 +53,10 @@ public class RequireJsConfigManager {
   public static final String EXTERNAL_RESOURCES_JSON_PATH = "META-INF/js/externalResources.json";
   public static final String STATIC_RESOURCES_JSON_PATH = "META-INF/js/staticResources.json";
 
-  private final Map<Long, JSONObject> configMap = new HashMap<Long, JSONObject>();
-  private final Map<Long, RequireJsConfiguration> requireConfigMap = new HashMap<Long, RequireJsConfiguration>();
+  private final Lock lock = new ReentrantLock();
+
+  private final Map<Long, Map<String, Object>> configMap = new HashMap<>();
+  private final Map<Long, RequireJsConfiguration> requireConfigMap = new HashMap<>();
 
   private final JSONParser parser = new JSONParser();
   private BundleContext bundleContext;
@@ -83,8 +85,12 @@ public class RequireJsConfigManager {
     this.bundleContext = bundleContext;
   }
 
-  public boolean updateBundleContext( Bundle bundle ) throws IOException, ParseException {
-    boolean shouldInvalidate = updateBundleContextStopped( bundle );
+  public boolean updateBundleContext( Bundle bundle ) {
+    if ( bundle.getState() == Bundle.STOPPING || bundle.getState() == Bundle.UNINSTALLED ) {
+      return updateBundleContextStopped( bundle );
+    }
+
+    boolean shouldInvalidate = false;
 
     URL packageJsonUrl = bundle.getResource( PACKAGE_JSON_PATH );
     URL configFileUrl = bundle.getResource( REQUIRE_JSON_PATH );
@@ -92,21 +98,8 @@ public class RequireJsConfigManager {
     URL externalResourcesUrl = bundle.getResource( EXTERNAL_RESOURCES_JSON_PATH );
     URL staticResourcesUrl = bundle.getResource( STATIC_RESOURCES_JSON_PATH );
 
-    if ( packageJsonUrl != null ) {
-      JSONObject packageJsonObject = loadJsonObject( packageJsonUrl );
-
-      if ( packageJsonObject != null ) {
-        RequireJsGenerator gen = new RequireJsGenerator( packageJsonObject );
-        RequireJsGenerator.ArtifactInfo artifactInfo = new RequireJsGenerator.ArtifactInfo( "osgi-bundles", bundle.getSymbolicName(), bundle.getVersion().toString() );
-        final RequireJsGenerator.ModuleInfo moduleInfo = gen.getConvertedConfig( artifactInfo );
-        JSONObject requireJsonObject = moduleInfo.getRequirejs();
-
-        putInConfigMap( bundle.getBundleId(), requireJsonObject );
-
-        shouldInvalidate = true;
-      }
-    } else if ( configFileUrl != null ) {
-      JSONObject requireJsonObject = loadJsonObject( configFileUrl );
+    if ( configFileUrl != null ) {
+      Map<String, Object> requireJsonObject = loadJsonObject( configFileUrl );
 
       if ( requireJsonObject != null ) {
         putInConfigMap( bundle.getBundleId(), requireJsonObject );
@@ -115,9 +108,13 @@ public class RequireJsConfigManager {
       }
     }
 
+    if ( !shouldInvalidate && packageJsonUrl != null ) {
+      shouldInvalidate = parsePackageInformation( bundle, packageJsonUrl );
+    }
+
     if ( externalResourcesUrl != null ) {
-      JSONObject externalResourceJsonObject = loadJsonObject( externalResourcesUrl );
-      JSONObject staticResourceJsonObject = loadJsonObject( staticResourcesUrl );
+      Map<String, Object> externalResourceJsonObject = loadJsonObject( externalResourcesUrl );
+      Map<String, Object> staticResourceJsonObject = loadJsonObject( staticResourcesUrl );
 
       if ( externalResourceJsonObject != null ) {
         List<String> requireJsList = (List<String>) externalResourceJsonObject.get( "requirejs" );
@@ -156,57 +153,95 @@ public class RequireJsConfigManager {
     return shouldInvalidate;
   }
 
-  private synchronized void putInConfigMap( long bundleId, JSONObject config ) {
+  private boolean parsePackageInformation( Bundle bundle, URL resourceUrl ) {
+    try {
+      URLConnection urlConnection = resourceUrl.openConnection();
+      RequireJsGenerator gen = RequireJsGenerator.parseJsonPackage( urlConnection.getInputStream() );
+
+      if ( gen != null ) {
+        RequireJsGenerator.ArtifactInfo artifactInfo =
+            new RequireJsGenerator.ArtifactInfo( "osgi-bundles", bundle.getSymbolicName(),
+                bundle.getVersion().toString() );
+        final RequireJsGenerator.ModuleInfo moduleInfo = gen.getConvertedConfig( artifactInfo );
+        Map<String, Object> requireJsonObject = moduleInfo.getRequireJs();
+
+        putInConfigMap( bundle.getBundleId(), requireJsonObject );
+
+        return true;
+      }
+    } catch ( Exception ignored ) {
+      // ignored
+    }
+
+    return false;
+  }
+
+  private void putInConfigMap( long bundleId, Map<String, Object> config ) {
     configMap.put( bundleId, config );
   }
 
-  private synchronized void putInRequireConfigMap( long bundleId, RequireJsConfiguration config ) {
+  private void putInRequireConfigMap( long bundleId, RequireJsConfiguration config ) {
     requireConfigMap.put( bundleId, config );
   }
 
-  private JSONObject loadJsonObject( URL url ) throws IOException, ParseException {
+  private Map<String, Object> loadJsonObject( URL url ) {
     if ( url == null ) {
       return null;
     }
-    URLConnection urlConnection = url.openConnection();
-    InputStream inputStream = urlConnection.getInputStream();
+
+    InputStream inputStream = null;
     InputStreamReader inputStreamReader = null;
     BufferedReader bufferedReader = null;
+
     try {
+      URLConnection urlConnection = url.openConnection();
+      inputStream = urlConnection.getInputStream();
       inputStreamReader = new InputStreamReader( urlConnection.getInputStream() );
       bufferedReader = new BufferedReader( inputStreamReader );
-      return (JSONObject) parser.parse( bufferedReader );
+
+      return (Map<String, Object>) parser.parse( bufferedReader );
+    } catch ( Exception ignored ) {
+      // ignored
     } finally {
-      if ( bufferedReader != null ) {
-        bufferedReader.close();
-      }
-      if ( inputStreamReader != null ) {
-        inputStreamReader.close();
-      }
-      if ( inputStream != null ) {
-        inputStream.close();
+      try {
+        if ( bufferedReader != null ) {
+          bufferedReader.close();
+        }
+        if ( inputStreamReader != null ) {
+          inputStreamReader.close();
+        }
+        if ( inputStream != null ) {
+          inputStream.close();
+        }
+      } catch ( IOException ignored ) {
+        // ignored
       }
     }
+
+    return null;
   }
 
   public boolean updateBundleContextStopped( Bundle bundle ) {
-    JSONObject bundleConfig;
-    RequireJsConfiguration requireJsConfiguration;
-    synchronized ( configMap ) {
-      bundleConfig = configMap.remove( bundle.getBundleId() );
-      requireJsConfiguration = requireConfigMap.remove( bundle.getBundleId() );
-    }
+    Map<String, Object> bundleConfig = configMap.remove( bundle.getBundleId() );
+    RequireJsConfiguration requireJsConfiguration = requireConfigMap.remove( bundle.getBundleId() );
+
     return bundleConfig != null || requireJsConfiguration != null;
   }
 
   public void invalidateCache( boolean shouldInvalidate ) {
     if ( shouldInvalidate ) {
-      synchronized ( configMap ) {
-        synchronized ( requireConfigMap ) {
+      lastModified = System.currentTimeMillis();
+
+      // if can't adquire lock then someone is already
+      // generating the cache and will find out it's invalid
+      if ( lock.tryLock() ) {
+        long myTimestamp = lastModified;
+        do {
           cache = executorService.submit( new RebuildCacheCallable( new HashMap<>( this.configMap ),
-            new ArrayList<>( requireConfigMap.values() ) ) );
-          lastModified = System.currentTimeMillis();
-        }
+              new ArrayList<>( requireConfigMap.values() ) ) );
+        } while ( myTimestamp != lastModified ); // if different the cache is already invalid
+
+        lock.unlock();
       }
     }
   }

@@ -272,7 +272,13 @@ public class RequireJsGenerator {
       packages.add( pck );
     }
 
-    requireConfig.put( "packages", packages );
+    if ( !packages.isEmpty() ) {
+      requireConfig.put( "packages", packages );
+    }
+
+    if ( json.containsKey( "config" ) ) {
+      requireConfig.put( "config", json.get( "config" ) );
+    }
   }
 
   private Object extractPackage( Map<String, Object> json, String moduleName, Map<String, Object> paths,
