@@ -76,7 +76,9 @@ public class RebuildCacheCallableTest {
     String arrayKey = "array";
     String objectKey = "object";
     String dupKey = "dup";
-    Map<Long, JSONObject> configMap = new HashMap<Long, JSONObject>();
+
+    Map<Long, Map<String, Object>> configMap = new HashMap<>();
+
     JSONObject object1 = new JSONObject();
     configMap.put( 1L, object1 );
     JSONArray array1 = new JSONArray();
@@ -125,7 +127,9 @@ public class RebuildCacheCallableTest {
   @Test( expected = Exception.class )
   public void testCannotMergeJSONObjectOtherException() throws Exception {
     String objectKey = "object";
-    Map<Long, JSONObject> configMap = new HashMap<Long, JSONObject>();
+
+    Map<Long, Map<String, Object>> configMap = new HashMap<>();
+
     JSONObject object1 = new JSONObject();
     configMap.put( 1L, object1 );
     object1.put( objectKey, new JSONObject() );
@@ -141,7 +145,9 @@ public class RebuildCacheCallableTest {
   @Test( expected = Exception.class )
   public void testCannotMergeArrayJSONObjectException() throws Exception {
     String objectKey = "object";
-    Map<Long, JSONObject> configMap = new HashMap<Long, JSONObject>();
+
+    Map<Long, Map<String, Object>> configMap = new HashMap<>();
+
     JSONObject object1 = new JSONObject();
     configMap.put( 1L, object1 );
     object1.put( objectKey, new JSONArray() );
@@ -151,10 +157,47 @@ public class RebuildCacheCallableTest {
     String config = new RebuildCacheCallable( configMap, requireJsConfigurations ).call();
   }
 
+  @Test
+  public void testCanMergeArrayJSONObjectIfKeyIsShim() throws Exception {
+    String objectKey = "shim";
+    String moduleKey = "moduleA";
+    String subobjectKey = "deps";
+
+    Map<Long, Map<String, Object>> configMap = new HashMap<>();
+
+    JSONObject object1 = new JSONObject();
+    object1.put( moduleKey, new JSONArray() );
+
+    JSONObject shim1 = new JSONObject();
+    shim1.put( objectKey, object1 );
+
+    configMap.put( 1L, shim1 );
+
+    JSONObject subobject2 = new JSONObject();
+    subobject2.put( subobjectKey, new JSONArray() );
+
+    JSONObject object2 = new JSONObject();
+    object2.put( moduleKey, subobject2 );
+
+    JSONObject shim2 = new JSONObject();
+    shim1.put( objectKey, object2 );
+
+    configMap.put( 2L, shim2 );
+
+    String config = new RebuildCacheCallable( configMap, requireJsConfigurations ).call();
+    if ( config.endsWith( ";" ) ) {
+      config = config.substring( 0, config.length() - 1 );
+    }
+    Object configValue = JSONValue.parse( config );
+    testEquals(new JSONArray(), ( (JSONObject) ((JSONObject) ((JSONObject) configValue).get(objectKey)).get(moduleKey)).get(subobjectKey));
+  }
+
   @Test( expected = Exception.class )
   public void testCannotMergeArrayOtherException() throws Exception {
     String objectKey = "object";
-    Map<Long, JSONObject> configMap = new HashMap<Long, JSONObject>();
+
+    Map<Long, Map<String, Object>> configMap = new HashMap<>();
+
     JSONObject object1 = new JSONObject();
     configMap.put( 1L, object1 );
     object1.put( objectKey, new JSONArray() );
@@ -167,7 +210,9 @@ public class RebuildCacheCallableTest {
   @Test( expected = Exception.class )
   public void testCannotMergeOtherArrayException() throws Exception {
     String objectKey = "object";
-    Map<Long, JSONObject> configMap = new HashMap<Long, JSONObject>();
+
+    Map<Long, Map<String, Object>> configMap = new HashMap<>();
+
     JSONObject object1 = new JSONObject();
     configMap.put( 1L, object1 );
     object1.put( objectKey, "B" );
@@ -180,7 +225,9 @@ public class RebuildCacheCallableTest {
   @Test( expected = Exception.class )
   public void testCannotMergeObjectKeyException() throws Exception {
     String objectKey = "object";
-    Map<Long, JSONObject> configMap = new HashMap<Long, JSONObject>();
+
+    Map<Long, Map<String, Object>> configMap = new HashMap<>();
+
     JSONObject object1 = new JSONObject();
     configMap.put( 1L, object1 );
     object1.put( objectKey, "B" );
@@ -196,7 +243,7 @@ public class RebuildCacheCallableTest {
     String moduleKey = "module";
     String modulePath = "module/path/script";
 
-    Map<Long, JSONObject> configMap = new HashMap<Long, JSONObject>();
+    Map<Long, Map<String, Object>> configMap = new HashMap<>();
 
     JSONObject object1 = new JSONObject();
     configMap.put( 1L, object1 );

@@ -102,6 +102,7 @@
         <module>pentaho-notification-bundle</module>
         <module>pentaho-notification-webservice-bundle</module>
         <module>pentaho-platform-plugin-deployer</module>
+        <module>pentaho-requirejs-utils</module>
         <module>pentaho-requirejs-osgi-manager</module>
         <module>pentaho-webjars-deployer</module>
         <module>pentaho-osgi-utils-api</module>
@@ -130,6 +131,7 @@
         <module>pentaho-notification-bundle</module>
         <module>pentaho-notification-webservice-bundle</module>
         <module>pentaho-platform-plugin-deployer</module>
+        <module>pentaho-requirejs-utils</module>
         <module>pentaho-requirejs-osgi-manager</module>
         <module>pentaho-webjars-deployer</module>
         <module>pentaho-osgi-utils-api</module>

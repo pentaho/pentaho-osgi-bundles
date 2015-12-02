@@ -18,11 +18,13 @@
 package org.pentaho.osgi.platform.webjars;
 
 import org.apache.commons.io.IOUtils;
-import org.junit.Ignore;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -31,191 +33,121 @@ import java.net.URL;
 import java.util.jar.Manifest;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
-import java.util.zip.ZipInputStream;
 
 import static org.junit.Assert.*;
 
 public class WebjarsURLConnectionTest {
+  private static JSONParser parser;
+
+  static {
+    parser = new JSONParser();
+  }
+
+  @Before
+  public void before() throws MalformedURLException {
+    File input = new File( "src/test/resources/mockRepo" );
+
+    System.setProperty( "java.protocol.handler.pkgs", "org.ops4j.pax.url" );
+    System.setProperty( "org.ops4j.pax.url.mvn.repositories",
+        input.toURI().toURL().toString() + "@snapshots@id=mock-repo" );
+    System.setProperty( "org.ops4j.pax.url.mvn.localRepository", input.toURI().toURL().toString() );
+    System.setProperty( "org.ops4j.pax.url.mvn.proxySupport", "false" );
+  }
+
   @Test
-  public void testConnection() throws IOException {
+  public void testClassicWebjarPomConfig() throws IOException, ParseException {
+    ZipFile zipInputStream = getDeployedJar( new URL( "mvn:org.webjars/smart-table/2.0.3-1" ) );
 
-    File input = new File("src/test/resources/testInput.jar");
-    assertTrue( "Test jar not found",  input.exists() );
-    WebjarsURLConnection connection = new WebjarsURLConnection( input.toURI().toURL() );
+    verifyManifest( zipInputStream );
+    verifyBlueprint( zipInputStream, "smart-table/2.0.3-1" );
+    verifyRequireJson( zipInputStream, "org.webjars/smart-table", "2.0.3-1" );
+  }
 
+  @Test
+  public void testClassicWebjarScriptedConfig() throws IOException, ParseException {
+    ZipFile zipInputStream = getDeployedJar( new URL( "mvn:org.webjars/angularjs/1.3.0-rc.0" ) );
+
+    verifyManifest( zipInputStream );
+    verifyBlueprint( zipInputStream, "angularjs/1.3.0-rc.0" );
+    verifyRequireJson( zipInputStream, "org.webjars/angularjs", "1.3.0-rc.0" );
+  }
+
+  @Test
+  public void testNpmWebjar() throws IOException, ParseException {
+    ZipFile zipInputStream = getDeployedJar( new URL( "mvn:org.webjars.npm/asap/2.0.3" ) );
+
+    verifyManifest( zipInputStream );
+    verifyBlueprint( zipInputStream, "asap/2.0.3" );
+    verifyRequireJson( zipInputStream, "org.webjars.npm/asap", "2.0.3" );
+  }
+
+  @Test
+  public void testBowerWebjar() throws IOException, ParseException {
+    ZipFile zipInputStream = getDeployedJar( new URL( "mvn:org.webjars.bower/angular-ui-router.stateHelper/1.3.1" ) );
+
+    verifyManifest( zipInputStream );
+    verifyBlueprint( zipInputStream, "angular-ui-router.stateHelper/1.3.1" );
+    verifyRequireJson( zipInputStream, "org.webjars.bower/angular-ui-router.stateHelper", "1.3.1" );
+  }
+
+  @Test
+  public void testMalformedWebjarFallback() throws IOException, ParseException {
+    ZipFile zipInputStream = getDeployedJar( new URL( "mvn:org.webjars/angular-dateparser/1.0.9" ) );
+
+    verifyManifest( zipInputStream );
+    verifyBlueprint( zipInputStream, "angular-dateparser/1.0.9" );
+    verifyRequireJson( zipInputStream, "org.webjars/angular-dateparser", "1.0.9" );
+  }
+
+  private void verifyManifest( ZipFile zipInputStream ) throws IOException {
+    ZipEntry entry = zipInputStream.getEntry( "META-INF/MANIFEST.MF" );
+    assertNotNull( entry );
+    Manifest manifest = new Manifest( zipInputStream.getInputStream( entry ) );
+    assertTrue( "Bundle-SymbolicName is not pentaho-webjars-",
+        manifest.getMainAttributes().getValue( "Bundle-SymbolicName" ).startsWith( "pentaho-webjars-" ) );
+  }
+
+  private void verifyBlueprint( ZipFile zipInputStream, String expectedPath ) throws IOException {
+    ZipEntry entry = zipInputStream.getEntry( "OSGI-INF/blueprint/blueprint.xml" );
+    assertNotNull( entry );
+
+    String bpFile = IOUtils.toString( zipInputStream.getInputStream( entry ), "UTF-8" );
+    assertTrue( "blueprint.xml does not include path for " + expectedPath,
+        bpFile.contains( "<property name=\"path\" value=\"/META-INF/resources/webjars/" + expectedPath + "\" />" ) );
+  }
+
+  private void verifyRequireJson( ZipFile zipInputStream, String artifactId, String version ) throws IOException, ParseException {
+    ZipEntry entry = zipInputStream.getEntry( "META-INF/js/require.json" );
+    assertNotNull( entry );
+
+    String jsonFile = IOUtils.toString( zipInputStream.getInputStream( entry ), "UTF-8" );
+
+    JSONObject json = (JSONObject) parser.parse( jsonFile );
+
+    assertTrue( "dependency metadata exists", json.containsKey( "requirejs-osgi-meta" ) );
+    final JSONObject meta = (JSONObject) json.get( "requirejs-osgi-meta" );
+
+    assertTrue( "artifact info exists", meta.containsKey( "artifacts" ) );
+    final JSONObject artifactInfo = (JSONObject) meta.get( "artifacts" );
+
+    assertTrue( "artifact is " + artifactId, artifactInfo.containsKey( artifactId ) );
+    final JSONObject versionInfo = (JSONObject) artifactInfo.get( artifactId );
+
+    assertTrue( "version is " + version, versionInfo.containsKey( version ) );
+  }
+
+  private ZipFile getDeployedJar( URL webjar_url ) throws IOException {
+    WebjarsURLConnection connection = new WebjarsURLConnection( webjar_url );
     connection.connect();
-    InputStream inputStream = connection.getInputStream();
-    File tempFile = File.createTempFile( "webjars", ".zip" ); //new File("src/test/resources/testOutput.jar");
-    byte[] buff = new byte[2048];
-    int ret;
 
-    FileOutputStream fileOutputStream = new FileOutputStream(  tempFile );
+    InputStream inputStream = connection.getInputStream();
+    File tempFile = File.createTempFile( "webjar_test", ".zip" );
+
+    FileOutputStream fileOutputStream = new FileOutputStream( tempFile );
 
     IOUtils.copy( inputStream, fileOutputStream );
 
     // Verify Zip contents
-    ZipFile zipInputStream = new ZipFile( tempFile );
-
-    ZipEntry entry = zipInputStream.getEntry( "META-INF/MANIFEST.MF" );
-    assertNotNull(entry);
-    Manifest manifest = new Manifest( zipInputStream.getInputStream( entry ) );
-    assertTrue( manifest.getMainAttributes().getValue( "Bundle-SymbolicName" ).toString().startsWith( "pentaho-webjars-" ));
-
-    entry = zipInputStream.getEntry( "OSGI-INF/blueprint/blueprint.xml" );
-    assertNotNull(entry);
-    String bpFile = IOUtils.toString( zipInputStream.getInputStream( entry ), "UTF-8" );
-    assertTrue( bpFile.contains( "<property name=\"path\" value=\"/META-INF/resources/webjars/angularjs/1.3.0-rc.0\" />" ));
-    entry = zipInputStream.getEntry( "META-INF/js/require.json" );
-    assertNotNull(entry);
-
+    return new ZipFile( tempFile );
   }
-
-  @Test
-  public void testPomRequireConfig() throws IOException {
-
-    File input = new File("src/test/resources/testPomRequire.jar");
-    assertTrue( "Test testPomRequire.jar not found",  input.exists() );
-
-    WebjarsURLConnection connection = new WebjarsURLConnection( input.toURI().toURL() );
-    connection.connect();
-
-    InputStream inputStream = connection.getInputStream();
-    File tempFile = File.createTempFile( "testPomRequire", ".zip" ); //new File("src/test/resources/testOutput.jar");
-    byte[] buff = new byte[2048];
-    int ret;
-
-    FileOutputStream fileOutputStream = new FileOutputStream(  tempFile );
-
-    IOUtils.copy( inputStream, fileOutputStream );
-
-    // Verify Zip contents
-    ZipFile zipInputStream = new ZipFile( tempFile );
-
-    ZipEntry entry = zipInputStream.getEntry( "META-INF/MANIFEST.MF" );
-    assertNotNull(entry);
-    Manifest manifest = new Manifest( zipInputStream.getInputStream( entry ) );
-    assertTrue( manifest.getMainAttributes().getValue( "Bundle-SymbolicName" ).toString().startsWith( "pentaho-webjars-" ));
-
-    entry = zipInputStream.getEntry( "OSGI-INF/blueprint/blueprint.xml" );
-    assertNotNull(entry);
-    
-    String bpFile = IOUtils.toString( zipInputStream.getInputStream( entry ), "UTF-8" );
-    assertTrue( bpFile.contains( "<property name=\"path\" value=\"/META-INF/resources/webjars/smart-table/2.0.3-1\" />" ));
-    
-    entry = zipInputStream.getEntry( "META-INF/js/require.json" );
-    assertNotNull(entry);
-
-  }
-
-  @Test
-  public void testBowerRequireConfig() throws IOException {
-    
-    File input = new File("src/test/resources/testBowerRequire.jar");
-    assertTrue( "Test testBowerRequire.jar not found",  input.exists() );
-
-    WebjarsURLConnection connection = new WebjarsURLConnection( input.toURI().toURL() );
-    connection.connect();
-
-    InputStream inputStream = connection.getInputStream();
-    File tempFile = File.createTempFile( "testBowerRequire", ".zip" ); //new File("src/test/resources/testOutput.zip");
-    byte[] buff = new byte[2048];
-    int ret;
-
-    FileOutputStream fileOutputStream = new FileOutputStream(  tempFile );
-
-    IOUtils.copy( inputStream, fileOutputStream );
-
-    // Verify Zip contents
-    ZipFile zipInputStream = new ZipFile( tempFile );
-
-    ZipEntry entry = zipInputStream.getEntry( "META-INF/MANIFEST.MF" );
-    assertNotNull(entry);
-    Manifest manifest = new Manifest( zipInputStream.getInputStream( entry ) );
-    assertTrue( manifest.getMainAttributes().getValue( "Bundle-SymbolicName" ).toString().startsWith( "pentaho-webjars-" ));
-
-    entry = zipInputStream.getEntry( "OSGI-INF/blueprint/blueprint.xml" );
-    assertNotNull(entry);
-    
-    String bpFile = IOUtils.toString( zipInputStream.getInputStream( entry ), "UTF-8" );
-    assertTrue( bpFile.contains( "<property name=\"path\" value=\"/META-INF/resources/webjars/angular-ui-router.stateHelper/1.3.1\" />" ));
-    
-    entry = zipInputStream.getEntry( "META-INF/js/require.json" );
-    assertNotNull(entry);
-
-  }
-
-  @Test
-  public void testNpmRequireConfig() throws IOException {
-    
-    File input = new File("src/test/resources/testNpmRequire.jar");
-    assertTrue( "Test testNpmRequire.jar not found",  input.exists() );
-
-    WebjarsURLConnection connection = new WebjarsURLConnection( input.toURI().toURL() );
-    connection.connect();
-
-    InputStream inputStream = connection.getInputStream();
-    File tempFile = File.createTempFile( "testBowerRequire", ".zip" ); //new File("src/test/resources/testOutput.zip");
-    byte[] buff = new byte[2048];
-    int ret;
-
-    FileOutputStream fileOutputStream = new FileOutputStream(  tempFile );
-
-    IOUtils.copy( inputStream, fileOutputStream );
-
-    // Verify Zip contents
-    ZipFile zipInputStream = new ZipFile( tempFile );
-
-    ZipEntry entry = zipInputStream.getEntry( "META-INF/MANIFEST.MF" );
-    assertNotNull(entry);
-    Manifest manifest = new Manifest( zipInputStream.getInputStream( entry ) );
-    assertTrue( manifest.getMainAttributes().getValue( "Bundle-SymbolicName" ).toString().startsWith( "pentaho-webjars-" ));
-
-    entry = zipInputStream.getEntry( "OSGI-INF/blueprint/blueprint.xml" );
-    assertNotNull(entry);
-    
-    String bpFile = IOUtils.toString( zipInputStream.getInputStream( entry ), "UTF-8" );
-    assertTrue( bpFile.contains( "<property name=\"path\" value=\"/META-INF/resources/webjars/asap/2.0.3\" />" ));
-    
-    entry = zipInputStream.getEntry( "META-INF/js/require.json" );
-    assertNotNull(entry);
-
-  }
-
-  @Test
-  public void testJustSrcRequireConfig() throws IOException {
-    
-    File input = new File("src/test/resources/testJustSrc.jar");
-    assertTrue( "Test testJustSrc.jar not found",  input.exists() );
-
-    WebjarsURLConnection connection = new WebjarsURLConnection( input.toURI().toURL() );
-    connection.connect();
-
-    InputStream inputStream = connection.getInputStream();
-    File tempFile = File.createTempFile( "testJustSrcRequire", ".zip" ); //new File("src/test/resources/testOutput.zip");
-    byte[] buff = new byte[2048];
-    int ret;
-
-    FileOutputStream fileOutputStream = new FileOutputStream(  tempFile );
-
-    IOUtils.copy( inputStream, fileOutputStream );
-
-    // Verify Zip contents
-    ZipFile zipInputStream = new ZipFile( tempFile );
-
-    ZipEntry entry = zipInputStream.getEntry( "META-INF/MANIFEST.MF" );
-    assertNotNull(entry);
-    Manifest manifest = new Manifest( zipInputStream.getInputStream( entry ) );
-    assertTrue( manifest.getMainAttributes().getValue( "Bundle-SymbolicName" ).toString().startsWith( "pentaho-webjars-" ));
-
-    entry = zipInputStream.getEntry( "OSGI-INF/blueprint/blueprint.xml" );
-    assertNotNull(entry);
-    
-    String bpFile = IOUtils.toString( zipInputStream.getInputStream( entry ), "UTF-8" );
-    assertTrue( bpFile.contains( "<property name=\"path\" value=\"/META-INF/resources/webjars/angular-dateparser/1.0.9\" />" ));
-    
-    entry = zipInputStream.getEntry( "META-INF/js/require.json" );
-    assertNotNull(entry);
-
-  }
-
 }
