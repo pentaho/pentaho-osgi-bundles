@@ -1,71 +1,59 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-
-    <parent>
-        <artifactId>pentaho-cache-manager-parent</artifactId>
-        <groupId>pentaho</groupId>
-        <version>6.0-SNAPSHOT</version>
-    </parent>
-
-    <artifactId>pentaho-cache-manager-api</artifactId>
-    <packaging>bundle</packaging>
-
-    <name>Pentaho Community Edition Project: Cache Manager</name>
-    <description>a Pentaho open source project</description>
-    <url>http://www.pentaho.com</url>
-
-    <dependencies>
-        <dependency>
-            <groupId>javax.cache</groupId>
-            <artifactId>cache-api</artifactId>
-            <version>${cache-api.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.osgi</groupId>
-            <artifactId>org.osgi.core</artifactId>
-            <version>${osgi.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.osgi</groupId>
-            <artifactId>org.osgi.compendium</artifactId>
-            <version>${osgi.version}</version>
-        </dependency>
-    </dependencies>
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.felix</groupId>
-                <artifactId>maven-bundle-plugin</artifactId>
-                <version>2.3.7</version>
-                <extensions>true</extensions>
-                <configuration>
-                    <instructions>
-                        <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
-                        <Embed-Dependency>cache-api</Embed-Dependency>
-                        <Embed-Transitive>true</Embed-Transitive>
-                        <_exportcontents>
-                            javax.cache,
-                            javax.cache.*;version=${cache-api.version}
-                        </_exportcontents>
-                        <Export-Package>
-                            org.pentaho.caching.api;version=${project.version},
-                            org.pentaho.caching.spi;version=${project.version}
-                        </Export-Package>
-                        <Import-Package>
-                            org.osgi.framework, org.osgi.service.cm,
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>pentaho</groupId>
+    <artifactId>pentaho-cache-manager-parent</artifactId>
+    <version>6.0.1.0-386</version>
+  </parent>
+  <artifactId>pentaho-cache-manager-api</artifactId>
+  <version>6.0.1.0-386</version>
+  <packaging>bundle</packaging>
+  <name>Pentaho Community Edition Project: Cache Manager</name>
+  <description>a Pentaho open source project</description>
+  <url>http://www.pentaho.com</url>
+  <dependencies>
+    <dependency>
+      <groupId>javax.cache</groupId>
+      <artifactId>cache-api</artifactId>
+      <version>${cache-api.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.osgi</groupId>
+      <artifactId>org.osgi.core</artifactId>
+      <version>${osgi.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.osgi</groupId>
+      <artifactId>org.osgi.compendium</artifactId>
+      <version>${osgi.version}</version>
+    </dependency>
+  </dependencies>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.felix</groupId>
+        <artifactId>maven-bundle-plugin</artifactId>
+        <version>2.3.7</version>
+        <extensions>true</extensions>
+        <configuration>
+          <instructions>
+            <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
+            <Embed-Dependency>cache-api</Embed-Dependency>
+            <Embed-Transitive>true</Embed-Transitive>
+            <_exportcontents>javax.cache,
+                            javax.cache.*;version=${cache-api.version}</_exportcontents>
+            <Export-Package>org.pentaho.caching.api;version=${project.version},
+                            org.pentaho.caching.spi;version=${project.version}</Export-Package>
+            <Import-Package>org.osgi.framework, org.osgi.service.cm,
                             com.google.common.*, com.google.common.util.concurrent,
                             org.osgi.service.blueprint,
                             !javax.enterprise.util,
-                            !javax.management
-                        </Import-Package>
-                    </instructions>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
-
+                            !javax.management</Import-Package>
+          </instructions>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
 </project>
