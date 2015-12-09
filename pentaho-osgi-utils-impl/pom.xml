@@ -85,29 +85,6 @@
       <artifactId>pentaho-capability-manager</artifactId>
       <version>${project.version}</version>
     </dependency>
-    <dependency>
-      <groupId>pentaho</groupId>
-      <artifactId>pentaho-platform-api</artifactId>
-      <version>${dependency.pentaho-platform.revision}</version>
-      <exclusions>
-        <exclusion>
-            <groupId>*</groupId>
-            <artifactId>*</artifactId>
-        </exclusion>
-    </exclusions>
-    </dependency>
-
-    <dependency>
-      <groupId>pentaho</groupId>
-      <artifactId>pentaho-platform-core</artifactId>
-      <version>${dependency.pentaho-platform.revision}</version>
-      <exclusions>
-        <exclusion>
-            <groupId>*</groupId>
-            <artifactId>*</artifactId>
-        </exclusion>
-    </exclusions>
-    </dependency>
   </dependencies>
   <build>
     <finalName>${project.artifactId}</finalName>
