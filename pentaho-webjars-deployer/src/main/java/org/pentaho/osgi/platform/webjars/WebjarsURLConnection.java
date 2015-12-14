@@ -39,6 +39,7 @@ import java.net.URLConnection;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
 import java.util.jar.Attributes;
 import java.util.jar.JarInputStream;
@@ -63,12 +64,14 @@ public class WebjarsURLConnection extends URLConnection {
     }
   });
 
+  public Future<Void> transform_thread;
+  
+  private static final String DEBUG_MESSAGE_FAILED_WRITING = "Problem transfering Jar content, probably JarOutputStream was already closed.";
   public static final String MANIFEST_MF = "MANIFEST.MF";
   public static final String PENTAHO_RJS_LOCATION = "META-INF/js/require.json";
   public static final String WEBJARS_REQUIREJS_NAME = "webjars-requirejs.js";
   private Logger logger = LoggerFactory.getLogger( getClass() );
-  public static final Pattern MODULE_PATTERN =
-      Pattern.compile( "META-INF/resources/webjars/([^/]+)/([^/]+)/" + WEBJARS_REQUIREJS_NAME );
+  public static final Pattern MODULE_PATTERN = Pattern.compile( "META-INF/resources/webjars/([^/]+)/([^/]+)/" + WEBJARS_REQUIREJS_NAME );
 
   public WebjarsURLConnection( URL url ) {
     super( url );
@@ -84,13 +87,14 @@ public class WebjarsURLConnection extends URLConnection {
       final PipedOutputStream pipedOutputStream = new PipedOutputStream();
       PipedInputStream pipedInputStream = new PipedInputStream( pipedOutputStream );
 
-      EXECUTOR.submit( new Callable<Void>() {
+      transform_thread = EXECUTOR.submit( new Callable<Void>() {
         @Override public Void call() throws Exception {
           try {
             transform( getURL(), pipedOutputStream );
           } catch ( Exception e ) {
             logger.error( "Error Transforming zip", e );
             pipedOutputStream.close();
+            throw e;
           }
           return null;
         }
@@ -122,10 +126,8 @@ public class WebjarsURLConnection extends URLConnection {
       String[] parts = url.getPath().split( "/" );
       artifactName = parts[ 1 ];
       String versionPart = parts[ 2 ];
-
       // version needs to be coerced into OSGI form Major.Minor.Patch.Classifier
       version = VersionParser.parseVersion( versionPart );
-
     }
 
     URLConnection urlConnection = url.openConnection();
@@ -145,70 +147,82 @@ public class WebjarsURLConnection extends URLConnection {
                 "org.ops4j.pax.web.extender.whiteboard" );
 
     manifest.getMainAttributes().put( new Attributes.Name( Constants.BUNDLE_VERSION ), version.toString() );
+    
+    try {
+      JarOutputStream jarOutputStream = new JarOutputStream( pipedOutputStream, manifest );
 
-    JarOutputStream jarOutputStream = new JarOutputStream( pipedOutputStream, manifest );
+      ZipEntry entry;
+      String moduleName = "unknown";
+      String moduleVersion = "unknown";
+      boolean foundRJs = false;
 
-    ZipEntry entry;
-    String moduleName = "unknown";
-    String moduleVersion = "unknown";
-    boolean foundRJs = false;
+      while ( ( entry = jarInputStream.getNextJarEntry() ) != null ) {
+        String name = entry.getName();
+        if ( name.endsWith( MANIFEST_MF ) ) {
+          // ignore existing manifest, we'll update it after the copy
+          logger.info( "skipping manifest" );
+        } else if ( name.endsWith( WEBJARS_REQUIREJS_NAME ) ) {
+          Matcher matcher = MODULE_PATTERN.matcher( name );
+          if ( matcher.matches() == false ) {
+            logger.error( "Webjars structure isn't right" );
+            continue;
+          }
+          foundRJs = true;
+          logger.info( "found WEBJARS config" );
+          moduleName = matcher.group( 1 );
+          moduleVersion = matcher.group( 2 );
 
-    while ( ( entry = jarInputStream.getNextJarEntry() ) != null ) {
-      String name = entry.getName();
-      if ( name.endsWith( MANIFEST_MF ) ) {
-        // ignore existing manifest, we'll update it after the copy
-        logger.info( "skipping manifest" );
-      } else if ( name.endsWith( WEBJARS_REQUIREJS_NAME ) ) {
+          byte[] bytes = IOUtils.toByteArray( jarInputStream );
+          String webjarsConfig = new String( bytes, "UTF-8" );
+          String convertedConfig = convertConfig( webjarsConfig, moduleName, moduleVersion );
 
-        Matcher matcher = MODULE_PATTERN.matcher( name );
-        if ( matcher.matches() == false ) {
-          logger.error( "Webjars structure isn't right" );
-          continue;
+          ZipEntry newEntry = new ZipEntry( "META-INF/js/require.json" );
+          jarOutputStream.putNextEntry( newEntry );
+          jarOutputStream.write( convertedConfig.getBytes( "UTF-8" ) );
+          // Process webjars into our form
+          jarOutputStream.closeEntry();
+        } else {
+          try {
+            logger.info( "copying misc entry: " + name );
+            jarOutputStream.putNextEntry( entry );
+            IOUtils.copy( jarInputStream, jarOutputStream );
+            jarOutputStream.closeEntry();
+          } catch ( IOException ioexception ) {
+            logger.debug( DEBUG_MESSAGE_FAILED_WRITING, ioexception );
+            //throw ioexception;
+            return;
+          }
         }
-        foundRJs = true;
-        logger.info( "found WEBJARS config" );
-        moduleName = matcher.group( 1 );
-        moduleVersion = matcher.group( 2 );
-
-
-        byte[] bytes = IOUtils.toByteArray( jarInputStream );
-
-        String webjarsConfig = new String( bytes, "UTF-8" );
-
-        String convertedConfig = convertConfig( webjarsConfig, moduleName, moduleVersion );
-
-
-        ZipEntry newEntry = new ZipEntry( "META-INF/js/require.json" );
-        jarOutputStream.putNextEntry( newEntry );
-        jarOutputStream.write( convertedConfig.getBytes( "UTF-8" ) );
-        // Process webjars into our form
-        jarOutputStream.closeEntry();
-      } else {
-        logger.info( "copying misc entry: " + name );
-        jarOutputStream.putNextEntry( entry );
-        IOUtils.copy( jarInputStream, jarOutputStream );
-        jarOutputStream.closeEntry();
       }
-
+      // Add Blueprint file if we found a require-js configuration.
+      if( foundRJs ) {
+        ZipEntry newEntry = new ZipEntry( "OSGI-INF/blueprint/blueprint.xml" );
+        String blueprintTemplate = IOUtils.toString( getClass().getResourceAsStream(
+            "/org/pentaho/osgi/platform/webjars/blueprint-template.xml" ) );
+        blueprintTemplate = blueprintTemplate.replaceAll( "\\{path\\}",
+            "META-INF/resources/webjars/" + moduleName + "/" + moduleVersion );
+        blueprintTemplate = blueprintTemplate.replace( "{versioned_name}", moduleName + "/" + moduleVersion );
+        blueprintTemplate = blueprintTemplate.replace( "{name}", moduleName );
+        jarOutputStream.putNextEntry( newEntry );
+        jarOutputStream.write( blueprintTemplate.getBytes( "UTF-8" ) );
+      }
+      // Process webjars into our form
+      try {
+        jarOutputStream.closeEntry();
+        pipedOutputStream.flush();
+        jarOutputStream.close();
+      } catch ( IOException ioexception ) {
+        logger.debug( DEBUG_MESSAGE_FAILED_WRITING, ioexception );
+        return;
+      }
+    } finally {
+      logger.debug( "Closing JarInputStream." );
+      try {
+        jarInputStream.close();
+      } catch ( IOException ioexception ) {
+        logger.debug( "Tried to close JarInputStream, but it was already closed.", ioexception );
+      }
     }
-    // Add Blueprint file if we found a require-js configuration.
-    if( foundRJs ) {
-      ZipEntry newEntry = new ZipEntry( "OSGI-INF/blueprint/blueprint.xml" );
-      String blueprintTemplate = IOUtils.toString( getClass().getResourceAsStream(
-          "/org/pentaho/osgi/platform/webjars/blueprint-template.xml" ) );
-      blueprintTemplate = blueprintTemplate.replaceAll( "\\{path\\}",
-          "META-INF/resources/webjars/" + moduleName + "/" + moduleVersion );
-      blueprintTemplate = blueprintTemplate.replace( "{versioned_name}", moduleName + "/" + moduleVersion );
-      blueprintTemplate = blueprintTemplate.replace( "{name}", moduleName );
-      jarOutputStream.putNextEntry( newEntry );
-      jarOutputStream.write( blueprintTemplate.getBytes( "UTF-8" ) );
-    }
-    // Process webjars into our form
-    jarOutputStream.closeEntry();
-
-
-    pipedOutputStream.flush();
-    jarOutputStream.close();
   }
 
   private String convertConfig( String config, String moduleName, String moduleVersion ) {

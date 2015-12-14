@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -36,6 +37,23 @@ import java.util.zip.ZipInputStream;
 import static org.junit.Assert.*;
 
 public class WebjarsURLConnectionTest {
+  
+  @Test
+  public void testClosingStream() throws IOException {
+    WebjarsURLConnection connection = new WebjarsURLConnection( new URL( "mvn:org.webjars/angular-dateparser/1.0.9" ) );
+    connection.connect();
+
+    InputStream inputStream = connection.getInputStream();
+    JarInputStream jar = new JarInputStream( inputStream );
+    jar.getManifest();
+    jar.close();
+    try {
+      connection.transform_thread.get();
+    } catch ( Exception exception ) {
+      fail( "Thread failed to execute tranform() method: " + exception.getMessage() );
+    }
+  }
+  
   @Test
   public void testConnection() throws IOException {
     File input = new File("src/test/resources/testInput.jar");
