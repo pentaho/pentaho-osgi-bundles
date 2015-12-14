@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -97,6 +98,22 @@ public class WebjarsURLConnectionTest {
     verifyManifest( zipInputStream );
     verifyBlueprint( zipInputStream, "angular-dateparser/1.0.9" );
     verifyRequireJson( zipInputStream, "org.webjars/angular-dateparser", "1.0.9" );
+  }
+
+  @Test
+  public void testClosingStream() throws IOException {
+    WebjarsURLConnection connection = new WebjarsURLConnection( new URL( "mvn:org.webjars/angular-dateparser/1.0.9" ) );
+    connection.connect();
+
+    InputStream inputStream = connection.getInputStream();
+    JarInputStream jar = new JarInputStream( inputStream );
+    jar.getManifest();
+    jar.close();
+    try {
+      connection.transform_thread.get();
+    } catch ( Exception exception ) {
+      fail( "Thread failed to execute tranform() method: " + exception.getMessage() );
+    }
   }
 
   private void verifyManifest( ZipFile zipInputStream ) throws IOException {
