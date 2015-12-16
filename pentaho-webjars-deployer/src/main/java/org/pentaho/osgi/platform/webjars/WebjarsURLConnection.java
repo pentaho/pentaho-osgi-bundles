@@ -17,7 +17,6 @@
 
 package org.pentaho.osgi.platform.webjars;
 
-
 import org.apache.commons.io.IOUtils;
 import org.osgi.framework.Constants;
 import org.pentaho.js.require.RequireJsGenerator;
@@ -36,6 +35,7 @@ import java.util.ArrayList;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
 import java.util.jar.Attributes;
 import java.util.jar.JarInputStream;
@@ -61,6 +61,11 @@ public class WebjarsURLConnection extends URLConnection {
     }
   } );
 
+  public Future<Void> transform_thread;
+
+  private static final String DEBUG_MESSAGE_FAILED_WRITING =
+      "Problem transfering Jar content, probably JarOutputStream was already closed.";
+
   private static final String MANIFEST_MF = "MANIFEST.MF";
   private static final String PENTAHO_RJS_LOCATION = "META-INF/js/require.json";
 
@@ -69,8 +74,7 @@ public class WebjarsURLConnection extends URLConnection {
       Pattern.compile( "META-INF/resources/webjars/([^/]+)/([^/]+)/" + WEBJARS_REQUIREJS_NAME );
 
   private static final String POM_NAME = "pom.xml";
-  private static final Pattern POM_PATTERN =
-      Pattern.compile( "META-INF/maven/org.webjars([^/]*)/([^/]+)/" + POM_NAME );
+  private static final Pattern POM_PATTERN = Pattern.compile( "META-INF/maven/org.webjars([^/]*)/([^/]+)/" + POM_NAME );
 
   private static final String BOWER_NAME = "bower.json";
   private static final Pattern BOWER_PATTERN =
@@ -162,13 +166,14 @@ public class WebjarsURLConnection extends URLConnection {
       final PipedOutputStream pipedOutputStream = new PipedOutputStream();
       PipedInputStream pipedInputStream = new PipedInputStream( pipedOutputStream );
 
-      EXECUTOR.submit( new Callable<Void>() {
+      transform_thread = EXECUTOR.submit( new Callable<Void>() {
         @Override public Void call() throws Exception {
           try {
             transform( getURL(), pipedOutputStream );
           } catch ( Exception e ) {
             logger.error( "Error Transforming zip", e );
             pipedOutputStream.close();
+            throw e;
           }
           return null;
         }
@@ -199,43 +204,59 @@ public class WebjarsURLConnection extends URLConnection {
 
     InputStream inputStream = urlConnection.getInputStream();
     JarInputStream jarInputStream = new JarInputStream( inputStream );
-    JarOutputStream jarOutputStream =
-        new JarOutputStream( pipedOutputStream, getManifest( artifactInfo, jarInputStream ) );
+    try {
 
-    RequireJsGenerator requireConfig = null;
+      JarOutputStream jarOutputStream =
+          new JarOutputStream( pipedOutputStream, getManifest( artifactInfo, jarInputStream ) );
 
-    String physicalPathNamePart = null;
-    String physicalPathVersionPart = null;
+      RequireJsGenerator requireConfig = null;
 
-    ZipEntry entry;
-    while ( ( entry = jarInputStream.getNextJarEntry() ) != null ) {
-      String name = entry.getName();
-      if ( name.endsWith( MANIFEST_MF ) ) {
-        // ignore existing manifest, we've already created our own
-        continue;
-      }
+      String physicalPathNamePart = null;
+      String physicalPathVersionPart = null;
 
-      if ( requireConfig == null || isClassicWebjar && !wasReadFromPom ) {
-        if ( isClassicWebjar ) {
-          if ( name.endsWith( POM_NAME ) ) {
-            // handcrafted requirejs configuration on pom.xml has top prioriy (Classic WebJars)
-            Matcher matcher = POM_PATTERN.matcher( name );
-            if ( matcher.matches() ) {
-              try {
-                requireConfig = RequireJsGenerator.parsePom( jarInputStream );
-                wasReadFromPom = true;
-              } catch ( Exception ignored ) {
-                // ignored
+      ZipEntry entry;
+      while ( ( entry = jarInputStream.getNextJarEntry() ) != null ) {
+        String name = entry.getName();
+        if ( name.endsWith( MANIFEST_MF ) ) {
+          // ignore existing manifest, we've already created our own
+          continue;
+        }
+
+        if ( requireConfig == null || isClassicWebjar && !wasReadFromPom ) {
+          if ( isClassicWebjar ) {
+            if ( name.endsWith( POM_NAME ) ) {
+              // handcrafted requirejs configuration on pom.xml has top prioriy (Classic WebJars)
+              Matcher matcher = POM_PATTERN.matcher( name );
+              if ( matcher.matches() ) {
+                try {
+                  requireConfig = RequireJsGenerator.parsePom( jarInputStream );
+                  wasReadFromPom = true;
+                } catch ( Exception ignored ) {
+                  // ignored
+                }
+
+                continue;
               }
+            } else if ( name.endsWith( WEBJARS_REQUIREJS_NAME ) ) {
+              // next comes the module author's webjars-requirejs.js
+              Matcher matcher = MODULE_PATTERN.matcher( name );
+              if ( matcher.matches() ) {
+                try {
+                  requireConfig =
+                      RequireJsGenerator.processJsScript( matcher.group( 1 ), matcher.group( 2 ), jarInputStream );
+                } catch ( Exception ignored ) {
+                  // ignored
+                }
 
-              continue;
+                continue;
+              }
             }
-          } else if ( name.endsWith( WEBJARS_REQUIREJS_NAME ) ) {
-            // next comes the module author's webjars-requirejs.js
-            Matcher matcher = MODULE_PATTERN.matcher( name );
+          } else if ( isNpmWebjar && name.endsWith( NPM_NAME ) || isBowerWebjar && name.endsWith( BOWER_NAME ) ) {
+            // try to generate requirejs.json from package.json (Npm WebJars) or bower.json (Bower WebJars)
+            Matcher matcher = isNpmWebjar ? NPM_PATTERN.matcher( name ) : BOWER_PATTERN.matcher( name );
             if ( matcher.matches() ) {
               try {
-                requireConfig = RequireJsGenerator.processJsScript( matcher.group( 1 ), matcher.group( 2 ), jarInputStream );
+                requireConfig = RequireJsGenerator.parseJsonPackage( jarInputStream );
               } catch ( Exception ignored ) {
                 // ignored
               }
@@ -243,72 +264,80 @@ public class WebjarsURLConnection extends URLConnection {
               continue;
             }
           }
-        } else if ( isNpmWebjar && name.endsWith( NPM_NAME ) || isBowerWebjar && name.endsWith( BOWER_NAME ) ) {
-          // try to generate requirejs.json from package.json (Npm WebJars) or bower.json (Bower WebJars)
-          Matcher matcher = isNpmWebjar ? NPM_PATTERN.matcher( name ) : BOWER_PATTERN.matcher( name );
+        }
+
+        try {
+          jarOutputStream.putNextEntry( entry );
+          IOUtils.copy( jarInputStream, jarOutputStream );
+          jarOutputStream.closeEntry();
+        } catch ( IOException ioexception ) {
+          logger.debug( DEBUG_MESSAGE_FAILED_WRITING, ioexception );
+          //throw ioexception;
+          return;
+        }
+
+        // store the path of the first file that fits de expected folder structure,
+        // for physical path mapping and also fallback on malformed webjars
+        if ( physicalPathNamePart == null ) {
+          Matcher matcher = PACKAGE_FILES_PATTERN.matcher( name );
+
           if ( matcher.matches() ) {
-            try {
-              requireConfig = RequireJsGenerator.parseJsonPackage( jarInputStream );
-            } catch ( Exception ignored ) {
-              // ignored
-            }
-
-            continue;
+            physicalPathNamePart = matcher.group( 1 );
+            physicalPathVersionPart = matcher.group( 2 );
           }
         }
       }
 
-      jarOutputStream.putNextEntry( entry );
-      IOUtils.copy( jarInputStream, jarOutputStream );
-      jarOutputStream.closeEntry();
+      if ( requireConfig == null ) {
+        // in last resort generate requirejs config by mapping the root path
+        requireConfig = RequireJsGenerator.emptyGenerator( physicalPathNamePart, physicalPathVersionPart );
 
-      // store the path of the first file that fits de expected folder structure,
-      // for physical path mapping and also fallback on malformed webjars
-      if ( physicalPathNamePart == null ) {
-        Matcher matcher = PACKAGE_FILES_PATTERN.matcher( name );
+        logger.warn( "malformed webjar " + url.toString() + " deployed using root path mapping" );
+      }
 
-        if ( matcher.matches() ) {
-          physicalPathNamePart = matcher.group( 1 );
-          physicalPathVersionPart = matcher.group( 2 );
+      if ( requireConfig != null ) {
+        try {
+          final String exports = !isAmdPackage && !exportedGlobals.isEmpty() ? exportedGlobals.get( 0 ) : null;
+          final RequireJsGenerator.ModuleInfo moduleInfo =
+              requireConfig.getConvertedConfig( artifactInfo, isAmdPackage, exports );
+
+          addRequireJsToJar( moduleInfo.exportRequireJs(), jarOutputStream );
+
+          // Add Blueprint file if we found a require-js configuration.
+          ZipEntry newEntry = new ZipEntry( "OSGI-INF/blueprint/blueprint.xml" );
+          String blueprintTemplate =
+              IOUtils.toString( getClass().getResourceAsStream(
+                  "/org/pentaho/osgi/platform/webjars/blueprint-template.xml" ) );
+          blueprintTemplate =
+              blueprintTemplate.replaceAll( "\\{path\\}", "META-INF/resources/webjars/" + physicalPathNamePart + "/"
+                  + physicalPathVersionPart );
+          blueprintTemplate = blueprintTemplate.replace( "{versioned_name}", moduleInfo.getVersionedPath() );
+
+          jarOutputStream.putNextEntry( newEntry );
+          jarOutputStream.write( blueprintTemplate.getBytes( "UTF-8" ) );
+        } catch ( Exception e ) {
+          logger.error( "error saving " + PENTAHO_RJS_LOCATION + " - " + e.getMessage() );
         }
       }
-    }
 
-    if ( requireConfig == null ) {
-      // in last resort generate requirejs config by mapping the root path
-      requireConfig = RequireJsGenerator.emptyGenerator( physicalPathNamePart, physicalPathVersionPart );
-
-      logger.warn( "malformed webjar " + url.toString() + " deployed using root path mapping" );
-    }
-
-    if ( requireConfig != null ) {
       try {
-        final String exports = !isAmdPackage && !exportedGlobals.isEmpty() ? exportedGlobals.get( 0 ) : null;
-        final RequireJsGenerator.ModuleInfo moduleInfo = requireConfig.getConvertedConfig( artifactInfo, isAmdPackage,
-            exports );
+        jarOutputStream.closeEntry();
 
-        addRequireJsToJar( moduleInfo.exportRequireJs(), jarOutputStream );
+        pipedOutputStream.flush();
+        jarOutputStream.close();
+      } catch ( IOException ioexception ) {
+        logger.debug( DEBUG_MESSAGE_FAILED_WRITING, ioexception );
+        return;
+      }
 
-        // Add Blueprint file if we found a require-js configuration.
-        ZipEntry newEntry = new ZipEntry( "OSGI-INF/blueprint/blueprint.xml" );
-        String blueprintTemplate = IOUtils
-            .toString( getClass().getResourceAsStream( "/org/pentaho/osgi/platform/webjars/blueprint-template.xml" ) );
-        blueprintTemplate =
-            blueprintTemplate.replaceAll( "\\{path\\}",
-                "META-INF/resources/webjars/" + physicalPathNamePart + "/" + physicalPathVersionPart );
-        blueprintTemplate = blueprintTemplate.replace( "{versioned_name}", moduleInfo.getVersionedPath() );
-
-        jarOutputStream.putNextEntry( newEntry );
-        jarOutputStream.write( blueprintTemplate.getBytes( "UTF-8" ) );
-      } catch ( Exception e ) {
-        logger.error( "error saving " + PENTAHO_RJS_LOCATION + " - " + e.getMessage() );
+    } finally {
+      logger.debug( "Closing JarInputStream." );
+      try {
+        jarInputStream.close();
+      } catch ( IOException ioexception ) {
+        logger.debug( "Tried to close JarInputStream, but it was already closed.", ioexception );
       }
     }
-
-    jarOutputStream.closeEntry();
-
-    pipedOutputStream.flush();
-    jarOutputStream.close();
   }
 
   private boolean findAmdDefine( URL url, ArrayList<String> exports ) throws IOException {
@@ -318,20 +347,29 @@ public class WebjarsURLConnection extends URLConnection {
     InputStream inputStream = urlConnection.getInputStream();
     JarInputStream jarInputStream = new JarInputStream( inputStream );
 
-    ZipEntry entry;
-    while ( ( entry = jarInputStream.getNextJarEntry() ) != null ) {
-      String name = entry.getName();
+    try {
+      ZipEntry entry;
+      while ( ( entry = jarInputStream.getNextJarEntry() ) != null ) {
+        String name = entry.getName();
 
-      Matcher matcher = PACKAGE_JS_FILES_PATTERN.matcher( name );
+        Matcher matcher = PACKAGE_JS_FILES_PATTERN.matcher( name );
 
-      if ( matcher.matches() ) {
-        if ( findAmdDefine( jarInputStream, exports ) ) {
-          return true;
+        if ( matcher.matches() ) {
+          if ( findAmdDefine( jarInputStream, exports ) ) {
+            return true;
+          }
         }
       }
-    }
+      return false;
 
-    return false;
+    } finally {
+      logger.debug( "Closing JarInputStream." );
+      try {
+        jarInputStream.close();
+      } catch ( IOException ioexception ) {
+        logger.debug( "Tried to close JarInputStream, but it was already closed.", ioexception );
+      }
+    }
   }
 
   private boolean findAmdDefine( InputStream is, ArrayList<String> exports ) {
