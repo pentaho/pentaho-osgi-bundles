@@ -34,7 +34,9 @@ import org.pentaho.capabilities.api.ICapability;
 import org.pentaho.capabilities.api.ICapabilityManager;
 import org.pentaho.capabilities.impl.DefaultCapabilityManager;
 import org.pentaho.osgi.api.IKarafFeatureWatcher;
+import org.pentaho.platform.api.engine.IServiceBarrierManager;
 import org.pentaho.platform.engine.core.system.PentahoSystem;
+import org.pentaho.platform.engine.core.system.objfac.spring.BarrierBeanProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,14 +54,18 @@ public class KarafFeatureWatcherImpl implements IKarafFeatureWatcher {
     this.bundleContext = bundleContext;
     // Default timeout to 4 hours per BACKLOG-5526.  Can be overridden in server.properties
     timeout =
-        PentahoSystem.getApplicationContext().getProperty( KARAF_TIMEOUT_PROPERTY ) == null ? 4 * 60 * 60 * 1000L : Long
+        PentahoSystem.getApplicationContext().getProperty( KARAF_TIMEOUT_PROPERTY ) == null ? 2 * 60 * 1000L : Long
             .valueOf( PentahoSystem.getApplicationContext().getProperty( KARAF_TIMEOUT_PROPERTY ) );
   }
 
   @Override public void waitForFeatures() throws FeatureWatcherException {
 
     long entryTime = System.currentTimeMillis();
-
+    
+    // Block until all prerequisite beans are defined
+    BarrierBeanProcessor.awaitBarrier( "KarafFeatureWatcherBarrier" );
+    
+    // Start the serviceTracker timer
     ServiceTracker serviceTracker = new ServiceTracker( bundleContext, FeaturesService.class.getName(), null );
     serviceTracker.open();
     try {
