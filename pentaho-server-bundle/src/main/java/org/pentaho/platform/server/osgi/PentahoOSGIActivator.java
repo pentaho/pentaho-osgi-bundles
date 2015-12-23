@@ -53,7 +53,7 @@ public class PentahoOSGIActivator implements BundleActivator {
     ConfigurationAdmin configurationAdmin = bundleContext.getService( configurationAdminServiceReference );
 
     // guaranteed to not be null
-    Configuration configuration = configurationAdmin.getConfiguration( "org.pentaho.requirejs" );
+    Configuration configuration = configurationAdmin.getConfiguration( "org.pentaho.requirejs", "null" );
     Dictionary<String, Object> properties = configuration.getProperties();
     if ( properties == null ) {
       // new config
