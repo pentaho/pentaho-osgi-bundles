@@ -108,6 +108,12 @@
         </exclusion>
     </exclusions>
     </dependency>
+    <dependency>
+      <groupId>pentaho</groupId>
+      <artifactId>pentaho-service-coordinator</artifactId>
+      <version>${dependency.pentaho-platform.revision}</version>
+			<scope>compile</scope>
+    </dependency>
   </dependencies>
   <build>
     <finalName>${project.artifactId}</finalName>
