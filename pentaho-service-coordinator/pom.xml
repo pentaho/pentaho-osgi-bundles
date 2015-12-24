@@ -15,6 +15,7 @@
   <url>http://www.pentaho.com</url>
   <properties>
     <exam.version>4.1.0</exam.version>
+    <springframework.version>3.2.14.RELEASE</springframework.version>
   </properties>
   <dependencies>
     <dependency>
@@ -86,6 +87,16 @@
           <groupId>org.osgi</groupId>
         </exclusion>
       </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-beans</artifactId>
+      <version>${springframework.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-core</artifactId>
+      <version>${springframework.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.felix</groupId>
