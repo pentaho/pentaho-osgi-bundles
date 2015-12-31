@@ -216,7 +216,7 @@ public class CountdownLatchServiceLifecycleManagerTest {
     int fatalCount = 0;
     do {
       Thread.sleep( 10 );
-    } while ( t1.getState() != Thread.State.WAITING && ++fatalCount < 10 );
+    } while ( t1.getState() != Thread.State.WAITING && ++fatalCount < 20 );
     assertTrue( t1.getState() == Thread.State.WAITING );
     manager.terminate();
     t1.join();
