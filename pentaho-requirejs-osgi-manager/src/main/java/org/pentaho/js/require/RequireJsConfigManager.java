@@ -40,9 +40,9 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by bryan on 8/5/14.
@@ -53,15 +53,13 @@ public class RequireJsConfigManager {
   public static final String EXTERNAL_RESOURCES_JSON_PATH = "META-INF/js/externalResources.json";
   public static final String STATIC_RESOURCES_JSON_PATH = "META-INF/js/staticResources.json";
 
-  private final Lock lock = new ReentrantLock();
-
   private final Map<Long, Map<String, Object>> configMap = new HashMap<>();
   private final Map<Long, RequireJsConfiguration> requireConfigMap = new HashMap<>();
 
   private final JSONParser parser = new JSONParser();
   private BundleContext bundleContext;
 
-  private static ExecutorService executorService = Executors.newSingleThreadExecutor( new ThreadFactory() {
+  private static ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor( new ThreadFactory() {
     @Override
     public Thread newThread( Runnable r ) {
       Thread thread = Executors.defaultThreadFactory().newThread( r );
@@ -232,17 +230,12 @@ public class RequireJsConfigManager {
     if ( shouldInvalidate ) {
       lastModified = System.currentTimeMillis();
 
-      // if can't adquire lock then someone is already
-      // generating the cache and will find out it's invalid
-      if ( lock.tryLock() ) {
-        long myTimestamp = lastModified;
-        do {
-          cache = executorService.submit( new RebuildCacheCallable( new HashMap<>( this.configMap ),
-              new ArrayList<>( requireConfigMap.values() ) ) );
-        } while ( myTimestamp != lastModified ); // if different the cache is already invalid
-
-        lock.unlock();
+      if ( this.cache != null ) {
+        this.cache.cancel( true );
       }
+
+      this.cache = executorService.schedule( new RebuildCacheCallable( new HashMap<>( this.configMap ),
+          new ArrayList<>( requireConfigMap.values() ) ), 250, TimeUnit.MILLISECONDS );
     }
   }
 
