@@ -60,9 +60,6 @@ public class KarafFeatureWatcherImpl implements IKarafFeatureWatcher {
 
     long entryTime = System.currentTimeMillis();
     
-    // Block until all prerequisite beans are defined
-    BarrierBeanProcessor.getInstance().awaitBarrier( "KarafFeatureWatcherBarrier" );
-    
     // Start the serviceTracker timer
     ServiceTracker serviceTracker = new ServiceTracker( bundleContext, FeaturesService.class.getName(), null );
     serviceTracker.open();
@@ -122,10 +119,14 @@ public class KarafFeatureWatcherImpl implements IKarafFeatureWatcher {
           }
         }
         if ( uninstalledFeatures.size() > 0 ) {
-          if ( System.currentTimeMillis() - timeout > entryTime ) {
-            throw new FeatureWatcherException( "Timed out waiting for Karaf features to install: " + StringUtils.join
-                ( uninstalledFeatures, "," ) );
-          }
+            if ( System.currentTimeMillis() - timeout > entryTime ) {
+              if ( BarrierBeanProcessor.getInstance().isAvailable( "KarafFeatureWatcherBarrier" ) ) {
+                throw new FeatureWatcherException( "Timed out waiting for Karaf features to install: "
+                    + StringUtils.join( uninstalledFeatures, "," ) );
+              } else {
+                entryTime = System.currentTimeMillis();
+              }
+            }
           logger.debug( "KarafFeatureWatcher is waiting for the following features to install: " + StringUtils.join
               ( uninstalledFeatures, "," ) );
           Thread.sleep( 100 );
