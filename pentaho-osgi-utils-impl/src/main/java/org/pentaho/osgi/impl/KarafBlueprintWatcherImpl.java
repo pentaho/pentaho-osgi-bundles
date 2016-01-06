@@ -24,6 +24,7 @@ import org.osgi.framework.ServiceReference;
 import org.osgi.util.tracker.ServiceTracker;
 import org.pentaho.osgi.api.BlueprintStateService;
 import org.pentaho.osgi.api.IKarafBlueprintWatcher;
+import org.pentaho.platform.engine.core.system.objfac.spring.BarrierBeanProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -74,8 +75,12 @@ public class KarafBlueprintWatcherImpl implements IKarafBlueprintWatcher {
           }
           if ( unloadedBlueprints.size() > 0 ) {
             if ( System.currentTimeMillis() - timeout > entryTime ) {
-              throw new IKarafBlueprintWatcher.BlueprintWatcherException(
-                  "Timed out waiting for blueprints to load: " + StringUtils.join( unloadedBlueprints, "," ) );
+              if ( BarrierBeanProcessor.getInstance().isAvailable( "KarafFeatureWatcherBarrier" ) ) {
+                throw new IKarafBlueprintWatcher.BlueprintWatcherException(
+                    "Timed out waiting for blueprints to load: " + StringUtils.join( unloadedBlueprints, "," ) );
+              } else {
+                entryTime = System.currentTimeMillis(); // reset the time. We are still waiting for barriers
+              }
             }
             logger.debug( "KarafBlueprintWatcher is waiting for the following blueprints to load: " + StringUtils
                 .join( unloadedBlueprints, "," ) );
