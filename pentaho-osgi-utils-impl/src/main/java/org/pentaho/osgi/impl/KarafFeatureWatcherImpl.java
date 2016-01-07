@@ -35,6 +35,8 @@ import org.pentaho.capabilities.impl.DefaultCapabilityManager;
 import org.pentaho.osgi.api.IKarafFeatureWatcher;
 import org.pentaho.platform.engine.core.system.PentahoSystem;
 import org.pentaho.platform.engine.core.system.objfac.spring.BarrierBeanProcessor;
+import org.pentaho.platform.servicecoordination.api.IServiceBarrier;
+import org.pentaho.platform.servicecoordination.api.IServiceBarrierManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,7 +52,7 @@ public class KarafFeatureWatcherImpl implements IKarafFeatureWatcher {
   public KarafFeatureWatcherImpl( BundleContext bundleContext ) {
 
     this.bundleContext = bundleContext;
-    // Default timeout to 4 hours per BACKLOG-5526.  Can be overridden in server.properties
+    // Default timeout of 2 minutes can be overridden in server.properties
     timeout =
         PentahoSystem.getApplicationContext().getProperty( KARAF_TIMEOUT_PROPERTY ) == null ? 2 * 60 * 1000L : Long
             .valueOf( PentahoSystem.getApplicationContext().getProperty( KARAF_TIMEOUT_PROPERTY ) );
@@ -59,9 +61,6 @@ public class KarafFeatureWatcherImpl implements IKarafFeatureWatcher {
   @Override public void waitForFeatures() throws FeatureWatcherException {
 
     long entryTime = System.currentTimeMillis();
-    
-    // Block until all prerequisite beans are defined
-    BarrierBeanProcessor.getInstance().awaitBarrier( "KarafFeatureWatcherBarrier" );
     
     // Start the serviceTracker timer
     ServiceTracker serviceTracker = new ServiceTracker( bundleContext, FeaturesService.class.getName(), null );
@@ -122,10 +121,15 @@ public class KarafFeatureWatcherImpl implements IKarafFeatureWatcher {
           }
         }
         if ( uninstalledFeatures.size() > 0 ) {
-          if ( System.currentTimeMillis() - timeout > entryTime ) {
-            throw new FeatureWatcherException( "Timed out waiting for Karaf features to install: " + StringUtils.join
-                ( uninstalledFeatures, "," ) );
-          }
+            if ( System.currentTimeMillis() - timeout > entryTime ) {
+              IServiceBarrier serviceBarrier = IServiceBarrierManager.LOCATOR.getManager().getServiceBarrier( "KarafFeatureWatcherBarrier" );
+              if ( serviceBarrier == null || serviceBarrier.isAvailable() ) {
+                throw new FeatureWatcherException( "Timed out waiting for Karaf features to install: "
+                    + StringUtils.join( uninstalledFeatures, "," ) );
+              } else {
+                entryTime = System.currentTimeMillis();
+              }
+            }
           logger.debug( "KarafFeatureWatcher is waiting for the following features to install: " + StringUtils.join
               ( uninstalledFeatures, "," ) );
           Thread.sleep( 100 );
