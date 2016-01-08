@@ -24,6 +24,10 @@ import org.osgi.framework.ServiceReference;
 import org.osgi.util.tracker.ServiceTracker;
 import org.pentaho.osgi.api.BlueprintStateService;
 import org.pentaho.osgi.api.IKarafBlueprintWatcher;
+import org.pentaho.platform.engine.core.system.PentahoSystem;
+import org.pentaho.platform.engine.core.system.objfac.spring.BarrierBeanProcessor;
+import org.pentaho.platform.servicecoordination.api.IServiceBarrier;
+import org.pentaho.platform.servicecoordination.api.IServiceBarrierManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,12 +39,17 @@ import java.util.List;
  */
 public class KarafBlueprintWatcherImpl implements IKarafBlueprintWatcher {
   private BundleContext bundleContext;
-  private long timeout = 60 * 1000L;
+  private long timeout;
   private Logger logger = LoggerFactory.getLogger( getClass() );
+  private static final String KARAF_TIMEOUT_PROPERTY = "karafWaitForBoot";
 
   public KarafBlueprintWatcherImpl( BundleContext bundleContext ) {
 
     this.bundleContext = bundleContext;
+    // Default timeout of 2 minutes can be overridden in server.properties
+    timeout =
+        PentahoSystem.getApplicationContext().getProperty( KARAF_TIMEOUT_PROPERTY ) == null ? 2 * 60 * 1000L : Long
+            .valueOf( PentahoSystem.getApplicationContext().getProperty( KARAF_TIMEOUT_PROPERTY ) );
   }
 
   @Override public void waitForBlueprint() throws BlueprintWatcherException {
@@ -74,8 +83,13 @@ public class KarafBlueprintWatcherImpl implements IKarafBlueprintWatcher {
           }
           if ( unloadedBlueprints.size() > 0 ) {
             if ( System.currentTimeMillis() - timeout > entryTime ) {
-              throw new IKarafBlueprintWatcher.BlueprintWatcherException(
-                  "Timed out waiting for blueprints to load: " + StringUtils.join( unloadedBlueprints, "," ) );
+              IServiceBarrier serviceBarrier = IServiceBarrierManager.LOCATOR.getManager().getServiceBarrier( "KarafFeatureWatcherBarrier" );
+              if ( serviceBarrier == null || serviceBarrier.isAvailable() ) {
+                throw new IKarafBlueprintWatcher.BlueprintWatcherException(
+                    "Timed out waiting for blueprints to load: " + StringUtils.join( unloadedBlueprints, "," ) );
+              } else {
+                entryTime = System.currentTimeMillis(); // reset the time. We are still waiting for barriers
+              }
             }
             logger.debug( "KarafBlueprintWatcher is waiting for the following blueprints to load: " + StringUtils
                 .join( unloadedBlueprints, "," ) );
