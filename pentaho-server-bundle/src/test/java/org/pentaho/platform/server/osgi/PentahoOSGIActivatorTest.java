@@ -46,7 +46,7 @@ public class PentahoOSGIActivatorTest {
     when( bundleContext.getService( adminRef )).thenReturn( configurationAdmin );
 
     Configuration config = mock( Configuration.class );
-    when(configurationAdmin.getConfiguration( "org.pentaho.requirejs" )).thenReturn( config );
+    when(configurationAdmin.getConfiguration( "org.pentaho.requirejs", null )).thenReturn( config );
 
     IApplicationContext applicationContext = mock(IApplicationContext.class);
     PentahoSystem.init(applicationContext);
