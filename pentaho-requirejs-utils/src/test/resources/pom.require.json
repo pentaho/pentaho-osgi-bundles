@@ -28,8 +28,8 @@
     }
   },
   "paths": {
-    "smart-table_2.0.3-1": "smart-table_2.0.3-1\/smart-table",
-    "smart-table-min_2.0.3-1": "smart-table_2.0.3-1\/smart-table.min"
+    "smart-table_2.0.3-1": "smart-table/2.0.3-1/smart-table",
+    "smart-table-min_2.0.3-1": "smart-table/2.0.3-1/smart-table.min"
   },
   "shim": {
     "smart-table_2.0.3-1": [
