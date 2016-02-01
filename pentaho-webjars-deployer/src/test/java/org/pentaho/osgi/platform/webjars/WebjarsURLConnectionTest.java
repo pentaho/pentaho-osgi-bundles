@@ -18,30 +18,26 @@
 package org.pentaho.osgi.platform.webjars;
 
 import org.apache.commons.io.IOUtils;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
-import java.util.zip.ZipInputStream;
 
 import static org.junit.Assert.*;
 
 public class WebjarsURLConnectionTest {
-  
+
   @Test
   public void testClosingStream() throws IOException {
-    WebjarsURLConnection connection = new WebjarsURLConnection( new URL( "mvn:org.webjars/angular-dateparser/1.0.9" ) );
-    connection.connect();
+    File input = new File( "src/test/resources/testInput.jar" );
+    assertTrue( "Test jar not found",  input.exists() );
+    WebjarsURLConnection connection = new WebjarsURLConnection( input.toURI().toURL() );
 
     InputStream inputStream = connection.getInputStream();
     JarInputStream jar = new JarInputStream( inputStream );
@@ -53,38 +49,41 @@ public class WebjarsURLConnectionTest {
       fail( "Thread failed to execute tranform() method: " + exception.getMessage() );
     }
   }
-  
+
   @Test
   public void testConnection() throws IOException {
-    File input = new File("src/test/resources/testInput.jar");
-    assertTrue( "Test jar not found",  input.exists() );
-    WebjarsURLConnection connection = new WebjarsURLConnection( input.toURI().toURL() );
+    ZipFile zipInputStream = null;
+    try {
+      File input = new File( "src/test/resources/testInput.jar" );
+      assertTrue( "Test jar not found",  input.exists() );
+      WebjarsURLConnection connection = new WebjarsURLConnection( input.toURI().toURL() );
 
-    connection.connect();
-    InputStream inputStream = connection.getInputStream();
-    File tempFile = File.createTempFile( "webjars", ".zip" ); //new File("src/test/resources/testOutput.jar");
-    byte[] buff = new byte[2048];
-    int ret;
+      connection.connect();
+      InputStream inputStream = connection.getInputStream();
+      File tempFile = File.createTempFile( "webjars", ".zip" ); //new File("src/test/resources/testOutput.jar");
 
-    FileOutputStream fileOutputStream = new FileOutputStream(  tempFile );
+      FileOutputStream fileOutputStream = new FileOutputStream(  tempFile );
 
-    IOUtils.copy( inputStream, fileOutputStream );
+      IOUtils.copy( inputStream, fileOutputStream );
 
-    // Verify Zip contents
-    ZipFile zipInputStream = new ZipFile( tempFile );
+      // Verify Zip contents
+      zipInputStream = new ZipFile( tempFile );
 
-    ZipEntry entry = zipInputStream.getEntry( "META-INF/MANIFEST.MF" );
-    assertNotNull(entry);
-    Manifest manifest = new Manifest( zipInputStream.getInputStream( entry ) );
-    assertTrue( manifest.getMainAttributes().getValue( "Bundle-SymbolicName" ).toString().startsWith( "pentaho-webjars-" ));
+      ZipEntry entry = zipInputStream.getEntry( "META-INF/MANIFEST.MF" );
+      assertNotNull( entry );
+      Manifest manifest = new Manifest( zipInputStream.getInputStream( entry ) );
+      assertTrue( manifest.getMainAttributes().getValue( "Bundle-SymbolicName" ).toString().startsWith( "pentaho-webjars-" ) );
 
-    entry = zipInputStream.getEntry( "OSGI-INF/blueprint/blueprint.xml" );
-    assertNotNull(entry);
-    String bpFile = IOUtils.toString( zipInputStream.getInputStream( entry ), "UTF-8" );
-    assertTrue( bpFile.contains( "<property name=\"path\" value=\"/META-INF/resources/webjars/angularjs/1.3.0-rc.0\" />" ));
-    entry = zipInputStream.getEntry( "META-INF/js/require.json" );
-    assertNotNull(entry);
-
+      entry = zipInputStream.getEntry( "OSGI-INF/blueprint/blueprint.xml" );
+      assertNotNull( entry );
+      String bpFile = IOUtils.toString( zipInputStream.getInputStream( entry ), "UTF-8" );
+      assertTrue( bpFile.contains( "<property name=\"path\" value=\"/META-INF/resources/webjars/angularjs/1.3.0-rc.0\" />" ) );
+      entry = zipInputStream.getEntry( "META-INF/js/require.json" );
+      assertNotNull( entry );
+    } finally {
+      if ( zipInputStream != null ) {
+        zipInputStream.close();
+      }
+    }
   }
-
 }
