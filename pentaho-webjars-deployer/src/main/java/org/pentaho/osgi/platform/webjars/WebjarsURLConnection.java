@@ -29,7 +29,6 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PipedInputStream;
@@ -54,18 +53,18 @@ import java.util.zip.ZipEntry;
  */
 public class WebjarsURLConnection extends URLConnection {
 
-  public static final ExecutorService EXECUTOR = Executors.newFixedThreadPool(5, new ThreadFactory() {
+  public static final ExecutorService EXECUTOR = Executors.newFixedThreadPool( 5, new ThreadFactory() {
     @Override
-    public Thread newThread(Runnable r) {
-      Thread thread = Executors.defaultThreadFactory().newThread(r);
-      thread.setDaemon(true);
-      thread.setName("WebjarsURLConnection pool");
+    public Thread newThread( Runnable r ) {
+      Thread thread = Executors.defaultThreadFactory().newThread( r );
+      thread.setDaemon( true );
+      thread.setName( "WebjarsURLConnection pool" );
       return thread;
     }
-  });
+  } );
 
   public Future<Void> transform_thread;
-  
+
   private static final String DEBUG_MESSAGE_FAILED_WRITING = "Problem transfering Jar content, probably JarOutputStream was already closed.";
   public static final String MANIFEST_MF = "MANIFEST.MF";
   public static final String PENTAHO_RJS_LOCATION = "META-INF/js/require.json";
@@ -117,8 +116,8 @@ public class WebjarsURLConnection extends URLConnection {
     if ( url.getProtocol().equals( "file" ) ) {
       String filePath = url.getFile();
       int start = filePath.lastIndexOf( '/' );
-      if(start >= 0) {
-        artifactName = filePath.substring( filePath.lastIndexOf( '/' ) + 1, filePath.length() );  
+      if ( start >= 0 ) {
+        artifactName = filePath.substring( filePath.lastIndexOf( '/' ) + 1, filePath.length() );
       } else {
         artifactName = filePath;
       }
@@ -129,25 +128,23 @@ public class WebjarsURLConnection extends URLConnection {
       // version needs to be coerced into OSGI form Major.Minor.Patch.Classifier
       version = VersionParser.parseVersion( versionPart );
     }
-
     URLConnection urlConnection = url.openConnection();
     urlConnection.connect();
     InputStream inputStream = urlConnection.getInputStream();
     JarInputStream jarInputStream = new JarInputStream( inputStream );
 
     Manifest manifest = jarInputStream.getManifest();
-    if( manifest == null ){
+    if ( manifest == null ) {
       manifest = new Manifest();
     }
     manifest.getMainAttributes()
         .put( new Attributes.Name( Constants.BUNDLE_SYMBOLICNAME ), "pentaho-webjars-" + artifactName );
     manifest.getMainAttributes()
         .put( new Attributes.Name( Constants.IMPORT_PACKAGE ),
-            "org.osgi.service.http,org.apache.felix.http.api,org.ops4j.pax.web.extender.whiteboard.runtime," +
-                "org.ops4j.pax.web.extender.whiteboard" );
+            "org.osgi.service.http,org.apache.felix.http.api,org.ops4j.pax.web.extender.whiteboard.runtime,"
+        + "org.ops4j.pax.web.extender.whiteboard" );
 
     manifest.getMainAttributes().put( new Attributes.Name( Constants.BUNDLE_VERSION ), version.toString() );
-    
     try {
       JarOutputStream jarOutputStream = new JarOutputStream( pipedOutputStream, manifest );
 
@@ -155,47 +152,45 @@ public class WebjarsURLConnection extends URLConnection {
       String moduleName = "unknown";
       String moduleVersion = "unknown";
       boolean foundRJs = false;
-
       while ( ( entry = jarInputStream.getNextJarEntry() ) != null ) {
         String name = entry.getName();
-        if ( name.endsWith( MANIFEST_MF ) ) {
-          // ignore existing manifest, we'll update it after the copy
-          logger.info( "skipping manifest" );
-        } else if ( name.endsWith( WEBJARS_REQUIREJS_NAME ) ) {
-          Matcher matcher = MODULE_PATTERN.matcher( name );
-          if ( matcher.matches() == false ) {
-            logger.error( "Webjars structure isn't right" );
-            continue;
-          }
-          foundRJs = true;
-          logger.info( "found WEBJARS config" );
-          moduleName = matcher.group( 1 );
-          moduleVersion = matcher.group( 2 );
+        try {
+          if ( name.endsWith( MANIFEST_MF ) ) {
+            // ignore existing manifest, we'll update it after the copy
+            logger.info( "skipping manifest" );
+          } else if ( name.endsWith( WEBJARS_REQUIREJS_NAME ) ) {
+            Matcher matcher = MODULE_PATTERN.matcher( name );
+            if ( matcher.matches() == false ) {
+              logger.error( "Webjars structure isn't right" );
+              continue;
+            }
+            foundRJs = true;
+            logger.info( "found WEBJARS config" );
+            moduleName = matcher.group( 1 );
+            moduleVersion = matcher.group( 2 );
+            byte[] bytes = IOUtils.toByteArray( jarInputStream );
+            String webjarsConfig = new String( bytes, "UTF-8" );
+            String convertedConfig = convertConfig( webjarsConfig, moduleName, moduleVersion );
 
-          byte[] bytes = IOUtils.toByteArray( jarInputStream );
-          String webjarsConfig = new String( bytes, "UTF-8" );
-          String convertedConfig = convertConfig( webjarsConfig, moduleName, moduleVersion );
-
-          ZipEntry newEntry = new ZipEntry( "META-INF/js/require.json" );
-          jarOutputStream.putNextEntry( newEntry );
-          jarOutputStream.write( convertedConfig.getBytes( "UTF-8" ) );
-          // Process webjars into our form
-          jarOutputStream.closeEntry();
-        } else {
-          try {
+            ZipEntry newEntry = new ZipEntry( "META-INF/js/require.json" );
+            jarOutputStream.putNextEntry( newEntry );
+            jarOutputStream.write( convertedConfig.getBytes( "UTF-8" ) );
+            // Process webjars into our form
+            jarOutputStream.closeEntry();
+          } else {
             logger.info( "copying misc entry: " + name );
             jarOutputStream.putNextEntry( entry );
             IOUtils.copy( jarInputStream, jarOutputStream );
             jarOutputStream.closeEntry();
-          } catch ( IOException ioexception ) {
-            logger.debug( DEBUG_MESSAGE_FAILED_WRITING, ioexception );
-            //throw ioexception;
-            return;
           }
+        } catch ( IOException ioexception ) {
+          logger.debug( DEBUG_MESSAGE_FAILED_WRITING, ioexception );
+          //throw ioexception;
+          return;
         }
       }
       // Add Blueprint file if we found a require-js configuration.
-      if( foundRJs ) {
+      if ( foundRJs ) {
         ZipEntry newEntry = new ZipEntry( "OSGI-INF/blueprint/blueprint.xml" );
         String blueprintTemplate = IOUtils.toString( getClass().getResourceAsStream(
             "/org/pentaho/osgi/platform/webjars/blueprint-template.xml" ) );
