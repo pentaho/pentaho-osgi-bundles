@@ -18,6 +18,8 @@ public class S4UserDetailsServiceProxyCreator implements IProxyCreator<UserDetai
 
   private Logger logger = LoggerFactory.getLogger( getClass() );
 
+  private String FULL_NAME_SS2_USERNOTFOUNDEXCEPTION = "org.springframework.security.userdetails.UsernameNotFoundException";
+
   @Override public boolean supports( Class<?> clazz ) {
     // supports legacy spring.security 2.0.8 UserDetailsService
     return "org.springframework.security.userdetails.UserDetailsService".equals( clazz.getName() );
@@ -37,13 +39,13 @@ public class S4UserDetailsServiceProxyCreator implements IProxyCreator<UserDetai
 
     private Method loadUserByUsernameMethod;
 
-    public S4UserDetailsServiceProxy( Object target ){
+    public S4UserDetailsServiceProxy( Object target ) {
       this.target = target;
     }
 
     @Override public UserDetails loadUserByUsername( String username ) throws UsernameNotFoundException {
 
-      if( loadUserByUsernameMethod == null ){
+      if ( loadUserByUsernameMethod == null ) {
         loadUserByUsernameMethod = ReflectionUtils.findMethod( target.getClass(), "loadUserByUsername", String.class );
       }
 
@@ -51,15 +53,22 @@ public class S4UserDetailsServiceProxyCreator implements IProxyCreator<UserDetai
 
         Object retVal = loadUserByUsernameMethod.invoke( target, username );
 
-        if( retVal != null ) {
+        if ( retVal != null ) {
           return getProxyFactory().createProxy( retVal );
+        } else {
+          logger.warn( "Got a null from calling the method loadUserByUsername( String username ) of UserDetailsService: "
+              + target
+              + ". This is an interface violation beacuse it is specified that loadUserByUsername method should never return null. Throwing a UsernameNotFoundException." );
         }
 
       } catch ( InvocationTargetException | IllegalAccessException | ProxyException e ) {
-        logger.error( e.getMessage() , e );
+        if ( e.getCause() != null && e.getCause().getClass().getName().equals( FULL_NAME_SS2_USERNOTFOUNDEXCEPTION ) ) {
+          throw new UsernameNotFoundException( e.getCause().getMessage(), e );
+        }
+        logger.error( e.getMessage(), e );
       }
 
-      return null;
+      throw new UsernameNotFoundException( username );
     }
   }
 }

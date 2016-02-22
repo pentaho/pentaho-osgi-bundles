@@ -1,29 +1,23 @@
-package org.pentaho.proxy.creators.userdetailsservice;
-
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.pentaho.platform.proxy.api.IProxyFactory;
-import org.pentaho.platform.proxy.api.IProxyRegistration;
-import org.pentaho.platform.proxy.impl.ProxyException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.util.ReflectionUtils;
-
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.List;
-import java.util.Map;
+package org.pentaho.proxy.creators.userdatailsservice;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class S4UserDetailsServiceProxyCreatorTest {
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.pentaho.proxy.creators.userdetailsservice.ProxyUserDetailsService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.security.userdetails.UserDetails;
+import org.springframework.security.userdetails.UserDetailsService;
+import org.springframework.security.userdetails.UsernameNotFoundException;
+import org.springframework.util.ReflectionUtils;
 
+public class ProxyUserDetailsServiceTest {
   private Logger logger = LoggerFactory.getLogger( getClass() );
 
   UserDetails mockUserDetails;
@@ -52,7 +46,7 @@ public class S4UserDetailsServiceProxyCreatorTest {
 
   @Test public void testCreateProxyWrapper() {
 
-    Object wrappedObject = new S4UserDetailsServiceProxyCreatorForTest().create( mockUserDetailsService );
+    Object wrappedObject = new ProxyUserDetailsService( mockUserDetailsService );
 
     Assert.assertNotNull( wrappedObject );
 
@@ -89,7 +83,7 @@ public class S4UserDetailsServiceProxyCreatorTest {
 
   @Test public void testNoUserDetailsProxyWrapper() {
 
-    Object wrappedObject = new S4UserDetailsServiceProxyCreatorForTest().create( mockUserDetailsService );
+    Object wrappedObject = new ProxyUserDetailsService( mockUserDetailsService );
 
     Assert.assertNotNull( wrappedObject );
 
@@ -123,27 +117,5 @@ public class S4UserDetailsServiceProxyCreatorTest {
   public void tearDown() {
     mockUserDetails = null;
     mockUserDetailsService = null;
-  }
-
-
-  private class S4UserDetailsServiceProxyCreatorForTest extends S4UserDetailsServiceProxyCreator {
-
-    @Override public boolean supports( Class aClass ) {
-      return true;
-    }
-
-    @Override public IProxyFactory getProxyFactory() {
-      return new IProxyFactory(){
-
-        @Override public <T, K> IProxyRegistration createAndRegisterProxy( T target, List<Class<?>> publishedClasses,
-            Map<String, Object> properties ) throws ProxyException {
-          return null;
-        }
-
-        @Override public <T, K> K createProxy( T target ) throws ProxyException {
-          return ( K ) target;
-        }
-      };
-    }
   }
 }
