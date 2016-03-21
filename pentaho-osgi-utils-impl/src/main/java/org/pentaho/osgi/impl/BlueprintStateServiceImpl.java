@@ -12,7 +12,7 @@
  * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  * See the GNU Lesser General Public License for more details.
  *
- * Copyright 2015 Pentaho Corporation. All rights reserved.
+ * Copyright 2015-2016 Pentaho Corporation. All rights reserved.
  */
 
 package org.pentaho.osgi.impl;
@@ -47,11 +47,11 @@ public class BlueprintStateServiceImpl implements BlueprintStateService, Bluepri
   }
 
   @Override public Boolean isBlueprintLoaded( long bundleId ) {
-    return hasBlueprint( bundleId ) && getState( bundleId ) == BundleState.Active;
+    return hasBlueprint( bundleId ) && getBundleState( bundleId ) == BundleState.Active;
   }
 
   @Override public Boolean isBlueprintFailed( long bundleId ) {
-    return hasBlueprint( bundleId ) && getState( bundleId ) == BundleState.Failure;
+    return hasBlueprint( bundleId ) && getBundleState( bundleId ) == BundleState.Failure;
   }
 
   @Override public Boolean hasBlueprint( long bundleId ) {
@@ -71,14 +71,14 @@ public class BlueprintStateServiceImpl implements BlueprintStateService, Bluepri
 
   @Override public void blueprintEvent( BlueprintEvent blueprintEvent ) {
     if ( LOG.isDebugEnabled() ) {
-      BundleState state = getState( blueprintEvent.getBundle().getBundleId() );
+      BundleState state = getBundleState( blueprintEvent.getBundle().getBundleId() );
       LOG.debug(
           "Blueprint app state changed to " + state + " for bundle " + blueprintEvent.getBundle().getBundleId() );
     }
     states.put( blueprintEvent.getBundle().getBundleId(), blueprintEvent );
   }
 
-  private BundleState getState( long bundleId ) {
+  @Override public BundleState getBundleState( long bundleId ) {
     BlueprintEvent blueprintEvent = states.get( bundleId );
 
     if ( blueprintEvent == null ) {
@@ -104,4 +104,19 @@ public class BlueprintStateServiceImpl implements BlueprintStateService, Bluepri
     }
   }
 
+  @Override public String[] getBundleMissDependencies( long bundleId ) {
+    BlueprintEvent blueprintEvent = states.get( bundleId );
+    if ( blueprintEvent == null ) {
+      return null;
+    }
+    return blueprintEvent.getDependencies();
+  }
+
+  @Override public Throwable getBundleFailureCause( long bundleId ) {
+    BlueprintEvent blueprintEvent = states.get( bundleId );
+    if ( blueprintEvent == null ) {
+      return null;
+    }
+    return blueprintEvent.getCause();
+  }
 }
