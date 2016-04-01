@@ -146,6 +146,7 @@
         <module>pentaho-service-coordinator</module>
         <module>pentaho-capability-manager</module>
         <module>pentaho-cache-manager</module>
+        <module>pentaho-authentication-mapper</module>
       </modules>
       <distributionManagement>
         <site>
