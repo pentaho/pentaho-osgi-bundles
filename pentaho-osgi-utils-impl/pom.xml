@@ -14,6 +14,7 @@
   <properties>
     <dependency.org.apache.felix.org.apache.felix.configadmin.revision>1.6.0</dependency.org.apache.felix.org.apache.felix.configadmin.revision>
     <felix.version>4.4.1</felix.version>
+    <slf4j-log4j12.version>1.7.7</slf4j-log4j12.version>
   </properties>
   <dependencies>
     <dependency>
@@ -69,6 +70,12 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-log4j12</artifactId>
+      <version>${slf4j-log4j12.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <version>${junit.version}</version>
@@ -89,23 +96,13 @@
       <groupId>pentaho</groupId>
       <artifactId>pentaho-platform-api</artifactId>
       <version>${dependency.pentaho-platform.revision}</version>
-      <exclusions>
-        <exclusion>
-          <artifactId>*</artifactId>
-          <groupId>*</groupId>
-        </exclusion>
-      </exclusions>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>pentaho</groupId>
       <artifactId>pentaho-platform-core</artifactId>
       <version>${dependency.pentaho-platform.revision}</version>
-      <exclusions>
-        <exclusion>
-          <artifactId>*</artifactId>
-          <groupId>*</groupId>
-        </exclusion>
-      </exclusions>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>pentaho</groupId>

@@ -12,12 +12,14 @@
  * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  * See the GNU Lesser General Public License for more details.
  *
- * Copyright 2015 Pentaho Corporation. All rights reserved.
+ * Copyright 2015-2016 Pentaho Corporation. All rights reserved.
  */
 
 package org.pentaho.osgi.impl;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.karaf.bundle.core.BundleState;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
@@ -25,7 +27,6 @@ import org.osgi.util.tracker.ServiceTracker;
 import org.pentaho.osgi.api.BlueprintStateService;
 import org.pentaho.osgi.api.IKarafBlueprintWatcher;
 import org.pentaho.platform.engine.core.system.PentahoSystem;
-import org.pentaho.platform.engine.core.system.objfac.spring.BarrierBeanProcessor;
 import org.pentaho.platform.servicecoordination.api.IServiceBarrier;
 import org.pentaho.platform.servicecoordination.api.IServiceBarrierManager;
 import org.slf4j.Logger;
@@ -41,7 +42,7 @@ public class KarafBlueprintWatcherImpl implements IKarafBlueprintWatcher {
   private BundleContext bundleContext;
   private long timeout;
   private Logger logger = LoggerFactory.getLogger( getClass() );
-  private static final String KARAF_TIMEOUT_PROPERTY = "karafWaitForBoot";
+  public static final String KARAF_TIMEOUT_PROPERTY = "karafWaitForBoot";
 
   public KarafBlueprintWatcherImpl( BundleContext bundleContext ) {
 
@@ -69,15 +70,18 @@ public class KarafBlueprintWatcherImpl implements IKarafBlueprintWatcher {
 
     if ( serviceReference != null ) {
       BlueprintStateService blueprintStateService = bundleContext.getService( serviceReference );
+      List<Bundle> unloadedAndFailedBlueprints = new ArrayList<Bundle>();
 
       try {
         while ( true ) {
           List<String> unloadedBlueprints = new ArrayList<String>();
           for ( Bundle bundle : bundleContext.getBundles() ) {
             if ( blueprintStateService.hasBlueprint( bundle.getBundleId() ) ) {
-              if ( !blueprintStateService.isBlueprintLoaded( bundle.getBundleId() ) && !blueprintStateService
-                  .isBlueprintFailed( bundle.getBundleId() ) ) {
-                unloadedBlueprints.add( bundle.getSymbolicName() );
+              if ( !blueprintStateService.isBlueprintLoaded( bundle.getBundleId() ) ) {
+                unloadedAndFailedBlueprints.add( bundle );
+                if ( !blueprintStateService.isBlueprintFailed( bundle.getBundleId() ) ) {
+                  unloadedBlueprints.add( bundle.getSymbolicName() );
+                }
               }
             }
           }
@@ -94,6 +98,7 @@ public class KarafBlueprintWatcherImpl implements IKarafBlueprintWatcher {
             logger.debug( "KarafBlueprintWatcher is waiting for the following blueprints to load: " + StringUtils
                 .join( unloadedBlueprints, "," ) );
             Thread.sleep( 100 );
+            unloadedAndFailedBlueprints = new ArrayList<Bundle>();
             continue;
           }
           break;
@@ -101,7 +106,75 @@ public class KarafBlueprintWatcherImpl implements IKarafBlueprintWatcher {
 
       } catch ( Exception e ) {
         throw new BlueprintWatcherException( "Unknown error in KarafBlueprintWatcher", e );
+      } finally {
+        if ( unloadedAndFailedBlueprints.size() > 0 ) {
+          logger.debug( System.lineSeparator() + getBlueprintsReport( blueprintStateService,
+              unloadedAndFailedBlueprints ) );
+        }
       }
     }
+  }
+
+  private String getBlueprintsReport( BlueprintStateService blueprintStateService, List<Bundle> bundles ) {
+    String bundlesReport = "--------- Karaf Blueprint Watcher Report Begin ---------";
+    bundlesReport += System.lineSeparator() + "Blueprint Bundle(s) not loaded:";
+    for ( Bundle bundle : bundles ) {
+      bundlesReport +=
+          System.lineSeparator() + "\t" + getBlueprintReport( blueprintStateService, bundle ).replaceAll( "\n",
+              "\n \t" );
+    }
+
+    return bundlesReport + System.lineSeparator() + "--------- Karaf Blueprint Watcher Report End ---------";
+  }
+
+  private String getBlueprintReport( BlueprintStateService blueprintStateService, Bundle bundle ) {
+    long bundleId = bundle.getBundleId();
+    String bundleName = bundle.getSymbolicName();
+    BundleState bundleState = blueprintStateService.getBundleState( bundleId );
+    String[] missingDependencies = blueprintStateService.getBundleMissDependencies( bundleId );
+    Throwable failureCause = blueprintStateService.getBundleFailureCause( bundleId );
+
+    String bundleReport =
+        "Blueprint Bundle '" + bundleName + "':" + System.lineSeparator() + "\t Blueprint Bundle State: " + bundleState
+            + System.lineSeparator() + "\t Blueprint Bundle ID: " + bundleId;
+
+    // Report missing dependencies from the blueprint, e.g., a mandatory service that did not start
+    if ( missingDependencies != null ) {
+      bundleReport += System.lineSeparator() + "\t Missing Dependencies:";
+      for ( String missDependency : missingDependencies ) {
+        bundleReport += System.lineSeparator() + "\t \t" + missDependency;
+      }
+    }
+
+    // If exist, we report the failure cause that is a throwable, we attach the full stacktrace into the report
+    if ( failureCause != null ) {
+      bundleReport +=
+          System.lineSeparator() + "\t This blueprint state was caused by: " + System.lineSeparator() + "\t \t"
+              + getStackTraceString( failureCause ).replaceAll( "\n", "\n \t \t" );
+    }
+    return bundleReport;
+  }
+
+  private String getStackTraceString( Throwable throwable ) {
+    String stackTrace = ExceptionUtils.getStackTrace( throwable );
+
+    // Remove if exists last empty line
+    int index = stackTrace.lastIndexOf( "\n" );
+
+    if ( index < 0 ) {
+      return stackTrace;
+    }
+
+    // Test if empty line
+    if ( stackTrace.length() <= index + 1 || stackTrace.substring( index + 1 ).trim().isEmpty() ) {
+      String newStackTrace = stackTrace.substring( 0, index );
+
+      // remove windows new line character \r
+      if ( newStackTrace.endsWith( "\r" ) ) {
+        newStackTrace = newStackTrace.substring( 0, newStackTrace.length() - 1 );
+      }
+      return newStackTrace;
+    }
+    return stackTrace;
   }
 }

@@ -12,17 +12,21 @@
  * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  * See the GNU Lesser General Public License for more details.
  *
- * Copyright 2015 Pentaho Corporation. All rights reserved.
+ * Copyright 2015-2016 Pentaho Corporation. All rights reserved.
  */
 
 package org.pentaho.osgi.api;
 
+import org.apache.karaf.bundle.core.BundleState;
+
 /**
  * Created by bmorrise on 9/3/15.
  */
-public interface BlueprintStateService
-{
+public interface BlueprintStateService {
   Boolean hasBlueprint( long bundleId );
   Boolean isBlueprintLoaded( long bundleId );
   Boolean isBlueprintFailed( long bundleId );
+  BundleState getBundleState( long bundleId );
+  String[] getBundleMissDependencies( long bundleId );
+  Throwable getBundleFailureCause( long bundleId );
 }
