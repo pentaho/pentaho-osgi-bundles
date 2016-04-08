@@ -12,7 +12,7 @@
  * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  * See the GNU Lesser General Public License for more details.
  *
- * Copyright 2014 Pentaho Corporation. All rights reserved.
+ * Copyright 2014-2016 Pentaho Corporation. All rights reserved.
  */
 
 package org.pentaho.js.require;
@@ -41,7 +41,7 @@ public class RequireJsGeneratorTest {
   public void testConfigFromPom()
       throws ParserConfigurationException, IOException, SAXException, XPathExpressionException, ParseException {
     RequireJsGenerator moduleInfo = RequireJsGenerator.parsePom( this.getClass().getClassLoader().getResourceAsStream(
-        "pom.xml" ) );
+        "pom.require.xml" ) );
 
     RequireJsGenerator.ArtifactInfo artifactInfo =
         new RequireJsGenerator.ArtifactInfo( "org.webjars", "smart-table", "2.0.3-1" );
