@@ -112,6 +112,7 @@
         <module>pentaho-ss4-proxies</module>
         <module>pentaho-ss2-proxies</module>
         <module>pentaho-proxy-spring4</module>
+        <module>pentaho-authentication-mapper</module>
       </modules>
       <distributionManagement>
         <site>
