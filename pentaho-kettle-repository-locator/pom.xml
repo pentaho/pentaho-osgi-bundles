@@ -9,8 +9,7 @@
     <version>7.0-SNAPSHOT</version>
   </parent>
 
-  <artifactId>pentaho-authentication-mapper-parent</artifactId>
-  <version>7.0-SNAPSHOT</version>
+  <artifactId>pentaho-kettle-repository-locator</artifactId>
   <packaging>pom</packaging>
 
   <developers>
