@@ -93,6 +93,7 @@
         <activeByDefault>true</activeByDefault>
       </activation>
       <modules>
+        <module>pentaho-blueprint-collection-utils</module>
         <module>angular-bundle</module>
         <module>pentaho-i18n-bundle</module>
         <module>pentaho-i18n-webservice-bundle</module>
@@ -113,6 +114,8 @@
         <module>pentaho-ss2-proxies</module>
         <module>pentaho-proxy-spring4</module>
         <module>pentaho-authentication-mapper</module>
+        <module>pentaho-kettle-repository-locator</module>
+        <module>pentaho-metastore-locator</module>
       </modules>
       <distributionManagement>
         <site>
@@ -134,6 +137,7 @@
         </property>
       </activation>
       <modules>
+        <module>pentaho-blueprint-collection-utils</module>
         <module>angular-bundle</module>
         <module>pentaho-i18n-bundle</module>
         <module>pentaho-i18n-webservice-bundle</module>
@@ -148,6 +152,7 @@
         <module>pentaho-capability-manager</module>
         <module>pentaho-cache-manager</module>
         <module>pentaho-authentication-mapper</module>
+        <module>pentaho-kettle-repository-locator</module>
       </modules>
       <distributionManagement>
         <site>
