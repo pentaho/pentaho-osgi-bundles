@@ -152,7 +152,6 @@
         <module>pentaho-capability-manager</module>
         <module>pentaho-cache-manager</module>
         <module>pentaho-authentication-mapper</module>
-        <module>pentaho-kettle-repository-locator</module>
       </modules>
       <distributionManagement>
         <site>
@@ -180,6 +179,8 @@
         <module>pentaho-ss4-proxies</module>
         <module>pentaho-ss2-proxies</module>
         <module>pentaho-proxy-spring4</module>
+        <module>pentaho-kettle-repository-locator</module>
+        <module>pentaho-metastore-locator</module>
       </modules>
       <distributionManagement>
         <site>
