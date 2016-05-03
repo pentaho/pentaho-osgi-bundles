@@ -34,9 +34,7 @@ public interface AuthenticationMappingService<InputType, OutputType> {
 
   Class<? extends OutputType> getOutputType();
 
-  default <I extends InputType> boolean accepts( I input ) {
-    return getInputType().isInstance( input );
-  }
+  boolean accepts( Object input );
 
   OutputType getMapping( InputType input, Map<String, ?> config ) throws MappingException;
 }

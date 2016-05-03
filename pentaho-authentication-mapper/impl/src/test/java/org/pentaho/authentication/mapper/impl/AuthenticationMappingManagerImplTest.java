@@ -83,7 +83,7 @@ public class AuthenticationMappingManagerImplTest {
     TestService defaultService = new TestService( "default" );
     manager.onMappingServiceAdded( defaultService, ImmutableMap.of() );
     TestService unused = new TestService( "unused" ) {
-      @Override public <I extends String> boolean accepts( I input ) {
+      @Override public boolean accepts( Object input ) {
         return false;
       }
     };
@@ -139,6 +139,10 @@ public class AuthenticationMappingManagerImplTest {
 
     @Override public Class<Map> getOutputType() {
       return Map.class;
+    }
+
+    @Override public boolean accepts( Object input ) {
+      return true;
     }
 
     @Override public Map getMapping( String input, Map<String, ?> config ) throws MappingException {
