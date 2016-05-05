@@ -11,6 +11,7 @@
   http://www.osgi.org/xmlns/blueprint/v1.0.0 http://www.osgi.org/xmlns/blueprint/v1.0.0/blueprint.xsd
   ">
 
+  <!-- Setup the JAX-RS stuff -->
   <cxf:bus bus="i18nServiceBus">
     <cxf:properties>
       <entry key="org.apache.cxf.transport.http.async.usePolicy" value="ALWAYS"/>
@@ -26,17 +27,26 @@
     </jaxrs:providers>
   </jaxrs:server>
 
+
+  <!-- Obtain a reference to the LocalizationService -->
+  <reference interface="org.pentaho.osgi.i18n.LocalizationService" id="localizationService"/>
+
+  <!-- Create our example REST Service which takes the LocalizationService as a parameter -->
   <bean id="i18nServiceImpl" class="org.pentaho.i18n.example.ExampleService">
     <property name="localizationService" ref="localizationService"/>
   </bean>
 
+
+  <!-- Create Web Resource Mapping -->
   <bean id="resourceMapping"
         class="org.ops4j.pax.web.extender.whiteboard.runtime.DefaultResourceMapping">
     <property name="alias" value="/i18n"/>
     <property name="path" value="/web"/>
   </bean>
-
+  <!-- Register Wen Resources -->
   <service id="resources" ref="resourceMapping" interface="org.ops4j.pax.web.extender.whiteboard.ResourceMapping"/>
 
-  <reference interface="org.pentaho.osgi.i18n.LocalizationService" id="localizationService"/>
+
+
+
 </blueprint>
