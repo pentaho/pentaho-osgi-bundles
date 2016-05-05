@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xmlns:cxf="http://cxf.apache.org/blueprint/core"
+           xmlns:jaxrs="http://cxf.apache.org/blueprint/jaxrs"
+
+           xsi:schemaLocation="
+
+  http://cxf.apache.org/blueprint/jaxrs http://cxf.apache.org/schemas/blueprint/jaxrs.xsd
+  http://cxf.apache.org/blueprint/core http://cxf.apache.org/schemas/blueprint/core.xsd
+
+  http://www.osgi.org/xmlns/blueprint/v1.0.0 http://www.osgi.org/xmlns/blueprint/v1.0.0/blueprint.xsd
+  ">
+
+  <cxf:bus bus="i18nServiceBus">
+    <cxf:properties>
+      <entry key="org.apache.cxf.transport.http.async.usePolicy" value="ALWAYS"/>
+    </cxf:properties>
+  </cxf:bus>
+
+  <jaxrs:server address="/i18n" id="i18n" bus="i18nServiceBus">
+    <jaxrs:serviceBeans>
+      <ref component-id="i18nServiceImpl"/>
+    </jaxrs:serviceBeans>
+    <jaxrs:providers>
+      <bean class="org.codehaus.jackson.jaxrs.JacksonJaxbJsonProvider"/>
+    </jaxrs:providers>
+  </jaxrs:server>
+
+  <bean id="i18nServiceImpl" class="org.pentaho.i18n.example.ExampleService">
+    <property name="localizationService" ref="localizationService"/>
+  </bean>
+
+  <bean id="resourceMapping"
+        class="org.ops4j.pax.web.extender.whiteboard.runtime.DefaultResourceMapping">
+    <property name="alias" value="/i18n"/>
+    <property name="path" value="/web"/>
+  </bean>
+
+  <service id="resources" ref="resourceMapping" interface="org.ops4j.pax.web.extender.whiteboard.ResourceMapping"/>
+
+  <reference interface="org.pentaho.osgi.i18n.LocalizationService" id="localizationService"/>
+</blueprint>

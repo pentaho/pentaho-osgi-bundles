@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Test i18n</title>
+
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+  <script src="/requirejs-manager/js/require-init.js"></script>
+
+  <script type="text/javascript">
+    require(["dojo/request", "dojo/query", "dojo/domReady!"], function( request, query ){
+      window.callTranslation = function(  ){
+        var key = query("#key")[0].value;
+        request("/cxf/i18n?key=" + key ).then(function(data){
+          query("#val")[0].innerHTML = key + " : " + data;
+        }, function(err){
+          query("#val")[0].innerHTML = err;
+        }, function(evt){
+
+        });
+      }
+    })
+  </script>
+</head>
+<body id="profileApp" ng-controller="ProfileAppController" class="pentaho-page-background">
+  <div translate="profiling.fields.create"></div>
+</body>
+</html>
