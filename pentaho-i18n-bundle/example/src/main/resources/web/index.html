@@ -12,6 +12,7 @@
       var bundle = dom.byId("bundle");
       var key = dom.byId("key");
       var val = dom.byId("val");
+      var bundleDiv = dom.byId("bundleDiv");
 
       on(dom.byId("fetch"), "click", function(){
         var q = {
@@ -19,13 +20,24 @@
           "bundle" : bundle.value,
           "key" : key.value,
         }
-        request("/cxf/i18n", {query: q} ).then(function(data){
+        request("/cxf/localize", {query: q} ).then(function(data){
           val.innerHTML = key.value + " : " + data;
         }, function(err){
           val.innerHTML = "Error: <br/>" +err;
         }, function(evt){
 
         });
+
+
+        request("/cxf/i18n/" + region.value + "/" + bundle.value.replace("\/",".") + "/en").then(function(data){
+          bundleDiv.innerHTML = data;
+        }, function(err){
+          bundleDiv.innerHTML = "Error: <br/>" +err;
+        }, function(evt){
+
+        });
+
+
       });
     })
   </script>
@@ -51,9 +63,11 @@
     <input class="form-control" type="text" id="key" value="exampleKey"/>
   </div>
 
-  <button onclick="callTranslation()" type="submit" class="btn btn-primary" id="fetch">Fetch Translation</button>
+  <button type="submit" class="btn btn-primary" id="fetch">Fetch Translation</button>
 
-  <h1 style="color:red;font-size:24px;text-align:center;width:100%" id="val"></h1>
+  <h2 style="color:red;font-size:24px;text-align:center;width:100%" id="val"></h2>
+
+  <p class="lead" id="bundleDiv"></p>
 </form>
 </div>
 </body>

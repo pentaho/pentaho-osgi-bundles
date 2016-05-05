@@ -17,7 +17,7 @@
     </cxf:properties>
   </cxf:bus>
 
-  <jaxrs:server address="/i18n" id="i18n" bus="i18nServiceBus">
+  <jaxrs:server address="/localize" id="i18n" bus="i18nServiceBus">
     <jaxrs:serviceBeans>
       <ref component-id="i18nServiceImpl"/>
     </jaxrs:serviceBeans>
