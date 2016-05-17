@@ -30,6 +30,8 @@ import com.google.common.collect.SortedSetMultimap;
 import org.pentaho.authentication.mapper.api.AuthenticationMappingManager;
 import org.pentaho.authentication.mapper.api.AuthenticationMappingService;
 import org.pentaho.authentication.mapper.api.MappingException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -47,6 +49,7 @@ public class AuthenticationMappingManagerImpl implements AuthenticationMappingMa
   private static final TypeReference<Map<String, Object>> CONFIG_TYPE = new TypeReference<Map<String, Object>>() {
   };
 
+  private Logger LOGGER = LoggerFactory.getLogger( AuthenticationMappingManagerImpl.class );
   private final ObjectMapper objectMapper = new ObjectMapper();
   private final SortedSetMultimap<TypePair, RankedAuthService> serviceMap = Multimaps.synchronizedSortedSetMultimap(
     Multimaps.newSortedSetMultimap( new HashMap<>(), TreeSet::new )
@@ -62,7 +65,6 @@ public class AuthenticationMappingManagerImpl implements AuthenticationMappingMa
   @SuppressWarnings( "unchecked" )
   public <InputType, OutputType> OutputType getMapping( Class<InputType> inputType, InputType input,
                                                         Class<OutputType> outputType ) throws MappingException {
-
     AuthenticationMappingService<InputType, OutputType> service;
     synchronized ( serviceMap ) {
       service = serviceMap.get( new TypePair( inputType, outputType ) ).stream()
@@ -77,7 +79,12 @@ public class AuthenticationMappingManagerImpl implements AuthenticationMappingMa
 
   private Map<String, Object> getConfigMap( String id ) throws MappingException {
     try {
-      Map<String, Map<String, Object>> configMap = objectMapper.readValue( configuration, CONFIG_TYPE );
+      Map<String, Map<String, Object>> configMap = ImmutableMap.of();
+      if ( configuration.exists() ) {
+        configMap = objectMapper.readValue( configuration, CONFIG_TYPE );
+      } else {
+        LOGGER.debug( "Authentication mapping file does not exist:  " + configuration.getAbsolutePath() );
+      }
       return Optional.ofNullable( configMap.get( id ) ).orElse( ImmutableMap.of() );
     } catch ( IOException e ) {
       throw new MappingException( e );
