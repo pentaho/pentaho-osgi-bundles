@@ -111,9 +111,22 @@ public class AuthenticationMappingManagerImplTest {
     manager.getMapping( String.class, "some value", Map.class );
 
     assertThat( configuration.delete(), is( true ) );
+    configuration = etc.newFile( AuthenticationMappingManager.CONFIG_FILE_NAME );
+    ByteStreams.copy( getClass().getResourceAsStream( "/invalid_mapping.json" ),
+      new FileOutputStream( configuration ) );
 
     exception.expect( MappingException.class );
     manager.getMapping( String.class, "some value", Map.class );
+  }
+
+  @Test
+  public void expectEmptyConfigWhenConfigFileNotPresent() throws Exception {
+    manager.onMappingServiceAdded( new TestService( "default" ), ImmutableMap.of() );
+    manager.getMapping( String.class, "some value", Map.class );
+
+    assertThat( configuration.delete(), is( true ) );
+    assertThat( ( (Map) manager.getMapping( String.class, "some value", Map.class ).get( "config" ) ).size(),
+      is( 0 ) );
   }
 
   @Test
