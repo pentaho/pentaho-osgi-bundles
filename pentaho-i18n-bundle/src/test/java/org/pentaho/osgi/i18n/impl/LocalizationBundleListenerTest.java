@@ -2,7 +2,7 @@
  *
  * Pentaho Data Integration
  *
- * Copyright (C) 2002-2014 by Pentaho : http://www.pentaho.com
+ * Copyright (C) 2002-2016 by Pentaho : http://www.pentaho.com
  *
  *******************************************************************************
  *
@@ -27,11 +27,9 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleEvent;
-import org.pentaho.osgi.i18n.impl.LocalizationBundleListener;
-import org.pentaho.osgi.i18n.impl.LocalizationManager;
 import org.slf4j.Logger;
-
 import java.io.IOException;
 
 import static org.mockito.Mockito.*;
@@ -44,6 +42,7 @@ public class LocalizationBundleListenerTest {
   private LocalizationManager localizationManager;
   private Bundle bundle;
   private BundleEvent bundleEvent;
+  private BundleContext bundleContext;
   private Logger cachedLogger;
   private LocalizationBundleListener localizationBundleListener;
 
@@ -55,9 +54,12 @@ public class LocalizationBundleListenerTest {
     localizationManager = mock( LocalizationManager.class );
     bundleEvent = mock( BundleEvent.class );
     bundle = mock( Bundle.class );
+    bundleContext = mock( BundleContext.class );
     when( bundleEvent.getBundle() ).thenReturn( bundle );
+    when( bundleContext.getBundle() ).thenReturn( bundle );
     localizationBundleListener = new LocalizationBundleListener();
     localizationBundleListener.setLocalizationManager( localizationManager );
+    localizationBundleListener.setBundleContext( bundleContext );
   }
 
   @After
@@ -84,6 +86,14 @@ public class LocalizationBundleListenerTest {
     when( bundleEvent.getType() ).thenReturn( BundleEvent.INSTALLED );
     localizationBundleListener.bundleChanged( bundleEvent );
     verifyNoMoreInteractions( localizationManager );
+  }
+
+  @Test
+  public void testInit() throws Exception {
+    when( bundle.getState() ).thenReturn( Bundle.ACTIVE );
+    when( bundleContext.getBundles() ).thenReturn( new Bundle[]{bundle} );
+    localizationBundleListener.init( );
+    verify( localizationManager ).bundleChanged( bundle );
   }
 
 
