@@ -48,10 +48,6 @@ public class LocalizationWebservice implements LocalizationService {
     return localizationService.getResourceBundle( name, locale );
   }
 
-  public List<ResourceBundle> getResourceBundles( Pattern keyRegex, Pattern nameRegex, Locale locale ) {
-    return localizationService.getResourceBundles( keyRegex, locale );
-  }
-
   @Override public List<ResourceBundle> getResourceBundles( Pattern keyRegex, Locale locale ) {
     return localizationService.getResourceBundles( keyRegex, locale );
   }
