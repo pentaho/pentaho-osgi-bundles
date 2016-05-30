@@ -32,7 +32,7 @@ import static org.mockito.Mockito.mock;
 public class OSGIResourceBundleFactoryTest {
   @Test
   public void testGetBundle() throws IOException {
-    String path = "org/pentaho/osgi/resource/OSGIResourceBundleTest.properties";
+    String path = "i18n/resource/OSGIResourceBundleTest.properties";
     OSGIResourceBundleFactory osgiResourceBundleFactory =
       new OSGIResourceBundleFactory( path, path, getClass().getClassLoader().getResource(
         path ), 10 );
@@ -43,7 +43,7 @@ public class OSGIResourceBundleFactoryTest {
 
   @Test
   public void testGetBundleReturnsSameWithSameParent() throws IOException {
-    String path = "org/pentaho/osgi/resource/OSGIResourceBundleTest.properties";
+    String path = "i18n/resource/OSGIResourceBundleTest.properties";
     ResourceBundle parent = mock( ResourceBundle.class );
     OSGIResourceBundleFactory osgiResourceBundleFactory =
       new OSGIResourceBundleFactory( path, path, getClass().getClassLoader().getResource(
@@ -53,7 +53,7 @@ public class OSGIResourceBundleFactoryTest {
 
   @Test
   public void testGetBundleReturnsDifferentWithDifferentParent() throws IOException {
-    String path = "org/pentaho/osgi/resource/OSGIResourceBundleTest.properties";
+    String path = "i18n/resource/OSGIResourceBundleTest.properties";
     ResourceBundle parent = mock( ResourceBundle.class );
     ResourceBundle parent2 = mock( ResourceBundle.class );
     OSGIResourceBundleFactory osgiResourceBundleFactory =

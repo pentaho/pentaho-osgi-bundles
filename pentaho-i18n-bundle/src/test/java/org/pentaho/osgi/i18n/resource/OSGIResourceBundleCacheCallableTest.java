@@ -40,125 +40,130 @@ import static org.mockito.Mockito.*;
  * Created by bryan on 9/5/14.
  */
 public class OSGIResourceBundleCacheCallableTest {
+  public String name = "";
+
   @Test
   public void testCallable() throws Exception {
-    Map<Long, Map<String, List<OSGIResourceBundleFactory>>> configMap =
-      new HashMap<Long, Map<String, List<OSGIResourceBundleFactory>>>();
-    String key = "test-plugin";
-    String name = "org/pentaho/osgi/resources/messages";
+    Map<Long, Map<String, OSGIResourceBundleFactory>> configMap =
+      new HashMap<Long, Map<String, OSGIResourceBundleFactory>>();
+    String key = "bundle/messages";
     String frenchSuffix = "_fr_FR";
-    Map<String, List<OSGIResourceBundleFactory>> bundle1Map = new HashMap<String, List<OSGIResourceBundleFactory>>();
+    Map<String, OSGIResourceBundleFactory> bundle1Map = new HashMap<String, OSGIResourceBundleFactory>();
     configMap.put( 1L, bundle1Map );
     OSGIResourceBundleFactory defaultFactory = mock( OSGIResourceBundleFactory.class );
     OSGIResourceBundle defaultBundle = mock( OSGIResourceBundle.class );
-    bundle1Map.put( key, new ArrayList<OSGIResourceBundleFactory>( Arrays.asList( defaultFactory ) ) );
+    when( defaultBundle.getDefaultName() ).thenReturn( key );
+    bundle1Map.put( key, defaultFactory );
     when( defaultFactory.getBundle( any( ResourceBundle.class ) ) ).thenReturn( defaultBundle );
-    when( defaultFactory.getPropertyFilePath() ).thenReturn( name + ".properties" );
+    when( defaultFactory.getPropertyFilePath() ).thenReturn( key + ".properties" );
 
-    Map<String, List<OSGIResourceBundleFactory>> bundle2Map = new HashMap<String, List<OSGIResourceBundleFactory>>();
+    Map<String, OSGIResourceBundleFactory> bundle2Map = new HashMap<String, OSGIResourceBundleFactory>();
     configMap.put( 2L, bundle2Map );
     OSGIResourceBundleFactory frenchFactory = mock( OSGIResourceBundleFactory.class );
     OSGIResourceBundle frenchBundle = mock( OSGIResourceBundle.class );
-    bundle2Map.put( key, new ArrayList<OSGIResourceBundleFactory>( Arrays.asList( frenchFactory ) ) );
+    when( frenchBundle.getDefaultName() ).thenReturn( key + frenchSuffix);
+    bundle2Map.put( key, frenchFactory );
     when( frenchFactory.getBundle( any( ResourceBundle.class ) ) ).thenReturn( frenchBundle );
-    when( frenchFactory.getPropertyFilePath() ).thenReturn( name + frenchSuffix + ".properties" );
+    when( frenchFactory.getPropertyFilePath() ).thenReturn( key + frenchSuffix + ".properties" );
 
     OSGIResourceBundleCacheCallable osgiResourceBundleCacheCallable = new OSGIResourceBundleCacheCallable( configMap );
-    Map<String, Map<String, OSGIResourceBundle>> result = osgiResourceBundleCacheCallable.call();
+    Map<String, OSGIResourceBundle> result = osgiResourceBundleCacheCallable.call();
     verify( frenchFactory ).getBundle( defaultBundle );
-    assertEquals( 1, result.size() );
-    Map<String, OSGIResourceBundle> bundles = result.get( key );
-    assertNotNull( bundles );
-    assertEquals( 2, bundles.size() );
-    assertEquals( defaultBundle, bundles.get( name ) );
-    assertEquals( frenchBundle, bundles.get( name + frenchSuffix ) );
+    assertEquals( 2, result.size() );
+    OSGIResourceBundle bundle = result.get( key );
+    assertNotNull( bundle );
+    assertEquals( defaultBundle, bundle );
+    OSGIResourceBundle bundleFr = result.get( key + frenchSuffix );
+    assertNotNull( bundleFr );
+    assertEquals( frenchBundle, bundleFr );
   }
 
 
   @Test
   public void testCallablePriority() throws Exception {
-    Map<Long, Map<String, List<OSGIResourceBundleFactory>>> configMap =
-      new HashMap<Long, Map<String, List<OSGIResourceBundleFactory>>>();
-    String key = "test-plugin";
-    String name = "org/pentaho/osgi/resources/messages";
+    Map<Long, Map<String, OSGIResourceBundleFactory>> configMap =
+      new HashMap<Long, Map<String, OSGIResourceBundleFactory>>();
+    String key = "bundle/messages";
     String frenchSuffix = "_fr_FR";
-    Map<String, List<OSGIResourceBundleFactory>> bundle1Map = new HashMap<String, List<OSGIResourceBundleFactory>>();
+    Map<String, OSGIResourceBundleFactory> bundle1Map = new HashMap<String, OSGIResourceBundleFactory>();
     configMap.put( 1L, bundle1Map );
     OSGIResourceBundleFactory defaultFactory = mock( OSGIResourceBundleFactory.class );
     OSGIResourceBundle defaultBundle = mock( OSGIResourceBundle.class );
-    bundle1Map.put( key, new ArrayList<OSGIResourceBundleFactory>( Arrays.asList( defaultFactory ) ) );
+    when( defaultBundle.getDefaultName() ).thenReturn( key );
+    bundle1Map.put( key, defaultFactory );
     when( defaultFactory.getBundle( any( ResourceBundle.class ) ) ).thenReturn( defaultBundle );
-    when( defaultFactory.getPropertyFilePath() ).thenReturn( name + ".properties" );
+    when( defaultFactory.getPropertyFilePath() ).thenReturn( key + ".properties" );
 
-    Map<String, List<OSGIResourceBundleFactory>> bundle2Map = new HashMap<String, List<OSGIResourceBundleFactory>>();
+    Map<String, OSGIResourceBundleFactory> bundle2Map = new HashMap<String, OSGIResourceBundleFactory>();
     configMap.put( 2L, bundle2Map );
     OSGIResourceBundleFactory frenchFactory = mock( OSGIResourceBundleFactory.class );
     OSGIResourceBundle frenchBundle = mock( OSGIResourceBundle.class );
-    bundle2Map.put( key, new ArrayList<OSGIResourceBundleFactory>( Arrays.asList( frenchFactory ) ) );
+    when( frenchBundle.getDefaultName() ).thenReturn( key + frenchSuffix);
+    bundle2Map.put( key, frenchFactory );
     when( frenchFactory.getBundle( any( ResourceBundle.class ) ) ).thenReturn( frenchBundle );
-    when( frenchFactory.getPropertyFilePath() ).thenReturn( name + frenchSuffix + ".properties" );
+    when( frenchFactory.getPropertyFilePath() ).thenReturn( key + frenchSuffix + ".properties" );
     when( frenchFactory.getPriority() ).thenReturn( 10 );
 
-    Map<String, List<OSGIResourceBundleFactory>> bundle3Map = new HashMap<String, List<OSGIResourceBundleFactory>>();
+    Map<String, OSGIResourceBundleFactory> bundle3Map = new HashMap<String, OSGIResourceBundleFactory>();
     configMap.put( 3L, bundle3Map );
     OSGIResourceBundleFactory frenchFactory2 = mock( OSGIResourceBundleFactory.class );
     OSGIResourceBundle frenchBundle2 = mock( OSGIResourceBundle.class );
-    bundle3Map.put( key, new ArrayList<OSGIResourceBundleFactory>( Arrays.asList( frenchFactory2 ) ) );
+    when( frenchBundle2.getDefaultName() ).thenReturn( key + frenchSuffix);
+    bundle3Map.put( key, frenchFactory2 );
     when( frenchFactory2.getBundle( any( ResourceBundle.class ) ) ).thenReturn( frenchBundle2 );
-    when( frenchFactory2.getPropertyFilePath() ).thenReturn( name + frenchSuffix + ".properties" );
+    when( frenchFactory2.getPropertyFilePath() ).thenReturn( key + frenchSuffix + ".properties" );
     when( frenchFactory2.getPriority() ).thenReturn( 11 );
 
     OSGIResourceBundleCacheCallable osgiResourceBundleCacheCallable = new OSGIResourceBundleCacheCallable( configMap );
-    Map<String, Map<String, OSGIResourceBundle>> result = osgiResourceBundleCacheCallable.call();
+    Map<String, OSGIResourceBundle> result = osgiResourceBundleCacheCallable.call();
     verify( frenchFactory2 ).getBundle( defaultBundle );
     verify( frenchFactory, never() ).getBundle( any( ResourceBundle.class ) );
-    assertEquals( 1, result.size() );
-    Map<String, OSGIResourceBundle> bundles = result.get( key );
-    assertNotNull( bundles );
-    assertEquals( 2, bundles.size() );
-    assertEquals( defaultBundle, bundles.get( name ) );
-    assertEquals( frenchBundle2, bundles.get( name + frenchSuffix ) );
+    assertEquals( 2, result.size() );
+    OSGIResourceBundle bundle = result.get( key );
+    assertNotNull( bundle );
+    assertEquals( defaultBundle, bundle );
+    OSGIResourceBundle bundleFr = result.get( key + frenchSuffix );
+    assertNotNull( bundleFr );
+    assertEquals( frenchBundle2, bundleFr );
   }
 
   @Test
   public void testCallableNoDefault() throws Exception {
-    Map<Long, Map<String, List<OSGIResourceBundleFactory>>> configMap =
-      new HashMap<Long, Map<String, List<OSGIResourceBundleFactory>>>();
-    String key = "test-plugin";
-    String name = "org/pentaho/osgi/resources/messages";
+    Map<Long, Map<String, OSGIResourceBundleFactory>> configMap =
+      new HashMap<Long, Map<String, OSGIResourceBundleFactory>>();
+    String key = "bundle/messages";
     String frenchSuffix = "_fr_FR";
 
-    Map<String, List<OSGIResourceBundleFactory>> bundle2Map = new HashMap<String, List<OSGIResourceBundleFactory>>();
+    Map<String, OSGIResourceBundleFactory> bundle2Map = new HashMap<String, OSGIResourceBundleFactory>();
     configMap.put( 2L, bundle2Map );
     OSGIResourceBundleFactory frenchFactory = mock( OSGIResourceBundleFactory.class );
     OSGIResourceBundle frenchBundle = mock( OSGIResourceBundle.class );
-    bundle2Map.put( key, new ArrayList<OSGIResourceBundleFactory>( Arrays.asList( frenchFactory ) ) );
+    when( frenchBundle.getDefaultName() ).thenReturn( key );
+    bundle2Map.put( key, frenchFactory );
     when( frenchFactory.getBundle( any( ResourceBundle.class ) ) ).thenReturn( frenchBundle );
-    when( frenchFactory.getPropertyFilePath() ).thenReturn( name + frenchSuffix + ".properties" );
+    when( frenchFactory.getPropertyFilePath() ).thenReturn( key + frenchSuffix + ".properties" );
 
     OSGIResourceBundleCacheCallable osgiResourceBundleCacheCallable = new OSGIResourceBundleCacheCallable( configMap );
-    Map<String, Map<String, OSGIResourceBundle>> result = osgiResourceBundleCacheCallable.call();
+    Map<String, OSGIResourceBundle> result = osgiResourceBundleCacheCallable.call();
     verify( frenchFactory ).getBundle( null );
     assertEquals( 1, result.size() );
-    Map<String, OSGIResourceBundle> bundles = result.get( key );
-    assertNotNull( bundles );
-    assertEquals( 1, bundles.size() );
-    assertEquals( frenchBundle, bundles.get( name + frenchSuffix ) );
+    OSGIResourceBundle bundle = result.get( key );
+    assertNotNull( bundle );
+    assertEquals( frenchBundle, bundle );
   }
 
   @Test( expected = IllegalArgumentException.class )
   public void testIllegalBundleName() throws Exception {
-    Map<Long, Map<String, List<OSGIResourceBundleFactory>>> configMap =
-      new HashMap<Long, Map<String, List<OSGIResourceBundleFactory>>>();
+    Map<Long, Map<String, OSGIResourceBundleFactory>> configMap =
+      new HashMap<Long, Map<String, OSGIResourceBundleFactory>>();
     String key = "test-plugin";
-    String name = "_";
-    Map<String, List<OSGIResourceBundleFactory>> bundle1Map = new HashMap<String, List<OSGIResourceBundleFactory>>();
+    Map<String, OSGIResourceBundleFactory> bundle1Map = new HashMap<String, OSGIResourceBundleFactory>();
     configMap.put( 1L, bundle1Map );
     OSGIResourceBundleFactory defaultFactory = mock( OSGIResourceBundleFactory.class );
     OSGIResourceBundle defaultBundle = mock( OSGIResourceBundle.class );
-    bundle1Map.put( key, new ArrayList<OSGIResourceBundleFactory>( Arrays.asList( defaultFactory ) ) );
+    bundle1Map.put( key, defaultFactory );
     when( defaultFactory.getBundle( any( ResourceBundle.class ) ) ).thenReturn( defaultBundle );
-    when( defaultFactory.getPropertyFilePath() ).thenReturn( name + ".properties" );
+    when( defaultFactory.getPropertyFilePath() ).thenReturn( key + ".properties" );
 
     OSGIResourceBundleCacheCallable osgiResourceBundleCacheCallable = new OSGIResourceBundleCacheCallable( configMap );
     osgiResourceBundleCacheCallable.call();

@@ -24,18 +24,10 @@ import static org.junit.Assert.*;
 public class ResourceBundleWildcardTest {
 
   @Test
-  public void testSetNameRegex() throws Exception {
+  public void testSetKeyRegex() throws Exception {
     ResourceBundleWildcard resourceBundleWildcard = new ResourceBundleWildcard();
     String regex = "test-regex";
     resourceBundleWildcard.setKeyRegex( regex );
     assertEquals( regex, resourceBundleWildcard.getKeyRegex() );
-  }
-
-  @Test
-  public void testSetKeyRegex() throws Exception {
-    ResourceBundleWildcard resourceBundleWildcard = new ResourceBundleWildcard();
-    String regex = "test-regex";
-    resourceBundleWildcard.setNameRegex( regex );
-    assertEquals( regex, resourceBundleWildcard.getNameRegex() );
   }
 }
