@@ -22,15 +22,6 @@ package org.pentaho.osgi.i18n.webservice;
  */
 public class ResourceBundleWildcard {
   private String keyRegex;
-  private String nameRegex;
-
-  public String getNameRegex() {
-    return nameRegex;
-  }
-
-  public void setNameRegex( String nameRegex ) {
-    this.nameRegex = nameRegex;
-  }
 
   public String getKeyRegex() {
     return keyRegex;

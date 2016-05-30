@@ -29,7 +29,7 @@ import static org.junit.Assert.assertEquals;
 public class OSGIResourceBundleTest {
   @Test
   public void testNoParent() throws IOException {
-    String path = "org/pentaho/osgi/resource/OSGIResourceBundleTest";
+    String path = "i18n/resource/OSGIResourceBundleTest";
     String name = path + ".properties";
     OSGIResourceBundle osgiResourceBundle = new OSGIResourceBundle( path,
       getClass().getClassLoader().getResource( name ) );
@@ -40,10 +40,10 @@ public class OSGIResourceBundleTest {
 
   @Test
   public void testParent() throws IOException {
-    String parentPath = "org/pentaho/osgi/resource/OSGIResourceBundleTest.properties";
+    String parentPath = "i18n/resource/OSGIResourceBundleTest.properties";
     OSGIResourceBundle osgiResourceBundle = new OSGIResourceBundle( parentPath,
       getClass().getClassLoader().getResource( parentPath ) );
-    String childPath = "org/pentaho/osgi/resource/OSGIResourceBundleTestChild.properties";
+    String childPath = "i18n/resource/OSGIResourceBundleTestChild.properties";
     OSGIResourceBundle osgiResourceBundleChild = new OSGIResourceBundle( childPath, osgiResourceBundle,
       getClass().getClassLoader().getResource( childPath ) );
     assertEquals( "testValueChild", osgiResourceBundleChild.getString( "key" ) );

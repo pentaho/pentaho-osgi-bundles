@@ -26,7 +26,6 @@ import java.util.regex.Pattern;
  * Created by bryan on 9/5/14.
  */
 public interface LocalizationService {
-  public ResourceBundle getResourceBundle( String key, String name, Locale locale );
-  public List<ResourceBundle> getResourceBundles( Pattern keyRegex, Pattern nameRegex, Locale locale );
+  public ResourceBundle getResourceBundle( String name, Locale locale );
   public List<ResourceBundle> getResourceBundles( Pattern keyRegex, Locale locale );
 }

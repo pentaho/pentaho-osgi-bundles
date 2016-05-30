@@ -10,6 +10,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import java.util.Locale;
 import java.util.ResourceBundle;
 
 /**
@@ -31,9 +32,9 @@ public class ExampleService {
 
   @GET
   @Path( "/" )
-  public String getTranslation( @QueryParam( "region" ) String region, @QueryParam( "bundle" ) String bundle,
-                                @QueryParam( "key" ) String key, @Context HttpServletRequest request ) {
-    ResourceBundle resourceBundle = localizationService.getResourceBundle( region, bundle, request.getLocale() );
+  public String getTranslation( @QueryParam( "key" ) String key, @QueryParam( "locale" ) String locale,
+                                @Context HttpServletRequest request ) {
+    ResourceBundle resourceBundle = localizationService.getResourceBundle( key, new Locale( locale ) );
 
     if ( resourceBundle == null ) {
       return "Bundle not found";
