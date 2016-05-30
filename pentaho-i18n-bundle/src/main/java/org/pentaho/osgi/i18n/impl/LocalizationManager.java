@@ -80,7 +80,7 @@ public class LocalizationManager implements LocalizationService {
 
     Map<String, OSGIResourceBundleFactory> configEntry = new HashMap<String, OSGIResourceBundleFactory>();
     OSGIResourceBundleFactory bundleFactory;
-    Enumeration<URL> urlEnumeration = bundle.findEntries( RESOURCES_ROOT, "*.properties*", false );
+    Enumeration<URL> urlEnumeration = bundle.findEntries( RESOURCES_ROOT, "*.properties*", true );
     while ( urlEnumeration != null && urlEnumeration.hasMoreElements() ) {
       URL url = urlEnumeration.nextElement();
       if ( url != null ) {
