@@ -12,7 +12,7 @@
  * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  * See the GNU Lesser General Public License for more details.
  *
- * Copyright 2014 Pentaho Corporation. All rights reserved.
+ * Copyright 2016 Pentaho Corporation. All rights reserved.
  */
 
 package org.pentaho.osgi.i18n;
@@ -26,7 +26,6 @@ import java.util.regex.Pattern;
  * Created by bryan on 9/5/14.
  */
 public interface LocalizationService {
-  public ResourceBundle getResourceBundle( String key, String name, Locale locale );
-  public List<ResourceBundle> getResourceBundles( Pattern keyRegex, Pattern nameRegex, Locale locale );
+  public ResourceBundle getResourceBundle( String name, Locale locale );
   public List<ResourceBundle> getResourceBundles( Pattern keyRegex, Locale locale );
 }
