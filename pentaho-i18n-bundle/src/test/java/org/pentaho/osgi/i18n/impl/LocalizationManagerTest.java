@@ -205,7 +205,7 @@ public class LocalizationManagerTest {
     for ( String path : propertiesPaths ) {
       propertiesFiles.add( getClass().getClassLoader().getResource( path ) );
     }
-    when( bundle.findEntries( "i18n", "*.properties*", false ) )
+    when( bundle.findEntries( "i18n", "*.properties*", true ) )
       .thenReturn( new Vector<URL>( propertiesFiles ).elements() );
     return bundle;
   }
