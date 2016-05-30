@@ -12,7 +12,7 @@
  * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  * See the GNU Lesser General Public License for more details.
  *
- * Copyright 2014 Pentaho Corporation. All rights reserved.
+ * Copyright 2016 Pentaho Corporation. All rights reserved.
  */
 
 package org.pentaho.osgi.i18n.webservice;
@@ -52,38 +52,49 @@ public class LocalizationWebserviceTest {
 
   @Test
   public void testWebserviceMethodDefault() {
-    String key = "test-key";
-    String name = "test.name";
+    String browserKey = "test.name";
+    String serviceKey = "test.name";
     String localeString = "";
     ResourceBundle resourceBundle = mock( ResourceBundle.class );
     when( localizationService
-      .getResourceBundle( eq( key ), eq( name.replaceAll( "\\.", "/" ) ), eq( Locale.getDefault() ) ) )
+      .getResourceBundle( eq( serviceKey ), eq( Locale.getDefault() ) ) )
       .thenReturn( resourceBundle );
-    assertEquals( resourceBundle, localizationWebservice.getResourceBundleService( key, name, localeString ) );
+    assertEquals( resourceBundle, localizationWebservice.getResourceBundleService( browserKey, localeString ) );
+  }
+
+  @Test
+  public void testWebserviceMethodNullLocale() {
+    String browserKey = "test.name";
+    String serviceKey = "test.name";
+    String localeString = null;
+    ResourceBundle resourceBundle = mock( ResourceBundle.class );
+    when( localizationService
+      .getResourceBundle( eq( serviceKey ), eq( Locale.getDefault() ) ) )
+      .thenReturn( resourceBundle );
+    assertEquals( resourceBundle, localizationWebservice.getResourceBundleService( browserKey, localeString ) );
   }
 
   @Test
   public void testWebserviceMethodOneLocaleParam() {
-    String key = "test-key";
-    String name = "test.name";
+    String browserKey = "test.name";
+    String serviceKey = "test.name";
     String localeString = "en";
     ResourceBundle resourceBundle = mock( ResourceBundle.class );
     when( localizationService
-      .getResourceBundle( eq( key ), eq( name.replaceAll( "\\.", "/" ) ), eq( new Locale( "en" ) ) ) )
+      .getResourceBundle( eq( serviceKey ), eq( new Locale( "en" ) ) ) )
       .thenReturn( resourceBundle );
-    assertEquals( resourceBundle, localizationWebservice.getResourceBundleService( key, name, localeString ) );
+    assertEquals( resourceBundle, localizationWebservice.getResourceBundleService( browserKey, localeString ) );
   }
 
   @Test
   public void testWebserviceMethodTwoLocaleParams() {
-    String key = "test-key";
-    String name = "test.name";
-    String localeString = "en-US";
+    String browserKey = "test.name";
+    String serviceKey = "test.name";
+    String localeString = "en_US";
     ResourceBundle resourceBundle = mock( ResourceBundle.class );
-    when( localizationService
-      .getResourceBundle( eq( key ), eq( name.replaceAll( "\\.", "/" ) ), eq( new Locale( "en", "US" ) ) ) )
+    when( localizationService.getResourceBundle( eq( serviceKey ), eq( new Locale( "en", "US" ) ) ) )
       .thenReturn( resourceBundle );
-    assertEquals( resourceBundle, localizationWebservice.getResourceBundleService( key, name, localeString ) );
+    assertEquals( resourceBundle, localizationWebservice.getResourceBundleService( browserKey, localeString ) );
   }
 
   @Test
@@ -93,8 +104,6 @@ public class LocalizationWebserviceTest {
     final String propKey2 = "prop-2";
     final String propValue2 = "value-2";
     final String keyRegex1 = "testKey1";
-    final String keyRegex2 = "testKey2";
-    final String nameRegex1 = "testName1";
     String localeString = "en_US";
     final ResourceBundle resourceBundle1 = new ListResourceBundle() {
       @Override protected Object[][] getContents() {
@@ -115,34 +124,18 @@ public class LocalizationWebserviceTest {
     resourceBundleRequest.setLocale( localeString );
     ResourceBundleWildcard resourceBundleWildcard1 = new ResourceBundleWildcard();
     resourceBundleWildcard1.setKeyRegex( keyRegex1 );
-    resourceBundleWildcard1.setNameRegex( nameRegex1 );
-    ResourceBundleWildcard resourceBundleWildcard2 = new ResourceBundleWildcard();
-    resourceBundleWildcard2.setKeyRegex( keyRegex2 );
-    resourceBundleRequest.setWildcards( Arrays.asList(resourceBundleWildcard1, resourceBundleWildcard2) );
-    when( localizationService.getResourceBundles( any( Pattern.class ), any( Pattern.class ), any( Locale.class ) ) ).thenAnswer(
-      new Answer<Object>() {
+    resourceBundleRequest.setWildcards( Arrays.asList(resourceBundleWildcard1) );
+    when( localizationService.getResourceBundles( any( Pattern.class ), any( Locale.class ) ) ).thenAnswer(
+              new Answer<Object>() {
         @Override public Object answer( InvocationOnMock invocation ) throws Throwable {
           Pattern keyPattern = (Pattern) invocation.getArguments()[0];
           assertTrue( keyPattern.matcher( keyRegex1 ).matches() );
-          Pattern namePattern = (Pattern) invocation.getArguments()[1];
-          assertTrue( namePattern.matcher( nameRegex1 ).matches() );
-          Locale locale = (Locale) invocation.getArguments()[2];
-          assertEquals( "en_us", locale.getLanguage() );
+          Locale locale = (Locale) invocation.getArguments()[1];
+          assertEquals( "en_US", locale.toString() );
           return Arrays.asList( resourceBundle1 );
-        }
-      } );
-    when( localizationService.getResourceBundles( any( Pattern.class ), any( Locale.class ) ) ).thenAnswer(
-      new Answer<Object>() {
-        @Override public Object answer( InvocationOnMock invocation ) throws Throwable {
-          Pattern keyPattern = (Pattern) invocation.getArguments()[ 0 ];
-          assertTrue( keyPattern.matcher( keyRegex2 ).matches() );
-          Locale locale = (Locale) invocation.getArguments()[ 1 ];
-          assertEquals( "en_us", locale.getLanguage() );
-          return Arrays.asList( resourceBundle2 );
         }
       } );
     ResourceBundle resourceBundle = localizationWebservice.getResourceBundle( resourceBundleRequest );
     assertEquals( propValue1, resourceBundle.getString( propKey1 ) );
-    assertEquals( propValue2, resourceBundle.getString( propKey2 ) );
   }
 }

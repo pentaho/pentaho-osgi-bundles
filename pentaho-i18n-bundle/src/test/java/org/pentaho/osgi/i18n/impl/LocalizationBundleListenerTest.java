@@ -96,6 +96,14 @@ public class LocalizationBundleListenerTest {
     verify( localizationManager ).bundleChanged( bundle );
   }
 
+  @Test
+  public void testInitNotActive() throws Exception {
+    when( bundleContext.getBundles() ).thenReturn( new Bundle[]{bundle} );
+    when( bundle.getState() ).thenReturn( Bundle.STOPPING );
+    localizationBundleListener.init( );
+    verify( localizationManager, never() ).bundleChanged( bundle );
+  }
+
 
   @Test
   public void testBundleStartException() throws IOException, ParseException {
