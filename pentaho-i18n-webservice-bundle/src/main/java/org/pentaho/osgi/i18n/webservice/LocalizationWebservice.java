@@ -12,7 +12,7 @@
  * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  * See the GNU Lesser General Public License for more details.
  *
- * Copyright 2014 Pentaho Corporation. All rights reserved.
+ * Copyright 2016 Pentaho Corporation. All rights reserved.
  */
 
 package org.pentaho.osgi.i18n.webservice;
@@ -95,10 +95,10 @@ public class LocalizationWebservice implements LocalizationService {
         List<Object[]> entries = new ArrayList<Object[]>();
         for ( ResourceBundle resourceBundle : resourceBundles ) {
           for ( String key : Collections.list( resourceBundle.getKeys() ) ) {
-            entries.add( new Object[]{ key, resourceBundle.getString( key ) } );
+            entries.add( new Object[] { key, resourceBundle.getString( key ) } );
           }
         }
-        return entries.toArray( new Object[entries.size()][] );
+        return entries.toArray( new Object[ entries.size() ][] );
       }
     };
   }

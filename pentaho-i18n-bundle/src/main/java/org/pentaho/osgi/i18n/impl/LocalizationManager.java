@@ -12,7 +12,7 @@
  * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  * See the GNU Lesser General Public License for more details.
  *
- * Copyright 2014 Pentaho Corporation. All rights reserved.
+ * Copyright 2016 Pentaho Corporation. All rights reserved.
  */
 
 package org.pentaho.osgi.i18n.impl;
@@ -74,14 +74,14 @@ public class LocalizationManager implements LocalizationService {
 
   public void bundleChanged( Bundle bundle ) throws IOException, ParseException {
     boolean rebuildCache;
-    synchronized( configMap ) {
+    synchronized ( configMap ) {
       rebuildCache = configMap.remove( bundle.getBundleId() ) != null;
     }
 
     Map<String, OSGIResourceBundleFactory> configEntry = new HashMap<String, OSGIResourceBundleFactory>();
     OSGIResourceBundleFactory bundleFactory;
     Enumeration<URL> urlEnumeration = bundle.findEntries( RESOURCES_ROOT, "*.properties*", false );
-    while ( urlEnumeration.hasMoreElements() ) {
+    while ( urlEnumeration != null && urlEnumeration.hasMoreElements() ) {
       URL url = urlEnumeration.nextElement();
       if ( url != null ) {
         String fileName = url.getFile();
@@ -94,11 +94,11 @@ public class LocalizationManager implements LocalizationService {
     }
 
     rebuildCache = true;
-    synchronized( configMap ) {
+    synchronized ( configMap ) {
       configMap.put( bundle.getBundleId(), configEntry );
     }
     if ( rebuildCache ) {
-      synchronized( configMap ) {
+      synchronized ( configMap ) {
         if ( executorService == null ) {
           executorService = Executors.newSingleThreadExecutor( new ThreadFactory() {
             @Override
@@ -170,6 +170,7 @@ public class LocalizationManager implements LocalizationService {
     if ( cache == null ) {
       return null;
     }
+
     try {
       for ( String candidate : getCandidateNames( name, locale ) ) {
         OSGIResourceBundle bundle = cache.get().get( candidate );
