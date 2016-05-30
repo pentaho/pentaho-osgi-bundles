@@ -33,15 +33,15 @@ public class ExampleService {
   @GET
   @Path( "/" )
   public String getTranslation( @QueryParam( "key" ) String key, @QueryParam( "locale" ) String locale,
-                                @Context HttpServletRequest request ) {
+                                @QueryParam( "name" ) String name, @Context HttpServletRequest request ) {
     ResourceBundle resourceBundle = localizationService.getResourceBundle( key, new Locale( locale ) );
 
     if ( resourceBundle == null ) {
       return "Bundle not found";
     }
-    if ( !resourceBundle.containsKey( key ) ) {
+    if ( !resourceBundle.containsKey( name ) ) {
       return "Key not found";
     }
-    return resourceBundle.getString( key );
+    return resourceBundle.getString( name );
   }
 }
