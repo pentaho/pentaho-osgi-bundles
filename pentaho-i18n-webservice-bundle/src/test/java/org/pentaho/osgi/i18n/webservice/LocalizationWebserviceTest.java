@@ -53,7 +53,7 @@ public class LocalizationWebserviceTest {
   @Test
   public void testWebserviceMethodDefault() {
     String browserKey = "test.name";
-    String serviceKey = "test/name";
+    String serviceKey = "test.name";
     String localeString = "";
     ResourceBundle resourceBundle = mock( ResourceBundle.class );
     when( localizationService
@@ -65,7 +65,7 @@ public class LocalizationWebserviceTest {
   @Test
   public void testWebserviceMethodOneLocaleParam() {
     String browserKey = "test.name";
-    String serviceKey = "test/name";
+    String serviceKey = "test.name";
     String localeString = "en";
     ResourceBundle resourceBundle = mock( ResourceBundle.class );
     when( localizationService
@@ -77,8 +77,8 @@ public class LocalizationWebserviceTest {
   @Test
   public void testWebserviceMethodTwoLocaleParams() {
     String browserKey = "test.name";
-    String serviceKey = "test/name";
-    String localeString = "en-US";
+    String serviceKey = "test.name";
+    String localeString = "en_US";
     ResourceBundle resourceBundle = mock( ResourceBundle.class );
     when( localizationService.getResourceBundle( eq( serviceKey ), eq( new Locale( "en", "US" ) ) ) )
       .thenReturn( resourceBundle );
@@ -119,7 +119,7 @@ public class LocalizationWebserviceTest {
           Pattern keyPattern = (Pattern) invocation.getArguments()[0];
           assertTrue( keyPattern.matcher( keyRegex1 ).matches() );
           Locale locale = (Locale) invocation.getArguments()[1];
-          assertEquals( "en_us", locale.getLanguage() );
+          assertEquals( "en_US", locale.toString() );
           return Arrays.asList( resourceBundle1 );
         }
       } );

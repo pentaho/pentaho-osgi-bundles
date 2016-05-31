@@ -60,7 +60,7 @@ public class LocalizationWebservice implements LocalizationService {
   @Path( "/{key}/{language}" )
   public ResourceBundle getResourceBundleService( @PathParam( "key" ) String key,
                                                   @PathParam( "language" ) String localeString ) {
-    return getResourceBundle( key.replaceAll( "\\.", "/" ), getLocale( localeString ) );
+    return getResourceBundle( key, getLocale( localeString ) );
   }
 
   private static Locale getLocale( String localeString ) {
