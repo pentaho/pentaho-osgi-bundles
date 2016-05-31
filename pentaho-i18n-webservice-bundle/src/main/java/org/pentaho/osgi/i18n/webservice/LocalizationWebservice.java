@@ -60,7 +60,7 @@ public class LocalizationWebservice implements LocalizationService {
   @Path( "/{key}/{language}" )
   public ResourceBundle getResourceBundleService( @PathParam( "key" ) String key,
                                                   @PathParam( "language" ) String localeString ) {
-    return getResourceBundle( key, getLocale( localeString ) );
+    return getResourceBundle( key.replaceAll( "\\.", "/" ), getLocale( localeString ) );
   }
 
   private static Locale getLocale( String localeString ) {
@@ -68,7 +68,7 @@ public class LocalizationWebservice implements LocalizationService {
     if ( localeString == null || localeString.trim().length() == 0 ) {
       splitLocale = new String[] { };
     } else {
-      splitLocale = localeString.split( "-" );
+      splitLocale = localeString.split( "_" );
     }
     Locale locale;
     if ( splitLocale.length == 1 ) {
