@@ -24,6 +24,7 @@ import org.pentaho.osgi.i18n.LocalizationService;
 import org.pentaho.osgi.i18n.resource.OSGIResourceBundle;
 import org.pentaho.osgi.i18n.resource.OSGIResourceBundleCacheCallable;
 import org.pentaho.osgi.i18n.resource.OSGIResourceBundleFactory;
+import org.pentaho.osgi.i18n.settings.OSGIResourceNamingConvention;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,6 +47,9 @@ import java.util.concurrent.ThreadFactory;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static org.pentaho.osgi.i18n.settings.OSGIResourceNamingConvention.RESOURCES_DEFAULT_EXTENSION;
+import static org.pentaho.osgi.i18n.settings.OSGIResourceNamingConvention.RESOURCES_ROOT_FOLDER;
+
 /**
  * Created by bryan on 9/4/14.
  */
@@ -56,7 +60,6 @@ public class LocalizationManager implements LocalizationService {
   private final JSONParser parser = new JSONParser();
   private ExecutorService executorService;
   private volatile Future<Map<String, OSGIResourceBundle>> cache;
-  public static final String RESOURCES_ROOT = "i18n";
 
   // For unit tests only
   static Logger getLog() {
@@ -80,7 +83,8 @@ public class LocalizationManager implements LocalizationService {
 
     Map<String, OSGIResourceBundleFactory> configEntry = new HashMap<String, OSGIResourceBundleFactory>();
     OSGIResourceBundleFactory bundleFactory;
-    Enumeration<URL> urlEnumeration = bundle.findEntries( RESOURCES_ROOT, "*.properties*", true );
+    Enumeration<URL> urlEnumeration =
+      bundle.findEntries( RESOURCES_ROOT_FOLDER, "*" + RESOURCES_DEFAULT_EXTENSION + "*", true );
     while ( urlEnumeration != null && urlEnumeration.hasMoreElements() ) {
       URL url = urlEnumeration.nextElement();
       if ( url != null ) {
@@ -126,7 +130,7 @@ public class LocalizationManager implements LocalizationService {
     if ( fileName.indexOf( "/" ) == 0 ) {
       fileName = fileName.substring( 1 );
     }
-    Matcher matcher = OSGIResourceBundleCacheCallable.getDefault( fileName );
+    Matcher matcher = OSGIResourceNamingConvention.getResourceNameMatcher( fileName );
     String groop = matcher.group( matcher.groupCount() );
     if ( groop != null ) {
       fileName = fileName.replace( groop, "" );
@@ -141,8 +145,8 @@ public class LocalizationManager implements LocalizationService {
    * @return property file name without extension
    */
   private String getPropertyName( String fileName ) {
-    int index = fileName.lastIndexOf( RESOURCES_ROOT ) + RESOURCES_ROOT.length();
-    return fileName.substring( index + 1, fileName.lastIndexOf( ".properties" ) );
+    int index = fileName.lastIndexOf( RESOURCES_ROOT_FOLDER ) + RESOURCES_ROOT_FOLDER.length();
+    return fileName.substring( index + 1, fileName.lastIndexOf( RESOURCES_DEFAULT_EXTENSION ) );
   }
 
   /**
@@ -153,7 +157,7 @@ public class LocalizationManager implements LocalizationService {
    */
   private int getPropertyPriority( String propertyName ) {
     int priority = 0;
-    Matcher matcher = OSGIResourceBundleCacheCallable.getDefault( propertyName );
+    Matcher matcher = OSGIResourceNamingConvention.getResourceNameMatcher( propertyName );
     String groop = matcher.group( matcher.groupCount() );
     if ( groop != null ) {
       try {

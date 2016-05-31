@@ -22,32 +22,23 @@
 
 package org.pentaho.osgi.i18n.resource;
 
+import org.pentaho.osgi.i18n.settings.OSGIResourceNamingConvention;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+
+import static org.pentaho.osgi.i18n.settings.OSGIResourceNamingConvention.RESOURCES_DEFAULT_EXTENSION;
 
 /**
  * Created by bryan on 9/5/14.
  */
 public class OSGIResourceBundleCacheCallable implements Callable<Map<String, OSGIResourceBundle>> {
-  public static final Pattern DEFAULT_PATTERN = Pattern.compile( "(.*/[^_]+)(.*).properties(\\.\\d+)?" );
   private final Map<Long, Map<String, OSGIResourceBundleFactory>> configMap;
 
   public OSGIResourceBundleCacheCallable( Map<Long, Map<String, OSGIResourceBundleFactory>> configMap ) {
     this.configMap = configMap;
-  }
-
-  public static Matcher getDefault( String path ) {
-    Matcher matcher = DEFAULT_PATTERN.matcher( path );
-    boolean matches = matcher.matches();
-    if ( matches ) {
-      return matcher;
-    } else {
-      throw new IllegalArgumentException(
-        "Path must be of the form prefix/filename[_internationalization].properties[.priority]" );
-    }
   }
 
   @Override public Map<String, OSGIResourceBundle> call() throws Exception {
@@ -71,9 +62,9 @@ public class OSGIResourceBundleCacheCallable implements Callable<Map<String, OSG
       OSGIResourceBundle resultKeyBundles;
       OSGIResourceBundleFactory nameToFactoryEntry = factoryMapEntry.getValue();
       String name = nameToFactoryEntry.getPropertyFilePath();
-      Matcher defaultMatcher = getDefault( name );
+      Matcher defaultMatcher = OSGIResourceNamingConvention.getResourceNameMatcher( name );
       String defaultName = defaultMatcher.group( 1 );
-      OSGIResourceBundleFactory defaultFactory = factoryMap.get( defaultName + ".properties" );
+      OSGIResourceBundleFactory defaultFactory = factoryMap.get( defaultName + RESOURCES_DEFAULT_EXTENSION );
       OSGIResourceBundle parentBundle = null;
       if ( defaultFactory != null && defaultFactory != nameToFactoryEntry ) {
         parentBundle = defaultFactory.getBundle( null );
