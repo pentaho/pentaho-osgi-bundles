@@ -87,8 +87,7 @@ public class LocalizationWebservice implements LocalizationService {
     final List<ResourceBundle> resourceBundles = new ArrayList<ResourceBundle>(  );
     for ( ResourceBundleWildcard resourceBundleWildcard : resourceBundleRequest.getWildcards() ) {
       Pattern keyPattern = Pattern.compile( resourceBundleWildcard.getKeyRegex() );
-        resourceBundles.addAll( getResourceBundles( keyPattern, getLocale( resourceBundleRequest.getLocale() ) ) );
-
+      resourceBundles.addAll( getResourceBundles( keyPattern, getLocale( resourceBundleRequest.getLocale() ) ) );
     }
     return new ListResourceBundle() {
       @Override protected Object[][] getContents() {

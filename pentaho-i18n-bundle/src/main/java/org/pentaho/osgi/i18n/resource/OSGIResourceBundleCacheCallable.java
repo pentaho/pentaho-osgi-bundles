@@ -29,8 +29,6 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.regex.Matcher;
 
-import static org.pentaho.osgi.i18n.settings.OSGIResourceNamingConvention.RESOURCES_DEFAULT_EXTENSION;
-
 /**
  * Created by bryan on 9/5/14.
  */
@@ -64,7 +62,8 @@ public class OSGIResourceBundleCacheCallable implements Callable<Map<String, OSG
       String name = nameToFactoryEntry.getPropertyFilePath();
       Matcher defaultMatcher = OSGIResourceNamingConvention.getResourceNameMatcher( name );
       String defaultName = defaultMatcher.group( 1 );
-      OSGIResourceBundleFactory defaultFactory = factoryMap.get( defaultName + RESOURCES_DEFAULT_EXTENSION );
+      OSGIResourceBundleFactory defaultFactory =
+        factoryMap.get( defaultName + OSGIResourceNamingConvention.RESOURCES_DEFAULT_EXTENSION );
       OSGIResourceBundle parentBundle = null;
       if ( defaultFactory != null && defaultFactory != nameToFactoryEntry ) {
         parentBundle = defaultFactory.getBundle( null );
