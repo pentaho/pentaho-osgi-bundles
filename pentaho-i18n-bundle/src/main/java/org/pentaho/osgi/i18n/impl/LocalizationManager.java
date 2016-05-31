@@ -176,7 +176,7 @@ public class LocalizationManager implements LocalizationService {
     }
 
     try {
-      for ( String candidate : getCandidateNames( name, locale ) ) {
+      for ( String candidate : getCandidateNames( name.replaceAll( "\\.", "/" ), locale ) ) {
         OSGIResourceBundle bundle = cache.get().get( candidate );
         if ( bundle != null ) {
           return bundle;
