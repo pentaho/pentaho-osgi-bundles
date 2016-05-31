@@ -160,7 +160,7 @@ public class WebjarsURLConnectionTest {
 
     String bpFile = IOUtils.toString( zipInputStream.getInputStream( entry ), "UTF-8" );
     assertTrue( "blueprint.xml does not include path for " + expectedPath,
-            bpFile.contains( "<property name=\"path\" value=\"/META-INF/resources/webjars/" + expectedPath + "\" />" ) );
+        bpFile.contains( "<property name=\"path\" value=\"/META-INF/resources/webjars/" + expectedPath + "\"/>" ) );
   }
 
   private void verifyRequireJson( ZipFile zipInputStream, String artifactId, String version ) throws IOException, ParseException {
