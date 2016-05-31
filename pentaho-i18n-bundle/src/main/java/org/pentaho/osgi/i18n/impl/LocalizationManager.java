@@ -160,12 +160,7 @@ public class LocalizationManager implements LocalizationService {
     Matcher matcher = OSGIResourceNamingConvention.getResourceNameMatcher( propertyName );
     String groop = matcher.group( matcher.groupCount() );
     if ( groop != null ) {
-      try {
-        priority = Integer.parseInt( groop.substring( 1 ) );
-      } catch ( NumberFormatException ex ) {
-        //no priority found: do nothing
-        log.error( ex.getMessage(), ex );
-      }
+      priority = Integer.parseInt( groop.substring( 1 ) );
     }
     return priority;
   }
