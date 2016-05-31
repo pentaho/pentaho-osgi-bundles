@@ -15,19 +15,29 @@
  * Copyright 2016 Pentaho Corporation. All rights reserved.
  */
 
-package org.pentaho.osgi.i18n.webservice;
+package org.pentaho.osgi.i18n.settings;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
- * Created by bryan on 12/8/14.
+ * Created by Viktoryia_Klimenka on 5/30/2016.
  */
-public class ResourceBundleWildcard {
-  private String keyRegex;
+public class OSGIResourceNamingConvention {
+  public static final String RESOURCES_ROOT_FOLDER = "i18n";
+  public static final String RESOURCES_DEFAULT_EXTENSION = ".properties";
 
-  public String getKeyRegex() {
-    return keyRegex;
-  }
+  public static final Pattern RESOURCE_NAME_PATTERN =
+    Pattern.compile( "(.*/[^_]+)(.*).properties(\\.\\d+)?" );
 
-  public void setKeyRegex( String keyRegex ) {
-    this.keyRegex = keyRegex;
+  public static Matcher getResourceNameMatcher( String path ) {
+    Matcher matcher = RESOURCE_NAME_PATTERN.matcher( path );
+    boolean matches = matcher.matches();
+    if ( matches ) {
+      return matcher;
+    } else {
+      throw new IllegalArgumentException(
+        "Path must be of the form prefix/filename[_internationalization].properties[.priority]" );
+    }
   }
 }
