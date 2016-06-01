@@ -2,7 +2,7 @@
  *
  * Pentaho Data Integration
  *
- * Copyright (C) 2002-2014 by Pentaho : http://www.pentaho.com
+ * Copyright (C) 2002-2016 by Pentaho : http://www.pentaho.com
  *
  *******************************************************************************
  *
@@ -22,74 +22,54 @@
 
 package org.pentaho.osgi.i18n.resource;
 
+import org.pentaho.osgi.i18n.settings.OSGIResourceNamingConvention;
+
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Created by bryan on 9/5/14.
  */
-public class OSGIResourceBundleCacheCallable implements Callable<Map<String, Map<String, OSGIResourceBundle>>> {
-  private static final Pattern DEFAULT_PATTERN = Pattern.compile( "(.*/[^_]+)(.*).properties" );
-  private final Map<Long, Map<String, List<OSGIResourceBundleFactory>>> configMap;
+public class OSGIResourceBundleCacheCallable implements Callable<Map<String, OSGIResourceBundle>> {
+  private final Map<Long, Map<String, OSGIResourceBundleFactory>> configMap;
 
-  public OSGIResourceBundleCacheCallable( Map<Long, Map<String, List<OSGIResourceBundleFactory>>> configMap ) {
+  public OSGIResourceBundleCacheCallable( Map<Long, Map<String, OSGIResourceBundleFactory>> configMap ) {
     this.configMap = configMap;
   }
 
-  private static Matcher getDefault( String path ) {
-    Matcher matcher = DEFAULT_PATTERN.matcher( path );
-    boolean matches = matcher.matches();
-    if ( matches ) {
-      return matcher;
-    } else {
-      throw new IllegalArgumentException(
-        "Path must be of the form prefix/filename[_internationalization].properties" );
-    }
-  }
-
-  @Override public Map<String, Map<String, OSGIResourceBundle>> call() throws Exception {
-    Map<String, Map<String, OSGIResourceBundleFactory>> factoryMap =
-      new HashMap<String, Map<String, OSGIResourceBundleFactory>>();
+  @Override public Map<String, OSGIResourceBundle> call() throws Exception {
+    Map<String, OSGIResourceBundleFactory> factoryMap =
+      new HashMap<String, OSGIResourceBundleFactory>();
     // Select only bundles with highest priority
-    for ( Map<String, List<OSGIResourceBundleFactory>> bundleMap : configMap.values() ) {
-      for ( Map.Entry<String, List<OSGIResourceBundleFactory>> entry : bundleMap.entrySet() ) {
-        String key = entry.getKey();
-        for ( OSGIResourceBundleFactory bundleFactory : entry.getValue() ) {
-          Map<String, OSGIResourceBundleFactory> pathToFactoryMap = factoryMap.get( key );
-          if ( pathToFactoryMap == null ) {
-            pathToFactoryMap = new HashMap<String, OSGIResourceBundleFactory>();
-            factoryMap.put( key, pathToFactoryMap );
-          }
-          OSGIResourceBundleFactory existingFactory = pathToFactoryMap.get( bundleFactory.getPropertyFilePath() );
-          if ( existingFactory == null || existingFactory.getPriority() < bundleFactory.getPriority() ) {
-            pathToFactoryMap.put( bundleFactory.getPropertyFilePath(), bundleFactory );
-          }
+    for ( Map<String, OSGIResourceBundleFactory> bundleMap : configMap.values() ) {
+      for ( Map.Entry<String, OSGIResourceBundleFactory> entry : bundleMap.entrySet() ) {
+        String key = entry.getValue().getPropertyFilePath();
+        OSGIResourceBundleFactory pathToFactoryMap = factoryMap.get( key );
+        if ( pathToFactoryMap == null || pathToFactoryMap.getPriority() < entry.getValue().getPriority() ) {
+          pathToFactoryMap = entry.getValue();
         }
+        factoryMap.put( key, pathToFactoryMap );
       }
     }
 
     // Create bundles from factories
-    Map<String, Map<String, OSGIResourceBundle>> result = new HashMap<String, Map<String, OSGIResourceBundle>>();
-    for ( Map.Entry<String, Map<String, OSGIResourceBundleFactory>> factoryMapEntry : factoryMap.entrySet() ) {
-      String key = factoryMapEntry.getKey();
-      Map<String, OSGIResourceBundle> resultKeyBundles = new HashMap<String, OSGIResourceBundle>();
-      result.put( key, resultKeyBundles );
-      for ( Map.Entry<String, OSGIResourceBundleFactory> nameToFactoryEntry : factoryMapEntry.getValue().entrySet() ) {
-        String name = nameToFactoryEntry.getKey();
-        Matcher defaultMatcher = getDefault( name );
-        String defaultName = defaultMatcher.group( 1 );
-        name = defaultName + defaultMatcher.group( 2 );
-        OSGIResourceBundleFactory defaultFactory = factoryMapEntry.getValue().get( defaultName + ".properties" );
-        OSGIResourceBundle parentBundle = null;
-        if ( defaultFactory != null && defaultFactory != nameToFactoryEntry.getValue() ) {
-          parentBundle = defaultFactory.getBundle( null );
-        }
-        resultKeyBundles.put( name, nameToFactoryEntry.getValue().getBundle( parentBundle ) );
+    Map<String, OSGIResourceBundle> result = new HashMap<String, OSGIResourceBundle>();
+    for ( Map.Entry<String, OSGIResourceBundleFactory> factoryMapEntry : factoryMap.entrySet() ) {
+      OSGIResourceBundle resultKeyBundles;
+      OSGIResourceBundleFactory nameToFactoryEntry = factoryMapEntry.getValue();
+      String name = nameToFactoryEntry.getPropertyFilePath();
+      Matcher defaultMatcher = OSGIResourceNamingConvention.getResourceNameMatcher( name );
+      String defaultName = defaultMatcher.group( 1 );
+      OSGIResourceBundleFactory defaultFactory =
+        factoryMap.get( defaultName + OSGIResourceNamingConvention.RESOURCES_DEFAULT_EXTENSION );
+      OSGIResourceBundle parentBundle = null;
+      if ( defaultFactory != null && defaultFactory != nameToFactoryEntry ) {
+        parentBundle = defaultFactory.getBundle( null );
       }
+      resultKeyBundles = nameToFactoryEntry.getBundle( parentBundle );
+      result.put( resultKeyBundles.getDefaultName(), resultKeyBundles );
     }
     return result;
   }
