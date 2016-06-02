@@ -68,110 +68,84 @@ public class LocalizationManagerTest {
   @Test
   public void testLocalizationManager() throws IOException, ParseException {
     localizationManager.setExecutorService( executorService );
-    assertBundleNullCacheNull( "testPlugin", "org/pentaho/osgi/messages", "de", "DE" );
+    assertBundleNullCacheNull( "messages", "de", "DE" );
 
-    assertBundleNullCacheNullRegexp( Pattern.compile( "testPlugin" ), Pattern.compile( "org/pentaho/osgi/messages" ),
+    assertBundleNullCacheNullRegexp( Pattern.compile( "messages" ),
       "de", "DE" );
 
+    localizationManager.bundleChanged(makeMockBundleNull( 1L) );
+    assertBundleNullCacheNull( "messages", "de", "DE" );
+    assertBundleNullCacheNull( null, "de", "DE" );
+    assertBundleNullCacheNull( "messages", null );
+
     localizationManager.setExecutorService( null );
-    assertBundleNullCacheNull( null, "org/pentaho/osgi/messages", "de", "DE" );
-    assertBundleNullCacheNull( "testPlugin", null, "de", "DE" );
-    assertBundleNullCacheNull( "testPlugin", "org/pentaho/osgi/messages", null );
-    localizationManager.bundleChanged(
-      makeMockBundle( 1L, "org/pentaho/osgi/bundle1/LocalizationManagerTest.testLocalizationManager.i18n.json",
-        "org/pentaho/osgi/bundle1/messages.properties",
-        "org/pentaho/osgi/bundle1/messages_fr.properties", "org/pentaho/osgi/bundle1/messages_de_DE.properties" ) );
-    assertBundleKeyEquals( "defaultKey", "testPlugin", "org/pentaho/osgi/messages", "defaultKey", "fakeLocale" );
-    assertBundleKeyEquals( "key", "testPlugin", "org/pentaho/osgi/messages", "key", "fakeLocale" );
-    assertBundleKeyEquals( "key_fr", "testPlugin", "org/pentaho/osgi/messages", "key", "fr" );
-    assertBundleKeyEquals( "defaultKey", "testPlugin", "org/pentaho/osgi/messages", "defaultKey", "fr" );
-    assertBundleKeyEquals( "key_fr", "testPlugin", "org/pentaho/osgi/messages", "key", "fr", "FR" );
-    assertBundleKeyEquals( "defaultKey", "testPlugin", "org/pentaho/osgi/messages", "defaultKey", "fr", "FR" );
-    assertBundleKeyEquals( "key", "testPlugin", "org/pentaho/osgi/messages", "key", "de" );
-    assertBundleKeyEquals( "defaultKey", "testPlugin", "org/pentaho/osgi/messages", "defaultKey", "de" );
-    assertBundleKeyEquals( "key_de_DE", "testPlugin", "org/pentaho/osgi/messages", "key", "de", "DE" );
-    assertBundleKeyEquals( "defaultKey", "testPlugin", "org/pentaho/osgi/messages", "defaultKey", "de", "DE" );
+    assertBundleNullCacheNull( "messages", "de", "DE" );
+    assertBundleNullCacheNull( null, "de", "DE" );
+    assertBundleNullCacheNull( "messages", null );
+    localizationManager.bundleChanged(makeMockBundle( 1L, "i18n/bundle/messages.properties",
+        "i18n/bundle/messages_fr.properties", "i18n/bundle/messages_de_DE.properties" ) );
+    assertBundleKeyEquals( "defaultKey", "bundle/messages", "defaultKey", "fakeLocale" );
+    assertBundleKeyEquals( "key", "bundle/messages", "key", "fakeLocale" );
+    assertBundleKeyEquals( "key_fr", "bundle/messages", "key", "fr" );
+    assertBundleKeyEquals( "defaultKey", "bundle/messages", "defaultKey", "fr" );
+    assertBundleKeyEquals( "key_fr", "bundle/messages", "key", "fr", "FR" );
+    assertBundleKeyEquals( "defaultKey", "bundle/messages", "defaultKey", "fr", "FR" );
+    assertBundleKeyEquals( "key", "bundle/messages", "key", "de" );
+    assertBundleKeyEquals( "defaultKey", "bundle/messages", "defaultKey", "de" );
+    assertBundleKeyEquals( "key_de_DE", "bundle/messages", "key", "de", "DE" );
+    assertBundleKeyEquals( "defaultKey", "bundle/messages", "defaultKey", "de", "DE" );
 
-    assertBundlePatternKeyNameEquals( "defaultKey", Pattern.compile( "testPlugin" ),
-      Pattern.compile( "org/pentaho/osgi/messages" ), "defaultKey", "fakeLocale" );
-    assertBundlePatternKeyNameEquals( "key", Pattern.compile( "testPlugin" ),
-      Pattern.compile( "org/pentaho/osgi/messages" ), "key", "fakeLocale" );
-    assertBundlePatternKeyNameEquals( "key_fr", Pattern.compile( "testPlugin" ),
-      Pattern.compile( "org/pentaho/osgi/messages" ), "key", "fr" );
-    assertBundlePatternKeyNameEquals( "defaultKey", Pattern.compile( "testPlugin" ),
-      Pattern.compile( "org/pentaho/osgi/messages" ), "defaultKey", "fr" );
-    assertBundlePatternKeyNameEquals( "key_fr", Pattern.compile( "testPlugin" ),
-      Pattern.compile( "org/pentaho/osgi/messages" ), "key", "fr", "FR" );
-    assertBundlePatternKeyNameEquals( "defaultKey", Pattern.compile( "testPlugin" ),
-      Pattern.compile( "org/pentaho/osgi/messages" ), "defaultKey", "fr", "FR" );
-    assertBundlePatternKeyNameEquals( "key", Pattern.compile( "testPlugin" ),
-      Pattern.compile( "org/pentaho/osgi/messages" ), "key", "de" );
-    assertBundlePatternKeyNameEquals( "defaultKey", Pattern.compile( "testPlugin" ),
-      Pattern.compile( "org/pentaho/osgi/messages" ), "defaultKey", "de" );
-    assertBundlePatternKeyNameEquals( "key_de_DE", Pattern.compile( "testPlugin" ),
-      Pattern.compile( "org/pentaho/osgi/messages" ), "key", "de", "DE" );
-    assertBundlePatternKeyNameEquals( "defaultKey", Pattern.compile( "testPlugin" ),
-      Pattern.compile( "org/pentaho/osgi/messages" ), "defaultKey", "de", "DE" );
+    assertBundlePatternKeyEquals( "defaultKey", Pattern.compile( ".*messages" ), "defaultKey", "fakeLocale" );
+    assertBundlePatternKeyEquals( "key", Pattern.compile( ".*messages" ), "key", "fakeLocale" );
+    assertBundlePatternKeyEquals( "key_fr", Pattern.compile( ".*messages" ), "key", "fr" );
+    assertBundlePatternKeyEquals( "defaultKey", Pattern.compile( ".*messages" ), "defaultKey", "fr" );
+    assertBundlePatternKeyEquals( "key_fr", Pattern.compile( ".*messages" ), "key", "fr", "FR" );
+    assertBundlePatternKeyEquals( "defaultKey", Pattern.compile( ".*messages" ), "defaultKey", "fr", "FR" );
+    assertBundlePatternKeyEquals( "key", Pattern.compile( ".*messages" ), "key", "de" );
+    assertBundlePatternKeyEquals( "defaultKey", Pattern.compile( ".*messages" ), "defaultKey", "de" );
+    assertBundlePatternKeyEquals( "key_de_DE", Pattern.compile( ".*messages" ), "key", "de", "DE" );
+    assertBundlePatternKeyEquals( "defaultKey", Pattern.compile( ".*messages" ), "defaultKey", "de", "DE" );
 
-    localizationManager.bundleChanged(
-      makeMockBundle( 2L, "org/pentaho/osgi/bundle2/LocalizationManagerTest.testLocalizationManager.i18n.json",
-        "org/pentaho/osgi/bundle2/messages_fr.properties" ) );
-    assertBundleKeyEquals( "key_fr_bundle2", "testPlugin", "org/pentaho/osgi/messages", "key", "fr" );
-    assertBundleKeyEquals( "defaultKey", "testPlugin", "org/pentaho/osgi/messages", "defaultKey", "fr" );
+    localizationManager.bundleChanged( makeMockBundle( 2L, "i18n/bundle/messages_fr.properties.2" ) );
+    assertBundleKeyEquals( "key_fr_bundle2", "bundle/messages", "key", "fr" );
+    assertBundleKeyEquals( "defaultKey", "bundle/messages", "defaultKey", "fr" );
 
-    assertBundlePatternKeyNameEquals( "key_fr_bundle2", Pattern.compile( "testPlugin" ),
-      Pattern.compile( "org/pentaho/osgi/messages" ), "key", "fr" );
-    assertBundlePatternKeyNameEquals( "defaultKey", Pattern.compile( "testPlugin" ),
-      Pattern.compile( "org/pentaho/osgi/messages" ), "defaultKey", "fr" );
+    assertBundlePatternKeyEquals( "key_fr_bundle2", Pattern.compile( ".*messages" ), "key", "fr" );
+    assertBundlePatternKeyEquals( "defaultKey", Pattern.compile( ".*messages" ), "defaultKey", "fr" );
 
-    localizationManager.bundleChanged(
-      makeMockBundle( 3L, "org/pentaho/osgi/bundle3/LocalizationManagerTest.testLocalizationManager.i18n.json",
-        "org/pentaho/osgi/bundle3/messages_fr.properties" ) );
-    assertBundleKeyEquals( "key_fr_bundle3", "testPlugin", "org/pentaho/osgi/messages", "key", "fr" );
-    assertBundleKeyEquals( "defaultKey", "testPlugin", "org/pentaho/osgi/messages", "defaultKey", "fr" );
+    localizationManager.bundleChanged( makeMockBundle( 3L, "i18n/bundle/messages_fr.properties.3" ) );
+    assertBundleKeyEquals( "key_fr_bundle3", "bundle/messages", "key", "fr" );
+    assertBundleKeyEquals( "defaultKey", "bundle/messages", "defaultKey", "fr" );
 
-    assertBundlePatternKeyNameEquals( "key_fr_bundle3", Pattern.compile( "testPlugin" ),
-      Pattern.compile( "org/pentaho/osgi/messages" ), "key", "fr" );
-    assertBundlePatternKeyNameEquals( "defaultKey", Pattern.compile( "testPlugin" ),
-      Pattern.compile( "org/pentaho/osgi/messages" ), "defaultKey", "fr" );
+    assertBundlePatternKeyEquals( "key_fr_bundle3", Pattern.compile( ".*messages" ), "key", "fr" );
+    assertBundlePatternKeyEquals( "defaultKey", Pattern.compile( ".*messages" ), "defaultKey", "fr" );
 
-    localizationManager.bundleChanged(
-      makeMockBundle( 4L, "fakepath" ) );
-    assertBundleKeyEquals( "defaultKey", "testPlugin", "org/pentaho/osgi/messages", "defaultKey", "fakeLocale" );
-    assertBundleKeyEquals( "key", "testPlugin", "org/pentaho/osgi/messages", "key", "fakeLocale" );
-    assertBundleKeyEquals( "key_fr_bundle3", "testPlugin", "org/pentaho/osgi/messages", "key", "fr" );
-    assertBundleKeyEquals( "defaultKey", "testPlugin", "org/pentaho/osgi/messages", "defaultKey", "fr" );
-    assertBundleKeyEquals( "key_fr_bundle3", "testPlugin", "org/pentaho/osgi/messages", "key", "fr", "FR" );
-    assertBundleKeyEquals( "defaultKey", "testPlugin", "org/pentaho/osgi/messages", "defaultKey", "fr", "FR" );
-    assertBundleKeyEquals( "key", "testPlugin", "org/pentaho/osgi/messages", "key", "de" );
-    assertBundleKeyEquals( "defaultKey", "testPlugin", "org/pentaho/osgi/messages", "defaultKey", "de" );
-    assertBundleKeyEquals( "key_de_DE", "testPlugin", "org/pentaho/osgi/messages", "key", "de", "DE" );
-    assertBundleKeyEquals( "defaultKey", "testPlugin", "org/pentaho/osgi/messages", "defaultKey", "de", "DE" );
+    localizationManager.bundleChanged( makeMockBundle( 4L, "fakepath" ) );
+    assertBundleKeyEquals( "defaultKey", "bundle/messages", "defaultKey", "fakeLocale" );
+    assertBundleKeyEquals( "key", "bundle/messages", "key", "fakeLocale" );
+    assertBundleKeyEquals( "key_fr_bundle3", "bundle/messages", "key", "fr" );
+    assertBundleKeyEquals( "defaultKey", "bundle/messages", "defaultKey", "fr" );
+    assertBundleKeyEquals( "key_fr_bundle3", "bundle/messages", "key", "fr", "FR" );
+    assertBundleKeyEquals( "defaultKey", "bundle/messages", "defaultKey", "fr", "FR" );
+    assertBundleKeyEquals( "key", "bundle/messages", "key", "de" );
+    assertBundleKeyEquals( "defaultKey", "bundle/messages", "defaultKey", "de" );
+    assertBundleKeyEquals( "key_de_DE", "bundle/messages", "key", "de", "DE" );
+    assertBundleKeyEquals( "defaultKey", "bundle/messages", "defaultKey", "de", "DE" );
 
-    assertBundlePatternKeyNameEquals( "defaultKey", Pattern.compile( "testPlugin" ),
-      Pattern.compile( "org/pentaho/osgi/messages" ), "defaultKey", "fakeLocale" );
-    assertBundlePatternKeyNameEquals( "key", Pattern.compile( "testPlugin" ),
-      Pattern.compile( "org/pentaho/osgi/messages" ), "key", "fakeLocale" );
-    assertBundlePatternKeyNameEquals( "key_fr_bundle3", Pattern.compile( "testPlugin" ),
-      Pattern.compile( "org/pentaho/osgi/messages" ), "key", "fr" );
-    assertBundlePatternKeyNameEquals( "defaultKey", Pattern.compile( "testPlugin" ),
-      Pattern.compile( "org/pentaho/osgi/messages" ), "defaultKey", "fr" );
-    assertBundlePatternKeyNameEquals( "key_fr_bundle3", Pattern.compile( "testPlugin" ),
-      Pattern.compile( "org/pentaho/osgi/messages" ), "key", "fr", "FR" );
-    assertBundlePatternKeyNameEquals( "defaultKey", Pattern.compile( "testPlugin" ),
-      Pattern.compile( "org/pentaho/osgi/messages" ), "defaultKey", "fr", "FR" );
-    assertBundlePatternKeyNameEquals( "key", Pattern.compile( "testPlugin" ),
-      Pattern.compile( "org/pentaho/osgi/messages" ), "key", "de" );
-    assertBundlePatternKeyNameEquals( "defaultKey", Pattern.compile( "testPlugin" ),
-      Pattern.compile( "org/pentaho/osgi/messages" ), "defaultKey", "de" );
-    assertBundlePatternKeyNameEquals( "key_de_DE", Pattern.compile( "testPlugin" ),
-      Pattern.compile( "org/pentaho/osgi/messages" ), "key", "de", "DE" );
-    assertBundlePatternKeyNameEquals( "defaultKey", Pattern.compile( "testPlugin" ),
-      Pattern.compile( "org/pentaho/osgi/messages" ), "defaultKey", "de", "DE" );
-    assertBundlePatternKeyEquals( "defaultKey", Pattern.compile( "testPlugin" ), "defaultKey", "de", "DE" );
+    assertBundlePatternKeyEquals( "defaultKey", Pattern.compile( ".*messages" ), "defaultKey", "fakeLocale" );
+    assertBundlePatternKeyEquals( "key", Pattern.compile( ".*messages" ), "key", "fakeLocale" );
+    assertBundlePatternKeyEquals( "key_fr_bundle3", Pattern.compile( ".*messages" ), "key", "fr" );
+    assertBundlePatternKeyEquals( "defaultKey", Pattern.compile( ".*messages" ), "defaultKey", "fr" );
+    assertBundlePatternKeyEquals( "key_fr_bundle3", Pattern.compile( ".*messages" ), "key", "fr", "FR" );
+    assertBundlePatternKeyEquals( "defaultKey", Pattern.compile( ".*messages" ), "defaultKey", "fr", "FR" );
+    assertBundlePatternKeyEquals( "key", Pattern.compile( ".*messages" ), "key", "de" );
+    assertBundlePatternKeyEquals( "defaultKey", Pattern.compile( ".*messages" ), "defaultKey", "de" );
+    assertBundlePatternKeyEquals( "key_de_DE", Pattern.compile( ".*messages" ), "key", "de", "DE" );
+    assertBundlePatternKeyEquals( "defaultKey", Pattern.compile( ".*messages" ), "defaultKey", "de", "DE" );
+    assertBundlePatternKeyEquals( "defaultKey", Pattern.compile( ".*messages" ), "defaultKey", "");
   }
 
-  private void assertBundleKeyEquals( String expected, String key, String name, String valueKey,
+  private void assertBundleKeyEquals( String expected, String key, String valueKey,
                                       String... localeStrings ) {
     Locale locale = null;
     if ( localeStrings.length == 1 ) {
@@ -181,21 +155,7 @@ public class LocalizationManagerTest {
     } else {
       throw new RuntimeException( "Expected either 1 or 2 locale strings" );
     }
-    assertEquals( expected, localizationManager.getResourceBundle( key, name, locale ).getString( valueKey ) );
-  }
-
-  private void assertBundlePatternKeyNameEquals( String expected, Pattern keyRegex, Pattern nameRegex, String valueKey,
-                                                 String... localeStrings ) {
-    Locale locale = null;
-    if ( localeStrings.length == 1 ) {
-      locale = new Locale( localeStrings[ 0 ] );
-    } else if ( localeStrings.length == 2 ) {
-      locale = new Locale( localeStrings[ 0 ], localeStrings[ 1 ] );
-    } else {
-      throw new RuntimeException( "Expected either 1 or 2 locale strings" );
-    }
-    assertEquals( expected,
-      localizationManager.getResourceBundles( keyRegex, nameRegex, locale ).get( 0 ).getString( valueKey ) );
+    assertEquals( expected, localizationManager.getResourceBundle( key, locale ).getString( valueKey ) );
   }
 
   private void assertBundlePatternKeyEquals( String expected, Pattern keyRegex, String valueKey,
@@ -208,10 +168,11 @@ public class LocalizationManagerTest {
     } else {
       throw new RuntimeException( "Expected either 1 or 2 locale strings" );
     }
-    assertEquals( expected, localizationManager.getResourceBundles( keyRegex, locale ).get( 0 ).getString( valueKey ) );
+    assertEquals( expected,
+      localizationManager.getResourceBundles( keyRegex, locale ).get( 0 ).getString( valueKey ) );
   }
 
-  private void assertBundleNullCacheNull( String key, String name, String... localeStrings ) {
+  private void assertBundleNullCacheNull( String key, String... localeStrings ) {
     Locale locale = null;
 
     if ( localeStrings != null ) {
@@ -223,11 +184,11 @@ public class LocalizationManagerTest {
         throw new RuntimeException( "Expected either 1 or 2 locale strings" );
       }
     }
-    assertNull( localizationManager.getResourceBundle( key, name, locale ) );
+    assertNull( localizationManager.getResourceBundle( key, locale ) );
 
   }
 
-  private void assertBundleNullCacheNullRegexp( Pattern keyRegex, Pattern nameRegex, String... localeStrings ) {
+  private void assertBundleNullCacheNullRegexp( Pattern keyRegex, String... localeStrings ) {
     Locale locale = null;
 
     if ( localeStrings != null ) {
@@ -239,22 +200,26 @@ public class LocalizationManagerTest {
         throw new RuntimeException( "Expected either 1 or 2 locale strings" );
       }
     }
-    assertNull( localizationManager.getResourceBundles( keyRegex, nameRegex, locale ) );
+    assertNull( localizationManager.getResourceBundles( keyRegex, locale ) );
 
   }
 
-  private Bundle makeMockBundle( Long bundleId, String i18nJsonPath, String... propertiesPaths ) {
+  private Bundle makeMockBundle( Long bundleId, String... propertiesPaths ) {
     Bundle bundle = mock( Bundle.class );
     when( bundle.getBundleId() ).thenReturn( bundleId );
-    when( bundle.getResource( "META-INF/js/i18n.json" ) ).thenReturn( getClass().getClassLoader()
-      .getResource( i18nJsonPath ) );
     List<URL> propertiesFiles = new ArrayList<URL>();
     for ( String path : propertiesPaths ) {
       propertiesFiles.add( getClass().getClassLoader().getResource( path ) );
     }
-    when( bundle.findEntries( "org/pentaho/osgi", "messages*.properties", false ) )
-      .thenReturn( new Vector<URL>( propertiesFiles )
-        .elements() );
+    when( bundle.findEntries( "i18n", "*.properties*", true ) )
+      .thenReturn( new Vector<URL>( propertiesFiles ).elements() );
     return bundle;
+  }
+
+  private Bundle makeMockBundleNull( Long bundleId ) {
+      Bundle bundle = mock( Bundle.class );
+      when( bundle.getBundleId() ).thenReturn( bundleId );
+      when( bundle.findEntries( "i18n", "*.properties*", true)).thenReturn( null );
+      return bundle;
   }
 }

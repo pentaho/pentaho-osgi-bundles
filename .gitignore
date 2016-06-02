@@ -3,3 +3,4 @@ target/
 */.idea/
 **/*.iml
 pentaho-requirejs-osgi-manager/src/main/resources/js/require.js
+.idea/

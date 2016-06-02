@@ -12,7 +12,7 @@
  * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  * See the GNU Lesser General Public License for more details.
  *
- * Copyright 2014 Pentaho Corporation. All rights reserved.
+ * Copyright 2016 Pentaho Corporation. All rights reserved.
  */
 
 package org.pentaho.osgi.i18n.webservice;
@@ -44,12 +44,8 @@ import java.util.regex.Pattern;
 public class LocalizationWebservice implements LocalizationService {
   private LocalizationService localizationService;
 
-  @Override public ResourceBundle getResourceBundle( String key, String name, Locale locale ) {
-    return localizationService.getResourceBundle( key, name, locale );
-  }
-
-  @Override public List<ResourceBundle> getResourceBundles( Pattern keyRegex, Pattern nameRegex, Locale locale ) {
-    return localizationService.getResourceBundles( keyRegex, nameRegex, locale );
+  @Override public ResourceBundle getResourceBundle( String name, Locale locale ) {
+    return localizationService.getResourceBundle( name, locale );
   }
 
   @Override public List<ResourceBundle> getResourceBundles( Pattern keyRegex, Locale locale ) {
@@ -61,10 +57,10 @@ public class LocalizationWebservice implements LocalizationService {
   }
 
   @GET
-  @Path( "/{key}/{name}/{language}" )
-  public ResourceBundle getResourceBundleService( @PathParam( "key" ) String key, @PathParam( "name" ) String name,
+  @Path( "/{key}/{language}" )
+  public ResourceBundle getResourceBundleService( @PathParam( "key" ) String key,
                                                   @PathParam( "language" ) String localeString ) {
-    return getResourceBundle( key, name.replaceAll( "\\.", "/" ), getLocale( localeString ) );
+    return getResourceBundle( key, getLocale( localeString ) );
   }
 
   private static Locale getLocale( String localeString ) {
@@ -72,7 +68,7 @@ public class LocalizationWebservice implements LocalizationService {
     if ( localeString == null || localeString.trim().length() == 0 ) {
       splitLocale = new String[] { };
     } else {
-      splitLocale = localeString.split( "-" );
+      splitLocale = localeString.split( "_" );
     }
     Locale locale;
     if ( splitLocale.length == 1 ) {
@@ -91,23 +87,17 @@ public class LocalizationWebservice implements LocalizationService {
     final List<ResourceBundle> resourceBundles = new ArrayList<ResourceBundle>(  );
     for ( ResourceBundleWildcard resourceBundleWildcard : resourceBundleRequest.getWildcards() ) {
       Pattern keyPattern = Pattern.compile( resourceBundleWildcard.getKeyRegex() );
-      if ( resourceBundleWildcard.getNameRegex() != null ) {
-        Pattern namePattern = Pattern.compile( resourceBundleWildcard.getNameRegex() );
-        resourceBundles.addAll(
-          getResourceBundles( keyPattern, namePattern, getLocale( resourceBundleRequest.getLocale() ) ) );
-      } else {
-        resourceBundles.addAll( getResourceBundles( keyPattern, getLocale( resourceBundleRequest.getLocale() ) ) );
-      }
+      resourceBundles.addAll( getResourceBundles( keyPattern, getLocale( resourceBundleRequest.getLocale() ) ) );
     }
     return new ListResourceBundle() {
       @Override protected Object[][] getContents() {
         List<Object[]> entries = new ArrayList<Object[]>();
         for ( ResourceBundle resourceBundle : resourceBundles ) {
           for ( String key : Collections.list( resourceBundle.getKeys() ) ) {
-            entries.add( new Object[]{ key, resourceBundle.getString( key ) } );
+            entries.add( new Object[] { key, resourceBundle.getString( key ) } );
           }
         }
-        return entries.toArray( new Object[entries.size()][] );
+        return entries.toArray( new Object[ entries.size() ][] );
       }
     };
   }
