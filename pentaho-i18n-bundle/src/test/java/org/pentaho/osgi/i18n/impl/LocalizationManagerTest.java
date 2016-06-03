@@ -82,7 +82,7 @@ public class LocalizationManagerTest {
     assertBundleNullCacheNull( "messages", "de", "DE" );
     assertBundleNullCacheNull( null, "de", "DE" );
     assertBundleNullCacheNull( "messages", null );
-    localizationManager.bundleChanged(makeMockBundle( 1L, "i18n/bundle/messages.properties",
+    localizationManager.bundleChanged(makeMockBundle( 1L, Bundle.ACTIVE, "i18n/bundle/messages.properties",
         "i18n/bundle/messages_fr.properties", "i18n/bundle/messages_de_DE.properties" ) );
     assertBundleKeyEquals( "defaultKey", "bundle/messages", "defaultKey", "fakeLocale" );
     assertBundleKeyEquals( "key", "bundle/messages", "key", "fakeLocale" );
@@ -106,21 +106,28 @@ public class LocalizationManagerTest {
     assertBundlePatternKeyEquals( "key_de_DE", Pattern.compile( ".*messages" ), "key", "de", "DE" );
     assertBundlePatternKeyEquals( "defaultKey", Pattern.compile( ".*messages" ), "defaultKey", "de", "DE" );
 
-    localizationManager.bundleChanged( makeMockBundle( 2L, "i18n/bundle/messages_fr.properties.2" ) );
+    localizationManager.bundleChanged( makeMockBundle( 2L, Bundle.ACTIVE, "i18n/bundle/messages_fr.properties.2" ) );
     assertBundleKeyEquals( "key_fr_bundle2", "bundle/messages", "key", "fr" );
     assertBundleKeyEquals( "defaultKey", "bundle/messages", "defaultKey", "fr" );
 
     assertBundlePatternKeyEquals( "key_fr_bundle2", Pattern.compile( ".*messages" ), "key", "fr" );
     assertBundlePatternKeyEquals( "defaultKey", Pattern.compile( ".*messages" ), "defaultKey", "fr" );
 
-    localizationManager.bundleChanged( makeMockBundle( 3L, "i18n/bundle/messages_fr.properties.3" ) );
+    //test bundle 2L stopping
+    localizationManager.bundleChanged( makeMockBundle( 2L, Bundle.RESOLVED, "i18n/bundle/messages_fr.properties.2" ) );
+    assertBundleKeyEquals( "key_fr", "bundle/messages", "key", "fr" );
+    assertBundleKeyEquals( "defaultKey", "bundle/messages", "defaultKey", "fr" );
+    assertBundlePatternKeyEquals( "key_fr", Pattern.compile( ".*messages" ), "key", "fr" );
+    assertBundlePatternKeyEquals( "defaultKey", Pattern.compile( ".*messages" ), "defaultKey", "fr" );
+
+    localizationManager.bundleChanged( makeMockBundle( 3L, Bundle.ACTIVE, "i18n/bundle/messages_fr.properties.3" ) );
     assertBundleKeyEquals( "key_fr_bundle3", "bundle/messages", "key", "fr" );
     assertBundleKeyEquals( "defaultKey", "bundle/messages", "defaultKey", "fr" );
 
     assertBundlePatternKeyEquals( "key_fr_bundle3", Pattern.compile( ".*messages" ), "key", "fr" );
     assertBundlePatternKeyEquals( "defaultKey", Pattern.compile( ".*messages" ), "defaultKey", "fr" );
 
-    localizationManager.bundleChanged( makeMockBundle( 4L, "fakepath" ) );
+    localizationManager.bundleChanged( makeMockBundle( 4L, Bundle.ACTIVE, "fakepath" ) );
     assertBundleKeyEquals( "defaultKey", "bundle/messages", "defaultKey", "fakeLocale" );
     assertBundleKeyEquals( "key", "bundle/messages", "key", "fakeLocale" );
     assertBundleKeyEquals( "key_fr_bundle3", "bundle/messages", "key", "fr" );
@@ -204,8 +211,9 @@ public class LocalizationManagerTest {
 
   }
 
-  private Bundle makeMockBundle( Long bundleId, String... propertiesPaths ) {
+  private Bundle makeMockBundle( Long bundleId, int bundleStatus, String... propertiesPaths ) {
     Bundle bundle = mock( Bundle.class );
+    when( bundle.getState() ).thenReturn( bundleStatus );
     when( bundle.getBundleId() ).thenReturn( bundleId );
     List<URL> propertiesFiles = new ArrayList<URL>();
     for ( String path : propertiesPaths ) {
