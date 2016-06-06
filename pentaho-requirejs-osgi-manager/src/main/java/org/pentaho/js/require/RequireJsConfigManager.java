@@ -2,7 +2,7 @@
  *
  * Pentaho Data Integration
  *
- * Copyright (C) 2002-2014 by Pentaho : http://www.pentaho.com
+ * Copyright (C) 2002-2016 by Pentaho : http://www.pentaho.com
  *
  *******************************************************************************
  *
@@ -37,7 +37,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
@@ -84,7 +83,7 @@ public class RequireJsConfigManager {
   }
 
   public boolean updateBundleContext( Bundle bundle ) {
-    if ( bundle.getState() == Bundle.STOPPING || bundle.getState() == Bundle.UNINSTALLED ) {
+    if ( bundle.getState() == Bundle.STOPPING || bundle.getState() == Bundle.UNINSTALLED || bundle.getState() == Bundle.RESOLVED ) {
       return updateBundleContextStopped( bundle );
     }
 
