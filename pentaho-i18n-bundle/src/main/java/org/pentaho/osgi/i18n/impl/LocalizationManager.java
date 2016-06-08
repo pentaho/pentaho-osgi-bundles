@@ -44,7 +44,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -89,11 +88,11 @@ public class LocalizationManager implements LocalizationService {
           URL url = urlEnumeration.nextElement();
           if ( url != null ) {
             String fileName = url.getFile();
-            String relativeName = getPropertyRelativeName( fileName );
+            String relativeName = fileName;
             String name = getPropertyName( fileName );
-            int priority = getPropertyPriority( fileName );
+            int priority = OSGIResourceNamingConvention.getPropertyPriority( fileName );
             bundleFactory = new OSGIResourceBundleFactory( name, relativeName, url, priority );
-            configEntry.put( name, bundleFactory );
+            configEntry.put( relativeName, bundleFactory );
             rebuildCache = true;
           }
         }
@@ -126,21 +125,6 @@ public class LocalizationManager implements LocalizationService {
   }
 
   /**
-   * Returns property's relative name without priority
-   *
-   * @param fileName
-   * @return
-   */
-  private String getPropertyRelativeName( String fileName ) {
-    Matcher matcher = OSGIResourceNamingConvention.getResourceNameMatcher( fileName );
-    String groop = matcher.group( matcher.groupCount() );
-    if ( groop != null ) {
-      fileName = fileName.replace( groop, "" );
-    }
-    return fileName;
-  }
-
-  /**
    * Returns property file name without extension
    *
    * @param fileName
@@ -153,33 +137,20 @@ public class LocalizationManager implements LocalizationService {
       fileName.lastIndexOf( OSGIResourceNamingConvention.RESOURCES_DEFAULT_EXTENSION ) );
   }
 
-  /**
-   * Returns property priority propertyName must have message-name.properties.5 format (priority = 5)
-   *
-   * @param propertyName
-   * @return propertyPriority, default priority = 0
-   */
-  private int getPropertyPriority( String propertyName ) {
-    int priority = 0;
-    Matcher matcher = OSGIResourceNamingConvention.getResourceNameMatcher( propertyName );
-    String groop = matcher.group( matcher.groupCount() );
-    if ( groop != null ) {
-      priority = Integer.parseInt( groop.substring( 1 ) );
-    }
-    return priority;
-  }
-
   @Override
   public ResourceBundle getResourceBundle( String name, Locale locale ) {
     ResourceBundle result = null;
     Map<String, OSGIResourceBundle> localCache = getCache();
 
     if ( localCache != null ) {
-      for ( String candidate : getCandidateNames( name.replaceAll( "\\.", "/" ), locale ) ) {
-        OSGIResourceBundle bundle = localCache.get( candidate );
-        if ( bundle != null ) {
-          result = bundle;
-          break;
+      if ( name != null ) {
+        name = name.replaceAll( "\\.", "/" );
+        for ( String candidate : OSGIResourceNamingConvention.getCandidateNames( name, locale ) ) {
+          OSGIResourceBundle bundle = localCache.get( candidate );
+          if ( bundle != null ) {
+            result = bundle;
+            break;
+          }
         }
       }
     }
@@ -203,7 +174,7 @@ public class LocalizationManager implements LocalizationService {
         }
       }
       for ( String defaultName : defaultNames ) {
-        for ( String candidate : getCandidateNames( defaultName, locale ) ) {
+        for ( String candidate : OSGIResourceNamingConvention.getCandidateNames( defaultName, locale ) ) {
           OSGIResourceBundle bundle = localCache.get( candidate );
           if ( bundle != null ) {
             result.add( bundle );
@@ -214,24 +185,6 @@ public class LocalizationManager implements LocalizationService {
     } else {
       result = null;
     }
-    return result;
-  }
-
-  private List<String> getCandidateNames( String name, Locale locale ) {
-    List<String> result = new ArrayList<String>();
-    String current = name;
-    result.add( current );
-    String language = locale.getLanguage();
-    if ( language.length() > 0 ) {
-      current += "_" + language;
-      result.add( current );
-      String country = locale.getCountry();
-      if ( country.length() > 0 ) {
-        current += "_" + country;
-        result.add( current );
-      }
-    }
-    Collections.reverse( result );
     return result;
   }
 

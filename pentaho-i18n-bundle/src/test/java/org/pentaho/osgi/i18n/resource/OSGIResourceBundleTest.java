@@ -46,6 +46,7 @@ public class OSGIResourceBundleTest {
     String childPath = "i18n/resource/OSGIResourceBundleTestChild.properties";
     OSGIResourceBundle osgiResourceBundleChild = new OSGIResourceBundle( childPath, osgiResourceBundle,
       getClass().getClassLoader().getResource( childPath ) );
+    assertEquals( osgiResourceBundle, osgiResourceBundleChild.getParent() );
     assertEquals( "testValueChild", osgiResourceBundleChild.getString( "key" ) );
     assertEquals( "testValueParent", osgiResourceBundleChild.getString( "parentKey" ) );
   }

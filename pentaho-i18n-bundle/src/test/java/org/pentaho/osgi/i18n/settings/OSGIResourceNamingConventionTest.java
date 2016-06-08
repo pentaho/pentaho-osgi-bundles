@@ -36,7 +36,7 @@ public class OSGIResourceNamingConventionTest {
   @Test( expected = IllegalArgumentException.class )
   public void testEmptyName() {
     String name = "";
-    OSGIResourceNamingConvention.getResourceNameMatcher( name );
+    new OSGIResourceNamingConvention().getResourceNameMatcher( name );
   }
 
   @Test
