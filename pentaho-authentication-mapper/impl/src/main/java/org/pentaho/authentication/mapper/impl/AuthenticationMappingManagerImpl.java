@@ -87,7 +87,8 @@ public class AuthenticationMappingManagerImpl implements AuthenticationMappingMa
       }
       return Optional.ofNullable( configMap.get( id ) ).orElse( ImmutableMap.of() );
     } catch ( IOException e ) {
-      throw new MappingException( e );
+      throw new MappingException( "We weren't able to read or find the file " + configuration.getAbsolutePath()
+          + ".", e );
     }
   }
 
