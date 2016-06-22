@@ -65,6 +65,24 @@ public class WebjarsURLConnectionTest {
   }
 
   @Test
+  public void testClassicWebjarAltered() throws IOException, ParseException {
+    ZipFile zipInputStream = getDeployedJar( new URL( "mvn:org.webjars/smart-table/2.0.3-1" ) );
+
+    verifyManifest( zipInputStream );
+    verifyBlueprint( zipInputStream, "smart-table/2.0.3-1" );
+    verifyRequireJsonFalse( zipInputStream, "org.webjars/smart-table", "2.0.3-1a" );
+  }
+
+  @Test
+  public void testClassicWebjarNoResources() throws IOException, ParseException {
+    ZipFile zipInputStream = getDeployedJar( new URL( "mvn:org.webjars/smart-table/2.0.3-1" ) );
+
+    verifyManifest( zipInputStream );
+    verifyBlueprint( zipInputStream, "smart-table/2.0.3-1" );
+    verifyRequireJsonFalse( zipInputStream, "org.webjars/smart-table", "2.0.3-1b" );
+  }
+
+  @Test
   public void testClassicWebjarScriptedConfig() throws IOException, ParseException {
     ZipFile zipInputStream = getDeployedJar( new URL( "mvn:org.webjars/angularjs/1.3.0-rc.0" ) );
 
@@ -116,6 +134,18 @@ public class WebjarsURLConnectionTest {
     }
   }
 
+  @Test
+  public void testInputStreamException() throws IOException {
+    WebjarsURLConnection connection = new WebjarsURLConnection( new URL( "mvn:org.webjars/angular-dateparser/1.0.9xx" ) );
+    connection.connect();
+
+    try {
+      InputStream inputStream = connection.getInputStream();
+    } catch ( Exception exception ) {
+      fail( "Thread failed to execute tranform() method: " + exception.getMessage() );
+    }
+  }
+
   private void verifyManifest( ZipFile zipInputStream ) throws IOException {
     ZipEntry entry = zipInputStream.getEntry( "META-INF/MANIFEST.MF" );
     assertNotNull( entry );
@@ -151,6 +181,26 @@ public class WebjarsURLConnectionTest {
     final JSONObject versionInfo = (JSONObject) artifactInfo.get( artifactId );
 
     assertTrue( "version is " + version, versionInfo.containsKey( version ) );
+  }
+
+  private void verifyRequireJsonFalse( ZipFile zipInputStream, String artifactId, String version ) throws IOException, ParseException {
+    ZipEntry entry = zipInputStream.getEntry( "META-INF/js/require.json" );
+    assertNotNull( entry );
+
+    String jsonFile = IOUtils.toString( zipInputStream.getInputStream( entry ), "UTF-8" );
+
+    JSONObject json = (JSONObject) parser.parse( jsonFile );
+
+    assertTrue( "dependency metadata exists", json.containsKey( "requirejs-osgi-meta" ) );
+    final JSONObject meta = (JSONObject) json.get( "requirejs-osgi-meta" );
+
+    assertTrue( "artifact info exists", meta.containsKey( "artifacts" ) );
+    final JSONObject artifactInfo = (JSONObject) meta.get( "artifacts" );
+
+    assertTrue( "artifact is " + artifactId, artifactInfo.containsKey( artifactId ) );
+    final JSONObject versionInfo = (JSONObject) artifactInfo.get( artifactId );
+
+    assertFalse( "version is " + version, versionInfo.containsKey( version ) );
   }
 
   private ZipFile getDeployedJar( URL webjar_url ) throws IOException {
