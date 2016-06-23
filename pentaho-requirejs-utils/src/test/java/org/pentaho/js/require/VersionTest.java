@@ -12,7 +12,7 @@
  * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  * See the GNU Lesser General Public License for more details.
  *
- * Copyright 2014 Pentaho Corporation. All rights reserved.
+ * Copyright 2016 Pentaho Corporation. All rights reserved.
  */
 
 package org.pentaho.js.require;
@@ -20,6 +20,9 @@ package org.pentaho.js.require;
 import org.junit.Test;
 import org.osgi.framework.Version;
 import org.pentaho.js.require.RequireJsGenerator;
+
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 
 import static org.junit.Assert.*;
 
@@ -77,5 +80,22 @@ public class VersionTest {
       assertEquals("0.0.0", v.toString());
     }
 
+  }
+
+  @Test
+  public void testConstructorException() throws IllegalAccessException, InstantiationException {
+    final Class<RequireJsGenerator.VersionParser> versionStaticClass = RequireJsGenerator.VersionParser.class;
+    final Constructor<?> c = versionStaticClass.getDeclaredConstructors()[0];
+    c.setAccessible(true);
+
+    Throwable targetException = null;
+    try {
+      c.newInstance();
+    } catch (InvocationTargetException e) {
+      targetException = e.getTargetException();
+    }
+
+    assertNotNull(targetException);
+    assertEquals(targetException.getClass(), InstantiationException.class);
   }
 }

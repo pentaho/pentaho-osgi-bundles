@@ -12,7 +12,7 @@
  * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  * See the GNU Lesser General Public License for more details.
  *
- * Copyright 2014 Pentaho Corporation. All rights reserved.
+ * Copyright 2016 Pentaho Corporation. All rights reserved.
  */
 
 package org.pentaho.osgi.platform.webjars;
@@ -50,7 +50,7 @@ public class WebjarsURLConnectionTest {
 
     System.setProperty( "java.protocol.handler.pkgs", "org.ops4j.pax.url" );
     System.setProperty( "org.ops4j.pax.url.mvn.repositories",
-        input.toURI().toURL().toString() + "@snapshots@id=mock-repo" );
+            input.toURI().toURL().toString() + "@snapshots@id=mock-repo" );
     System.setProperty( "org.ops4j.pax.url.mvn.localRepository", input.toURI().toURL().toString() );
     System.setProperty( "org.ops4j.pax.url.mvn.proxySupport", "false" );
   }
@@ -62,6 +62,24 @@ public class WebjarsURLConnectionTest {
     verifyManifest( zipInputStream );
     verifyBlueprint( zipInputStream, "smart-table/2.0.3-1" );
     verifyRequireJson( zipInputStream, "org.webjars/smart-table", "2.0.3-1" );
+  }
+
+  @Test
+  public void testClassicWebjarAltered() throws IOException, ParseException {
+    ZipFile zipInputStream = getDeployedJar( new URL( "mvn:org.webjars/smart-table/2.0.3-1" ) );
+
+    verifyManifest( zipInputStream );
+    verifyBlueprint( zipInputStream, "smart-table/2.0.3-1" );
+    verifyRequireJsonFalse( zipInputStream, "org.webjars/smart-table", "2.0.3-1a" );
+  }
+
+  @Test
+  public void testClassicWebjarNoResources() throws IOException, ParseException {
+    ZipFile zipInputStream = getDeployedJar( new URL( "mvn:org.webjars/smart-table/2.0.3-1" ) );
+
+    verifyManifest( zipInputStream );
+    verifyBlueprint( zipInputStream, "smart-table/2.0.3-1" );
+    verifyRequireJsonFalse( zipInputStream, "org.webjars/smart-table", "2.0.3-1b" );
   }
 
   @Test
@@ -116,12 +134,24 @@ public class WebjarsURLConnectionTest {
     }
   }
 
+  @Test
+  public void testInputStreamException() throws IOException {
+    WebjarsURLConnection connection = new WebjarsURLConnection( new URL( "mvn:org.webjars/angular-dateparser/1.0.9xx" ) );
+    connection.connect();
+
+    try {
+      InputStream inputStream = connection.getInputStream();
+    } catch ( Exception exception ) {
+      fail( "Thread failed to execute tranform() method: " + exception.getMessage() );
+    }
+  }
+
   private void verifyManifest( ZipFile zipInputStream ) throws IOException {
     ZipEntry entry = zipInputStream.getEntry( "META-INF/MANIFEST.MF" );
     assertNotNull( entry );
     Manifest manifest = new Manifest( zipInputStream.getInputStream( entry ) );
     assertTrue( "Bundle-SymbolicName is not pentaho-webjars-",
-        manifest.getMainAttributes().getValue( "Bundle-SymbolicName" ).startsWith( "pentaho-webjars-" ) );
+            manifest.getMainAttributes().getValue( "Bundle-SymbolicName" ).startsWith( "pentaho-webjars-" ) );
   }
 
   private void verifyBlueprint( ZipFile zipInputStream, String expectedPath ) throws IOException {
@@ -130,7 +160,7 @@ public class WebjarsURLConnectionTest {
 
     String bpFile = IOUtils.toString( zipInputStream.getInputStream( entry ), "UTF-8" );
     assertTrue( "blueprint.xml does not include path for " + expectedPath,
-        bpFile.contains( "<property name=\"path\" value=\"/META-INF/resources/webjars/" + expectedPath + "\" />" ) );
+            bpFile.contains( "<property name=\"path\" value=\"/META-INF/resources/webjars/" + expectedPath + "\" />" ) );
   }
 
   private void verifyRequireJson( ZipFile zipInputStream, String artifactId, String version ) throws IOException, ParseException {
@@ -151,6 +181,26 @@ public class WebjarsURLConnectionTest {
     final JSONObject versionInfo = (JSONObject) artifactInfo.get( artifactId );
 
     assertTrue( "version is " + version, versionInfo.containsKey( version ) );
+  }
+
+  private void verifyRequireJsonFalse( ZipFile zipInputStream, String artifactId, String version ) throws IOException, ParseException {
+    ZipEntry entry = zipInputStream.getEntry( "META-INF/js/require.json" );
+    assertNotNull( entry );
+
+    String jsonFile = IOUtils.toString( zipInputStream.getInputStream( entry ), "UTF-8" );
+
+    JSONObject json = (JSONObject) parser.parse( jsonFile );
+
+    assertTrue( "dependency metadata exists", json.containsKey( "requirejs-osgi-meta" ) );
+    final JSONObject meta = (JSONObject) json.get( "requirejs-osgi-meta" );
+
+    assertTrue( "artifact info exists", meta.containsKey( "artifacts" ) );
+    final JSONObject artifactInfo = (JSONObject) meta.get( "artifacts" );
+
+    assertTrue( "artifact is " + artifactId, artifactInfo.containsKey( artifactId ) );
+    final JSONObject versionInfo = (JSONObject) artifactInfo.get( artifactId );
+
+    assertFalse( "version is " + version, versionInfo.containsKey( version ) );
   }
 
   private ZipFile getDeployedJar( URL webjar_url ) throws IOException {
