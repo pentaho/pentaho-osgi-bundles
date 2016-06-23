@@ -1,0 +1,4 @@
+{
+  "requirejs" : [
+      "testExternal\/common-ui\/resources\/web\/common-ui-require-js-cfg.js" ]
+}
