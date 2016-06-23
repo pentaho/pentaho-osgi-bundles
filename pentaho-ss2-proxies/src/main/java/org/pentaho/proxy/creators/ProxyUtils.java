@@ -61,11 +61,11 @@ public class ProxyUtils {
       }
 
       // 2. one of its interfaces is the 'supportedClassName'
-      if( aClass.getInterfaces() != null && aClass.getInterfaces().length > 0 ){
+      if( aClass.getInterfaces().length > 0 ){
 
         for( Class c : aClass.getInterfaces() ) {
 
-          if( c != null && c.getName().equals( supportedClassName ) ){
+          if( c.getName().equals( supportedClassName ) ){
             return true;
           }
         }

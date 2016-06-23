@@ -1,3 +1,20 @@
+/*
+ * This program is free software; you can redistribute it and/or modify it under the
+ * terms of the GNU Lesser General Public License, version 2.1 as published by the Free Software
+ * Foundation.
+ *
+ * You should have received a copy of the GNU Lesser General Public License along with this
+ * program; if not, you can obtain a copy at http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html
+ * or from the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Lesser General Public License for more details.
+ *
+ * Copyright 2016 Pentaho Corporation. All rights reserved.
+ */
+
 package org.pentaho.js.require;
 
 import org.apache.commons.io.FilenameUtils;
@@ -88,6 +105,18 @@ public class RequireJsGenerator {
     return new RequireJsGenerator( physicalPathNamePart, physicalPathVersionPart );
   }
 
+  public static String getWebjarVersionFromPom( InputStream inputStream )
+          throws IOException, ParserConfigurationException, SAXException, XPathExpressionException, ParseException {
+    byte[] bytes = IOUtils.toByteArray( inputStream );
+    Document pom = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse( new ByteArrayInputStream( bytes ) );
+
+    XPath xPath = XPathFactory.newInstance().newXPath();
+
+    final Element document = pom.getDocumentElement();
+
+    return (String) xPath.evaluate( "/project/version", document, XPathConstants.STRING );
+  }
+
   private RequireJsGenerator( Document pom ) throws XPathExpressionException, ParseException {
     requirejsFromPom( pom );
   }
@@ -109,6 +138,10 @@ public class RequireJsGenerator {
 
     requireConfig = new HashMap<>();
     requireConfig.put( "paths", paths );
+  }
+
+  public ModuleInfo getModuleInfo() {
+    return this.moduleInfo;
   }
 
   public ModuleInfo getConvertedConfig( ArtifactInfo artifactInfo ) throws ParseException {
@@ -143,6 +176,7 @@ public class RequireJsGenerator {
 
   private void requirejsFromPom( Document pom )
       throws XPathExpressionException, ParseException {
+
     XPath xPath = XPathFactory.newInstance().newXPath();
 
     final Element document = pom.getDocumentElement();
@@ -551,6 +585,8 @@ public class RequireJsGenerator {
 
     public void setVersion( String version ) {
       this.version = version;
+      this.versionedModuleId = this.name + "_" + this.version;
+      this.versionedPath = this.name + "/" + this.version;
     }
 
     public String getPath() {
@@ -667,6 +703,10 @@ public class RequireJsGenerator {
     private static Version DEFAULT = new Version( 0, 0, 0 );
     private static Pattern VERSION_PAT = Pattern.compile( "([0-9]+)?(?:\\.([0-9]*)(?:\\.([0-9]*))?)?[\\.-]?(.*)" );
     private static Pattern CLASSIFIER_PAT = Pattern.compile( "[a-zA-Z0-9_\\-]+" );
+
+    private VersionParser() throws InstantiationException {
+      throw new InstantiationException( "Instances of this type are forbidden." );
+    }
 
     public static Version parseVersion( String incomingVersion ) {
       if ( StringUtils.isEmpty( incomingVersion ) ) {

@@ -12,7 +12,7 @@
  * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  * See the GNU Lesser General Public License for more details.
  *
- * Copyright 2014 Pentaho Corporation. All rights reserved.
+ * Copyright 2016 Pentaho Corporation. All rights reserved.
  */
 
 package org.pentaho.osgi.platform.webjars;
@@ -214,15 +214,18 @@ public class WebjarsURLConnection extends URLConnection {
       String physicalPathNamePart = null;
       String physicalPathVersionPart = null;
 
+      String bowerVersion = null;
+
       ZipEntry entry;
       while ( ( entry = jarInputStream.getNextJarEntry() ) != null ) {
         String name = entry.getName();
+
         if ( name.endsWith( MANIFEST_MF ) ) {
           // ignore existing manifest, we've already created our own
           continue;
         }
 
-        if ( requireConfig == null || isClassicWebjar && !wasReadFromPom ) {
+        if ( requireConfig == null || ( isClassicWebjar && !wasReadFromPom ) || ( isBowerWebjar &&  bowerVersion == null ) ) {
           if ( isClassicWebjar ) {
             if ( name.endsWith( POM_NAME ) ) {
               // handcrafted requirejs configuration on pom.xml has top prioriy (Classic WebJars)
@@ -257,13 +260,37 @@ public class WebjarsURLConnection extends URLConnection {
             if ( matcher.matches() ) {
               try {
                 requireConfig = RequireJsGenerator.parseJsonPackage( jarInputStream );
+
+                if ( isBowerWebjar && requireConfig != null && requireConfig.getModuleInfo() != null ) {
+                  if ( requireConfig.getModuleInfo().getVersion() == null && bowerVersion != null ) {
+                    requireConfig.getModuleInfo().setVersion( bowerVersion );
+                  } else {
+                    bowerVersion = requireConfig.getModuleInfo().getVersion();
+                  }
+                }
               } catch ( Exception ignored ) {
                 // ignored
               }
-
               continue;
             }
+          } else if ( isBowerWebjar && name.endsWith( POM_NAME ) ) {
+            if ( requireConfig == null || ( requireConfig.getModuleInfo() != null && requireConfig.getModuleInfo().getVersion() == null ) ) {
+              Matcher matcher = POM_PATTERN.matcher( name );
+              if ( matcher.matches() ) {
+                try {
+                  bowerVersion = RequireJsGenerator.getWebjarVersionFromPom( jarInputStream );
+
+                  if ( requireConfig != null && requireConfig.getModuleInfo() != null && requireConfig.getModuleInfo().getVersion() == null ) {
+                    requireConfig.getModuleInfo().setVersion( bowerVersion );
+                  }
+                } catch ( Exception ignored ) {
+                  // ignored
+                }
+                continue;
+              }
+            }
           }
+
         }
 
         try {
@@ -430,4 +457,6 @@ public class WebjarsURLConnection extends URLConnection {
     jarOutputStream.write( config.getBytes( "UTF-8" ) );
     jarOutputStream.closeEntry();
   }
+
+
 }
