@@ -12,7 +12,7 @@
  * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  * See the GNU Lesser General Public License for more details.
  *
- * Copyright 2014 Pentaho Corporation. All rights reserved.
+ * Copyright 2016 Pentaho Corporation. All rights reserved.
  */
 
 package org.pentaho.osgi.platform.webjars;
@@ -50,7 +50,7 @@ public class WebjarsURLConnectionTest {
 
     System.setProperty( "java.protocol.handler.pkgs", "org.ops4j.pax.url" );
     System.setProperty( "org.ops4j.pax.url.mvn.repositories",
-        input.toURI().toURL().toString() + "@snapshots@id=mock-repo" );
+            input.toURI().toURL().toString() + "@snapshots@id=mock-repo" );
     System.setProperty( "org.ops4j.pax.url.mvn.localRepository", input.toURI().toURL().toString() );
     System.setProperty( "org.ops4j.pax.url.mvn.proxySupport", "false" );
   }
@@ -151,7 +151,7 @@ public class WebjarsURLConnectionTest {
     assertNotNull( entry );
     Manifest manifest = new Manifest( zipInputStream.getInputStream( entry ) );
     assertTrue( "Bundle-SymbolicName is not pentaho-webjars-",
-        manifest.getMainAttributes().getValue( "Bundle-SymbolicName" ).startsWith( "pentaho-webjars-" ) );
+            manifest.getMainAttributes().getValue( "Bundle-SymbolicName" ).startsWith( "pentaho-webjars-" ) );
   }
 
   private void verifyBlueprint( ZipFile zipInputStream, String expectedPath ) throws IOException {
@@ -160,7 +160,7 @@ public class WebjarsURLConnectionTest {
 
     String bpFile = IOUtils.toString( zipInputStream.getInputStream( entry ), "UTF-8" );
     assertTrue( "blueprint.xml does not include path for " + expectedPath,
-        bpFile.contains( "<property name=\"path\" value=\"/META-INF/resources/webjars/" + expectedPath + "\" />" ) );
+            bpFile.contains( "<property name=\"path\" value=\"/META-INF/resources/webjars/" + expectedPath + "\" />" ) );
   }
 
   private void verifyRequireJson( ZipFile zipInputStream, String artifactId, String version ) throws IOException, ParseException {
