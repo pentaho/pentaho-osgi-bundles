@@ -32,4 +32,12 @@
     </bean>
 
     <reference id="delegateRef" interface="org.pentaho.osgi.i18n.LocalizationService"/>
+
+    <service id="PentahoI18n"
+             interface="org.ops4j.pax.web.extender.whiteboard.ResourceMapping">
+        <bean class="org.ops4j.pax.web.extender.whiteboard.runtime.DefaultResourceMapping">
+            <property name="alias" value="/${project.artifactId}/${project.version}"/>
+            <property name="path" value="/web"/>
+        </bean>
+    </service>
 </blueprint>
