@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>pentaho</groupId>
+    <artifactId>pentaho-flat-table-viz</artifactId>
+    <version>7.0-SNAPSHOT</version>
+  </parent>
+
+  <artifactId>pentaho-flat-table-viz-impl</artifactId>
+  <version>7.0-SNAPSHOT</version>
+  <packaging>bundle</packaging>
+
+  <name>${project.artifactId}</name>
+  <description>Pentaho Flat Table Viz</description>
+
+  <properties>
+    <build.javascriptTestConfigDirectory>${project.build.directory}</build.javascriptTestConfigDirectory>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>pentaho</groupId>
+      <artifactId>common-ui</artifactId>
+      <version>${common-ui.revision}</version>
+      <type>zip</type>
+      <scope>runtime</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.webjars</groupId>
+      <artifactId>requirejs</artifactId>
+      <version>${requirejs.version}</version>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.webjars.bower</groupId>
+      <artifactId>require-css</artifactId>
+      <version>${require-css.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.webjars.bower</groupId>
+      <artifactId>requirejs-text</artifactId>
+      <version>${requirejs-text.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.webjars.npm</groupId>
+      <artifactId>underscore</artifactId>
+      <version>${underscore.version}</version>
+      <scope>runtime</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.webjars</groupId>
+      <artifactId>jquery</artifactId>
+      <version>${jquery.version}</version>
+      <scope>runtime</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.webjars.bower</groupId>
+      <artifactId>bootstrap</artifactId>
+      <version>${bootstrap.version}</version>
+      <scope>runtime</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.webjars.bower</groupId>
+      <artifactId>datatables.net</artifactId>
+      <version>${datatables.net.version}</version>
+      <scope>runtime</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.webjars.bower</groupId>
+      <artifactId>datatables.net-bs</artifactId>
+      <version>${datatables.net-bs.version}</version>
+      <scope>runtime</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.webjars.bower</groupId>
+      <artifactId>datatables.net-fixedheader</artifactId>
+      <version>${datatables.net-fixedheader.version}</version>
+      <scope>runtime</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.webjars.bower</groupId>
+      <artifactId>datatables.net-fixedheader-bs</artifactId>
+      <version>${datatables.net-fixedheader-bs.version}</version>
+      <scope>runtime</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.webjars.bower</groupId>
+      <artifactId>datatables.net-scroller</artifactId>
+      <version>${datatables.net-scroller.version}</version>
+      <scope>runtime</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.webjars.bower</groupId>
+      <artifactId>datatables.net-scroller-bs</artifactId>
+      <version>${datatables.net-scroller-bs.version}</version>
+      <scope>runtime</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.webjars.bower</groupId>
+      <artifactId>datatables.net-colreorder</artifactId>
+      <version>${datatables.net-colreorder.version}</version>
+      <scope>runtime</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.webjars.bower</groupId>
+      <artifactId>datatables.net-colreorder-bs</artifactId>
+      <version>${datatables.net-colreorder-bs.version}</version>
+      <scope>runtime</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <resources>
+      <resource>
+        <directory>src/main/resources</directory>
+        <filtering>false</filtering>
+        <includes>
+          <include>**/*</include>
+        </includes>
+        <excludes>
+          <exclude>META-INF/**/*</exclude>
+          <exclude>OSGI-INF/**/*</exclude>
+          <exclude>web/index.html</exclude>
+        </excludes>
+      </resource>
+
+      <resource>
+        <directory>src/main/resources</directory>
+        <filtering>true</filtering>
+        <includes>
+          <include>META-INF/**/*</include>
+          <include>OSGI-INF/**/*</include>
+          <include>web/index.html</include>
+        </includes>
+      </resource>
+
+      <resource>
+        <directory>src/main/javascript</directory>
+        <includes>
+          <include>**/*</include>
+        </includes>
+      </resource>
+    </resources>
+
+    <testResources>
+      <testResource>
+        <targetPath>${basedir}/target</targetPath>
+        <filtering>true</filtering>
+        <directory>${basedir}/src/test/config/javascript</directory>
+        <includes>
+          <include>*.js</include>
+        </includes>
+        <excludes/>
+      </testResource>
+    </testResources>
+
+    <plugins>
+      <plugin>
+        <groupId>org.apache.felix</groupId>
+        <artifactId>maven-bundle-plugin</artifactId>
+        <configuration>
+          <instructions>
+            <Export-Package>
+              org.pentaho.det.*
+            </Export-Package>
+          </instructions>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>
