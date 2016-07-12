@@ -1,0 +1,30 @@
+<features name="${project.artifactId}-repo" xmlns="http://karaf.apache.org/xmlns/features/v1.2.1">
+
+  <feature name="${project.artifactId}" version="${project.version}">
+
+    <details>Pentaho Flat Table Viz assembly for all</details>
+
+    <feature version="${project.version}">pentaho-requirejs-osgi-manager</feature>
+    <bundle dependency="true">mvn:pentaho/pentaho-requirejs-osgi-manager/${pentaho-requirejs-manager.version}</bundle>
+
+    <bundle dependency="false">pentaho-platform-plugin-mvn:pentaho/common-ui/${common-ui.revision}/zip</bundle>
+
+    <bundle dependency="false">pentaho-webjars:mvn:org.webjars.bower/require-css/${require-css.version}</bundle>
+    <bundle dependency="false">pentaho-webjars:mvn:org.webjars.bower/requirejs-text/${requirejs-text.version}</bundle>
+
+    <bundle dependency="false">pentaho-webjars:mvn:org.webjars/jquery/${jquery.version}</bundle>
+    <bundle dependency="false">pentaho-webjars:mvn:org.webjars.bower/bootstrap/${bootstrap.version}</bundle>
+
+    <bundle dependency="false">pentaho-webjars:mvn:org.webjars.npm/underscore/${underscore.version}</bundle>
+
+    <bundle dependency="false">pentaho-webjars:mvn:org.webjars.bower/datatables.net/${datatables.net.version}</bundle>
+    <bundle dependency="false">pentaho-webjars:mvn:org.webjars.bower/datatables.net-bs/${datatables.net-bs.version}</bundle>
+    <bundle dependency="false">pentaho-webjars:mvn:org.webjars.bower/datatables.net-fixedheader/${datatables.net-fixedheader.version}</bundle>
+    <bundle dependency="false">pentaho-webjars:mvn:org.webjars.bower/datatables.net-fixedheader-bs/${datatables.net-fixedheader-bs.version}</bundle>
+    <bundle dependency="false">pentaho-webjars:mvn:org.webjars.bower/datatables.net-scroller/${datatables.net-scroller.version}</bundle>
+    <bundle dependency="false">pentaho-webjars:mvn:org.webjars.bower/datatables.net-scroller-bs/${datatables.net-scroller-bs.version}</bundle>
+    <bundle dependency="false">pentaho-webjars:mvn:org.webjars.bower/datatables.net-colreorder/${datatables.net-colreorder.version}</bundle>
+    <bundle dependency="false">pentaho-webjars:mvn:org.webjars.bower/datatables.net-colreorder-bs/${datatables.net-colreorder-bs.version}</bundle>
+
+  </feature>
+</features>

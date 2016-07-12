@@ -116,6 +116,7 @@
         <module>pentaho-authentication-mapper</module>
         <module>pentaho-kettle-repository-locator</module>
         <module>pentaho-metastore-locator</module>
+        <module>pentaho-flat-table-viz</module>
       </modules>
       <distributionManagement>
         <site>
@@ -152,6 +153,7 @@
         <module>pentaho-capability-manager</module>
         <module>pentaho-cache-manager</module>
         <module>pentaho-authentication-mapper</module>
+        <module>pentaho-flat-table-viz</module>
       </modules>
       <distributionManagement>
         <site>

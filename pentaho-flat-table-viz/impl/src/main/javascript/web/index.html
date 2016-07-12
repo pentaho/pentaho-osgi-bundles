@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Viz DataTable</title>
+
+  <script language="javascript" type="text/javascript" src="http://localhost:9051/requirejs-manager/js/require-init.js"></script>
+
+  <script type="text/javascript">
+    (function(w) {
+      "use strict";
+
+      requireCfg.paths['pentaho/i18n'] = "pentaho-flat-table-viz-impl/7.0-SNAPSHOT/lib/i18nMock";
+
+      require.config( requireCfg );
+
+    })(window);
+  </script>
+
+  <script>
+  (function() {
+    "use strict";
+    window.SESSION_LOCALE = "en";
+
+    require([/*"pentaho/i18n-osgi!test.messages",*/ "pentaho-flat-table-viz-impl_7.0-SNAPSHOT"], function(/*bundle*/) {
+      //$('#title').text(bundle.structured['title']);
+    });
+  })();
+  </script>
+</head>
+<body>
+  <h1 id="title"></h1>
+  <div id="output" style="width: 80%; margin: 0 auto; margin-top: 40px;"></div>
+</body>
+</html>
