@@ -27,7 +27,7 @@
       <artifactId>common-ui</artifactId>
       <version>${common-ui.revision}</version>
       <type>zip</type>
-      <scope>runtime</scope>
+      <scope>provided</scope>
     </dependency>
 
     <dependency>
