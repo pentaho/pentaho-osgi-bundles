@@ -182,6 +182,7 @@
         <module>pentaho-proxy-spring4</module>
         <module>pentaho-kettle-repository-locator</module>
         <module>pentaho-metastore-locator</module>
+        <module>pentaho-flat-table-viz</module>
       </modules>
       <distributionManagement>
         <site>

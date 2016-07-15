@@ -7,8 +7,6 @@
     <feature version="${project.version}">pentaho-requirejs-osgi-manager</feature>
     <bundle dependency="true">mvn:pentaho/pentaho-requirejs-osgi-manager/${pentaho-requirejs-manager.version}</bundle>
 
-    <bundle dependency="false">pentaho-platform-plugin-mvn:pentaho/common-ui/${common-ui.revision}/zip</bundle>
-
     <bundle dependency="false">pentaho-webjars:mvn:org.webjars.bower/require-css/${require-css.version}</bundle>
     <bundle dependency="false">pentaho-webjars:mvn:org.webjars.bower/requirejs-text/${requirejs-text.version}</bundle>
 
