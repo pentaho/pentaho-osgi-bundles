@@ -5,10 +5,10 @@
   <parent>
     <groupId>pentaho</groupId>
     <artifactId>pentaho-osgi-bundles</artifactId>
-    <version>6.1-SNAPSHOT</version>
+    <version>6.1.0.4-227</version>
   </parent>
   <artifactId>pentaho-cache-manager-parent</artifactId>
-  <version>6.1-SNAPSHOT</version>
+  <version>6.1.0.4-227</version>
   <packaging>pom</packaging>
   <developers>
     <developer>
