@@ -12,6 +12,7 @@ import org.pentaho.platform.engine.core.system.PentahoSystem;
 import org.pentaho.platform.proxy.api.IProxyCreator;
 import org.pentaho.platform.proxy.api.IProxyFactory;
 import org.pentaho.platform.proxy.impl.ProxyException;
+import org.pentaho.proxy.creators.ProxyObjectBase;
 import org.pentaho.proxy.creators.ProxyUtils;
 import org.springframework.security.AuthenticationException;
 import org.springframework.security.ui.AuthenticationEntryPoint;
@@ -40,14 +41,13 @@ public class AuthenticationEntryPointProxyCreator implements IProxyCreator<Authe
     return ProxyUtils.getInstance().getProxyFactory();
   }
 
-  private class ProxyAuthenticationEntryPoint implements AuthenticationEntryPoint {
+  private class ProxyAuthenticationEntryPoint extends ProxyObjectBase implements AuthenticationEntryPoint {
 
-    private Object target;
 
     private Method commenceMethod;
 
     public ProxyAuthenticationEntryPoint( Object target ) {
-      this.target = target;
+      super(target);
     }
 
     @Override public void commence( ServletRequest request, ServletResponse response, AuthenticationException aex )
@@ -59,13 +59,13 @@ public class AuthenticationEntryPointProxyCreator implements IProxyCreator<Authe
 
         if( commenceMethod == null ){
 
-          commenceMethod = ProxyUtils.findMethodByName( target.getClass(), "commence",
+          commenceMethod = ProxyUtils.findMethodByName( baseTarget.getClass(), "commence",
               javax.servlet.http.HttpServletRequest.class,
               javax.servlet.http.HttpServletResponse.class,
               aexProxy.getClass() );
         }
 
-        commenceMethod.invoke( target,
+        commenceMethod.invoke( baseTarget,
             ( javax.servlet.http.HttpServletRequest ) request ,
             ( javax.servlet.http.HttpServletResponse ) response,
             aexProxy );

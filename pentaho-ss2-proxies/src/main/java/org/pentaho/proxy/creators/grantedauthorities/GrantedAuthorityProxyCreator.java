@@ -1,16 +1,15 @@
 package org.pentaho.proxy.creators.grantedauthorities;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+
 import org.pentaho.platform.proxy.api.IProxyCreator;
 import org.pentaho.platform.proxy.api.IProxyFactory;
+import org.pentaho.proxy.creators.ProxyObjectBase;
 import org.pentaho.proxy.creators.ProxyUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.GrantedAuthority;
-
-
-
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 
 public class GrantedAuthorityProxyCreator implements IProxyCreator<GrantedAuthority> {
 
@@ -28,19 +27,17 @@ public class GrantedAuthorityProxyCreator implements IProxyCreator<GrantedAuthor
     return ProxyUtils.getInstance().getProxyFactory();
   }
 
-  private class ProxyGrantedAuthority implements GrantedAuthority {
+  private class ProxyGrantedAuthority extends ProxyObjectBase implements GrantedAuthority {
 
     /**
      *
      */
     private static final long serialVersionUID = 1603112902745163281L;
 
-    private Object target;
-
     private Method getAuthorityMethod;
 
     public ProxyGrantedAuthority( Object target ) {
-      this.target = target;
+      super(target);
     }
 
     @Override
@@ -48,10 +45,10 @@ public class GrantedAuthorityProxyCreator implements IProxyCreator<GrantedAuthor
       try {
 
         if ( getAuthorityMethod == null ) {
-          getAuthorityMethod = ProxyUtils.findMethodByName( target.getClass(), "getAuthority" );
+          getAuthorityMethod = ProxyUtils.findMethodByName( baseTarget.getClass(), "getAuthority" );
         }
 
-        return (String) getAuthorityMethod.invoke( target );
+        return (String) getAuthorityMethod.invoke( baseTarget );
 
       } catch ( InvocationTargetException | IllegalAccessException e ) {
         logger.error( e.getMessage() , e );

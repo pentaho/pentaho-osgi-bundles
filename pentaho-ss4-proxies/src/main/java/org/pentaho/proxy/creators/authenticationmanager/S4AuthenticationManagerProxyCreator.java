@@ -6,6 +6,7 @@ import org.pentaho.platform.engine.core.system.PentahoSystem;
 import org.pentaho.platform.proxy.api.IProxyCreator;
 import org.pentaho.platform.proxy.api.IProxyFactory;
 import org.pentaho.platform.proxy.impl.ProxyException;
+import org.pentaho.proxy.creators.ProxyObjectBase;
 import org.pentaho.proxy.creators.ProxyUtils;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -34,20 +35,18 @@ public class S4AuthenticationManagerProxyCreator implements IProxyCreator<Authen
     return ProxyUtils.getInstance().getProxyFactory();
   }
 
-  private class ProxyAuthenticationManager implements AuthenticationManager {
-
-    private Object target;
+  private class ProxyAuthenticationManager extends ProxyObjectBase implements AuthenticationManager {
 
     public ProxyAuthenticationManager( Object target ) {
-      this.target = target;
+      super(target);
     }
 
     @Override public Authentication authenticate( Authentication authentication ) throws AuthenticationException {
 
       try {
         Object auth = getProxyFactory().createProxy( authentication );
-        Method authenticate = ProxyUtils.findMethodByName( target.getClass(), "authenticate", auth.getClass() );
-        Object retVal = authenticate.invoke( target, auth );
+        Method authenticate = ProxyUtils.findMethodByName( baseTarget.getClass(), "authenticate", auth.getClass() );
+        Object retVal = authenticate.invoke( baseTarget, auth );
 
         if ( retVal != null ){
           return getProxyFactory().createProxy( retVal );

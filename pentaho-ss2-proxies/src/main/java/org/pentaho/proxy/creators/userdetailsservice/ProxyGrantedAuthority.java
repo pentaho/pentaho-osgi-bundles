@@ -2,20 +2,20 @@ package org.pentaho.proxy.creators.userdetailsservice;
 
 import java.lang.reflect.Method;
 
+import org.pentaho.proxy.creators.ProxyObjectBase;
 import org.springframework.security.GrantedAuthority;
 import org.springframework.util.ReflectionUtils;
 
 /**
  * Created by tkafalas on 8/24/15.
  */
-public class ProxyGrantedAuthority implements GrantedAuthority {
+public class ProxyGrantedAuthority extends ProxyObjectBase implements GrantedAuthority {
   private static final long serialVersionUID = 1L;
-  private Object sourceObject;
   Method getAuthorityMethod;
   Method compareToMethod;
 
   public ProxyGrantedAuthority( Object sourceObject ) {
-    this.sourceObject = sourceObject;
+    super(sourceObject);
     Class<? extends Object> clazz = sourceObject.getClass();
     getAuthorityMethod = ReflectionUtils.findMethod( clazz, "getAuthority" );
     compareToMethod = ReflectionUtils.findMethod( clazz, "compareTo", new Class[] { Object.class } );
@@ -36,7 +36,7 @@ public class ProxyGrantedAuthority implements GrantedAuthority {
 
   @Override
   public String getAuthority() {
-    return (String) ReflectionUtils.invokeMethod( getAuthorityMethod, sourceObject );
+    return (String) ReflectionUtils.invokeMethod( getAuthorityMethod, baseTarget );
   }
 
 }

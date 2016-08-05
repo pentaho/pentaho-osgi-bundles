@@ -6,6 +6,7 @@ import org.pentaho.platform.engine.core.system.PentahoSystem;
 import org.pentaho.platform.proxy.api.IProxyCreator;
 import org.pentaho.platform.proxy.api.IProxyFactory;
 import org.pentaho.platform.proxy.impl.ProxyException;
+import org.pentaho.proxy.creators.ProxyObjectBase;
 import org.pentaho.proxy.creators.ProxyUtils;
 import org.springframework.security.Authentication;
 import org.springframework.security.AuthenticationException;
@@ -34,11 +35,12 @@ public class AuthenticationManagerProxyCreator implements IProxyCreator<Authenti
     return ProxyUtils.getInstance().getProxyFactory();
   }
 
-  private class ProxyAuthenticationManager implements AuthenticationManager {
+  private class ProxyAuthenticationManager extends ProxyObjectBase implements AuthenticationManager {
 
     private Object target;
 
     public ProxyAuthenticationManager( Object target ) {
+      super(target);
       this.target = target;
     }
 

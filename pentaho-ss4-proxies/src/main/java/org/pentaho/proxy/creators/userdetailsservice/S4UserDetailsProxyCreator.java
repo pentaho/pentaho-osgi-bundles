@@ -1,6 +1,7 @@
 package org.pentaho.proxy.creators.userdetailsservice;
 
 import org.pentaho.platform.proxy.api.IProxyCreator;
+import org.pentaho.proxy.creators.ProxyObjectBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.GrantedAuthority;
@@ -26,9 +27,7 @@ public class S4UserDetailsProxyCreator implements IProxyCreator<UserDetails> {
     return new S4UserDetailsProxy( target );
   }
 
-  private class S4UserDetailsProxy implements UserDetails {
-
-    private Object target;
+  private class S4UserDetailsProxy extends ProxyObjectBase implements UserDetails {
 
     private Method getAuthoritiesMethod;
     private Method getPasswordMethod;
@@ -40,20 +39,20 @@ public class S4UserDetailsProxyCreator implements IProxyCreator<UserDetails> {
 
 
     public S4UserDetailsProxy( Object target ){
-      this.target = target;
+      super(target);
     }
 
     @Override public Collection<? extends GrantedAuthority> getAuthorities() {
 
       if( getAuthoritiesMethod == null ){
-        getAuthoritiesMethod = ReflectionUtils.findMethod( target.getClass(), "getAuthorities" );
+        getAuthoritiesMethod = ReflectionUtils.findMethod( baseTarget.getClass(), "getAuthorities" );
       }
 
       Collection<SimpleGrantedAuthority> s4Authorities = new ArrayList<SimpleGrantedAuthority>();
 
       try {
 
-        Object authoritiesObj = getAuthoritiesMethod.invoke( target );
+        Object authoritiesObj = getAuthoritiesMethod.invoke( baseTarget );
 
         if( authoritiesObj != null && authoritiesObj instanceof Object[] ){
 
@@ -77,12 +76,12 @@ public class S4UserDetailsProxyCreator implements IProxyCreator<UserDetails> {
     @Override public String getPassword() {
 
       if( getPasswordMethod == null ){
-        getPasswordMethod = ReflectionUtils.findMethod( target.getClass(), "getPassword" );
+        getPasswordMethod = ReflectionUtils.findMethod( baseTarget.getClass(), "getPassword" );
       }
 
       try {
 
-        return ( String ) getPasswordMethod.invoke( target );
+        return ( String ) getPasswordMethod.invoke( baseTarget );
 
       } catch ( InvocationTargetException | IllegalAccessException e ) {
         logger.error( e.getMessage() , e );
@@ -94,12 +93,12 @@ public class S4UserDetailsProxyCreator implements IProxyCreator<UserDetails> {
     @Override public String getUsername() {
 
       if( getUsernameMethod == null ){
-        getUsernameMethod = ReflectionUtils.findMethod( target.getClass(), "getUsername" );
+        getUsernameMethod = ReflectionUtils.findMethod( baseTarget.getClass(), "getUsername" );
       }
 
       try {
 
-        return ( String ) getUsernameMethod.invoke( target );
+        return ( String ) getUsernameMethod.invoke( baseTarget );
 
       } catch ( InvocationTargetException | IllegalAccessException e ) {
         logger.error( e.getMessage() , e );
@@ -111,12 +110,12 @@ public class S4UserDetailsProxyCreator implements IProxyCreator<UserDetails> {
     @Override public boolean isAccountNonExpired() {
 
       if( isAccountNonExpiredMethod == null ){
-        isAccountNonExpiredMethod = ReflectionUtils.findMethod( target.getClass(), "isAccountNonExpired" );
+        isAccountNonExpiredMethod = ReflectionUtils.findMethod( baseTarget.getClass(), "isAccountNonExpired" );
       }
 
       try {
 
-        return ( Boolean ) isAccountNonExpiredMethod.invoke( target );
+        return ( Boolean ) isAccountNonExpiredMethod.invoke( baseTarget );
 
       } catch ( InvocationTargetException | IllegalAccessException e ) {
         logger.error( e.getMessage() , e );
@@ -128,12 +127,12 @@ public class S4UserDetailsProxyCreator implements IProxyCreator<UserDetails> {
     @Override public boolean isAccountNonLocked() {
 
       if( isAccountNonLockedMethod == null ){
-        isAccountNonLockedMethod = ReflectionUtils.findMethod( target.getClass(), "isAccountNonLocked" );
+        isAccountNonLockedMethod = ReflectionUtils.findMethod( baseTarget.getClass(), "isAccountNonLocked" );
       }
 
       try {
 
-        return ( Boolean ) isAccountNonLockedMethod.invoke( target );
+        return ( Boolean ) isAccountNonLockedMethod.invoke( baseTarget );
 
       } catch ( InvocationTargetException | IllegalAccessException e ) {
         logger.error( e.getMessage() , e );
@@ -145,12 +144,12 @@ public class S4UserDetailsProxyCreator implements IProxyCreator<UserDetails> {
     @Override public boolean isCredentialsNonExpired() {
 
       if( isCredentialsNonExpiredMethod == null ){
-        isCredentialsNonExpiredMethod = ReflectionUtils.findMethod( target.getClass(), "isCredentialsNonExpired" );
+        isCredentialsNonExpiredMethod = ReflectionUtils.findMethod( baseTarget.getClass(), "isCredentialsNonExpired" );
       }
 
       try {
 
-        return ( Boolean ) isCredentialsNonExpiredMethod.invoke( target );
+        return ( Boolean ) isCredentialsNonExpiredMethod.invoke( baseTarget );
 
       } catch ( InvocationTargetException | IllegalAccessException e ) {
         logger.error( e.getMessage() , e );
@@ -162,12 +161,12 @@ public class S4UserDetailsProxyCreator implements IProxyCreator<UserDetails> {
     @Override public boolean isEnabled() {
 
       if( isEnabledMethod == null ){
-        isEnabledMethod = ReflectionUtils.findMethod( target.getClass(), "isEnabled" );
+        isEnabledMethod = ReflectionUtils.findMethod( baseTarget.getClass(), "isEnabled" );
       }
 
       try {
 
-        return ( Boolean ) isEnabledMethod.invoke( target );
+        return ( Boolean ) isEnabledMethod.invoke( baseTarget );
 
       } catch ( InvocationTargetException | IllegalAccessException e ) {
         logger.error( e.getMessage() , e );

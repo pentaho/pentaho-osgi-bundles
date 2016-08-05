@@ -1,5 +1,6 @@
 package org.pentaho.proxy.creators.securitycontext;
 
+import org.pentaho.proxy.creators.ProxyObjectBase;
 import org.pentaho.proxy.creators.ProxyUtils;
 import org.pentaho.platform.proxy.api.IProxyCreator;
 import org.pentaho.platform.proxy.api.IProxyFactory;
@@ -30,15 +31,13 @@ public class SecurityContextProxyCreator implements IProxyCreator<SecurityContex
     return ProxyUtils.getInstance().getProxyFactory();
   }
 
-  private class ProxySecurityContext implements SecurityContext {
-
-    private Object target;
+  private class ProxySecurityContext extends ProxyObjectBase implements SecurityContext {
 
     private Method getAuthenticationMethod;
     private Method setAuthenticationMethod;
 
     public ProxySecurityContext( Object target ) {
-      this.target = target;
+      super(target);
     }
 
     @Override public Authentication getAuthentication() {
@@ -46,10 +45,10 @@ public class SecurityContextProxyCreator implements IProxyCreator<SecurityContex
       try {
 
         if( getAuthenticationMethod == null ) {
-          getAuthenticationMethod = ProxyUtils.findMethodByName( target.getClass(), "getAuthentication" );
+          getAuthenticationMethod = ProxyUtils.findMethodByName( baseTarget.getClass(), "getAuthentication" );
         }
 
-        Object retVal = getAuthenticationMethod.invoke( target );
+        Object retVal = getAuthenticationMethod.invoke( baseTarget );
 
         if ( retVal != null ){
           return getProxyFactory().createProxy( retVal );
@@ -68,15 +67,15 @@ public class SecurityContextProxyCreator implements IProxyCreator<SecurityContex
 
         if( authentication == null ) {
 
-          setAuthenticationMethod = ProxyUtils.findMethodByName( target.getClass(), "setAuthentication" );
-          setAuthenticationMethod.invoke( target, null );
+          setAuthenticationMethod = ProxyUtils.findMethodByName( baseTarget.getClass(), "setAuthentication" );
+          setAuthenticationMethod.invoke( baseTarget, null );
 
         } else {
 
           Object auth = ProxyUtils.getInstance().getProxyFactory().createProxy( authentication );
-          setAuthenticationMethod = ProxyUtils.findMethodByName( target.getClass(), "setAuthentication", auth.getClass() );
+          setAuthenticationMethod = ProxyUtils.findMethodByName( baseTarget.getClass(), "setAuthentication", auth.getClass() );
 
-          setAuthenticationMethod.invoke( target, auth );
+          setAuthenticationMethod.invoke( baseTarget, auth );
         }
 
       } catch ( InvocationTargetException | IllegalAccessException | ProxyException e ) {

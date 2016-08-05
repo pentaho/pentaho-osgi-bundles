@@ -2,6 +2,7 @@ package org.pentaho.proxy.creators.grantedauthorities;
 
 import org.pentaho.platform.proxy.api.IProxyCreator;
 import org.pentaho.platform.proxy.api.IProxyFactory;
+import org.pentaho.proxy.creators.ProxyObjectBase;
 import org.pentaho.proxy.creators.ProxyUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,19 +29,17 @@ public class S4GrantedAuthorityProxyCreator implements IProxyCreator<GrantedAuth
     return ProxyUtils.getInstance().getProxyFactory();
   }
 
-  private class ProxyGrantedAuthority implements GrantedAuthority {
+  private class ProxyGrantedAuthority extends ProxyObjectBase implements GrantedAuthority {
 
     /**
      *
      */
     private static final long serialVersionUID = 1603112902745163281L;
 
-    private Object target;
-
     private Method getAuthorityMethod;
 
     public ProxyGrantedAuthority( Object target ) {
-      this.target = target;
+      super(target);
     }
 
     @Override
@@ -48,10 +47,10 @@ public class S4GrantedAuthorityProxyCreator implements IProxyCreator<GrantedAuth
       try {
 
         if ( getAuthorityMethod == null ) {
-          getAuthorityMethod = ProxyUtils.findMethodByName( target.getClass(), "getAuthority" );
+          getAuthorityMethod = ProxyUtils.findMethodByName( baseTarget.getClass(), "getAuthority" );
         }
 
-        return (String) getAuthorityMethod.invoke( target );
+        return (String) getAuthorityMethod.invoke( baseTarget );
 
       } catch ( InvocationTargetException | IllegalAccessException e ) {
         logger.error( e.getMessage() , e );
