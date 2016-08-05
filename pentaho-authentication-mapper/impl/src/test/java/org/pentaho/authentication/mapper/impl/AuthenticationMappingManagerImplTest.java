@@ -22,8 +22,9 @@
 
 package org.pentaho.authentication.mapper.impl;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.io.ByteStreams;
+import java.util.List;
+import java.util.Map;
+
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -32,21 +33,17 @@ import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
+
 import org.pentaho.authentication.mapper.api.AuthenticationMappingManager;
 import org.pentaho.authentication.mapper.api.AuthenticationMappingService;
 import org.pentaho.authentication.mapper.api.MappingException;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.util.List;
-import java.util.Map;
+import com.google.common.collect.ImmutableMap;
 
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.hasEntry;
-import static org.hamcrest.Matchers.hasKey;
-import static org.hamcrest.Matchers.instanceOf;
-import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.nullValue;
+
 import static org.junit.Assert.assertThat;
 
 /**
@@ -55,20 +52,13 @@ import static org.junit.Assert.assertThat;
 
 @RunWith( org.mockito.runners.MockitoJUnitRunner.class )
 public class AuthenticationMappingManagerImplTest {
-
   @Rule public TemporaryFolder etc = new TemporaryFolder();
   @Rule public ExpectedException exception = ExpectedException.none();
   @Captor ArgumentCaptor<Map<String, Object>> mapArgumentCaptor;
   private AuthenticationMappingManagerImpl manager;
-  private File configuration;
 
   @Before
   public void setUp() throws Exception {
-    System.setProperty( "karaf.etc", etc.getRoot().getAbsolutePath() );
-
-    configuration = etc.newFile( AuthenticationMappingManager.CONFIG_FILE_NAME );
-    ByteStreams.copy( getClass().getResourceAsStream( "/mapping.json" ), new FileOutputStream( configuration ) );
-
     manager = new AuthenticationMappingManagerImpl();
   }
 
@@ -93,40 +83,14 @@ public class AuthenticationMappingManagerImplTest {
     Map<String, ?> result = manager.getMapping( String.class, "map this", Map.class );
 
     assertThat( result, allOf(
-      hasEntry( "id", "cluster_security_mapping_configuration" ),
-      hasEntry( "input", "map this" ),
-      hasEntry( is( "config" ), instanceOf( Map.class ) ) )
+        hasEntry( "id", "cluster_security_mapping_configuration" ),
+        hasEntry( "input", "map this" ) )
     );
-    assertThat( (Map<String, ?>) result.get( "config" ), hasKey( "default" ) );
 
     // Remove service, default will be used
     manager.onMappingServiceRemoved( service );
     result = manager.getMapping( String.class, "use the default", Map.class );
     assertThat( result, hasEntry( "id", "default" ) );
-  }
-
-  @Test
-  public void expectMappingExceptionOnConfigError() throws Exception {
-    manager.onMappingServiceAdded( new TestService( "default" ), ImmutableMap.of() );
-    manager.getMapping( String.class, "some value", Map.class );
-
-    assertThat( configuration.delete(), is( true ) );
-    configuration = etc.newFile( AuthenticationMappingManager.CONFIG_FILE_NAME );
-    ByteStreams.copy( getClass().getResourceAsStream( "/invalid_mapping.json" ),
-      new FileOutputStream( configuration ) );
-
-    exception.expect( MappingException.class );
-    manager.getMapping( String.class, "some value", Map.class );
-  }
-
-  @Test
-  public void expectEmptyConfigWhenConfigFileNotPresent() throws Exception {
-    manager.onMappingServiceAdded( new TestService( "default" ), ImmutableMap.of() );
-    manager.getMapping( String.class, "some value", Map.class );
-
-    assertThat( configuration.delete(), is( true ) );
-    assertThat( ( (Map) manager.getMapping( String.class, "some value", Map.class ).get( "config" ) ).size(),
-      is( 0 ) );
   }
 
   @Test
@@ -159,7 +123,7 @@ public class AuthenticationMappingManagerImplTest {
     }
 
     @Override public Map getMapping( String input, Map<String, ?> config ) throws MappingException {
-      return ImmutableMap.of( "id", id, "input", input, "config", config );
+      return ImmutableMap.of( "id", id, "input", input );
     }
   }
 }

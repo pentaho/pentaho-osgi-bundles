@@ -27,7 +27,6 @@ package org.pentaho.authentication.mapper.api;
  */
 public interface AuthenticationMappingManager {
   String RANKING_CONFIG = "service.ranking";
-  String CONFIG_FILE_NAME = "authenticationMapping.json";
 
   <InputType, OutputType> OutputType getMapping( Class<InputType> inputType, InputType input,
                                                  Class<OutputType> outputType ) throws MappingException;
