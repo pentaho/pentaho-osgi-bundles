@@ -32,8 +32,13 @@
         var baseUrl = CONTEXT_PATH && CONTEXT_PATH == '/' ? CONTEXT_PATH : CONTEXT_PATH + "osgi/";
         var locale = typeof SESSION_LOCALE !== "undefined" ? SESSION_LOCALE : "en";
         var url = baseUrl + "cxf/i18n/" + bundlePath + "/" + locale;
+        var options = {
+          "headers": {
+            "Accept": "application/JSON"
+          }
+        };
         
-        request(url).then(function (data) {
+        request(url, options).then(function (data) {
           if (data) {
             var bundle = new MessageBundle(JSON.parse(data));
             onLoad(bundle);
