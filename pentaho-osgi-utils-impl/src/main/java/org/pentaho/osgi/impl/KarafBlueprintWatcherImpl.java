@@ -76,6 +76,16 @@ public class KarafBlueprintWatcherImpl implements IKarafBlueprintWatcher {
         while ( true ) {
           List<String> unloadedBlueprints = new ArrayList<String>();
           for ( Bundle bundle : bundleContext.getBundles() ) {
+            if( bundle.getState() != Bundle.RESOLVED ){
+              // We're only interested in bundles which are resolved, not started or installed. This is because a
+              // bundle which should have started but failed will be in the resolved state.
+              // We cannot assume an installed bundle is meant to be started and thus wait for it, bundles can be
+              // installed and never started (even though with Karaf this would be very strange). The only thing we can
+              // reasonably do here is skip non-resolved bundles.
+              logger.debug( "Blueprint check was skipped for bundle {} as it's not in the 'Resolved' state",
+                  bundle.getSymbolicName() );
+              continue;
+            }
             if ( blueprintStateService.hasBlueprint( bundle.getBundleId() ) ) {
               if ( !blueprintStateService.isBlueprintLoaded( bundle.getBundleId() ) ) {
                 unloadedAndFailedBlueprints.add( bundle );

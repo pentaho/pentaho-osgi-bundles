@@ -45,6 +45,7 @@ public class KarafBlueprintWatcherImplTest {
   private static final long MOCK_BUNDLE_GRACE_PERIOD_ID = 7;
   private static final long MOCK_BUNDLE_NO_BLUEPRINT_ID = 9;
   private static final long MOCK_BUNDLE_UNKNOWN_ID = 12;
+  private static final long MOCK_BUNDLE_INSTALLED_ID = 15;
 
   private static final String[] MOCK_BUNDLE_NO_DEPENDENCIES = null;
   private static final String[] MOCK_BUNDLE_FAILED_DEPENDENCIES = { "dependency1", "dependency2" };
@@ -95,6 +96,55 @@ public class KarafBlueprintWatcherImplTest {
     LogManager.getRootLogger().addAppender( new TestAppender() );
     MOCK_BUNDLE_FAILED_CAUSE.setStackTrace( STACK_TRACE );
 
+  }
+
+
+  @Test
+  public void testNonResolvedBundlesSkipped() {
+
+    // Setting the karaf timeout to 1ms, because this is an unit test
+    IApplicationContext applicationContext = mock( IApplicationContext.class );
+    PentahoSystem.init( applicationContext );
+    when( applicationContext.getProperty( KarafBlueprintWatcherImpl.KARAF_TIMEOUT_PROPERTY ) ).thenReturn( "1" );
+
+
+    BundleContext bundleContext = mock( BundleContext.class );
+
+    @SuppressWarnings( "unchecked" )
+    ServiceReference<BlueprintStateService> blueprintStateServiceReference =
+        (ServiceReference<BlueprintStateService>) mock( ServiceReference.class );
+    when( bundleContext.getServiceReference( BlueprintStateService.class ) ).thenReturn(
+        blueprintStateServiceReference );
+
+    BlueprintStateService blueprintStateService = mock( BlueprintStateService.class );
+    when( bundleContext.getService( blueprintStateServiceReference ) ).thenReturn( blueprintStateService );
+
+    KarafBlueprintWatcherImpl karafBlueprintWatcherImpl = new KarafBlueprintWatcherImpl( bundleContext );
+
+    // Test when all blueprints are loaded
+
+    List<Bundle> bundleList = new ArrayList<Bundle>();
+
+    Bundle activeBundle =
+        createMockBundle( MOCK_BUNDLE_ACTIVE_ID, true, BundleState.Active, MOCK_BUNDLE_NO_DEPENDENCIES,
+            MOCK_BUNDLE_NO_CAUSE, blueprintStateService );
+
+    Bundle installedBundle =
+        createMockBundle( MOCK_BUNDLE_INSTALLED_ID, true, BundleState.Installed, MOCK_BUNDLE_NO_DEPENDENCIES,
+            MOCK_BUNDLE_NO_CAUSE, blueprintStateService );
+
+    bundleList.add( activeBundle );
+    bundleList.add( installedBundle );
+
+
+    Bundle[] bundles = bundleList.toArray( new Bundle[bundleList.size()] );
+    when( bundleContext.getBundles() ).thenReturn( bundles );
+
+    try {
+      karafBlueprintWatcherImpl.waitForBlueprint();
+    } catch ( BlueprintWatcherException e ) {
+      Assert.fail();
+    }
   }
 
   @Test
