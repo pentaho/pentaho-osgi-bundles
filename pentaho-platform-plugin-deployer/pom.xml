@@ -56,6 +56,7 @@
       <version>${mockito.version}</version>
       <scope>test</scope>
     </dependency>
+
   </dependencies>
   <build>
     <finalName>${project.artifactId}</finalName>
@@ -69,12 +70,13 @@
           <instructions>
             <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
             <Bundle-Version>${project.version}</Bundle-Version>
-            <Export-Package>org.pentaho.osgi.platform.plugin.deployer.api</Export-Package>
+            <Export-Package>org.pentaho.osgi.platform.plugin.deployer.api,org.pentaho.osgi.platform.plugin</Export-Package>
             <Private-Package>org.apache.karaf.util,
               org.pentaho.osgi.platform.plugin.deployer,
               org.pentaho.osgi.platform.plugin.deployer.impl,
               org.pentaho.osgi.platform.plugin.deployer.impl.handlers,
               org.pentaho.osgi.platform.plugin.deployer.impl.handlers.pluginxml</Private-Package>
+            <Import-Package>!org.pentaho.osgi.platform.plugin.deployer.api,!org.pentaho.osgi.platform.plugin,*</Import-Package>
           </instructions>
         </configuration>
       </plugin>

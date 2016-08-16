@@ -7,13 +7,15 @@
     <artifactId>pentaho-osgi-bundles</artifactId>
     <version>7.0-SNAPSHOT</version>
   </parent>
-  <artifactId>pentaho-server-bundle</artifactId>
+  <artifactId>pentaho-pdi-platform</artifactId>
   <version>7.0-SNAPSHOT</version>
   <packaging>bundle</packaging>
   <name>Pentaho Community Edition Project: ${project.artifactId}</name>
   <description>a Pentaho open source project</description>
   <url>http://www.pentaho.com</url>
-
+  <properties>
+    <dependency.mondrian.revision>3.13-SNAPSHOT</dependency.mondrian.revision>
+  </properties>
   <dependencies>
     <dependency>
       <groupId>pentaho</groupId>
@@ -30,6 +32,16 @@
           <groupId>org.apache.xbean</groupId>
         </exclusion>
       </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>pentaho</groupId>
+      <artifactId>pentaho-platform-extensions</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>pentaho</groupId>
+      <artifactId>pentaho-platform-repository</artifactId>
+      <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>org.osgi</groupId>
@@ -91,10 +103,37 @@
       <artifactId>javax.servlet-api</artifactId>
       <version>3.0.1</version>
     </dependency>
-
+    <dependency>
+      <groupId>pentaho</groupId>
+      <artifactId>mondrian</artifactId>
+      <version>${dependency.mondrian.revision}</version>
+    </dependency>
   </dependencies>
   <build>
     <finalName>${project.artifactId}</finalName>
+
+    
+    <resources>
+      <resource>
+        <directory>src/main/resources</directory>
+        <filtering>false</filtering>
+        <includes>
+          <include>**/*</include>
+        </includes>
+        <excludes>
+          <exclude>OSGI-INF/blueprint/*</exclude>
+        </excludes>
+      </resource>
+
+      <resource>
+        <directory>src/main/resources</directory>
+        <filtering>true</filtering>
+        <includes>
+          <include>OSGI-INF/blueprint/*</include>
+        </includes>
+      </resource>
+    </resources>
+
     <plugins>
       <plugin>
         <groupId>org.apache.felix</groupId>
@@ -105,8 +144,7 @@
           <instructions>
             <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
             <Bundle-Version>${project.version}</Bundle-Version>
-            <Bundle-Activator>org.pentaho.platform.server.osgi.PentahoOSGIActivator</Bundle-Activator>
-            <Import-Package>javax.servlet;version="[2.0, 3.1]";resolution:=optional,*</Import-Package>
+            <Bundle-Activator>org.pentaho.platform.pdi.PdiPlatformActivator</Bundle-Activator>
           </instructions>
         </configuration>
       </plugin>

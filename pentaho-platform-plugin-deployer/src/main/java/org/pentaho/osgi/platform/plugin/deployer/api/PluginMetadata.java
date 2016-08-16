@@ -24,10 +24,10 @@ package org.pentaho.osgi.platform.plugin.deployer.api;
 
 import org.w3c.dom.Document;
 
-import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.List;
 
 /**
  * Created by bryan on 8/26/14.
@@ -37,7 +37,13 @@ public interface PluginMetadata {
 
   public Document getBlueprint();
 
-  public void writeBlueprint( OutputStream outputStream ) throws IOException;
+  public void writeBlueprint( String name, OutputStream outputStream ) throws IOException;
 
   public FileWriter getFileWriter( String path ) throws IOException;
+  OutputStream getFileOutputStream( String path ) throws IOException;
+
+  void addContentType( String contentType );
+  List<String> getContentTypes();
+
+  void setBlueprint( Document blueprint );
 }

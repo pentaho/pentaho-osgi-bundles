@@ -26,16 +26,25 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Map;
 import java.util.Set;
+import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
 /**
  * Created by bryan on 8/26/14.
  */
 public interface ManifestUpdater {
-  public Map<String, String> getImports();
 
-  public Set<String> getExportServices();
+  Map<String, String> getImports();
 
-  public void write( Manifest originalManifest, OutputStream outputStream, String name,
+  Set<String> getExportServices();
+
+  void write( Manifest originalManifest, OutputStream outputStream, String name,
                      String symbolicName, String version ) throws IOException;
+
+  void addEntry( Object key, Object value );
+
+  void setBundleSymbolicName( String name );
+
+
+  String getBundleSymbolicName();
 }

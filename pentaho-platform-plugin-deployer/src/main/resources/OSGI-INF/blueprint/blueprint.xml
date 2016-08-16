@@ -35,15 +35,46 @@
     </bean>
   </service>
 
+  <bean id="pluginXmlContentTypesHandler" class="org.pentaho.osgi.platform.plugin.deployer.impl.handlers.pluginxml.PluginXmlContentTypeHandler">
+  </bean>
+  <service id="pluginXmlContentTypesHandlerService" ref="pluginXmlContentTypesHandler" interface="org.pentaho.osgi.platform.plugin.deployer.api.PluginFileHandler" ranking="10"/>
+
+
   <bean id="pluginXmlStaticPathsHandler" class="org.pentaho.osgi.platform.plugin.deployer.impl.handlers.pluginxml.PluginXmlStaticPathsHandler">
     <property name="jsonUtil" ref="jsonUtil"/>
   </bean>
   <service id="pluginXmlStaticPathsHandlerService" ref="pluginXmlStaticPathsHandler" interface="org.pentaho.osgi.platform.plugin.deployer.api.PluginFileHandler"/>
 
+
   <bean id="pluginXmlExternalResourcesHandler" class="org.pentaho.osgi.platform.plugin.deployer.impl.handlers.pluginxml.PluginXmlExternalResourcesHandler">
     <property name="jsonUtil" ref="jsonUtil"/>
   </bean>
   <service id="pluginXmlExternalResourcesHandlerService" ref="pluginXmlExternalResourcesHandler" interface="org.pentaho.osgi.platform.plugin.deployer.api.PluginFileHandler"/>
+
+  <bean id="pluginXmlLifecycleListenerHandler" class="org.pentaho.osgi.platform.plugin.deployer.impl.handlers.pluginxml.PluginXmlLifecycleListenerHandler">
+  </bean>
+  <service id="pluginXmlLifecycleListenerHandlerService" ref="pluginXmlLifecycleListenerHandler" interface="org.pentaho.osgi.platform.plugin.deployer.api.PluginFileHandler"/>
+
+
+
+  <bean id="BlueprintFileHandler" class="org.pentaho.osgi.platform.plugin.deployer.impl.handlers.BlueprintFileHandler">
+  </bean>
+  <service ref="BlueprintFileHandler" interface="org.pentaho.osgi.platform.plugin.deployer.api.PluginFileHandler"/>
+
+
+  <bean id="PluginLibraryFileHandler" class="org.pentaho.osgi.platform.plugin.deployer.impl.handlers.PluginLibraryFileHandler">
+  </bean>
+  <service id="PluginLibraryFileHandlerService" ref="PluginLibraryFileHandler" interface="org.pentaho.osgi.platform.plugin.deployer.api.PluginFileHandler"/>
+
+
+  <bean id="SpringFileHandler" class="org.pentaho.osgi.platform.plugin.deployer.impl.handlers.SpringFileHandler">
+  </bean>
+  <service id="SpringFileHandlerService" ref="SpringFileHandler" interface="org.pentaho.osgi.platform.plugin.deployer.api.PluginFileHandler"/>
+
+  <service interface="org.pentaho.osgi.platform.plugin.deployer.api.PluginFileHandler">
+    <bean class="org.pentaho.osgi.platform.plugin.deployer.impl.handlers.pluginxml.PluginXmlPluginIdHandler"/>
+  </service>
+
 
   <reference-list id="pluginFileHandlers" interface="org.pentaho.osgi.platform.plugin.deployer.api.PluginFileHandler" availability="optional" />
 </blueprint>

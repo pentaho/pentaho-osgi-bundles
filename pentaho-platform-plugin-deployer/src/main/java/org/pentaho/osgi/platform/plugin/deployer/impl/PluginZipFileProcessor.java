@@ -55,6 +55,7 @@ import java.util.zip.ZipOutputStream;
  */
 public class PluginZipFileProcessor {
   public static final String BLUEPRINT = "OSGI-INF/blueprint/blueprint.xml";
+  public static final String BLUEPRINT_REGEX = ".*\\/OSGI-INF\\/blueprint\\/.*\\.xml";
   private final List<PluginFileHandler> pluginFileHandlers;
   private final String name;
   private final String symbolicName;
@@ -97,7 +98,7 @@ public class PluginZipFileProcessor {
       Document blueprint = null;
       while ( ( zipEntry = zipInputStream.getNextEntry() ) != null ) {
         ByteArrayOutputStream byteArrayOutputStream =
-          new ByteArrayOutputStream( (int) Math.min( Integer.MAX_VALUE, zipEntry.getSize() ) );
+          new ByteArrayOutputStream( (int) Math.max( 0, Math.min( Integer.MAX_VALUE, zipEntry.getSize() ) ) );
         byte[] buffer = new byte[ 1024 ];
         int read;
         while ( ( read = zipInputStream.read( buffer ) ) > 0 ) {
@@ -109,11 +110,14 @@ public class PluginZipFileProcessor {
         if ( JarFile.MANIFEST_NAME.equals( name ) ) {
           shouldOutput = false;
           manifest = new Manifest( new ByteArrayInputStream( zipBytes ) );
-        } else if ( BLUEPRINT.equals( name ) ) {
+        } else if ( name.matches( BLUEPRINT_REGEX ) ) {
           shouldOutput = false;
           try {
+            DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+            documentBuilderFactory.setNamespaceAware(true);
             blueprint =
-              DocumentBuilderFactory.newInstance().newDocumentBuilder().parse( new ByteArrayInputStream( zipBytes ) );
+              documentBuilderFactory.newDocumentBuilder().parse( new ByteArrayInputStream( zipBytes ) );
+            pluginMetadata.setBlueprint( blueprint );
           } catch ( Exception e ) {
             throw new IOException( e );
           }
@@ -169,6 +173,7 @@ public class PluginZipFileProcessor {
           for ( PluginFileHandler pluginFileHandler : pluginFileHandlers ) {
             if ( pluginFileHandler.handles( currentPath ) ) {
               try {
+                // There is no short-circuit. Multiple handlers can do work on any given resource
                 pluginFileHandler.handle( currentPath, currentFile, pluginMetadata );
               } catch ( PluginHandlingException e ) {
                 throw new IOException( e );
@@ -194,7 +199,7 @@ public class PluginZipFileProcessor {
       FileOutputStream blueprintOutputStream = null;
       try {
         blueprintOutputStream = new FileOutputStream( dir.getAbsolutePath() + "/" + BLUEPRINT );
-        pluginMetadata.writeBlueprint( blueprintOutputStream );
+        pluginMetadata.writeBlueprint( name, blueprintOutputStream );
       } finally {
         if ( blueprintOutputStream != null ) {
           blueprintOutputStream.close();
