@@ -5,11 +5,11 @@
   <parent>
     <groupId>pentaho</groupId>
     <artifactId>pentaho-osgi-bundles</artifactId>
-    <version>6.1-SNAPSHOT</version>
+    <version>6.1.0.5-231</version>
   </parent>
   <groupId>pentaho</groupId>
   <artifactId>pentaho-osgi-utils-impl</artifactId>
-  <version>6.1-SNAPSHOT</version>
+  <version>6.1.0.5-231</version>
   <packaging>bundle</packaging>
   <properties>
     <dependency.org.apache.felix.org.apache.felix.configadmin.revision>1.6.0</dependency.org.apache.felix.org.apache.felix.configadmin.revision>
@@ -91,28 +91,27 @@
       <version>${dependency.pentaho-platform.revision}</version>
       <exclusions>
         <exclusion>
-            <groupId>*</groupId>
-            <artifactId>*</artifactId>
+          <artifactId>*</artifactId>
+          <groupId>*</groupId>
         </exclusion>
-    </exclusions>
+      </exclusions>
     </dependency>
-
     <dependency>
       <groupId>pentaho</groupId>
       <artifactId>pentaho-platform-core</artifactId>
       <version>${dependency.pentaho-platform.revision}</version>
       <exclusions>
         <exclusion>
-            <groupId>*</groupId>
-            <artifactId>*</artifactId>
+          <artifactId>*</artifactId>
+          <groupId>*</groupId>
         </exclusion>
-    </exclusions>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>pentaho</groupId>
       <artifactId>pentaho-service-coordinator</artifactId>
       <version>${dependency.pentaho-platform.revision}</version>
-			<scope>compile</scope>
+      <scope>compile</scope>
     </dependency>
   </dependencies>
   <build>
