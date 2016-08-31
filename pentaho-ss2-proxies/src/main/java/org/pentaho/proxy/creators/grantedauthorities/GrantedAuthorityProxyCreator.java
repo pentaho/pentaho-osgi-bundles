@@ -1,3 +1,22 @@
+/*
+ * This program is free software; you can redistribute it and/or modify it under the
+ * terms of the GNU General Public License, version 2 as published by the Free Software
+ * Foundation.
+ *
+ * You should have received a copy of the GNU General Public License along with this
+ * program; if not, you can obtain a copy at http://www.gnu.org/licenses/gpl-2.0.html
+ * or from the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU General Public License for more details.
+ *
+ *
+ * Copyright 2006 - 2016 Pentaho Corporation.  All rights reserved.
+ */
+
+
 package org.pentaho.proxy.creators.grantedauthorities;
 
 import java.lang.reflect.InvocationTargetException;
@@ -15,11 +34,13 @@ public class GrantedAuthorityProxyCreator implements IProxyCreator<GrantedAuthor
 
   private Logger logger = LoggerFactory.getLogger( getClass() );
 
-  @Override public boolean supports( Class aClass ) {
+  @Override
+  public boolean supports( Class aClass ) {
     return ProxyUtils.isRecursivelySupported( "org.springframework.security.core.GrantedAuthority", aClass );
   }
 
-  @Override public GrantedAuthority create( Object o ) {
+  @Override
+  public GrantedAuthority create( Object o ) {
     return new ProxyGrantedAuthority( o );
   }
 
@@ -37,7 +58,7 @@ public class GrantedAuthorityProxyCreator implements IProxyCreator<GrantedAuthor
     private Method getAuthorityMethod;
 
     public ProxyGrantedAuthority( Object target ) {
-      super(target);
+      super( target );
     }
 
     @Override
@@ -51,7 +72,7 @@ public class GrantedAuthorityProxyCreator implements IProxyCreator<GrantedAuthor
         return (String) getAuthorityMethod.invoke( baseTarget );
 
       } catch ( InvocationTargetException | IllegalAccessException e ) {
-        logger.error( e.getMessage() , e );
+        logger.error( e.getMessage(), e );
       }
 
       return null;

@@ -1,3 +1,22 @@
+/*
+ * This program is free software; you can redistribute it and/or modify it under the
+ * terms of the GNU General Public License, version 2 as published by the Free Software
+ * Foundation.
+ *
+ * You should have received a copy of the GNU General Public License along with this
+ * program; if not, you can obtain a copy at http://www.gnu.org/licenses/gpl-2.0.html
+ * or from the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU General Public License for more details.
+ *
+ *
+ * Copyright 2006 - 2016 Pentaho Corporation.  All rights reserved.
+ */
+
+
 package org.pentaho.proxy.creators.authenticationprovider;
 
 import java.lang.reflect.InvocationTargetException;
@@ -24,16 +43,18 @@ public class AuthenticationProviderProxyCreator implements IProxyCreator<Authent
 
   private IProxyFactory iProxyFactory;
 
-  @Override public boolean supports( Class aClass ) {
+  @Override
+  public boolean supports( Class aClass ) {
     return "org.springframework.security.authentication.AuthenticationProvider".equals( aClass.getName() );
   }
 
-  @Override public AuthenticationProvider create( Object o ) {
+  @Override
+  public AuthenticationProvider create( Object o ) {
     return new ProxyAuthenticationProvider( o );
   }
 
-  private IProxyFactory getFactory(){
-    if( iProxyFactory == null ){
+  private IProxyFactory getFactory() {
+    if ( iProxyFactory == null ) {
       iProxyFactory = PentahoSystem.get( IProxyFactory.class );
     }
     return iProxyFactory;
@@ -41,12 +62,12 @@ public class AuthenticationProviderProxyCreator implements IProxyCreator<Authent
 
   private class ProxyAuthenticationProvider extends ProxyObjectBase implements AuthenticationProvider {
 
-
     public ProxyAuthenticationProvider( Object target ) {
-      super(target);
+      super( target );
     }
 
-    @Override public Authentication authenticate( Authentication authentication ) throws AuthenticationException {
+    @Override
+    public Authentication authenticate( Authentication authentication ) throws AuthenticationException {
 
       try {
         Object auth = getFactory().createProxy( authentication );
@@ -57,15 +78,15 @@ public class AuthenticationProviderProxyCreator implements IProxyCreator<Authent
           return getFactory().createProxy( retVal );
         }
       } catch ( InvocationTargetException | IllegalAccessException | ProxyException e ) {
-        logger.error( e.getMessage() , e );
+        logger.error( e.getMessage(), e );
       }
       return null;
 
     }
 
-
-    //TODO: The call to supports should be proxied to the target object
-    @Override public boolean supports( Class aClass ) {
+    // TODO: The call to supports should be proxied to the target object
+    @Override
+    public boolean supports( Class aClass ) {
       return true;
     }
   }
