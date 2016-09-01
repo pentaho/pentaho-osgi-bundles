@@ -12,12 +12,10 @@
 * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 * See the GNU Lesser General Public License for more details.
 *
-* Copyright (c) 2002-2013 Pentaho Corporation..  All rights reserved.
+* Copyright (c) 2002-2016 Pentaho Corporation..  All rights reserved.
 */
 
 package org.pentaho.platform.pdi.vfs;
-
-import java.util.Collection;
 
 import org.apache.commons.vfs2.FileName;
 import org.apache.commons.vfs2.FileObject;
@@ -26,12 +24,13 @@ import org.apache.commons.vfs2.FileSystemException;
 import org.apache.commons.vfs2.FileSystemOptions;
 import org.apache.commons.vfs2.provider.FileProvider;
 
+import java.util.Collection;
+
 /**
- * this VFS provider converts a metadata model on the fly to a 
- * mondrian file, so we don't need to store tmp mondrian files
- * 
- * @author Will Gorman (wgorman@pentaho.com)
+ * this VFS provider converts a metadata model on the fly to a mondrian file, so we don't need to store tmp mondrian
+ * files
  *
+ * @author Will Gorman (wgorman@pentaho.com)
  */
 public class MetadataToMondrianVfs implements FileProvider {
 
@@ -39,22 +38,22 @@ public class MetadataToMondrianVfs implements FileProvider {
     super();
   }
 
-  public FileObject findFile(final FileObject baseFile, final String uri, final FileSystemOptions arg2)
-      throws FileSystemException {
+  public FileObject findFile( final FileObject baseFile, final String uri, final FileSystemOptions arg2 )
+    throws FileSystemException {
 
     // for now assume that all URIs are absolute and we don't handle compound URIs
-    if (uri != null) {
+    if ( uri != null ) {
       // this is a fully qualified file path
-      int pos = uri.indexOf(':');
-      String filePath = uri.substring(pos + 1);
-      MetadataToMondrianVfsFileObject fileInfo = new MetadataToMondrianVfsFileObject(filePath);
+      int pos = uri.indexOf( ':' );
+      String filePath = uri.substring( pos + 1 );
+      MetadataToMondrianVfsFileObject fileInfo = new MetadataToMondrianVfsFileObject( filePath );
       return fileInfo;
     }
     return null;
   }
 
-  public FileObject createFileSystem(final String arg0, final FileObject arg1, final FileSystemOptions arg2)
-      throws FileSystemException {
+  public FileObject createFileSystem( final String arg0, final FileObject arg1, final FileSystemOptions arg2 )
+    throws FileSystemException {
     // not needed for our usage
     return null;
   }
@@ -69,7 +68,7 @@ public class MetadataToMondrianVfs implements FileProvider {
     return null;
   }
 
-  public FileName parseUri(final FileName arg0, final String arg1) throws FileSystemException {
+  public FileName parseUri( final FileName arg0, final String arg1 ) throws FileSystemException {
     // not needed for our usage
     return null;
   }

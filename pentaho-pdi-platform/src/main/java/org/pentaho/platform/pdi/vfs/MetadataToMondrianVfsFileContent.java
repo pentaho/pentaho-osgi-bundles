@@ -17,12 +17,6 @@
 
 package org.pentaho.platform.pdi.vfs;
 
-import java.io.*;
-import java.net.URL;
-import java.security.cert.Certificate;
-import java.util.Locale;
-import java.util.Map;
-
 import org.apache.commons.vfs2.FileContent;
 import org.apache.commons.vfs2.FileContentInfo;
 import org.apache.commons.vfs2.FileObject;
@@ -34,6 +28,17 @@ import org.pentaho.metadata.model.LogicalModel;
 import org.pentaho.metadata.util.MondrianModelExporter;
 import org.pentaho.metadata.util.XmiParser;
 
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.URL;
+import java.security.cert.Certificate;
+import java.util.Locale;
+import java.util.Map;
+
 public class MetadataToMondrianVfsFileContent implements FileContent {
 
   private MetadataToMondrianVfsFileObject fileObject;
@@ -42,7 +47,7 @@ public class MetadataToMondrianVfsFileContent implements FileContent {
 
   private boolean isOpen = false;
 
-  public MetadataToMondrianVfsFileContent(final MetadataToMondrianVfsFileObject fileObject) {
+  public MetadataToMondrianVfsFileContent( final MetadataToMondrianVfsFileObject fileObject ) {
     super();
     this.fileObject = fileObject;
   }
@@ -61,16 +66,16 @@ public class MetadataToMondrianVfsFileContent implements FileContent {
     return 0;
   }
 
-  public void setLastModifiedTime(final long arg0) throws FileSystemException {
+  public void setLastModifiedTime( final long arg0 ) throws FileSystemException {
     // not needed for our usage
 
   }
 
-  public boolean hasAttribute(final String attrName) {
+  public boolean hasAttribute( final String attrName ) {
     return false;
   }
 
-  public void removeAttribute(final String attrName) {
+  public void removeAttribute( final String attrName ) {
   }
 
   public Map getAttributes() throws FileSystemException {
@@ -83,12 +88,12 @@ public class MetadataToMondrianVfsFileContent implements FileContent {
     return null;
   }
 
-  public Object getAttribute(final String arg0) throws FileSystemException {
+  public Object getAttribute( final String arg0 ) throws FileSystemException {
     // not needed for our usage
     return null;
   }
 
-  public void setAttribute(final String arg0, final Object arg1) throws FileSystemException {
+  public void setAttribute( final String arg0, final Object arg1 ) throws FileSystemException {
     // not needed for our usage
 
   }
@@ -110,26 +115,26 @@ public class MetadataToMondrianVfsFileContent implements FileContent {
       } else {
         inStream = new URL( fileObject.getFileRef() ).openStream();
       }
-      Domain domain = parser.parseXmi(inStream);
+      Domain domain = parser.parseXmi( inStream );
       String locale = Locale.getDefault().toString();
-      if (domain.getLocales().size() > 0) {
-        locale = domain.getLocales().get(0).getCode();
-      }
-      
-      if (domain.getLogicalModels().size() == 0) {
-        throw new Exception("Domain " + fileObject.getFileRef() + " does not contain model.");
+      if ( domain.getLocales().size() > 0 ) {
+        locale = domain.getLocales().get( 0 ).getCode();
       }
 
-      LogicalModel lModel = domain.getLogicalModels().get(0);
-      if(domain.getLogicalModels().size() > 1) {
-        lModel = domain.getLogicalModels().get(1);
+      if ( domain.getLogicalModels().size() == 0 ) {
+        throw new Exception( "Domain " + fileObject.getFileRef() + " does not contain model." );
       }
-      MondrianModelExporter exporter = new MondrianModelExporter(lModel, locale);
+
+      LogicalModel lModel = domain.getLogicalModels().get( 0 );
+      if ( domain.getLogicalModels().size() > 1 ) {
+        lModel = domain.getLogicalModels().get( 1 );
+      }
+      MondrianModelExporter exporter = new MondrianModelExporter( lModel, locale );
       String mondrianSchema = exporter.createMondrianModelXML();
 
-      inputStream = new ByteArrayInputStream(mondrianSchema.getBytes());
-    } catch (Exception e) {
-      throw new FileSystemException(e.getLocalizedMessage(), e);
+      inputStream = new ByteArrayInputStream( mondrianSchema.getBytes() );
+    } catch ( Exception e ) {
+      throw new FileSystemException( e.getLocalizedMessage(), e );
     }
     isOpen = true;
     return inputStream;
@@ -140,25 +145,25 @@ public class MetadataToMondrianVfsFileContent implements FileContent {
     return null;
   }
 
-  public RandomAccessContent getRandomAccessContent(final RandomAccessMode arg0) throws FileSystemException {
+  public RandomAccessContent getRandomAccessContent( final RandomAccessMode arg0 ) throws FileSystemException {
     // not needed for our usage
     return null;
   }
 
-  public OutputStream getOutputStream(final boolean arg0) throws FileSystemException {
+  public OutputStream getOutputStream( final boolean arg0 ) throws FileSystemException {
     // not needed for our usage
     return null;
   }
 
   public void close() throws FileSystemException {
 
-    if (!isOpen) {
+    if ( !isOpen ) {
       return;
     }
-    if (inputStream != null) {
+    if ( inputStream != null ) {
       try {
         inputStream.close();
-      } catch (Exception e) {
+      } catch ( Exception e ) {
         // not much we can do here
       }
     }

@@ -12,7 +12,7 @@
 * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 * See the GNU Lesser General Public License for more details.
 *
-* Copyright (c) 2002-2013 Pentaho Corporation..  All rights reserved.
+* Copyright (c) 2002-2016 Pentaho Corporation..  All rights reserved.
 */
 
 package org.pentaho.platform.pdi;
@@ -28,12 +28,12 @@ import org.pentaho.platform.api.usersettings.pojo.IUserSetting;
 import org.pentaho.platform.repository.usersettings.pojo.UserSetting;
 
 public class AgileBIUserSettingService implements IUserSettingService {
-  
-  Map<String,String> globalUserSettings = new HashMap<String,String>();
-  Map<String,String> userSettings = new HashMap<String,String>();
+
+  Map<String, String> globalUserSettings = new HashMap<String, String>();
+  Map<String, String> userSettings = new HashMap<String, String>();
 
   @Override
-  public void init(IPentahoSession arg0) {
+  public void init( IPentahoSession arg0 ) {
   }
 
   @Override
@@ -42,57 +42,57 @@ public class AgileBIUserSettingService implements IUserSettingService {
   }
 
   @Override
-  public IUserSetting getGlobalUserSetting(String settingName, String defaultValue) {
-    return getSetting(globalUserSettings, settingName, defaultValue);
+  public IUserSetting getGlobalUserSetting( String settingName, String defaultValue ) {
+    return getSetting( globalUserSettings, settingName, defaultValue );
   }
 
   @Override
   public List<IUserSetting> getGlobalUserSettings() {
-    return getSettingsList(globalUserSettings);
+    return getSettingsList( globalUserSettings );
   }
 
   @Override
-  public IUserSetting getUserSetting(String settingName, String defaultValue) {
-    return getSetting(userSettings, settingName, defaultValue);
+  public IUserSetting getUserSetting( String settingName, String defaultValue ) {
+    return getSetting( userSettings, settingName, defaultValue );
   }
 
   @Override
   public List<IUserSetting> getUserSettings() {
-    return getSettingsList(userSettings);
+    return getSettingsList( userSettings );
   }
 
   @Override
-  public void setGlobalUserSetting(String settingName, String settingValue) {
-    setSettingValue(globalUserSettings, settingName, settingValue);
+  public void setGlobalUserSetting( String settingName, String settingValue ) {
+    setSettingValue( globalUserSettings, settingName, settingValue );
   }
 
   @Override
-  public void setUserSetting(String settingName, String settingValue) {
-    setSettingValue(userSettings, settingName, settingValue);
+  public void setUserSetting( String settingName, String settingValue ) {
+    setSettingValue( userSettings, settingName, settingValue );
   }
-  
-  private IUserSetting getSetting(Map<String,String> settingsMap, String settingName, String defaultValue) {
-    String value = settingsMap.get(settingName);
+
+  private IUserSetting getSetting( Map<String, String> settingsMap, String settingName, String defaultValue ) {
+    String value = settingsMap.get( settingName );
     UserSetting setting = new UserSetting();
-    setting.setSettingName(settingName);
-    setting.setSettingValue(value != null ? value : defaultValue);
+    setting.setSettingName( settingName );
+    setting.setSettingValue( value != null ? value : defaultValue );
     return setting;
   }
-  
-  private List<IUserSetting> getSettingsList(Map<String,String> settingsMap) {
+
+  private List<IUserSetting> getSettingsList( Map<String, String> settingsMap ) {
     List<IUserSetting> settingsList = new ArrayList<IUserSetting>();
-    if(settingsMap != null) {
-      for(Map.Entry<String,String> me : settingsMap.entrySet()) {
+    if ( settingsMap != null ) {
+      for ( Map.Entry<String, String> me : settingsMap.entrySet() ) {
         IUserSetting userSetting = new UserSetting();
-        userSetting.setSettingName(me.getKey());
-        userSetting.setSettingValue(me.getValue());
-        settingsList.add(userSetting);
+        userSetting.setSettingName( me.getKey() );
+        userSetting.setSettingValue( me.getValue() );
+        settingsList.add( userSetting );
       }
     }
     return settingsList;
   }
-  
-  private void setSettingValue(Map<String,String> settingsMap, String settingName, String settingValue) {
-    settingsMap.put(settingName, settingValue);    
+
+  private void setSettingValue( Map<String, String> settingsMap, String settingName, String settingValue ) {
+    settingsMap.put( settingName, settingValue );
   }
 }
