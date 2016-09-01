@@ -1,14 +1,12 @@
 package org.pentaho.springdm.extender;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.osgi.context.DelegatedExecutionOsgiBundleApplicationContext;
-import org.springframework.osgi.context.support.OsgiBundleXmlApplicationContext;
 import org.springframework.osgi.extender.OsgiApplicationContextCreator;
 import org.springframework.osgi.extender.support.ApplicationContextConfiguration;
-import org.springframework.osgi.extender.support.DefaultOsgiApplicationContextCreator;
 import org.springframework.osgi.extender.support.scanning.ConfigurationScanner;
 import org.springframework.osgi.extender.support.scanning.DefaultConfigurationScanner;
 import org.springframework.osgi.util.OsgiStringUtils;
@@ -20,7 +18,7 @@ import org.springframework.util.ObjectUtils;
  */
 public class ApplicationContextCreator implements OsgiApplicationContextCreator {
 
-  private static final Log log;
+  private static final Logger log;
   private ConfigurationScanner configurationScanner = new DefaultConfigurationScanner();
 
   public ApplicationContextCreator() {
@@ -54,6 +52,6 @@ public class ApplicationContextCreator implements OsgiApplicationContextCreator 
   }
 
   static {
-    log = LogFactory.getLog( DefaultOsgiApplicationContextCreator.class );
+    log = LoggerFactory.getLogger( ApplicationContextCreator.class );;
   }
 }
