@@ -116,7 +116,9 @@
         <module>pentaho-authentication-mapper</module>
         <module>pentaho-kettle-repository-locator</module>
         <module>pentaho-metastore-locator</module>
-        <module>pentaho-flat-table-viz</module>
+        <!--<module>pentaho-flat-table-viz</module>-->
+        <module>pentaho-spring-dm-extender</module>
+        <module>pentaho-pdi-platform</module>
       </modules>
       <distributionManagement>
         <site>
@@ -153,6 +155,7 @@
         <module>pentaho-capability-manager</module>
         <module>pentaho-cache-manager</module>
         <module>pentaho-authentication-mapper</module>
+        <module>pentaho-spring-dm-extender</module>
       </modules>
       <distributionManagement>
         <site>
@@ -182,6 +185,7 @@
         <module>pentaho-proxy-spring4</module>
         <module>pentaho-kettle-repository-locator</module>
         <module>pentaho-metastore-locator</module>
+        <module>pentaho-pdi-platform</module>
       </modules>
       <distributionManagement>
         <site>

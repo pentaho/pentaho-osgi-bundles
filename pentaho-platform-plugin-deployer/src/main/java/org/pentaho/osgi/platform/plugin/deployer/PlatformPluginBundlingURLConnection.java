@@ -46,60 +46,74 @@ import java.util.zip.ZipOutputStream;
  * Created by bryan on 8/27/14.
  */
 public class PlatformPluginBundlingURLConnection extends URLConnection {
-    public static final int TEN_MEGABYTES = 10 * 1024 * 1024;
-    private static final Pattern maxSizePattern = Pattern.compile("maxSize=([0-9]+)");
-    private final List<PluginFileHandler> pluginFileHandlers;
+  public static final int TEN_MEGABYTES = 10 * 1024 * 1024;
+  private static final Pattern maxSizePattern = Pattern.compile( "maxSize=([0-9]+)" );
+  private final List<PluginFileHandler> pluginFileHandlers;
 
-    private static ExecutorService executorService = Executors.newSingleThreadExecutor( new ThreadFactory() {
-        @Override
-        public Thread newThread( Runnable r ) {
-            Thread thread = Executors.defaultThreadFactory().newThread( r );
-            thread.setDaemon( true );
-            thread.setName( "PlatformPluginBundlingURLConnection pool" );
-            return thread;
-        }
-    } );
-
-    public PlatformPluginBundlingURLConnection(URL u, List<PluginFileHandler> pluginFileHandlers) {
-        super(u);
-        this.pluginFileHandlers = pluginFileHandlers;
-    }
-
-    public static int getMaxSize(String query) {
-        if (query != null) {
-            Matcher matcher = maxSizePattern.matcher(query);
-            if (matcher.matches()) {
-                return Integer.parseInt(matcher.group(1));
-            }
-        }
-        return TEN_MEGABYTES;
-    }
-
+  private static ExecutorService executorService = Executors.newSingleThreadExecutor( new ThreadFactory() {
     @Override
-    public void connect() throws IOException {
-        //Noop
+    public Thread newThread( Runnable r ) {
+      Thread thread = Executors.defaultThreadFactory().newThread( r );
+      thread.setDaemon( true );
+      thread.setName( "PlatformPluginBundlingURLConnection pool" );
+      return thread;
+    }
+  } );
+
+  public PlatformPluginBundlingURLConnection( URL u, List<PluginFileHandler> pluginFileHandlers ) {
+    super( u );
+    this.pluginFileHandlers = pluginFileHandlers;
+  }
+
+  public static int getMaxSize( String query ) {
+    if ( query != null ) {
+      Matcher matcher = maxSizePattern.matcher( query );
+      if ( matcher.matches() ) {
+        return Integer.parseInt( matcher.group( 1 ) );
+      }
+    }
+    return TEN_MEGABYTES;
+  }
+
+  @Override
+  public void connect() throws IOException {
+    //Noop
+  }
+
+  @Override
+  public InputStream getInputStream() throws IOException {
+    final ExceptionPipedInputStream pipedInputStream =
+        new ExceptionPipedInputStream( getMaxSize( getURL().getQuery() ) );
+
+
+    String path = getURL().toString();
+    String artifactName;
+    String[] nameVersion;
+    if( path.startsWith( "file:" ) ){
+      artifactName = path.substring( path.lastIndexOf( "/" ) + 1 );
+      nameVersion = new String[] {
+        artifactName.substring( 0, artifactName.lastIndexOf( "." ) == -1 ? artifactName.length() : artifactName.lastIndexOf( "." ) ),
+        "0.0.0"
+      };
+    } else {
+      Parser parser = new Parser( path );
+      String mvnPath = parser.getArtifactPath();
+      int lastSlash = mvnPath.lastIndexOf( '/' );
+      if ( lastSlash >= 0 ) {
+        mvnPath = mvnPath.substring( lastSlash + 1 );
+      }
+      nameVersion = DeployerUtils.extractNameVersionType( mvnPath );
     }
 
-    @Override
-    public InputStream getInputStream() throws IOException {
-        final ExceptionPipedInputStream pipedInputStream =
-                new ExceptionPipedInputStream(getMaxSize(getURL().getQuery()));
-        Parser parser = new Parser(getURL().toString());
-        String mvnPath = parser.getArtifactPath();
-        int lastSlash = mvnPath.lastIndexOf('/');
-        if (lastSlash >= 0) {
-            mvnPath = mvnPath.substring(lastSlash + 1);
-        }
-        final String[] nameVersion = DeployerUtils.extractNameVersionType(mvnPath);
-        final PipedOutputStream pipedOutputStream = new PipedOutputStream(pipedInputStream);
-        final ZipOutputStream zipOutputStream = new ZipOutputStream(pipedOutputStream);
-        URLConnection connection = getURL().openConnection();
-        InputStream connectionInputStream = connection.getInputStream();
-        ZipInputStream zipInputStream = new ZipInputStream(connectionInputStream);
-        final PluginZipFileProcessor pluginZipFileProcessor =
-                new PluginZipFileProcessor(pluginFileHandlers, nameVersion[0], nameVersion[0], nameVersion[1]);
-        pluginZipFileProcessor.processBackground(executorService, zipInputStream, zipOutputStream,
-                pipedInputStream);
-        return pipedInputStream;
-    }
+    final PipedOutputStream pipedOutputStream = new PipedOutputStream( pipedInputStream );
+    final ZipOutputStream zipOutputStream = new ZipOutputStream( pipedOutputStream );
+    URLConnection connection = getURL().openConnection();
+    InputStream connectionInputStream = connection.getInputStream();
+    ZipInputStream zipInputStream = new ZipInputStream( connectionInputStream );
+    final PluginZipFileProcessor pluginZipFileProcessor =
+        new PluginZipFileProcessor( pluginFileHandlers, nameVersion[ 0 ], nameVersion[ 0 ], nameVersion[ 1 ] );
+    pluginZipFileProcessor.processBackground( executorService, zipInputStream, zipOutputStream,
+        pipedInputStream );
+    return pipedInputStream;
+  }
 }

@@ -26,6 +26,7 @@ import org.pentaho.osgi.platform.plugin.deployer.api.ManifestUpdater;
 import org.pentaho.osgi.platform.plugin.deployer.api.PluginMetadata;
 import org.pentaho.osgi.platform.plugin.deployer.impl.handlers.pluginxml.PluginXmlStaticPathsHandler;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -38,17 +39,24 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.pentaho.osgi.platform.plugin.deployer.impl.handlers.pluginxml.PluginXmlStaticPathsHandler
+    .BLUEPRINT_BEAN_NS;
 
 /**
  * Created by bryan on 8/26/14.
  */
 public class PluginMetadataImpl implements PluginMetadata {
   private final ManifestUpdater manifestUpdater = new ManifestUpdaterImpl();
-  private final Document blueprint;
+  private Document blueprint;
   private final File rootDirectory;
+  private List<String> contentTypes = new ArrayList<>();
 
   public PluginMetadataImpl( File rootDirectory ) throws ParserConfigurationException {
     blueprint = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
@@ -64,9 +72,41 @@ public class PluginMetadataImpl implements PluginMetadata {
     return blueprint;
   }
 
-  @Override public void writeBlueprint( OutputStream outputStream ) throws IOException {
+  @Override public void setBlueprint( Document blueprint ) {
+    this.blueprint = blueprint;
+  }
+
+  @Override public void writeBlueprint( String name, OutputStream outputStream ) throws IOException {
     Result output = new StreamResult( outputStream );
-    Source input = new DOMSource( getBlueprint() );
+    Document blueprint = getBlueprint();
+    Element bean = blueprint.createElementNS( BLUEPRINT_BEAN_NS,
+        "bean" );
+    bean.setAttribute( "class", "org.pentaho.platform.server.osgi.BundleClassloader");
+    bean.setAttribute( "id", "classLoader" );
+    Element argument = blueprint.createElementNS( BLUEPRINT_BEAN_NS,
+        "argument" );
+    argument.setAttribute( "ref", "blueprintBundle" );
+    bean.appendChild( argument );
+    argument = blueprint.createElementNS( BLUEPRINT_BEAN_NS,
+        "argument" );
+    argument.setAttribute( "value", manifestUpdater.getBundleSymbolicName() );
+    bean.appendChild( argument );
+    blueprint.getDocumentElement().appendChild( bean );
+
+    Element service = blueprint.createElementNS( BLUEPRINT_BEAN_NS,
+        "service" );
+    service.setAttribute( "interface", "java.lang.ClassLoader" );
+    service.setAttribute( "ref", "classLoader" );
+    Element props = blueprint.createElementNS( BLUEPRINT_BEAN_NS,
+        "service-properties" );
+    Element entry = blueprint.createElementNS( BLUEPRINT_BEAN_NS,
+        "entry" );
+    entry.setAttribute( "key", "plugin-id" );
+    entry.setAttribute( "value", manifestUpdater.getBundleSymbolicName() );
+    props.appendChild( entry );
+    service.appendChild( props );
+    blueprint.getDocumentElement().appendChild( service );
+    Source input = new DOMSource( blueprint );
     try {
       Transformer transformer = TransformerFactory.newInstance().newTransformer();
       transformer.setOutputProperty( OutputKeys.INDENT, "yes" );
@@ -78,12 +118,30 @@ public class PluginMetadataImpl implements PluginMetadata {
   }
 
   @Override public FileWriter getFileWriter( String path ) throws IOException {
+    File resultFile = createFile( path );
+    return new FileWriter( resultFile );
+  }
+
+  private File createFile( String path ) {
     File resultFile = new File( rootDirectory.getAbsolutePath() + "/" + path );
     File parentDir = resultFile.getParentFile();
     int tries = 100;
     while ( !parentDir.exists() && tries-- > 0 ) {
       parentDir.mkdirs();
     }
-    return new FileWriter( resultFile );
+    return resultFile;
+  }
+
+  @Override public OutputStream getFileOutputStream( String path ) throws IOException {
+    File resultFile = createFile( path );
+    return new FileOutputStream( resultFile );
+  }
+
+  @Override public void addContentType( String contentType ) {
+    this.contentTypes.add( contentType );
+  }
+
+  @Override public List<String> getContentTypes() {
+    return contentTypes;
   }
 }

@@ -59,7 +59,7 @@ public class PluginMetadataImplTest {
     blueprint.getElementsByTagNameNS( PluginXmlStaticPathsHandler.BLUEPRINT_BEAN_NS, "blueprint" ).item( 0 )
       .appendChild( testNode );
     ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-    pluginMetadata.writeBlueprint( byteArrayOutputStream );
+    pluginMetadata.writeBlueprint( "test", byteArrayOutputStream );
     assertTrue( byteArrayOutputStream.toString( "UTF-8" ).contains( "<test xmlns=\"http://test.namespace/v1\"/>" ) );
   }
 
@@ -70,6 +70,6 @@ public class PluginMetadataImplTest {
     doThrow( new IOException() ).when( outputStream ).write( any( byte[].class ) );
     doThrow( new IOException() ).when( outputStream ).write( any( byte.class ) );
     doThrow( new IOException() ).when( outputStream ).write( any( byte[].class ), anyInt(), anyInt() );
-    pluginMetadata.writeBlueprint( outputStream );
+    pluginMetadata.writeBlueprint( "test", outputStream );
   }
 }

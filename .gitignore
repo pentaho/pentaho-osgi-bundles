@@ -4,3 +4,4 @@ target/
 **/*.iml
 pentaho-requirejs-osgi-manager/src/main/resources/js/require.js
 .idea/
+**/.DS_Store

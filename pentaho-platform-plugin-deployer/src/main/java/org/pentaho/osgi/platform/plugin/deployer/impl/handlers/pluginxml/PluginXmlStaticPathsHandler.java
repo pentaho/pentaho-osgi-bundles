@@ -31,6 +31,7 @@ import org.w3c.dom.Node;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -77,35 +78,50 @@ public class PluginXmlStaticPathsHandler extends PluginXmlFileHandler {
     Map<String, String> urlToResourceMapping = new HashMap<String, String>();
     for ( Node node : nodes ) {
       Map<String, String> attributes = getAttributes( node );
-      String url = attributes.get( "url" );
+      final String url = attributes.get( "url" );
       String localFolder = attributes.get( "localFolder" );
       if ( url != null && localFolder != null ) {
-        url = "/content" + url;
-        foundResources = true;
-        Node bean = blueprint.createElementNS( BLUEPRINT_BEAN_NS, BEAN );
+        String contentUrl = "/content" + url;
+        List<String> urls = new ArrayList<String>( );
+        urls.add( contentUrl );
+        if( ! pluginMetadata.getContentTypes().isEmpty() ){
+          String resourcePath = url.substring( url.indexOf( "/", 1 ) );
+//          urls.addAll(
+//              pluginMetadata.getContentTypes().stream().map( s -> "/api/repos/" + s + url ).collect( Collectors.toList() ) );
 
-        Node aliasProperty = blueprint.createElementNS( BLUEPRINT_BEAN_NS, PROPERTY );
-        Node pathProperty = blueprint.createElementNS( BLUEPRINT_BEAN_NS, PROPERTY );
-        Node service = blueprint.createElementNS( BLUEPRINT_BEAN_NS, SERVICE );
+          // Multiple whiteboard bug prevents us from having both the "content/PLUGIN_ID" and Content-type paths.
+//          for( String s : pluginMetadata.getContentTypes() ) {
+//            urls.add( "/api/repos/" + s + resourcePath );
+//          }
+        }
+        int iteration = 0;
+        for( String u : urls ) {
+          foundResources = true;
+          Node bean = blueprint.createElementNS( BLUEPRINT_BEAN_NS, BEAN );
 
-        blueprint.getDocumentElement().appendChild( bean );
-        bean.appendChild( aliasProperty );
-        bean.appendChild( pathProperty );
-        blueprint.getDocumentElement().appendChild( service );
+          Node aliasProperty = blueprint.createElementNS( BLUEPRINT_BEAN_NS, PROPERTY );
+          Node pathProperty = blueprint.createElementNS( BLUEPRINT_BEAN_NS, PROPERTY );
+          Node service = blueprint.createElementNS( BLUEPRINT_BEAN_NS, SERVICE );
 
-        String id = getResourceMappingId( url, localFolder );
-        setAttribute( blueprint, bean, ID_ATTR, id );
-        setAttribute( blueprint, bean, CLASS_ATTR, DEFAULT_RESOURCE_MAPPING );
-        setAttribute( blueprint, aliasProperty, NAME_ATTR, ALIAS );
-        setAttribute( blueprint, aliasProperty, VALUE_ATTR, url );
-        setAttribute( blueprint, pathProperty, NAME_ATTR, PATH );
-        String path = "/" + topLevelFolder + "/" + localFolder;
-        setAttribute( blueprint, pathProperty, VALUE_ATTR, path );
-        setAttribute( blueprint, service, ID_ATTR, id + "Service" );
-        setAttribute( blueprint, service, REF_ATTR, id );
-        setAttribute( blueprint, service, INTERFACE_ATTR, RESOURCE_MAPPING );
+          blueprint.getDocumentElement().appendChild( bean );
+          bean.appendChild( aliasProperty );
+          bean.appendChild( pathProperty );
+          blueprint.getDocumentElement().appendChild( service );
 
-        urlToResourceMapping.put( url, path );
+          String id = getResourceMappingId( u, localFolder );
+          setAttribute( blueprint, bean, ID_ATTR, id );
+          setAttribute( blueprint, bean, CLASS_ATTR, DEFAULT_RESOURCE_MAPPING );
+          setAttribute( blueprint, aliasProperty, NAME_ATTR, ALIAS );
+          setAttribute( blueprint, aliasProperty, VALUE_ATTR, u  );
+          setAttribute( blueprint, pathProperty, NAME_ATTR, PATH );
+          String path = "/" + topLevelFolder + "/" + localFolder;
+          setAttribute( blueprint, pathProperty, VALUE_ATTR, path );
+          setAttribute( blueprint, service, ID_ATTR, id + "Service" );
+          setAttribute( blueprint, service, REF_ATTR, id );
+          setAttribute( blueprint, service, INTERFACE_ATTR, RESOURCE_MAPPING );
+
+          urlToResourceMapping.put( u, path );
+        }
       }
     }
     if ( foundResources ) {
