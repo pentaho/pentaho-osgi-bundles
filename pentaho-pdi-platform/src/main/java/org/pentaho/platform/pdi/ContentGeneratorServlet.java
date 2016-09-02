@@ -1,4 +1,4 @@
-package org.pentaho.platform.server.osgi;
+package org.pentaho.platform.pdi;
 
 /**
  * Created by nbaker on 7/25/16.

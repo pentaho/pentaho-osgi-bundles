@@ -1,8 +1,6 @@
-package org.pentaho.platform.server.osgi;
+package org.pentaho.platform.pdi;
 
 import org.junit.Test;
-
-import static org.junit.Assert.*;
 
 /**
  * Created by nbaker on 8/16/16.

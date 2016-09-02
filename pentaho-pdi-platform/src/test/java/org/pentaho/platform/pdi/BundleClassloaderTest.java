@@ -1,4 +1,4 @@
-package org.pentaho.platform.server.osgi;
+package org.pentaho.platform.pdi;
 
 import org.junit.Test;
 import org.osgi.framework.Bundle;

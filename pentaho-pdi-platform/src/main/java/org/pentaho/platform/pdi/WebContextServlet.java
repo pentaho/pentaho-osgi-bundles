@@ -18,7 +18,7 @@
  * limitations under the License.
  */
 
-package org.pentaho.platform.server.osgi;
+package org.pentaho.platform.pdi;
 
 import org.apache.commons.lang.StringUtils;
 import org.pentaho.di.i18n.LanguageChoice;

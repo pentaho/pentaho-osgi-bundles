@@ -14,7 +14,7 @@
  *
  * Copyright (c) 2016 Pentaho Corporation..  All rights reserved.
  */
-package org.pentaho.platform.server.osgi;
+package org.pentaho.platform.pdi;
 
 import org.ops4j.pax.web.service.spi.util.ResourceDelegatingBundleClassLoader;
 import org.osgi.framework.Bundle;

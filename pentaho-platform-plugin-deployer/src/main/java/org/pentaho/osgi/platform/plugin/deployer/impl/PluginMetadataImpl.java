@@ -81,7 +81,7 @@ public class PluginMetadataImpl implements PluginMetadata {
     Document blueprint = getBlueprint();
     Element bean = blueprint.createElementNS( BLUEPRINT_BEAN_NS,
         "bean" );
-    bean.setAttribute( "class", "org.pentaho.platform.server.osgi.BundleClassloader");
+    bean.setAttribute( "class", "org.pentaho.platform.pdi.BundleClassloader");
     bean.setAttribute( "id", "classLoader" );
     Element argument = blueprint.createElementNS( BLUEPRINT_BEAN_NS,
         "argument" );

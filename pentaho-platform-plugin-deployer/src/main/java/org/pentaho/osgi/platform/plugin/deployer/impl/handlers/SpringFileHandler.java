@@ -132,7 +132,7 @@ public class SpringFileHandler implements PluginFileHandler {
 
             Element bean = blueprint.createElementNS( BLUEPRINT_BEAN_NS,
                 "bean" );
-            bean.setAttribute( "class", "org.pentaho.platform.server.osgi.ContentGeneratorServlet" );
+            bean.setAttribute( "class", "org.pentaho.platform.pdi.ContentGeneratorServlet" );
             Element argument = blueprint.createElementNS( BLUEPRINT_BEAN_NS,
                 "argument" );
             argument.setAttribute( "ref", "spring" );
