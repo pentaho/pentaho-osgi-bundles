@@ -2,7 +2,7 @@
  *
  * Pentaho Data Integration
  *
- * Copyright (C) 2002-2014 by Pentaho : http://www.pentaho.com
+ * Copyright (C) 2002-2016 by Pentaho : http://www.pentaho.com
  *
  *******************************************************************************
  *
@@ -84,18 +84,7 @@ public class PluginXmlStaticPathsHandler extends PluginXmlFileHandler {
         String contentUrl = "/content" + url;
         List<String> urls = new ArrayList<String>( );
         urls.add( contentUrl );
-        if( ! pluginMetadata.getContentTypes().isEmpty() ){
-          String resourcePath = url.substring( url.indexOf( "/", 1 ) );
-//          urls.addAll(
-//              pluginMetadata.getContentTypes().stream().map( s -> "/api/repos/" + s + url ).collect( Collectors.toList() ) );
-
-          // Multiple whiteboard bug prevents us from having both the "content/PLUGIN_ID" and Content-type paths.
-//          for( String s : pluginMetadata.getContentTypes() ) {
-//            urls.add( "/api/repos/" + s + resourcePath );
-//          }
-        }
-        int iteration = 0;
-        for( String u : urls ) {
+        for ( String u : urls ) {
           foundResources = true;
           Node bean = blueprint.createElementNS( BLUEPRINT_BEAN_NS, BEAN );
 

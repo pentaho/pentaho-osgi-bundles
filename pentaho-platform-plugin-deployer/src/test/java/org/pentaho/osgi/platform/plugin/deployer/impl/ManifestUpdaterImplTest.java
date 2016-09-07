@@ -2,7 +2,7 @@
  *
  * Pentaho Data Integration
  *
- * Copyright (C) 2002-2014 by Pentaho : http://www.pentaho.com
+ * Copyright (C) 2002-2016 by Pentaho : http://www.pentaho.com
  *
  *******************************************************************************
  *
@@ -28,6 +28,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.UUID;
 import java.util.jar.Manifest;
 
 import static org.junit.Assert.assertEquals;
@@ -87,5 +88,39 @@ public class ManifestUpdaterImplTest {
     assertEquals( "test", manifest.getMainAttributes().getValue( "Bundle-Name" ) );
     assertEquals( "version", manifest.getMainAttributes().getValue( "Bundle-Version" ) );
     assertEquals( "version", manifest.getMainAttributes().getValue( "Bundle-Version" ) );
+  }
+
+  @Test
+  public void testAddEntries() throws Exception {
+    UUID id = UUID.randomUUID();
+    ManifestUpdaterImpl manifestUpdater = new ManifestUpdaterImpl();
+    manifestUpdater.addEntry( "test", "value" );
+    manifestUpdater.addEntry( "company", "pentaho" );
+    manifestUpdater.addEntry( "id", id );
+
+    Manifest original = new Manifest( );
+    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream( );
+    manifestUpdater.write( original, byteArrayOutputStream, "test", "test.symbolic", "version" );
+    Manifest manifest = new Manifest( new ByteArrayInputStream( byteArrayOutputStream.toByteArray() ) );
+
+    assertEquals( "value",  manifest.getMainAttributes().getValue( "test" ) );
+    assertEquals( "pentaho",  manifest.getMainAttributes().getValue( "company" ) );
+    assertEquals( id.toString(), manifest.getMainAttributes().getValue( "id" ) );
+  }
+
+  @Test
+  public void testBundleSymbolicName() throws Exception {
+    String name = "bundle sym name";
+    ManifestUpdaterImpl manifestUpdater = new ManifestUpdaterImpl();
+    manifestUpdater.setBundleSymbolicName( name );
+
+    Manifest original = new Manifest( );
+    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream( );
+    manifestUpdater.write( original, byteArrayOutputStream, "test", "test.symbolic", "version" );
+    Manifest manifest = new Manifest( new ByteArrayInputStream( byteArrayOutputStream.toByteArray() ) );
+
+    assertEquals( name, manifestUpdater.getBundleSymbolicName() );
+    assertEquals( name,  manifest.getMainAttributes().getValue( "Bundle-SymbolicName" ) );
+
   }
 }

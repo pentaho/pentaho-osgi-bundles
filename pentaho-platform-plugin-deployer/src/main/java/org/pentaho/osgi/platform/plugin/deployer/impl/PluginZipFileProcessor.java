@@ -2,7 +2,7 @@
  *
  * Pentaho Data Integration
  *
- * Copyright (C) 2002-2014 by Pentaho : http://www.pentaho.com
+ * Copyright (C) 2002-2016 by Pentaho : http://www.pentaho.com
  *
  *******************************************************************************
  *
@@ -56,6 +56,8 @@ import java.util.zip.ZipOutputStream;
 public class PluginZipFileProcessor {
   public static final String BLUEPRINT = "OSGI-INF/blueprint/blueprint.xml";
   public static final String BLUEPRINT_REGEX = ".*\\/OSGI-INF\\/blueprint\\/.*\\.xml";
+  public static final String MANIFEST_REGEX = ".*\\/META-INF\\/MANIFEST.MF";
+
   private final List<PluginFileHandler> pluginFileHandlers;
   private final String name;
   private final String symbolicName;
@@ -107,14 +109,14 @@ public class PluginZipFileProcessor {
         byte[] zipBytes = byteArrayOutputStream.toByteArray();
         String name = zipEntry.getName();
         boolean shouldOutput = true;
-        if ( JarFile.MANIFEST_NAME.equals( name ) ) {
+        if ( name.matches( MANIFEST_REGEX ) ) {
           shouldOutput = false;
           manifest = new Manifest( new ByteArrayInputStream( zipBytes ) );
         } else if ( name.matches( BLUEPRINT_REGEX ) ) {
           shouldOutput = false;
           try {
             DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
-            documentBuilderFactory.setNamespaceAware(true);
+            documentBuilderFactory.setNamespaceAware( true );
             blueprint =
               documentBuilderFactory.newDocumentBuilder().parse( new ByteArrayInputStream( zipBytes ) );
             pluginMetadata.setBlueprint( blueprint );
@@ -239,7 +241,7 @@ public class PluginZipFileProcessor {
           dirName = dirName.substring( 1 );
         }
         if ( dirName.length() > 0 && !createdEntries.contains( dirName ) ) {
-          ZipEntry zipEntry = new ZipEntry( dirName.replaceAll( Pattern.quote("\\"), "/" ) );
+          ZipEntry zipEntry = new ZipEntry( dirName.replaceAll( Pattern.quote( "\\" ), "/" ) );
           zipOutputStream.putNextEntry( zipEntry );
           zipOutputStream.closeEntry();
         }
@@ -253,7 +255,7 @@ public class PluginZipFileProcessor {
               FileInputStream fileInputStream = null;
               try {
                 fileInputStream = new FileInputStream( childFile );
-                ZipEntry childZipEntry = new ZipEntry( fileName.replaceAll( Pattern.quote("\\"), "/" ) );
+                ZipEntry childZipEntry = new ZipEntry( fileName.replaceAll( Pattern.quote( "\\" ), "/" ) );
                 zipOutputStream.putNextEntry( childZipEntry );
                 while ( ( len = fileInputStream.read( buffer ) ) != -1 ) {
                   zipOutputStream.write( buffer, 0, len );
