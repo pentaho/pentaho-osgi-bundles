@@ -126,11 +126,11 @@ public class KarafBlueprintWatcherImplTest {
     List<Bundle> bundleList = new ArrayList<Bundle>();
 
     Bundle activeBundle =
-        createMockBundle( MOCK_BUNDLE_ACTIVE_ID, true, BundleState.Active, MOCK_BUNDLE_NO_DEPENDENCIES,
+        createMockBundle( MOCK_BUNDLE_ACTIVE_ID, true, Bundle.RESOLVED, BundleState.Active, MOCK_BUNDLE_NO_DEPENDENCIES,
             MOCK_BUNDLE_NO_CAUSE, blueprintStateService );
 
     Bundle installedBundle =
-        createMockBundle( MOCK_BUNDLE_INSTALLED_ID, true, BundleState.Installed, MOCK_BUNDLE_NO_DEPENDENCIES,
+        createMockBundle( MOCK_BUNDLE_INSTALLED_ID, true, Bundle.STARTING, BundleState.Installed, MOCK_BUNDLE_NO_DEPENDENCIES,
             MOCK_BUNDLE_NO_CAUSE, blueprintStateService );
 
     bundleList.add( activeBundle );
@@ -172,12 +172,12 @@ public class KarafBlueprintWatcherImplTest {
     List<Bundle> bundleList = new ArrayList<Bundle>();
 
     Bundle activeBundle =
-        createMockBundle( MOCK_BUNDLE_ACTIVE_ID, true, BundleState.Active, MOCK_BUNDLE_NO_DEPENDENCIES,
+        createMockBundle( MOCK_BUNDLE_ACTIVE_ID, true, Bundle.RESOLVED, BundleState.Active, MOCK_BUNDLE_NO_DEPENDENCIES,
             MOCK_BUNDLE_NO_CAUSE, blueprintStateService );
     bundleList.add( activeBundle );
 
     Bundle noBlueprintBundle =
-        createMockBundle( MOCK_BUNDLE_NO_BLUEPRINT_ID, false, BundleState.Unknown, MOCK_BUNDLE_NO_DEPENDENCIES,
+        createMockBundle( MOCK_BUNDLE_NO_BLUEPRINT_ID, false, Bundle.RESOLVED, BundleState.Unknown, MOCK_BUNDLE_NO_DEPENDENCIES,
             MOCK_BUNDLE_NO_CAUSE, blueprintStateService );
     bundleList.add( noBlueprintBundle );
 
@@ -193,7 +193,7 @@ public class KarafBlueprintWatcherImplTest {
     // Test when all blueprints are either loaded or failed
 
     Bundle failureBundle =
-        createMockBundle( MOCK_BUNDLE_FAILURE_ID, true, BundleState.Failure, MOCK_BUNDLE_FAILED_DEPENDENCIES,
+        createMockBundle( MOCK_BUNDLE_FAILURE_ID, true, Bundle.RESOLVED, BundleState.Failure, MOCK_BUNDLE_FAILED_DEPENDENCIES,
             MOCK_BUNDLE_FAILED_CAUSE, blueprintStateService );
     bundleList.add( failureBundle );
     bundles = bundleList.toArray( new Bundle[bundleList.size()] );
@@ -215,12 +215,12 @@ public class KarafBlueprintWatcherImplTest {
     // Test when blueprints are loaded, failed and unloaded
 
     Bundle unknownBundle =
-        createMockBundle( MOCK_BUNDLE_UNKNOWN_ID, true, BundleState.Unknown, MOCK_BUNDLE_NO_DEPENDENCIES,
+        createMockBundle( MOCK_BUNDLE_UNKNOWN_ID, true, Bundle.RESOLVED, BundleState.Unknown, MOCK_BUNDLE_NO_DEPENDENCIES,
             MOCK_BUNDLE_NO_CAUSE, blueprintStateService );
     bundleList.add( unknownBundle );
 
     Bundle gracePeriodBundle =
-        createMockBundle( MOCK_BUNDLE_GRACE_PERIOD_ID, true, BundleState.GracePeriod,
+        createMockBundle( MOCK_BUNDLE_GRACE_PERIOD_ID, true, Bundle.RESOLVED, BundleState.GracePeriod,
             MOCK_BUNDLE_GRACE_PERIOD_DEPENDENCIES, MOCK_BUNDLE_NO_CAUSE, blueprintStateService );
     bundleList.add( gracePeriodBundle );
 
@@ -247,21 +247,22 @@ public class KarafBlueprintWatcherImplTest {
     Assert.fail();
   }
 
-  private Bundle createMockBundle( long bundleId, boolean hasBlueprint, BundleState bundleState, String[] dependencies,
+  private Bundle createMockBundle( long bundleId, boolean hasBlueprint, int bundleState, BundleState blueprintState, String[] dependencies,
       Throwable cause, BlueprintStateService blueprintStateService ) {
     Bundle bundle = mock( Bundle.class );
     when( bundle.getBundleId() ).thenReturn( bundleId );
+    when( bundle.getState() ).thenReturn( bundleState );
     when( bundle.getSymbolicName() ).thenReturn( WatchersTestUtils.getBundleName( bundleId ) );
     when( blueprintStateService.hasBlueprint( bundleId ) ).thenReturn( hasBlueprint );
-    when( blueprintStateService.getBundleState( bundleId ) ).thenReturn( bundleState );
+    when( blueprintStateService.getBundleState( bundleId ) ).thenReturn( blueprintState );
 
-    if ( bundleState.equals( BundleState.Active ) ) {
+    if ( blueprintState.equals( BundleState.Active ) ) {
       when( blueprintStateService.isBlueprintLoaded( bundleId ) ).thenReturn( true );
     } else {
       when( blueprintStateService.isBlueprintLoaded( bundleId ) ).thenReturn( false );
     }
 
-    if ( bundleState.equals( BundleState.Failure ) ) {
+    if ( blueprintState.equals( BundleState.Failure ) ) {
       when( blueprintStateService.isBlueprintFailed( bundleId ) ).thenReturn( true );
     } else {
       when( blueprintStateService.isBlueprintFailed( bundleId ) ).thenReturn( false );
