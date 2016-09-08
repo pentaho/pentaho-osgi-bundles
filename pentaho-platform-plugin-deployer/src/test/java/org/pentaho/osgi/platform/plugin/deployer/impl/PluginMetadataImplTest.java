@@ -2,7 +2,7 @@
  *
  * Pentaho Data Integration
  *
- * Copyright (C) 2002-2014 by Pentaho : http://www.pentaho.com
+ * Copyright (C) 2002-2016 by Pentaho : http://www.pentaho.com
  *
  *******************************************************************************
  *
@@ -22,7 +22,11 @@
 
 package org.pentaho.osgi.platform.plugin.deployer.impl;
 
+import com.google.common.io.Files;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 import org.pentaho.osgi.platform.plugin.deployer.impl.handlers.pluginxml.PluginXmlStaticPathsHandler;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -30,9 +34,11 @@ import org.w3c.dom.Node;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
@@ -43,7 +49,12 @@ import static org.mockito.Mockito.mock;
 /**
  * Created by bryan on 8/27/14.
  */
+@RunWith( MockitoJUnitRunner.class )
 public class PluginMetadataImplTest {
+
+  @Mock File mockRootDirectory;
+  @Mock Document blueprintDoc;
+
   @Test
   public void testConstructor() throws ParserConfigurationException {
     PluginMetadataImpl pluginMetadata = new PluginMetadataImpl( new File( "." ) );
@@ -71,5 +82,59 @@ public class PluginMetadataImplTest {
     doThrow( new IOException() ).when( outputStream ).write( any( byte.class ) );
     doThrow( new IOException() ).when( outputStream ).write( any( byte[].class ), anyInt(), anyInt() );
     pluginMetadata.writeBlueprint( "test", outputStream );
+  }
+
+  @Test
+  public void testGetFileWriter() throws Exception {
+    File tmpDir = Files.createTempDir();
+    String path = "my/test/sub/directory/file.txt";
+
+    PluginMetadataImpl pluginMetadata = new PluginMetadataImpl( tmpDir );
+
+    FileWriter fileWriter = pluginMetadata.getFileWriter( path );
+    assertNotNull( fileWriter );
+
+    fileWriter.write( "test" );
+    fileWriter.flush();
+    fileWriter.close();
+    File expected = new File( tmpDir, path );
+    assertTrue( expected.exists() );
+
+    tmpDir.deleteOnExit();
+  }
+
+  @Test
+  public void testGetFileOutputStream() throws Exception {
+    File tmpDir = Files.createTempDir();
+    String path = "my/test/sub/directory/file.txt";
+
+    PluginMetadataImpl pluginMetadata = new PluginMetadataImpl( tmpDir );
+    OutputStream fileOutputStream = pluginMetadata.getFileOutputStream( path );
+
+    fileOutputStream.write( "test".getBytes() );
+    fileOutputStream.flush();
+    fileOutputStream.close();
+    File expected = new File( tmpDir, path );
+    assertTrue( expected.exists() );
+
+    tmpDir.deleteOnExit();
+  }
+
+  @Test
+  public void testSetBlueprint() throws Exception {
+    PluginMetadataImpl pluginMetadata = new PluginMetadataImpl( mockRootDirectory );
+    pluginMetadata.setBlueprint( blueprintDoc );
+    assertEquals( blueprintDoc, pluginMetadata.getBlueprint() );
+  }
+
+  @Test
+  public void testAddContentType() throws Exception {
+    PluginMetadataImpl pluginMetadata = new PluginMetadataImpl( mockRootDirectory );
+    assertEquals( 0, pluginMetadata.getContentTypes().size() );
+
+    pluginMetadata.addContentType( "text/xml" );
+    assertEquals( 1, pluginMetadata.getContentTypes().size() );
+    assertEquals( "text/xml", pluginMetadata.getContentTypes().get( 0 ) );
+
   }
 }
