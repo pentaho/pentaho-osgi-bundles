@@ -2,7 +2,7 @@
  *
  * Pentaho Data Integration
  *
- * Copyright (C) 2002-2014 by Pentaho : http://www.pentaho.com
+ * Copyright (C) 2014-2016 by Pentaho : http://www.pentaho.com
  *
  *******************************************************************************
  *
@@ -26,6 +26,8 @@ import org.pentaho.osgi.platform.plugin.deployer.api.PluginHandlingException;
 import org.pentaho.osgi.platform.plugin.deployer.api.PluginMetadata;
 import org.pentaho.osgi.platform.plugin.deployer.impl.JSONUtil;
 import org.pentaho.osgi.platform.plugin.deployer.impl.handlers.PluginXmlFileHandler;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 import java.io.FileWriter;
@@ -34,6 +36,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static org.pentaho.osgi.platform.plugin.deployer.impl.handlers.pluginxml.PluginXmlStaticPathsHandler
+    .BLUEPRINT_BEAN_NS;
 
 /**
  * Created by bryan on 8/29/14.
@@ -53,7 +58,7 @@ public class PluginXmlExternalResourcesHandler extends PluginXmlFileHandler {
   }
 
   @Override protected void handle( String relativePath, List<Node> nodes, PluginMetadata pluginMetadata )
-    throws PluginHandlingException {
+      throws PluginHandlingException {
     if ( nodes.size() > 0 ) {
       Map<String, List<String>> contextMap = new HashMap<String, List<String>>();
       for ( Node node : nodes ) {
@@ -85,6 +90,30 @@ public class PluginXmlExternalResourcesHandler extends PluginXmlFileHandler {
           } catch ( IOException e ) {
             // Ignore
           }
+        }
+      }
+      Document blueprint = pluginMetadata.getBlueprint();
+      for ( Map.Entry<String, List<String>> stringListEntry : contextMap.entrySet() ) {
+        for ( String string : stringListEntry.getValue() ) {
+          Element service = blueprint.createElementNS( BLUEPRINT_BEAN_NS,
+              "service" );
+          service.setAttribute( "interface", "org.pentaho.platform.api.engine.IPlatformWebResource" );
+
+
+          Element bean = blueprint.createElementNS( BLUEPRINT_BEAN_NS,
+              "bean" );
+          bean.setAttribute( "class", "org.pentaho.platform.pdi.PlatformWebResource" );
+
+          Element argument = blueprint.createElementNS( BLUEPRINT_BEAN_NS, "argument" );
+          argument.setAttribute( "value", stringListEntry.getKey() );
+          bean.appendChild( argument );
+
+          argument = blueprint.createElementNS( BLUEPRINT_BEAN_NS, "argument" );
+          argument.setAttribute( "value", string );
+          bean.appendChild( argument );
+          service.appendChild( bean );
+
+          blueprint.getDocumentElement().appendChild( service );
         }
       }
     }
