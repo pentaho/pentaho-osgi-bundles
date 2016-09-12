@@ -19,6 +19,8 @@ package org.pentaho.platform.pdi;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * Created by nbaker on 9/8/16.
@@ -35,6 +37,18 @@ public class PlatformWebResourceTest {
   @Test
   public void getLocation() throws Exception {
     assertEquals( "location", webResource.getLocation() );
+  }
+
+  @Test
+  public void testEquals() throws Exception {
+    assertEquals( webResource, new PlatformWebResource( "context", "location" ) );
+    assertEquals( webResource, webResource );
+  }
+
+  @Test
+  public void testNotEquals() throws Exception {
+    assertNotEquals( webResource, new PlatformWebResource( "context", "blah" ) );
+    assertNotEquals( webResource, null );
   }
 
 }

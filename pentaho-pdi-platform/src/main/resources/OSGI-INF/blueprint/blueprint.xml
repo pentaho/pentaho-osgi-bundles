@@ -5,16 +5,24 @@
   http://aries.apache.org/blueprint/xmlns/blueprint-cm/v1.1.0 http://aries.apache.org/schemas/blueprint-cm/blueprint-cm-1.1.0.xsd">
 
 
-    <service
-            interface="javax.servlet.Servlet" id="webContext">
+    <bean id="WebContext" class="org.pentaho.platform.pdi.WebContextServlet" />
+
+    <reference-list id="contextualExternalResources"
+                    interface="org.pentaho.platform.api.engine.IPlatformWebResource"
+                    member-type="service-object"
+                    availability="optional">
+        <reference-listener ref="WebContext" bind-method="addPlatformWebResource" unbind-method="removePlatformWebResource"/>
+    </reference-list>
+
+
+    <service interface="javax.servlet.Servlet" id="webContext"
+             ref="WebContext">
         <service-properties>
             <entry key="alias" value="/*"/>
             <entry key="servlet-name" value="webContext"/>
         </service-properties>
-        <bean class="org.pentaho.platform.pdi.WebContextServlet" />
     </service>
-    <service
-            interface="javax.servlet.Servlet" id="i18nServlet">
+    <service interface="javax.servlet.Servlet" id="i18nServlet">
         <service-properties>
             <entry key="alias" value="/i18n"/>
             <entry key="servlet-name" value="LocalizationServlet"/>
