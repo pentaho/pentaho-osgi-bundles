@@ -116,7 +116,6 @@
         <module>pentaho-authentication-mapper</module>
         <module>pentaho-kettle-repository-locator</module>
         <module>pentaho-metastore-locator</module>
-        <!--<module>pentaho-flat-table-viz</module>-->
         <module>pentaho-spring-dm-extender</module>
         <module>pentaho-pdi-platform</module>
       </modules>
