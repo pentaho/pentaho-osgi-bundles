@@ -59,18 +59,6 @@
 		</service-properties>
 	</service>
 
-	<service auto-export="all-classes">
-		<bean class="org.pentaho.platform.proxy.impl.ProxyRequestRegistration">
-			<argument value="org.springframework.security.core.userdetails.UserDetailsService" />
-		</bean>
-	</service>
-
-	<service auto-export="all-classes">
-		<bean class="org.pentaho.platform.proxy.impl.ProxyRequestRegistration">
-			<argument value="org.springframework.security.authentication.AuthenticationProvider" />
-		</bean>
-	</service>
-
 	<service auto-export="interfaces">
 		<service-properties>
 			<entry key="providerName" value="spring4-memory" />
