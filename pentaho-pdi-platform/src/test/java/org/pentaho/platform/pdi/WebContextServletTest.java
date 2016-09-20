@@ -81,4 +81,18 @@ public class WebContextServletTest {
     assertEquals( expected, result );
 
   }
+
+  @Test
+  public void testAppendCssWebResourcesToDoc() throws Exception {
+    StringBuilder sb = new StringBuilder();
+    List<String> resources = new ArrayList<>();
+    resources.add( "styles/awesome.css" );
+
+    webContextServlet.appendCssWebResources( sb, resources );
+
+    String result = sb.toString();
+    String expected = "document.write(\"<link rel='stylesheet' type='text/css' href='/styles/awesome.css'>\");\n";
+    assertEquals( expected, result );
+
+  }
 }
