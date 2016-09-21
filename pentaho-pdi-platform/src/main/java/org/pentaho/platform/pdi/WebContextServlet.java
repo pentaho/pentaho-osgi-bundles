@@ -69,9 +69,9 @@ public class WebContextServlet extends HttpServlet {
       if ( StringUtils.isNotEmpty( httpRequest.getParameter( "context" ) ) ) {
         context = httpRequest.getParameter( "context" );
       }
-      appendThemeCss( stringBuilder, context );
 
       appendJsWebResources( stringBuilder, getWebResources( context, ".*\\.js" ) );
+      appendCssWebResources( stringBuilder, getWebResources( context, ".*\\.css" ) );
 
       String requireJsLocation = "requirejs-manager/js/require-init.js";
       stringBuilder.append(
@@ -104,15 +104,6 @@ public class WebContextServlet extends HttpServlet {
       defaultLocale = Locale.getDefault();
     }
     return defaultLocale;
-  }
-
-  void appendThemeCss( StringBuilder sb, String context ) {
-    // Turn on the det theme for analyzer.
-    if ( "analyzer".equalsIgnoreCase( context ) ) {
-      sb.
-        append( "document.write(\"<link rel='stylesheet' type='text/css' "
-          + "href='../analyzer/styles/themes/det/anaDet.css'>\");\n" );
-    }
   }
 
   void appendLocale( StringBuilder sb, Locale locale ) {
@@ -154,6 +145,18 @@ public class WebContextServlet extends HttpServlet {
         }
         sb.append( "document.write(\"<script type='text/javascript' src='/"
           + s + "'></scr\"+\"ipt>\");\n" );
+      } );
+  }
+
+  void appendCssWebResources( StringBuilder sb, List<String> resources ) {
+    resources.stream()
+      .forEach( s -> {
+        if ( s.startsWith( "/" ) ) {
+          s = s.substring( 1 );
+        }
+        sb.
+          append( "document.write(\"<link rel='stylesheet' type='text/css' "
+            + "href='/" + s + "'>\");\n" );
       } );
   }
 }
