@@ -12,7 +12,7 @@
  * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  * See the GNU Lesser General Public License for more details.
  *
- * Copyright 2015 Pentaho Corporation. All rights reserved.
+ * Copyright 2015-2016 Pentaho Corporation. All rights reserved.
  */
 
 package org.pentaho.osgi.impl;
@@ -25,7 +25,6 @@ import org.osgi.util.tracker.ServiceTracker;
 import org.pentaho.osgi.api.BlueprintStateService;
 import org.pentaho.osgi.api.IKarafBlueprintWatcher;
 import org.pentaho.platform.engine.core.system.PentahoSystem;
-import org.pentaho.platform.engine.core.system.objfac.spring.BarrierBeanProcessor;
 import org.pentaho.platform.servicecoordination.api.IServiceBarrier;
 import org.pentaho.platform.servicecoordination.api.IServiceBarrierManager;
 import org.slf4j.Logger;
@@ -74,6 +73,16 @@ public class KarafBlueprintWatcherImpl implements IKarafBlueprintWatcher {
         while ( true ) {
           List<String> unloadedBlueprints = new ArrayList<String>();
           for ( Bundle bundle : bundleContext.getBundles() ) {
+            if ( bundle.getState() != Bundle.RESOLVED ) {
+              // We're only interested in bundles which are resolved, not started or installed. This is because a
+              // bundle which should have started but failed will be in the resolved state.
+              // We cannot assume an installed bundle is meant to be started and thus wait for it, bundles can be
+              // installed and never started (even though with Karaf this would be very strange). The only thing we can
+              // reasonably do here is skip non-resolved bundles.
+              logger.debug( "Blueprint check was skipped for bundle {} as it's not in the 'Resolved' state",
+                  bundle.getSymbolicName() );
+              continue;
+            }
             if ( blueprintStateService.hasBlueprint( bundle.getBundleId() ) ) {
               if ( !blueprintStateService.isBlueprintLoaded( bundle.getBundleId() ) && !blueprintStateService
                   .isBlueprintFailed( bundle.getBundleId() ) ) {
