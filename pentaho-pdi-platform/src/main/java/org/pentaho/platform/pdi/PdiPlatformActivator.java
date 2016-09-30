@@ -23,7 +23,7 @@ import org.apache.commons.vfs2.VFS;
 import org.apache.commons.vfs2.impl.DefaultFileSystemManager;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
-import org.pentaho.platform.api.engine.IAclVoter;
+//import org.pentaho.platform.api.engine.IAclVoter;
 import org.pentaho.platform.api.engine.IPluginManager;
 import org.pentaho.platform.api.engine.IPluginResourceLoader;
 import org.pentaho.platform.engine.core.system.PentahoSystem;
@@ -40,7 +40,7 @@ import java.io.IOException;
  * Created by nbaker on 8/31/16.
  */
 public class PdiPlatformActivator implements BundleActivator {
-  public static final IAclVoter ACL_VOTER = new AgileBiAclVoter();
+  //public static final IAclVoter ACL_VOTER = new AgileBiAclVoter();
   public static final IPluginResourceLoader RESOURCE_LOADER = new AgileBiPluginResourceLoader();
 
   private Logger logger = LoggerFactory.getLogger( getClass() );
@@ -48,9 +48,9 @@ public class PdiPlatformActivator implements BundleActivator {
   @Override public void start( BundleContext bundleContext ) throws Exception {
 
     // There is no AclVoter when running within the PDI client. We add our own.
-    if ( PentahoSystem.get( IAclVoter.class ) == null ) {
-      PentahoSystem.registerObject( ACL_VOTER );
-    }
+    //if ( PentahoSystem.get( IAclVoter.class ) == null ) {
+    //  PentahoSystem.registerObject( ACL_VOTER );
+    //}
 
 
     if ( PentahoSystem.get( IPluginResourceLoader.class ) == null ) {
