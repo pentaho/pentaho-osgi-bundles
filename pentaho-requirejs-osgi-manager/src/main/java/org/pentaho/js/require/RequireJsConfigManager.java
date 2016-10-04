@@ -58,15 +58,16 @@ public class RequireJsConfigManager {
   private final JSONParser parser = new JSONParser();
   private BundleContext bundleContext;
 
-  private static ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor( new ThreadFactory() {
-    @Override
-    public Thread newThread( Runnable r ) {
-      Thread thread = Executors.defaultThreadFactory().newThread( r );
-      thread.setDaemon( true );
-      thread.setName( "RequireJSConfigManager pool" );
-      return thread;
-    }
-  } );
+  private static ScheduledExecutorService executorService =
+    Executors.newSingleThreadScheduledExecutor( new ThreadFactory() {
+      @Override
+      public Thread newThread( Runnable r ) {
+        Thread thread = Executors.defaultThreadFactory().newThread( r );
+        thread.setDaemon( true );
+        thread.setName( "RequireJSConfigManager pool" );
+        return thread;
+      }
+    } );
 
   private volatile Future<String> cache;
   private volatile long lastModified;
@@ -83,8 +84,16 @@ public class RequireJsConfigManager {
   }
 
   public boolean updateBundleContext( Bundle bundle ) {
-    if ( bundle.getState() == Bundle.STOPPING || bundle.getState() == Bundle.UNINSTALLED || bundle.getState() == Bundle.RESOLVED ) {
-      return updateBundleContextStopped( bundle );
+    switch ( bundle.getState() ) {
+      case Bundle.STOPPING:
+      case Bundle.RESOLVED:
+      case Bundle.UNINSTALLED:
+      case Bundle.INSTALLED:
+        return updateBundleContextStopped( bundle );
+      case Bundle.ACTIVE:
+        break;
+      default:
+        return true;
     }
 
     boolean shouldInvalidate = false;
@@ -157,8 +166,8 @@ public class RequireJsConfigManager {
 
       if ( gen != null ) {
         RequireJsGenerator.ArtifactInfo artifactInfo =
-            new RequireJsGenerator.ArtifactInfo( "osgi-bundles", bundle.getSymbolicName(),
-                bundle.getVersion().toString() );
+          new RequireJsGenerator.ArtifactInfo( "osgi-bundles", bundle.getSymbolicName(),
+            bundle.getVersion().toString() );
         final RequireJsGenerator.ModuleInfo moduleInfo = gen.getConvertedConfig( artifactInfo );
         Map<String, Object> requireJsonObject = moduleInfo.getRequireJs();
 
@@ -234,7 +243,7 @@ public class RequireJsConfigManager {
       }
 
       this.cache = executorService.schedule( new RebuildCacheCallable( new HashMap<>( this.configMap ),
-          new ArrayList<>( requireConfigMap.values() ) ), 250, TimeUnit.MILLISECONDS );
+        new ArrayList<>( requireConfigMap.values() ) ), 250, TimeUnit.MILLISECONDS );
     }
   }
 
