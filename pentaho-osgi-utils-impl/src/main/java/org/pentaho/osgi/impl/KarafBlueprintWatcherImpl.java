@@ -40,15 +40,15 @@ public class KarafBlueprintWatcherImpl implements IKarafBlueprintWatcher {
   private BundleContext bundleContext;
   private long timeout;
   private Logger logger = LoggerFactory.getLogger( getClass() );
-  private static final String KARAF_TIMEOUT_PROPERTY = "karafWaitForBoot";
+  public static final String KARAF_TIMEOUT_PROPERTY = "karafWaitForBoot";
 
   public KarafBlueprintWatcherImpl( BundleContext bundleContext ) {
 
     this.bundleContext = bundleContext;
     // Default timeout of 2 minutes can be overridden in server.properties
     timeout =
-        PentahoSystem.getApplicationContext().getProperty( KARAF_TIMEOUT_PROPERTY ) == null ? 2 * 60 * 1000L : Long
-            .valueOf( PentahoSystem.getApplicationContext().getProperty( KARAF_TIMEOUT_PROPERTY ) );
+      PentahoSystem.getApplicationContext().getProperty( KARAF_TIMEOUT_PROPERTY ) == null ? 2 * 60 * 1000L : Long
+        .valueOf( PentahoSystem.getApplicationContext().getProperty( KARAF_TIMEOUT_PROPERTY ) );
   }
 
   @Override public void waitForBlueprint() throws BlueprintWatcherException {
@@ -63,11 +63,12 @@ public class KarafBlueprintWatcherImpl implements IKarafBlueprintWatcher {
     }
 
     ServiceReference<BlueprintStateService>
-        serviceReference =
-        bundleContext.getServiceReference( BlueprintStateService.class );
+      serviceReference =
+      bundleContext.getServiceReference( BlueprintStateService.class );
 
     if ( serviceReference != null ) {
       BlueprintStateService blueprintStateService = bundleContext.getService( serviceReference );
+      List<Bundle> unloadedAndFailedBlueprints = new ArrayList<Bundle>();
 
       try {
         while ( true ) {
@@ -80,28 +81,33 @@ public class KarafBlueprintWatcherImpl implements IKarafBlueprintWatcher {
               // installed and never started (even though with Karaf this would be very strange). The only thing we can
               // reasonably do here is skip non-resolved bundles.
               logger.debug( "Blueprint check was skipped for bundle {} as it's not in the 'Resolved' state",
-                  bundle.getSymbolicName() );
+                bundle.getSymbolicName() );
               continue;
             }
-            if ( blueprintStateService.hasBlueprint( bundle.getBundleId() ) ) {
-              if ( !blueprintStateService.isBlueprintLoaded( bundle.getBundleId() ) && !blueprintStateService
-                  .isBlueprintFailed( bundle.getBundleId() ) ) {
-                unloadedBlueprints.add( bundle.getSymbolicName() );
+            long bundleId = bundle.getBundleId();
+            if ( blueprintStateService.hasBlueprint( bundleId ) ) {
+              if ( !blueprintStateService.isBlueprintLoaded( bundleId ) ) {
+                unloadedAndFailedBlueprints.add( bundle );
+                if ( !blueprintStateService.isBlueprintFailed( bundleId ) && blueprintStateService
+                  .isBlueprintTryingToLoad( bundleId ) ) {
+                  unloadedBlueprints.add( bundle.getSymbolicName() );
+                }
               }
             }
           }
           if ( unloadedBlueprints.size() > 0 ) {
             if ( System.currentTimeMillis() - timeout > entryTime ) {
-              IServiceBarrier serviceBarrier = IServiceBarrierManager.LOCATOR.getManager().getServiceBarrier( "KarafFeatureWatcherBarrier" );
+              IServiceBarrier serviceBarrier =
+                IServiceBarrierManager.LOCATOR.getManager().getServiceBarrier( "KarafFeatureWatcherBarrier" );
               if ( serviceBarrier == null || serviceBarrier.isAvailable() ) {
                 throw new IKarafBlueprintWatcher.BlueprintWatcherException(
-                    "Timed out waiting for blueprints to load: " + StringUtils.join( unloadedBlueprints, "," ) );
+                  "Timed out waiting for blueprints to load: " + StringUtils.join( unloadedBlueprints, "," ) );
               } else {
                 entryTime = System.currentTimeMillis(); // reset the time. We are still waiting for barriers
               }
             }
             logger.debug( "KarafBlueprintWatcher is waiting for the following blueprints to load: " + StringUtils
-                .join( unloadedBlueprints, "," ) );
+              .join( unloadedBlueprints, "," ) );
             Thread.sleep( 100 );
             continue;
           }
