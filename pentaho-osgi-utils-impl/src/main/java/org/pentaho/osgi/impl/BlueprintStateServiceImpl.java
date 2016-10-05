@@ -54,6 +54,19 @@ public class BlueprintStateServiceImpl implements BlueprintStateService, Bluepri
     return hasBlueprint( bundleId ) && getBundleState( bundleId ) == BundleState.Failure;
   }
 
+  @Override public Boolean isBlueprintTryingToLoad( long bundleId ) {
+    if( !hasBlueprint( bundleId ) ) {
+      return false;
+    }
+    switch ( getBundleState( bundleId ) ) {
+      case GracePeriod:
+      case Waiting:
+      case Starting:
+        return true;
+    }
+    return false;
+  }
+
   @Override public Boolean hasBlueprint( long bundleId ) {
     if ( bluePrints.size() == 0 ) {
       for ( Bundle bundle : bundleContext.getBundles() ) {

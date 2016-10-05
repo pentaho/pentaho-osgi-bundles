@@ -234,7 +234,7 @@ public class KarafBlueprintWatcherImplTest {
       Assert.assertTrue( cause instanceof IKarafBlueprintWatcher.BlueprintWatcherException );
 
       String message = e.getCause().getMessage();
-      Assert.assertTrue( message.contains( WatchersTestUtils.getBundleName( MOCK_BUNDLE_UNKNOWN_ID ) ) );
+      Assert.assertFalse( message.contains( WatchersTestUtils.getBundleName( MOCK_BUNDLE_UNKNOWN_ID ) ) );
       Assert.assertTrue( message.contains( WatchersTestUtils.getBundleName( MOCK_BUNDLE_GRACE_PERIOD_ID ) ) );
 
       String debugOutputUnloadedBlueprints = WatchersTestUtils.findKarafDebugOutput( messages, EXPECTED_REPORT_HEADER );
@@ -256,16 +256,18 @@ public class KarafBlueprintWatcherImplTest {
     when( blueprintStateService.hasBlueprint( bundleId ) ).thenReturn( hasBlueprint );
     when( blueprintStateService.getBundleState( bundleId ) ).thenReturn( blueprintState );
 
-    if ( blueprintState.equals( BundleState.Active ) ) {
-      when( blueprintStateService.isBlueprintLoaded( bundleId ) ).thenReturn( true );
-    } else {
-      when( blueprintStateService.isBlueprintLoaded( bundleId ) ).thenReturn( false );
-    }
+    when( blueprintStateService.isBlueprintLoaded( bundleId ) ).thenReturn( blueprintState.equals( BundleState.Active ) );
 
-    if ( blueprintState.equals( BundleState.Failure ) ) {
-      when( blueprintStateService.isBlueprintFailed( bundleId ) ).thenReturn( true );
-    } else {
-      when( blueprintStateService.isBlueprintFailed( bundleId ) ).thenReturn( false );
+    when( blueprintStateService.isBlueprintFailed( bundleId ) ).thenReturn( blueprintState.equals( BundleState.Failure ) );
+
+    switch ( blueprintState ) {
+      case GracePeriod:
+      case Waiting:
+      case Starting:
+        when( blueprintStateService.isBlueprintTryingToLoad( bundleId ) ).thenReturn( Boolean.TRUE );
+        break;
+      default:
+        when( blueprintStateService.isBlueprintTryingToLoad( bundleId ) ).thenReturn( Boolean.FALSE );
     }
 
     when( blueprintStateService.getBundleMissDependencies( bundleId ) ).thenReturn( dependencies );

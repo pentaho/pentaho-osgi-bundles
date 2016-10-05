@@ -25,6 +25,7 @@ import org.apache.karaf.bundle.core.BundleState;
 public interface BlueprintStateService {
   Boolean hasBlueprint( long bundleId );
   Boolean isBlueprintLoaded( long bundleId );
+  Boolean isBlueprintTryingToLoad( long bundleId );
   Boolean isBlueprintFailed( long bundleId );
   BundleState getBundleState( long bundleId );
   String[] getBundleMissDependencies( long bundleId );
