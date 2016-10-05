@@ -49,8 +49,8 @@ public class KarafBlueprintWatcherImpl implements IKarafBlueprintWatcher {
     this.bundleContext = bundleContext;
     // Default timeout of 2 minutes can be overridden in server.properties
     timeout =
-        PentahoSystem.getApplicationContext().getProperty( KARAF_TIMEOUT_PROPERTY ) == null ? 2 * 60 * 1000L : Long
-            .valueOf( PentahoSystem.getApplicationContext().getProperty( KARAF_TIMEOUT_PROPERTY ) );
+      PentahoSystem.getApplicationContext().getProperty( KARAF_TIMEOUT_PROPERTY ) == null ? 2 * 60 * 1000L : Long
+        .valueOf( PentahoSystem.getApplicationContext().getProperty( KARAF_TIMEOUT_PROPERTY ) );
   }
 
   @Override public void waitForBlueprint() throws BlueprintWatcherException {
@@ -65,8 +65,8 @@ public class KarafBlueprintWatcherImpl implements IKarafBlueprintWatcher {
     }
 
     ServiceReference<BlueprintStateService>
-        serviceReference =
-        bundleContext.getServiceReference( BlueprintStateService.class );
+      serviceReference =
+      bundleContext.getServiceReference( BlueprintStateService.class );
 
     if ( serviceReference != null ) {
       BlueprintStateService blueprintStateService = bundleContext.getService( serviceReference );
@@ -76,20 +76,22 @@ public class KarafBlueprintWatcherImpl implements IKarafBlueprintWatcher {
         while ( true ) {
           List<String> unloadedBlueprints = new ArrayList<String>();
           for ( Bundle bundle : bundleContext.getBundles() ) {
-            if( bundle.getState() != Bundle.RESOLVED ){
+            if ( bundle.getState() != Bundle.RESOLVED ) {
               // We're only interested in bundles which are resolved, not started or installed. This is because a
               // bundle which should have started but failed will be in the resolved state.
               // We cannot assume an installed bundle is meant to be started and thus wait for it, bundles can be
               // installed and never started (even though with Karaf this would be very strange). The only thing we can
               // reasonably do here is skip non-resolved bundles.
               logger.debug( "Blueprint check was skipped for bundle {} as it's not in the 'Resolved' state",
-                  bundle.getSymbolicName() );
+                bundle.getSymbolicName() );
               continue;
             }
-            if ( blueprintStateService.hasBlueprint( bundle.getBundleId() ) ) {
-              if ( !blueprintStateService.isBlueprintLoaded( bundle.getBundleId() ) ) {
+            long bundleId = bundle.getBundleId();
+            if ( blueprintStateService.hasBlueprint( bundleId ) ) {
+              if ( !blueprintStateService.isBlueprintLoaded( bundleId ) ) {
                 unloadedAndFailedBlueprints.add( bundle );
-                if ( !blueprintStateService.isBlueprintFailed( bundle.getBundleId() ) ) {
+                if ( !blueprintStateService.isBlueprintFailed( bundleId ) && blueprintStateService
+                  .isBlueprintTryingToLoad( bundleId ) ) {
                   unloadedBlueprints.add( bundle.getSymbolicName() );
                 }
               }
@@ -97,16 +99,17 @@ public class KarafBlueprintWatcherImpl implements IKarafBlueprintWatcher {
           }
           if ( unloadedBlueprints.size() > 0 ) {
             if ( System.currentTimeMillis() - timeout > entryTime ) {
-              IServiceBarrier serviceBarrier = IServiceBarrierManager.LOCATOR.getManager().getServiceBarrier( "KarafFeatureWatcherBarrier" );
+              IServiceBarrier serviceBarrier =
+                IServiceBarrierManager.LOCATOR.getManager().getServiceBarrier( "KarafFeatureWatcherBarrier" );
               if ( serviceBarrier == null || serviceBarrier.isAvailable() ) {
                 throw new IKarafBlueprintWatcher.BlueprintWatcherException(
-                    "Timed out waiting for blueprints to load: " + StringUtils.join( unloadedBlueprints, "," ) );
+                  "Timed out waiting for blueprints to load: " + StringUtils.join( unloadedBlueprints, "," ) );
               } else {
                 entryTime = System.currentTimeMillis(); // reset the time. We are still waiting for barriers
               }
             }
             logger.debug( "KarafBlueprintWatcher is waiting for the following blueprints to load: " + StringUtils
-                .join( unloadedBlueprints, "," ) );
+              .join( unloadedBlueprints, "," ) );
             Thread.sleep( 100 );
             unloadedAndFailedBlueprints = new ArrayList<Bundle>();
             continue;
@@ -119,7 +122,7 @@ public class KarafBlueprintWatcherImpl implements IKarafBlueprintWatcher {
       } finally {
         if ( unloadedAndFailedBlueprints.size() > 0 ) {
           logger.debug( System.lineSeparator() + getBlueprintsReport( blueprintStateService,
-              unloadedAndFailedBlueprints ) );
+            unloadedAndFailedBlueprints ) );
         }
       }
     }
@@ -130,8 +133,8 @@ public class KarafBlueprintWatcherImpl implements IKarafBlueprintWatcher {
     bundlesReport += System.lineSeparator() + "Blueprint Bundle(s) not loaded:";
     for ( Bundle bundle : bundles ) {
       bundlesReport +=
-          System.lineSeparator() + "\t" + getBlueprintReport( blueprintStateService, bundle ).replaceAll( "\n",
-              "\n \t" );
+        System.lineSeparator() + "\t" + getBlueprintReport( blueprintStateService, bundle ).replaceAll( "\n",
+          "\n \t" );
     }
 
     return bundlesReport + System.lineSeparator() + "--------- Karaf Blueprint Watcher Report End ---------";
@@ -145,8 +148,8 @@ public class KarafBlueprintWatcherImpl implements IKarafBlueprintWatcher {
     Throwable failureCause = blueprintStateService.getBundleFailureCause( bundleId );
 
     String bundleReport =
-        "Blueprint Bundle '" + bundleName + "':" + System.lineSeparator() + "\t Blueprint Bundle State: " + bundleState
-            + System.lineSeparator() + "\t Blueprint Bundle ID: " + bundleId;
+      "Blueprint Bundle '" + bundleName + "':" + System.lineSeparator() + "\t Blueprint Bundle State: " + bundleState
+        + System.lineSeparator() + "\t Blueprint Bundle ID: " + bundleId;
 
     // Report missing dependencies from the blueprint, e.g., a mandatory service that did not start
     if ( missingDependencies != null ) {
@@ -159,8 +162,8 @@ public class KarafBlueprintWatcherImpl implements IKarafBlueprintWatcher {
     // If exist, we report the failure cause that is a throwable, we attach the full stacktrace into the report
     if ( failureCause != null ) {
       bundleReport +=
-          System.lineSeparator() + "\t This blueprint state was caused by: " + System.lineSeparator() + "\t \t"
-              + getStackTraceString( failureCause ).replaceAll( "\n", "\n \t \t" );
+        System.lineSeparator() + "\t This blueprint state was caused by: " + System.lineSeparator() + "\t \t"
+          + getStackTraceString( failureCause ).replaceAll( "\n", "\n \t \t" );
     }
     return bundleReport;
   }

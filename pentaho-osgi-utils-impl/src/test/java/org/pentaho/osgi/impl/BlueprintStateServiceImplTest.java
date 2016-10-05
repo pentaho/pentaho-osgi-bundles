@@ -160,6 +160,24 @@ public class BlueprintStateServiceImplTest {
     Assert.assertTrue( blueprintStateServiceImpl.isBlueprintFailed( MOCK_BUNDLE_GRACE_PERIOD_ID ) );
   }
 
+
+  @Test
+  public void testIsBlueprintTrying() {
+    Assert.assertTrue( blueprintStateServiceImpl.isBlueprintTryingToLoad( MOCK_BUNDLE_STARTING_ID ) );
+    Assert.assertTrue( blueprintStateServiceImpl.isBlueprintTryingToLoad( MOCK_BUNDLE_GRACE_PERIOD_ID ) );
+    Assert.assertTrue( blueprintStateServiceImpl.isBlueprintTryingToLoad( MOCK_BUNDLE_WAITING_ID ) );
+    Assert.assertFalse( blueprintStateServiceImpl.isBlueprintTryingToLoad( MOCK_BUNDLE_UNKNOWN_ID ) );
+    Assert.assertFalse( blueprintStateServiceImpl.isBlueprintTryingToLoad( MOCK_BUNDLE_ACTIVE_ID ) );
+    Assert.assertFalse( blueprintStateServiceImpl.isBlueprintTryingToLoad( MOCK_BUNDLE_STOPPING_ID ) );
+    Assert.assertFalse( blueprintStateServiceImpl.isBlueprintTryingToLoad( MOCK_BUNDLE_RESOLVED_ID ) );
+    Assert.assertFalse( blueprintStateServiceImpl.isBlueprintTryingToLoad( MOCK_BUNDLE_FAILURE_ID ) );
+    Assert.assertFalse( blueprintStateServiceImpl.isBlueprintTryingToLoad( MOCK_BUNDLE_NO_BLUEPRINT_ID ) );
+
+    bundleGracePeriodToFailed();
+    Assert.assertTrue( blueprintStateServiceImpl.isBlueprintFailed( MOCK_BUNDLE_GRACE_PERIOD_ID ) );
+  }
+
+
   @Test
   public void testHasBlueprint() {
     Assert.assertTrue( blueprintStateServiceImpl.hasBlueprint( MOCK_BUNDLE_UNKNOWN_ID ) );
