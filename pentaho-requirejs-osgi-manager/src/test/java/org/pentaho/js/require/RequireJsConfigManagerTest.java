@@ -62,6 +62,7 @@ public class RequireJsConfigManagerTest {
     when( bundle.getVersion() ).thenReturn( version );
     when( bundle.getSymbolicName() ).thenReturn( "angular-bundle" );
 
+    when( bundle.getState() ).thenReturn( Bundle.ACTIVE );
   }
 
   @Test
