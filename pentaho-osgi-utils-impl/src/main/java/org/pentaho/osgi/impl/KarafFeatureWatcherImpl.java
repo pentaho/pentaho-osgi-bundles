@@ -68,7 +68,6 @@ public class KarafFeatureWatcherImpl implements IKarafFeatureWatcher {
 
   @Override public void waitForFeatures() throws FeatureWatcherException {
 
-    long entryTime = System.currentTimeMillis();
 
     // Start the serviceTracker timer
     ServiceTracker serviceTracker = new ServiceTracker( bundleContext, FeaturesService.class.getName(), null );
@@ -90,18 +89,27 @@ public class KarafFeatureWatcherImpl implements IKarafFeatureWatcher {
       try {
         List<String> requiredFeatures = new ArrayList<String>();
 
+        Configuration configuration = configurationAdmin.getConfiguration( "org.apache.karaf.features" );
+        String featuresBoot = (String) configuration.getProperties().get( "featuresBoot" );
+        String[] fs = featuresBoot.split( "," );
+        requiredFeatures.addAll( Arrays.asList( fs ) );
+
+        waitForFeatures( requiredFeatures, featuresService );
+
+
+        List<String> extraFeatures = new ArrayList<String>();
         // Install extra features
-        Configuration configuration = configurationAdmin.getConfiguration( "org.pentaho.features" );
+        configuration = configurationAdmin.getConfiguration( "org.pentaho.features" );
         if ( configuration != null && configuration.getProperties() != null ) {
-          String extraFeatures = (String) configuration.getProperties().get( "runtimeFeatures" );
-          if ( extraFeatures != null ) {
-            String[] fs = extraFeatures.split( "," );
-            requiredFeatures.addAll( Arrays.asList( fs ) );
+          String extraFeaturesStr = (String) configuration.getProperties().get( "runtimeFeatures" );
+          if ( extraFeaturesStr != null ) {
+            fs = extraFeaturesStr.split( "," );
+            extraFeatures.addAll( Arrays.asList( fs ) );
           }
           ICapabilityManager manager = DefaultCapabilityManager.getInstance();
           if ( manager != null ) {
-            for ( String requiredFeature : requiredFeatures ) {
-              ICapability capability = manager.getCapabilityById( requiredFeature );
+            for ( String extraFeature : extraFeatures ) {
+              ICapability capability = manager.getCapabilityById( extraFeature );
               if ( capability != null ) {
                 capability.install();
               }
@@ -109,48 +117,50 @@ public class KarafFeatureWatcherImpl implements IKarafFeatureWatcher {
           }
         }
 
-        configuration = configurationAdmin.getConfiguration( "org.apache.karaf.features" );
-        String featuresBoot = (String) configuration.getProperties().get( "featuresBoot" );
-        String[] fs = featuresBoot.split( "," );
-        requiredFeatures.addAll( Arrays.asList( fs ) );
+        waitForFeatures( extraFeatures, featuresService );
 
-        // Loop through to see if features are all installed
-        while ( true ) {
-
-          List<String> uninstalledFeatures = new ArrayList<String>();
-
-          for ( String requiredFeature : requiredFeatures ) {
-            requiredFeature = requiredFeature.trim();
-            Feature feature = featuresService.getFeature( requiredFeature );
-            if ( feature != null && featuresService.isInstalled( feature ) == false ) {
-              uninstalledFeatures.add( requiredFeature );
-            }
-          }
-          if ( uninstalledFeatures.size() > 0 ) {
-            if ( System.currentTimeMillis() - timeout > entryTime ) {
-              IServiceBarrier serviceBarrier =
-                  IServiceBarrierManager.LOCATOR.getManager().getServiceBarrier( "KarafFeatureWatcherBarrier" );
-              if ( serviceBarrier == null || serviceBarrier.isAvailable() ) {
-                logger.debug( getFeaturesReport( featuresService, uninstalledFeatures ) );
-                throw new FeatureWatcherException( "Timed out waiting for Karaf features to install: " + StringUtils
-                    .join( uninstalledFeatures, "," ) );
-              } else {
-                entryTime = System.currentTimeMillis();
-              }
-            }
-            logger.debug( "KarafFeatureWatcher is waiting for the following features to install: " + StringUtils.join(
-                uninstalledFeatures, "," ) );
-            Thread.sleep( 100 );
-            continue;
-          }
-          break;
-        }
 
       } catch ( IOException e ) {
         throw new FeatureWatcherException( "Error accessing ConfigurationAdmin", e );
       } catch ( Exception e ) {
         throw new FeatureWatcherException( "Unknown error in KarafWatcher", e );
       }
+    }
+  }
+
+  private void waitForFeatures( List<String> requiredFeatures, FeaturesService featuresService ) throws Exception {
+
+    long entryTime = System.currentTimeMillis();
+    // Loop through to see if features are all installed
+    while ( true ) {
+
+      List<String> uninstalledFeatures = new ArrayList<String>();
+
+      for ( String requiredFeature : requiredFeatures ) {
+        requiredFeature = requiredFeature.trim();
+        Feature feature = featuresService.getFeature( requiredFeature );
+        if ( feature != null && featuresService.isInstalled( feature ) == false ) {
+          uninstalledFeatures.add( requiredFeature );
+        }
+      }
+      if ( uninstalledFeatures.size() > 0 ) {
+        if ( System.currentTimeMillis() - timeout > entryTime ) {
+          IServiceBarrier serviceBarrier =
+              IServiceBarrierManager.LOCATOR.getManager().getServiceBarrier( "KarafFeatureWatcherBarrier" );
+          if ( serviceBarrier == null || serviceBarrier.isAvailable() ) {
+            logger.debug( getFeaturesReport( featuresService, uninstalledFeatures ) );
+            throw new FeatureWatcherException( "Timed out waiting for Karaf features to install: " + StringUtils
+                .join( uninstalledFeatures, "," ) );
+          } else {
+            entryTime = System.currentTimeMillis();
+          }
+        }
+        logger.debug( "KarafFeatureWatcher is waiting for the following features to install: " + StringUtils.join(
+            uninstalledFeatures, "," ) );
+        Thread.sleep( 100 );
+        continue;
+      }
+      break;
     }
   }
 
