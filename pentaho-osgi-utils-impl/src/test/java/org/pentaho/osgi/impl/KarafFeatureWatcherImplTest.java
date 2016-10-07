@@ -83,7 +83,7 @@ public class KarafFeatureWatcherImplTest {
 
   private static final String EXPECTED_REPORT_HEADER = System.lineSeparator() + "--------- Karaf Feature Watcher Report Begin ---------";
   private static final String EXPECTED_REPORT_FOR_NOT_INSTALLED_FEATURES =
-      "\n--------- Karaf Feature Watcher Report Begin ---------\nFeature 'ParentFailedRunTimeFeature' did not install.\nThe following feature(s) are not active and they are contained in feature 'ParentFailedRunTimeFeature'\n\tFeature 'ChildFailedRunTimeFeature' with version 4.5.60 did not install.\n\tThe following bundle(s) are not active and they are contained in feature 'ChildFailedRunTimeFeature'\n\t\tBundle 'Bundle_7':\n\t\t\t Bundle State: GracePeriod\n\t\t\t Bundle ID: 7\n\t\t\t Unsatisfied Requirements:\n\t\t\t\tdependency6\nFeature 'ParentFailedActiveFeature' with version 77.9.81 did not install.\nThe following bundle(s) are not active and they are contained in feature 'ParentFailedActiveFeature'\n\tBundle 'Bundle_6':\n\t\t Bundle State: Failure\n\t\t Bundle ID: 6\n\t\t Unsatisfied Requirements:\n\t\t\tdependency1\n\t\t\tdependency2\nThe following feature(s) are not active and they are contained in feature 'ParentFailedActiveFeature'\n\tFeature 'ChildFailedFeature' did not install.\n\tThe following bundle(s) are not active and they are contained in feature 'ChildFailedFeature'\n\t\tBundle 'Bundle_12':\n\t\t\t Bundle State: Unknown\n\t\t\t Bundle ID: 12\n--------- Karaf Feature Watcher Report End ---------";
+      "\n--------- Karaf Feature Watcher Report Begin ---------\nFeature 'ParentFailedActiveFeature' with version 77.9.81 did not install.\nThe following bundle(s) are not active and they are contained in feature 'ParentFailedActiveFeature'\n\tBundle 'Bundle_6':\n\t\t Bundle State: Failure\n\t\t Bundle ID: 6\n\t\t Unsatisfied Requirements:\n\t\t\tdependency1\n\t\t\tdependency2\nThe following feature(s) are not active and they are contained in feature 'ParentFailedActiveFeature'\n\tFeature 'ChildFailedFeature' did not install.\n\tThe following bundle(s) are not active and they are contained in feature 'ChildFailedFeature'\n\t\tBundle 'Bundle_12':\n\t\t\t Bundle State: Unknown\n\t\t\t Bundle ID: 12\n--------- Karaf Feature Watcher Report End ---------";
   public List<String> messages = new ArrayList<String>();
 
   private class TestAppender extends AppenderSkeleton {
@@ -238,7 +238,7 @@ public class KarafFeatureWatcherImplTest {
       Assert.assertTrue( cause instanceof IKarafFeatureWatcher.FeatureWatcherException );
 
       String message = e.getCause().getMessage();
-      Assert.assertTrue( message.contains( PARENT_FAILED_RUNTIME_FEATURE_NAME ) );
+      Assert.assertTrue( message.contains( PARENT_FAILED_BOOT_FEATURE_NAME ) );
 
       String debugOutputNotInstalledFeatures = WatchersTestUtils.findKarafDebugOutput( messages, EXPECTED_REPORT_HEADER );
       if ( debugOutputNotInstalledFeatures == null ) {
