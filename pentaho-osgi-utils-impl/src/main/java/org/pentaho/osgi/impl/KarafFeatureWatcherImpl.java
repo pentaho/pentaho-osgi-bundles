@@ -110,7 +110,7 @@ public class KarafFeatureWatcherImpl implements IKarafFeatureWatcher {
           if ( manager != null ) {
             for ( String extraFeature : extraFeatures ) {
               ICapability capability = manager.getCapabilityById( extraFeature );
-              if ( capability != null ) {
+              if ( capability != null && !capability.isInstalled() ) {
                 capability.install();
               }
             }
