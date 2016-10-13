@@ -94,7 +94,6 @@
       </activation>
       <modules>
         <module>pentaho-blueprint-collection-utils</module>
-        <module>angular-bundle</module>
         <module>pentaho-i18n-bundle</module>
         <module>pentaho-i18n-webservice-bundle</module>
         <module>pentaho-notification-bundle</module>
@@ -138,7 +137,6 @@
       </activation>
       <modules>
         <module>pentaho-blueprint-collection-utils</module>
-        <module>angular-bundle</module>
         <module>pentaho-i18n-bundle</module>
         <module>pentaho-i18n-webservice-bundle</module>
         <module>pentaho-notification-bundle</module>
