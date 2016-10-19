@@ -119,11 +119,12 @@ public class KarafFeatureWatcherImpl implements IKarafFeatureWatcher {
 
         waitForFeatures( extraFeatures, featuresService );
 
-
       } catch ( IOException e ) {
         throw new FeatureWatcherException( "Error accessing ConfigurationAdmin", e );
       } catch ( Exception e ) {
         throw new FeatureWatcherException( "Unknown error in KarafWatcher", e );
+      } finally {
+        serviceTracker.close();
       }
     }
   }

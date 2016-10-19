@@ -124,6 +124,7 @@ public class KarafBlueprintWatcherImpl implements IKarafBlueprintWatcher {
           logger.debug( System.lineSeparator() + getBlueprintsReport( blueprintStateService,
             unloadedAndFailedBlueprints ) );
         }
+        serviceTracker.close();
       }
     }
   }
