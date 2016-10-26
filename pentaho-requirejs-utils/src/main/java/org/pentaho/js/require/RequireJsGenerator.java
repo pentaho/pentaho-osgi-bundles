@@ -37,6 +37,7 @@ import javax.script.Invocable;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPath;
@@ -73,7 +74,10 @@ public class RequireJsGenerator {
       throws IOException, ParserConfigurationException, SAXException, XPathExpressionException, ParseException {
     byte[] bytes = IOUtils.toByteArray( inputStream );
 
-    Document pom = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse( new ByteArrayInputStream( bytes ) );
+    DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+    documentBuilderFactory.setFeature( XMLConstants.FEATURE_SECURE_PROCESSING, true );
+    documentBuilderFactory.setFeature( "http://apache.org/xml/features/disallow-doctype-decl", true );
+    Document pom = documentBuilderFactory.newDocumentBuilder().parse( new ByteArrayInputStream( bytes ) );
     return new RequireJsGenerator( pom );
   }
 
