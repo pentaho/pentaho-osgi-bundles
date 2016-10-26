@@ -28,6 +28,7 @@ import org.pentaho.osgi.platform.plugin.deployer.api.PluginHandlingException;
 import org.pentaho.osgi.platform.plugin.deployer.api.PluginMetadata;
 import org.w3c.dom.Document;
 
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.ByteArrayInputStream;
@@ -116,6 +117,8 @@ public class PluginZipFileProcessor {
           shouldOutput = false;
           try {
             DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+            documentBuilderFactory.setFeature( XMLConstants.FEATURE_SECURE_PROCESSING, true );
+            documentBuilderFactory.setFeature( "http://apache.org/xml/features/disallow-doctype-decl", true );
             documentBuilderFactory.setNamespaceAware( true );
             blueprint =
               documentBuilderFactory.newDocumentBuilder().parse( new ByteArrayInputStream( zipBytes ) );
