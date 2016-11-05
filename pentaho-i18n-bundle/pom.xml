@@ -5,10 +5,10 @@
   <parent>
     <groupId>pentaho</groupId>
     <artifactId>pentaho-osgi-bundles</artifactId>
-    <version>7.0-SNAPSHOT</version>
+    <version>7.0.0.0-25</version>
   </parent>
   <artifactId>pentaho-i18n-bundle</artifactId>
-  <version>7.0-SNAPSHOT</version>
+  <version>7.0.0.0-25</version>
   <packaging>bundle</packaging>
   <name>Pentaho Community Edition Project: ${project.artifactId}</name>
   <description>a Pentaho open source project</description>
@@ -78,13 +78,10 @@
     </dependency>
   </dependencies>
   <build>
-    <finalName>${project.artifactId}</finalName>
-
-    
     <resources>
       <resource>
-        <directory>src/main/resources</directory>
         <filtering>false</filtering>
+        <directory>src/main/resources</directory>
         <includes>
           <include>**/*</include>
         </includes>
@@ -92,16 +89,15 @@
           <exclude>OSGI-INF/blueprint/*</exclude>
         </excludes>
       </resource>
-
       <resource>
-        <directory>src/main/resources</directory>
         <filtering>true</filtering>
+        <directory>src/main/resources</directory>
         <includes>
           <include>OSGI-INF/blueprint/*</include>
         </includes>
       </resource>
     </resources>
-
+    <finalName>${project.artifactId}</finalName>
     <plugins>
       <plugin>
         <groupId>org.apache.felix</groupId>
