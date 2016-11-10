@@ -27,7 +27,7 @@
       if(config.isBuild) {
         // Indicate that the optimizer should not wait for this resource and complete optimization.
         // This resource will be resolved dynamically during run time in the web browser.
-        onload();
+        onLoad();
       } else {
         var baseUrl = CONTEXT_PATH && CONTEXT_PATH == '/' ? CONTEXT_PATH : CONTEXT_PATH + "osgi/";
         var locale = typeof SESSION_LOCALE !== "undefined" ? SESSION_LOCALE : "en";
