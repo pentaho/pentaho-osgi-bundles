@@ -9,12 +9,11 @@
   </parent>
   <groupId>pentaho</groupId>
   <artifactId>pentaho-osgi-bundles</artifactId>
-  <version>6.1-SNAPSHOT</version>
+  <version>6.1.0.1-295</version>
   <packaging>pom</packaging>
   <name>Pentaho Community Edition Project: ${project.artifactId}</name>
   <description>Parent project for Pentaho OSGI Bundles</description>
   <url>http://www.pentaho.com</url>
-
   <licenses>
     <license>
       <name>Apache License, Version 2.0</name>
@@ -23,7 +22,6 @@
       <comments>A business-friendly OSS license</comments>
     </license>
   </licenses>
-
   <developers>
     <developer>
       <name>Bryan Rosander</name>
@@ -33,11 +31,11 @@
       </roles>
     </developer>
     <developer>
-        <name>Nick Baker</name>
-        <email>nbaker@pentaho.com</email>
-        <roles>
-            <role>developer</role>
-        </roles>
+      <name>Nick Baker</name>
+      <email>nbaker@pentaho.com</email>
+      <roles>
+        <role>developer</role>
+      </roles>
     </developer>
   </developers>
   <scm>
@@ -46,19 +44,19 @@
     <url>scm:git:git@github.com:pentaho/${project.artifactId}.git</url>
   </scm>
   <properties>
-    <dependency.pentaho-platform.revision>6.1-SNAPSHOT</dependency.pentaho-platform.revision>
+    <dependency.pentaho-platform.revision>6.1.0.1-295</dependency.pentaho-platform.revision>
     <commons-io.version>2.4</commons-io.version>
     <junit.version>4.11</junit.version>
     <hamcrest.version>1.3</hamcrest.version>
-    <slf4j-api.version>1.7.7</slf4j-api.version>
     <commons-lang.version>2.6</commons-lang.version>
     <guava.version>17.0</guava.version>
+    <slf4j-api.version>1.7.7</slf4j-api.version>
     <json-simple.version>1.1.1</json-simple.version>
     <felix.version>4.2.1</felix.version>
-    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <karaf.version>3.0.3</karaf.version>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <cxf.version>3.0.6</cxf.version>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <felix-fileinstall.version>3.4.2</felix-fileinstall.version>
     <mockito.version>1.9.5</mockito.version>
     <requirejs.version>2.1.19</requirejs.version>
@@ -89,23 +87,11 @@
     </plugins>
   </build>
   <profiles>
-
     <profile>
       <id>all</id>
       <activation>
         <activeByDefault>true</activeByDefault>
       </activation>
-      <properties>
-        <sonar.projectKey>${project.groupId}:${project.artifactId}-all</sonar.projectKey>
-        <sonar.projectName>${project.artifactId}-all</sonar.projectName>
-      </properties>
-      <distributionManagement>
-        <site>
-          <id>pentaho.public.snapshot.repo</id>
-          <name>${project.artifactId}-${project.version}-all</name>
-          <url>dav:${site.publish.url}/${project.groupId}/pentaho-osgi-bundles-all-${project.version}</url>
-        </site>
-      </distributionManagement>
       <modules>
         <module>angular-bundle</module>
         <module>pentaho-i18n-bundle</module>
@@ -127,6 +113,17 @@
         <module>pentaho-ss2-proxies</module>
         <module>pentaho-proxy-spring4</module>
       </modules>
+      <distributionManagement>
+        <site>
+          <id>pentaho.public.snapshot.repo</id>
+          <name>${project.artifactId}-${project.version}-all</name>
+          <url>dav:${site.publish.url}/${project.groupId}/pentaho-osgi-bundles-all-${project.version}</url>
+        </site>
+      </distributionManagement>
+      <properties>
+        <sonar.projectName>${project.artifactId}-all</sonar.projectName>
+        <sonar.projectKey>${project.groupId}:${project.artifactId}-all</sonar.projectKey>
+      </properties>
     </profile>
     <profile>
       <id>lowdeps</id>
@@ -135,17 +132,6 @@
           <name>lowdeps</name>
         </property>
       </activation>
-      <properties>
-        <sonar.projectKey>${project.groupId}:${project.artifactId}-lowdeps</sonar.projectKey>
-        <sonar.projectName>${project.artifactId}-lowdeps</sonar.projectName>
-      </properties>
-      <distributionManagement>
-        <site>
-          <id>pentaho.public.snapshot.repo</id>
-          <name>${project.artifactId}-${project.version}-lowdeps</name>
-          <url>dav:${site.publish.url}/${project.groupId}/pentaho-osgi-bundles-lowdeps-${project.version}</url>
-        </site>
-      </distributionManagement>
       <modules>
         <module>angular-bundle</module>
         <module>pentaho-i18n-bundle</module>
@@ -161,6 +147,17 @@
         <module>pentaho-capability-manager</module>
         <module>pentaho-cache-manager</module>
       </modules>
+      <distributionManagement>
+        <site>
+          <id>pentaho.public.snapshot.repo</id>
+          <name>${project.artifactId}-${project.version}-lowdeps</name>
+          <url>dav:${site.publish.url}/${project.groupId}/pentaho-osgi-bundles-lowdeps-${project.version}</url>
+        </site>
+      </distributionManagement>
+      <properties>
+        <sonar.projectName>${project.artifactId}-lowdeps</sonar.projectName>
+        <sonar.projectKey>${project.groupId}:${project.artifactId}-lowdeps</sonar.projectKey>
+      </properties>
     </profile>
     <profile>
       <id>highdeps</id>
@@ -169,17 +166,6 @@
           <name>highdeps</name>
         </property>
       </activation>
-      <properties>
-        <sonar.projectKey>${project.groupId}:${project.artifactId}-highdeps</sonar.projectKey>
-        <sonar.projectName>${project.artifactId}-highdeps</sonar.projectName>
-      </properties>
-      <distributionManagement>
-        <site>
-          <id>pentaho.public.snapshot.repo</id>
-          <name>${project.artifactId}-${project.version}-highdeps</name>
-          <url>dav:${site.publish.url}/${project.groupId}/pentaho-osgi-bundles-highdeps-${project.version}</url>
-        </site>
-      </distributionManagement>
       <modules>
         <module>pentaho-osgi-utils-impl</module>
         <module>pentaho-server-bundle</module>
@@ -188,12 +174,21 @@
         <module>pentaho-ss2-proxies</module>
         <module>pentaho-proxy-spring4</module>
       </modules>
+      <distributionManagement>
+        <site>
+          <id>pentaho.public.snapshot.repo</id>
+          <name>${project.artifactId}-${project.version}-highdeps</name>
+          <url>dav:${site.publish.url}/${project.groupId}/pentaho-osgi-bundles-highdeps-${project.version}</url>
+        </site>
+      </distributionManagement>
+      <properties>
+        <sonar.projectName>${project.artifactId}-highdeps</sonar.projectName>
+        <sonar.projectKey>${project.groupId}:${project.artifactId}-highdeps</sonar.projectKey>
+      </properties>
     </profile>
-    
     <profile>
       <id>aggregate-reporting</id>
       <activation>
-        <activeByDefault>false</activeByDefault>
         <property>
           <name>aggregate-reporting</name>
         </property>
@@ -201,59 +196,55 @@
       <reporting>
         <plugins>
           <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-jxr-plugin</artifactId>
-            <configuration>
-              <linkJavadoc>true</linkJavadoc>
-            </configuration>
             <reportSets>
               <reportSet>
                 <id>aggregate-jxr</id>
-                <inherited>false</inherited>
                 <reports>
                   <report>aggregate</report>
                 </reports>
+                <inherited>false</inherited>
               </reportSet>
             </reportSets>
+            <configuration>
+              <linkJavadoc>true</linkJavadoc>
+            </configuration>
           </plugin>
           <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-javadoc-plugin</artifactId>
-            <configuration>
-              <failOnError>false</failOnError>
-            </configuration>
             <reportSets>
               <reportSet>
                 <id>aggregate-javadoc</id>
-                <inherited>false</inherited>
                 <reports>
                   <report>aggregate</report>
                 </reports>
+                <inherited>false</inherited>
               </reportSet>
             </reportSets>
+            <configuration>
+              <failOnError>false</failOnError>
+            </configuration>
           </plugin>
           <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-checkstyle-plugin</artifactId>
+            <reportSets>
+              <reportSet>
+                <id>aggregate-checkstyle</id>
+                <reports>
+                  <report>checkstyle-aggregate</report>
+                </reports>
+                <inherited>false</inherited>
+              </reportSet>
+            </reportSets>
             <configuration>
               <configLocation>${checkstyle-config-url}</configLocation>
               <propertiesLocation>${checkstyle-properties-url}</propertiesLocation>
               <linkXRef>true</linkXRef>
               <cacheFile />
             </configuration>
-            <reportSets>
-              <reportSet>
-                <id>aggregate-checkstyle</id>
-                <inherited>false</inherited>
-                <reports>
-                  <report>checkstyle-aggregate</report>
-                </reports>
-              </reportSet>
-            </reportSets>
           </plugin>
         </plugins>
       </reporting>
     </profile>
-    
   </profiles>
 </project>
