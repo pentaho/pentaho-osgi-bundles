@@ -1,3 +1,25 @@
+/*!
+ * PENTAHO CORPORATION PROPRIETARY AND CONFIDENTIAL
+ *
+ * Copyright 2002 - 2016 Pentaho Corporation (Pentaho). All rights reserved.
+ *
+ * NOTICE: All information including source code contained herein is, and
+ * remains the sole property of Pentaho and its licensors. The intellectual
+ * and technical concepts contained herein are proprietary and confidential
+ * to, and are trade secrets of Pentaho and may be covered by U.S. and foreign
+ * patents, or patents in process, and are protected by trade secret and
+ * copyright laws. The receipt or possession of this source code and/or related
+ * information does not convey or imply any rights to reproduce, disclose or
+ * distribute its contents, or to manufacture, use, or sell anything that it
+ * may describe, in whole or in part. Any reproduction, modification, distribution,
+ * or public display of this information without the express written authorization
+ * from Pentaho is strictly prohibited and in violation of applicable laws and
+ * international treaties. Access to the source code contained herein is strictly
+ * prohibited to anyone except those individuals and entities who have executed
+ * confidentiality and non-disclosure agreements or other agreements with Pentaho,
+ * explicitly covering such access.
+ */
+
 package org.pentaho.osgi.platform.plugin.deployer.impl.handlers;
 
 import org.pentaho.osgi.platform.plugin.deployer.api.PluginFileHandler;
@@ -15,16 +37,13 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringWriter;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.List;
 import java.util.jar.JarInputStream;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 
 import static org.pentaho.osgi.platform.plugin.deployer.impl.handlers.pluginxml.PluginXmlStaticPathsHandler
-    .BLUEPRINT_BEAN_NS;
+  .BLUEPRINT_BEAN_NS;
 
 /**
  * Created by nbaker on 7/19/16.
@@ -33,14 +52,14 @@ public class SpringFileHandler implements PluginFileHandler {
 
   public static final String LIB_PATTERN = ".+\\/lib\\/.+\\.jar";
   public static final String PLUGIN_SPRING_XML = ".+\\/plugin.spring.xml";
-  private final Pattern beanPattern = Pattern.compile( ".*id=\"([^\\.]+\\.[^\"]+)\".+[(\\r\\n|\\r|\\n)]*" );
+  private final Pattern beanPattern = Pattern.compile( ".*id=\"(.+?)\".+[(\\r\\n|\\r|\\n)]*" );
 
   @Override public boolean handles( String fileName ) {
     return fileName.matches( LIB_PATTERN ) || fileName.matches( PLUGIN_SPRING_XML );
   }
 
   @Override public void handle( String relativePath, File file, PluginMetadata pluginMetadata )
-      throws PluginHandlingException {
+    throws PluginHandlingException {
 
     if ( relativePath.matches( LIB_PATTERN ) ) {
 
@@ -60,7 +79,7 @@ public class SpringFileHandler implements PluginFileHandler {
             String contents;
             try {
               byteArrayOutputStream =
-                  new ByteArrayOutputStream( (int) Math.min( Integer.MAX_VALUE, Math.max( 0, nextEntry.getSize() ) ) );
+                new ByteArrayOutputStream( (int) Math.min( Integer.MAX_VALUE, Math.max( 0, nextEntry.getSize() ) ) );
               byte[] buffer = new byte[ 1024 ];
               int read;
               while ( ( read = jarInputStream.read( buffer ) ) > 0 ) {
@@ -103,42 +122,44 @@ public class SpringFileHandler implements PluginFileHandler {
 
         String[] lines = contents.split( "\\n" );
 
-//        lines.stream().filter(
-//            s -> s.matches( "\".+\\..+\"" )
-//        ).forEach( s -> {
+        //        lines.stream().filter(
+        //            s -> s.matches( "\".+\\..+\"" )
+        //        ).forEach( s -> {
+        String bundleName = pluginMetadata.getManifestUpdater().getBundleSymbolicName();
         for ( String s : lines ) {
           Matcher matcher = beanPattern.matcher( s );
-          if( matcher.matches() ) {
-            String beanId = matcher.group(1);
+          if ( matcher.matches() ) {
+            String beanId = matcher.group( 1 );
             Document blueprint = pluginMetadata.getBlueprint();
-            Element service = blueprint.createElementNS( BLUEPRINT_BEAN_NS,
-                "service" );
+            Element service = blueprint.createElementNS( BLUEPRINT_BEAN_NS, "service" );
             service.setAttribute( "interface", "javax.servlet.Servlet" );
 
-            Element props = blueprint.createElementNS( BLUEPRINT_BEAN_NS,
-                "service-properties" );
-            Element entry = blueprint.createElementNS( BLUEPRINT_BEAN_NS,
-                "entry" );
-            String[] split = beanId.split( "\\." );
-            entry.setAttribute( "key", "alias");
-            entry.setAttribute( "value", "/content/analyzer/" + split[ 1 ] );
+            Element props = blueprint.createElementNS( BLUEPRINT_BEAN_NS, "service-properties" );
+            Element entry = blueprint.createElementNS( BLUEPRINT_BEAN_NS, "entry" );
+
+            String value = "/content/" + bundleName;
+            if ( "pentaho-geo".equals( bundleName ) ) {
+              value = "/content/" + beanId;
+            } else if ( beanId.contains( "." ) ) {
+              String[] split = beanId.split( "\\." );
+              value = "/content/" + bundleName + "/" + split[ 1 ];
+            }
+            entry.setAttribute( "key", "alias" );
+            entry.setAttribute( "value", value );
+
             props.appendChild( entry );
 
-            entry = blueprint.createElementNS( BLUEPRINT_BEAN_NS,
-                "entry" );
-            entry.setAttribute( "key", "servlet-name");
-            entry.setAttribute( "value",  beanId );
+            entry = blueprint.createElementNS( BLUEPRINT_BEAN_NS, "entry" );
+            entry.setAttribute( "key", "servlet-name" );
+            entry.setAttribute( "value", beanId );
             service.appendChild( props );
 
-            Element bean = blueprint.createElementNS( BLUEPRINT_BEAN_NS,
-                "bean" );
+            Element bean = blueprint.createElementNS( BLUEPRINT_BEAN_NS, "bean" );
             bean.setAttribute( "class", "org.pentaho.platform.pdi.ContentGeneratorServlet" );
-            Element argument = blueprint.createElementNS( BLUEPRINT_BEAN_NS,
-                "argument" );
+            Element argument = blueprint.createElementNS( BLUEPRINT_BEAN_NS, "argument" );
             argument.setAttribute( "ref", "spring" );
             bean.appendChild( argument );
-            argument = blueprint.createElementNS( BLUEPRINT_BEAN_NS,
-                "argument" );
+            argument = blueprint.createElementNS( BLUEPRINT_BEAN_NS, "argument" );
             argument.setAttribute( "value", beanId );
             bean.appendChild( argument );
             service.appendChild( bean );
