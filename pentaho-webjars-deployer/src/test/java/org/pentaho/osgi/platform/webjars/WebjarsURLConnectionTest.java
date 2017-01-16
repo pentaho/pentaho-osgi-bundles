@@ -150,6 +150,24 @@ public class WebjarsURLConnectionTest {
     connection.getInputStream();
   }
 
+  @Test
+  public void testMinifiedResources() throws IOException, ParseException {
+    ZipFile zipInputStream = getDeployedJar( new URL( "mvn:org.webjars/smart-table/2.0.3-1" ) );
+
+    verifyBlueprint( zipInputStream, "smart-table/2.0.3-1" );
+
+    verifyMinified( zipInputStream, "smart-table/2.0.3-1", "smart-table.js" );
+  }
+
+  @Test
+  public void testFailedMinification() throws IOException, ParseException {
+    ZipFile zipInputStream = getDeployedJar( new URL( "mvn:org.webjars/smart-table/2.0.3-1-fail-minification" ) );
+
+    verifyBlueprint( zipInputStream, "smart-table/2.0.3-1" );
+
+    verifyNotMinified( zipInputStream, "smart-table/2.0.3-1", "smart-table.js" );
+  }
+
   private void verifyManifest( ZipFile zipInputStream ) throws IOException {
     ZipEntry entry = zipInputStream.getEntry( "META-INF/MANIFEST.MF" );
     assertNotNull( entry );
@@ -211,6 +229,34 @@ public class WebjarsURLConnectionTest {
   private void verifyNoRequireJson( ZipFile zipInputStream ) throws IOException, ParseException {
     ZipEntry entry = zipInputStream.getEntry( "META-INF/js/require.json" );
     assertNull( entry );
+  }
+
+  private void verifyMinified( ZipFile zipInputStream, String expectedPath, String file ) throws IOException {
+    ZipEntry entry = zipInputStream.getEntry( "META-INF/resources/dist-gen/" + file );
+    assertNotNull( entry );
+
+    String minFile = IOUtils.toString( zipInputStream.getInputStream( entry ), "UTF-8" );
+
+    entry = zipInputStream.getEntry( "META-INF/resources/webjars/" + expectedPath + "/" + file );
+    assertNotNull( entry );
+
+    String srcFile = IOUtils.toString( zipInputStream.getInputStream( entry ), "UTF-8" );
+
+    assertNotEquals( minFile, srcFile );
+  }
+
+  private void verifyNotMinified( ZipFile zipInputStream, String expectedPath, String file ) throws IOException {
+    ZipEntry entry = zipInputStream.getEntry( "META-INF/resources/dist-gen/" + file );
+    assertNotNull( entry );
+
+    String minFile = IOUtils.toString( zipInputStream.getInputStream( entry ), "UTF-8" );
+
+    entry = zipInputStream.getEntry( "META-INF/resources/webjars/" + expectedPath + "/" + file );
+    assertNotNull( entry );
+
+    String srcFile = IOUtils.toString( zipInputStream.getInputStream( entry ), "UTF-8" );
+
+    assertEquals( minFile, srcFile );
   }
 
   private ZipFile getDeployedJar( URL webjar_url ) throws IOException {
