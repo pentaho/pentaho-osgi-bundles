@@ -17,7 +17,7 @@
     <dependency>
       <groupId>com.google.javascript</groupId>
       <artifactId>closure-compiler</artifactId>
-      <version>v20160517</version>
+      <version>v20161201</version>
     </dependency>
     <dependency>
       <groupId>org.apache.felix</groupId>

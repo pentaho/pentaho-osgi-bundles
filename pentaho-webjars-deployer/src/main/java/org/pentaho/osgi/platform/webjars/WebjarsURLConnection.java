@@ -174,24 +174,33 @@ public class WebjarsURLConnection extends URLConnection {
 
   private Logger logger = LoggerFactory.getLogger( getClass() );
 
+  private URLConnection urlConnection;
+
   public WebjarsURLConnection( URL url ) {
     super( url );
   }
 
-  @Override public void connect() throws IOException {
+  @Override
+  public void connect() throws IOException {
+    this.urlConnection = url.openConnection();
+    this.urlConnection.connect();
   }
 
-  @Override public InputStream getInputStream() throws IOException {
+  @Override
+  public InputStream getInputStream() throws IOException {
     try {
+      final InputStream originalInputStream = this.urlConnection.getInputStream();
+
       final PipedOutputStream pipedOutputStream = new PipedOutputStream();
       PipedInputStream pipedInputStream = new PipedInputStream( pipedOutputStream );
 
       transform_thread = EXECUTOR.submit( new Callable<Void>() {
-        @Override public Void call() throws Exception {
+        @Override
+        public Void call() throws Exception {
           try {
-            transform( getURL(), pipedOutputStream );
+            transform( originalInputStream, pipedOutputStream );
           } catch ( Exception e ) {
-            logger.error( "Error Transforming zip", e );
+            logger.error( getURL().toString() + ": Error Transforming zip", e );
             pipedOutputStream.close();
             throw e;
           }
@@ -202,20 +211,18 @@ public class WebjarsURLConnection extends URLConnection {
 
       return pipedInputStream;
     } catch ( Exception e ) {
-      logger.error( "Error opening Spring xml url", e );
-      throw new IOException( "Error opening Spring xml url", e );
+      logger.error( getURL().toString() + ": Error opening url" );
+
+      throw new IOException( "Error opening url", e );
     }
   }
 
-  private void transform( URL url, PipedOutputStream pipedOutputStream ) throws IOException {
-    URLConnection urlConnection = url.openConnection();
-    urlConnection.connect();
-
-    InputStream inputStream = urlConnection.getInputStream();
+  private void transform( InputStream inputStream, PipedOutputStream pipedOutputStream ) throws IOException {
     JarInputStream jarInputStream = new JarInputStream( inputStream );
 
     Path absTempPath = Files.createTempDirectory( "WebjarsURLConnection" );
 
+    final String webjarUrl = url.toString();
     try {
       RequireJsGenerator.ArtifactInfo artifactInfo = new RequireJsGenerator.ArtifactInfo( url );
 
@@ -260,6 +267,8 @@ public class WebjarsURLConnection extends URLConnection {
             try {
               requireConfig = RequireJsGenerator.parsePom( jarInputStream );
               wasReadFromPom = true;
+
+              logger.debug( webjarUrl + ": Classic WebJar -> requirejs configuration from pom.xml" );
             } catch ( Exception ignored ) {
               // ignored
             }
@@ -319,7 +328,7 @@ public class WebjarsURLConnection extends URLConnection {
           ZipEntry zipEntry = new ZipEntry( name );
           jarOutputStream.putNextEntry( zipEntry );
 
-          byte[] bytes = new byte[ BYTES_BUFFER_SIZE ];
+          byte[] bytes = new byte[BYTES_BUFFER_SIZE];
           int read;
           while ( ( read = jarInputStream.read( bytes ) ) != -1 ) {
             if ( isPackageFile ) {
@@ -349,6 +358,8 @@ public class WebjarsURLConnection extends URLConnection {
                   try {
                     requireConfig = RequireJsGenerator.processJsScript(
                         matcher.group( 1 ), matcher.group( 2 ), new FileInputStream( outputFile ) );
+
+                    logger.debug( webjarUrl + ": Classic WebJar -> read requirejs configuration from webjars-requirejs.js" );
                   } catch ( Exception ignored ) {
                     // ignored
                   }
@@ -370,6 +381,12 @@ public class WebjarsURLConnection extends URLConnection {
                       requireConfig.getModuleInfo().setVersion( pomProjectVersion );
                     }
                   }
+
+                  if ( isNpmWebjar ) {
+                    logger.debug( webjarUrl + ": NPM WebJar -> read requirejs configuration from package.json" );
+                  } else {
+                    logger.debug( webjarUrl + ": Bower WebJar -> read requirejs configuration from bower.json" );
+                  }
                 } catch ( Exception ignored ) {
                   // ignored
                 }
@@ -381,141 +398,150 @@ public class WebjarsURLConnection extends URLConnection {
         jarInputStream.closeEntry();
       }
 
-      Collection<File> scrFiles = FileUtils.listFiles(
-          absSrcPath.toFile(),
-          TrueFileFilter.INSTANCE,
-          TrueFileFilter.INSTANCE
-      );
+      // nothing more to do if there aren't any source files
+      if ( absSrcPath != null ) {
+        Collection<File> scrFiles = FileUtils.listFiles(
+            absSrcPath.toFile(),
+            TrueFileFilter.INSTANCE,
+            TrueFileFilter.INSTANCE
+        );
 
-      try {
-        CompilerOptions options = new CompilerOptions();
-        CompilationLevel.SIMPLE_OPTIMIZATIONS.setOptionsForCompilationLevel( options );
+        try {
+          CompilerOptions options = new CompilerOptions();
+          CompilationLevel.SIMPLE_OPTIMIZATIONS.setOptionsForCompilationLevel( options );
 
-        options.setSourceMapOutputPath( "." );
+          options.setSourceMapOutputPath( "." );
 
-        WarningLevel.QUIET.setOptionsForWarningLevel( options );
-        options.setWarningLevel( DiagnosticGroups.LINT_CHECKS, CheckLevel.OFF );
+          WarningLevel.QUIET.setOptionsForWarningLevel( options );
+          options.setWarningLevel( DiagnosticGroups.LINT_CHECKS, CheckLevel.OFF );
 
-        SourceFile externs = SourceFile.fromCode( "externs.js", "" );
+          options.setLanguageIn( CompilerOptions.LanguageMode.ECMASCRIPT5 );
 
-        String lastPrefix = null;
-        SourceMap.LocationMapping lm = null;
+          SourceFile externs = SourceFile.fromCode( "externs.js", "" );
 
-        for ( File srcFile : scrFiles ) {
-          final String name = srcFile.getName();
+          String lastPrefix = null;
+          SourceMap.LocationMapping lm = null;
 
-          if ( name.endsWith( WEBJARS_REQUIREJS_NAME ) ) {
-            continue;
-          }
+          for ( File srcFile : scrFiles ) {
+            final String name = srcFile.getName();
 
-          final String relSrcFilePath = absSrcPath.relativize( srcFile.toPath() ).toString();
-          final String relOutFilePath = MINIFIED_RESOURCES_OUTPUT_PATH + File.separator + relSrcFilePath;
-
-          if ( isJsFile( name ) ) {
-            // Check if there is a .map with the same name
-            File mapFile = new File( name + ".map", srcFile.getParent() );
-            if ( mapFile.exists() ) {
-              addFileToZip( jarOutputStream, relOutFilePath, srcFile );
-              addFileToZip( jarOutputStream, relOutFilePath + ".map", mapFile );
+            if ( name.endsWith( WEBJARS_REQUIREJS_NAME ) ) {
               continue;
             }
 
-            final Path srcFileFolder = srcFile.toPath().getParent();
-            final String prefix = srcFileFolder.toString();
-            if ( lastPrefix == null || !lastPrefix.equals( prefix ) ) {
-              String relPath = absSrcPath.relativize( srcFileFolder ).toString();
-              if ( !relPath.isEmpty() ) {
-                relPath = File.separator + relPath;
+            final String relSrcFilePath = absSrcPath.relativize( srcFile.toPath() ).toString();
+            final String relOutFilePath = MINIFIED_RESOURCES_OUTPUT_PATH + File.separator + relSrcFilePath;
+
+            if ( isJsFile( name ) ) {
+              // Check if there is a .map with the same name
+              File mapFile = new File( name + ".map", srcFile.getParent() );
+              if ( mapFile.exists() ) {
+                addFileToZip( jarOutputStream, relOutFilePath, srcFile );
+                addFileToZip( jarOutputStream, relOutFilePath + ".map", mapFile );
+                continue;
               }
 
-              String reverseRelPath = srcFileFolder.relativize( absSrcPath ).toString();
-              if ( !reverseRelPath.isEmpty() ) {
-                reverseRelPath += File.separator;
+              final Path srcFileFolder = srcFile.toPath().getParent();
+              final String prefix = srcFileFolder.toString();
+              if ( lastPrefix == null || !lastPrefix.equals( prefix ) ) {
+                String relPath = absSrcPath.relativize( srcFileFolder ).toString();
+                if ( !relPath.isEmpty() ) {
+                  relPath = File.separator + relPath;
+                }
+
+                String reverseRelPath = srcFileFolder.relativize( absSrcPath ).toString();
+                if ( !reverseRelPath.isEmpty() ) {
+                  reverseRelPath += File.separator;
+                }
+
+                final String replacement =
+                    "../../" + reverseRelPath + WEBJAR_SRC_ALIAS_PREFIX + File.separator
+                        + packageName + File.separator
+                        + packageVersion + relPath;
+
+                lm = new SourceMap.LocationMapping( prefix, replacement );
+
+                lastPrefix = prefix;
               }
 
-              final String replacement =
-                  "../../" + reverseRelPath + WEBJAR_SRC_ALIAS_PREFIX + File.separator
-                      + packageName + File.separator
-                      + packageVersion + relPath;
+              List<SourceMap.LocationMapping> lms = new ArrayList<>();
+              lms.add( lm );
+              options.setSourceMapLocationMappings( lms );
 
-              lm = new SourceMap.LocationMapping( prefix, replacement );
+              Compiler compiler = new Compiler();
 
-              lastPrefix = prefix;
-            }
+              SourceFile input = SourceFile.fromFile( srcFile );
+              input.setOriginalPath( relSrcFilePath );
 
-            List<SourceMap.LocationMapping> lms = new ArrayList<>();
-            lms.add( lm );
-            options.setSourceMapLocationMappings( lms );
+              Result res = compiler.compile( externs, input, options );
+              if ( res.success ) {
+                StringBuilder code = new StringBuilder( compiler.toSource() );
+                code.append( "\n//# sourceMappingURL=" ).append( name ).append( ".map" );
 
-            Compiler compiler = new Compiler();
+                StringBuilder sourcemap = new StringBuilder();
+                SourceMap sm = compiler.getSourceMap();
+                sm.appendTo( sourcemap, name );
 
-            SourceFile input = SourceFile.fromFile( srcFile );
-            input.setOriginalPath( relSrcFilePath );
+                addFileToZip( jarOutputStream, relOutFilePath, code.toString() );
+                addFileToZip( jarOutputStream, relOutFilePath + ".map", sourcemap.toString() );
+              } else {
+                addFileToZip( jarOutputStream, relOutFilePath, srcFile );
 
-            Result res = compiler.compile( externs, input, options );
-            if ( res.success ) {
-              StringBuilder code = new StringBuilder( compiler.toSource() );
-              code.append( "\n//# sourceMappingURL=" ).append( name ).append( ".map" );
-
-              StringBuilder sourcemap = new StringBuilder();
-              SourceMap sm = compiler.getSourceMap();
-              sm.appendTo( sourcemap, name );
-
-              addFileToZip( jarOutputStream, relOutFilePath, code.toString() );
-              addFileToZip( jarOutputStream, relOutFilePath + ".map", sourcemap.toString() );
-            } else {
+                logger.warn( webjarUrl + ": error minifing " + relSrcFilePath + ", copied original version" );
+              }
+            } else if ( !isMapFile( name ) ) {
               addFileToZip( jarOutputStream, relOutFilePath, srcFile );
-
-              logger.warn( "error minifing " + relSrcFilePath + ", copied original version" );
             }
-          } else if ( !isMapFile( name ) ) {
-            addFileToZip( jarOutputStream, relOutFilePath, srcFile );
           }
-        }
-      } catch ( Exception e ) {
-        minificationFailed = true;
-
-        logger.warn( "exception minifing " + url.toString() + ", serving original files", e );
-      }
-
-      if ( requireConfig == null ) {
-        // in last resort generate requirejs config by mapping the root path
-        requireConfig = RequireJsGenerator.emptyGenerator( packageName, packageVersion );
-
-        logger.warn( "malformed webjar " + url.toString() + " deployed using root path mapping" );
-      }
-
-      if ( requireConfig != null ) {
-        try {
-          final String exports = !isAmdPackage && !exportedGlobals.isEmpty() ? exportedGlobals.get( 0 ) : null;
-          final RequireJsGenerator.ModuleInfo moduleInfo =
-              requireConfig.getConvertedConfig( artifactInfo, isAmdPackage, exports );
-
-          addFileToZip( jarOutputStream, PENTAHO_RJS_LOCATION, moduleInfo.exportRequireJs() );
-
-          String blueprintTemplate;
-          if ( minificationFailed ) {
-            blueprintTemplate = IOUtils.toString( getClass().getResourceAsStream(
-                "/org/pentaho/osgi/platform/webjars/blueprint-template.xml" ) );
-
-            blueprintTemplate = blueprintTemplate.replace( "{dist_path}", relSrcPath );
-            blueprintTemplate = blueprintTemplate.replace( "{dist_alias}", moduleInfo.getVersionedPath() );
-          } else {
-            blueprintTemplate =
-                IOUtils.toString( getClass().getResourceAsStream(
-                    "/org/pentaho/osgi/platform/webjars/blueprint-minified-template.xml" ) );
-
-            blueprintTemplate = blueprintTemplate.replace( "{src_path}", relSrcPath );
-            blueprintTemplate = blueprintTemplate
-                .replace( "{src_alias}", WEBJAR_SRC_ALIAS_PREFIX + File.separator + moduleInfo.getVersionedPath() );
-
-            blueprintTemplate = blueprintTemplate.replace( "{dist_path}", MINIFIED_RESOURCES_OUTPUT_PATH );
-            blueprintTemplate = blueprintTemplate.replace( "{dist_alias}", moduleInfo.getVersionedPath() );
-          }
-
-          addFileToZip( jarOutputStream, "OSGI-INF/blueprint/blueprint.xml", blueprintTemplate );
         } catch ( Exception e ) {
-          logger.error( "error saving " + PENTAHO_RJS_LOCATION + " - " + e.getMessage() );
+          minificationFailed = true;
+
+          logger.warn( webjarUrl + ": exception minifing, serving original files", e );
+        }
+
+        if ( requireConfig == null ) {
+          // in last resort generate requirejs config by mapping the root path
+          requireConfig = RequireJsGenerator.emptyGenerator( packageName, packageVersion );
+
+          logger.warn( webjarUrl + ": malformed webjar deployed using root path mapping" );
+        }
+
+        if ( requireConfig != null ) {
+          try {
+            final String exports = !isAmdPackage && !exportedGlobals.isEmpty() ? exportedGlobals.get( 0 ) : null;
+            final RequireJsGenerator.ModuleInfo moduleInfo =
+                requireConfig.getConvertedConfig( artifactInfo, isAmdPackage, exports );
+
+            addFileToZip( jarOutputStream, PENTAHO_RJS_LOCATION, moduleInfo.exportRequireJs() );
+
+            try {
+              String blueprintTemplate;
+              if ( minificationFailed ) {
+                blueprintTemplate = IOUtils.toString( getClass().getResourceAsStream(
+                    "/org/pentaho/osgi/platform/webjars/blueprint-template.xml" ) );
+
+                blueprintTemplate = blueprintTemplate.replace( "{dist_path}", relSrcPath );
+                blueprintTemplate = blueprintTemplate.replace( "{dist_alias}", moduleInfo.getVersionedPath() );
+              } else {
+                blueprintTemplate =
+                    IOUtils.toString( getClass().getResourceAsStream(
+                        "/org/pentaho/osgi/platform/webjars/blueprint-minified-template.xml" ) );
+
+                blueprintTemplate = blueprintTemplate.replace( "{src_path}", relSrcPath );
+                blueprintTemplate = blueprintTemplate
+                    .replace( "{src_alias}", WEBJAR_SRC_ALIAS_PREFIX + File.separator + moduleInfo.getVersionedPath() );
+
+                blueprintTemplate = blueprintTemplate.replace( "{dist_path}", MINIFIED_RESOURCES_OUTPUT_PATH );
+                blueprintTemplate = blueprintTemplate.replace( "{dist_alias}", moduleInfo.getVersionedPath() );
+              }
+
+              addFileToZip( jarOutputStream, "OSGI-INF/blueprint/blueprint.xml", blueprintTemplate );
+            } catch ( Exception e ) {
+              logger.error( webjarUrl + ": error saving OSGI-INF/blueprint/blueprint.xml - " + e.getMessage() );
+            }
+          } catch ( Exception e ) {
+            logger.error( webjarUrl + ": error saving " + PENTAHO_RJS_LOCATION + " - " + e.getMessage() );
+          }
         }
       }
 
@@ -525,10 +551,10 @@ public class WebjarsURLConnection extends URLConnection {
         pipedOutputStream.flush();
         jarOutputStream.close();
       } catch ( IOException ioexception ) {
-        logger.debug( DEBUG_MESSAGE_FAILED_WRITING, ioexception );
+        logger.debug( webjarUrl + ": " + DEBUG_MESSAGE_FAILED_WRITING, ioexception );
       }
     } catch ( IOException e ) {
-      logger.debug( url.toString() + ": Pipe is closed, no need to continue.", e );
+      logger.debug( webjarUrl + ": Pipe is closed, no need to continue." );
     } finally {
       try {
         FileUtils.deleteDirectory( absTempPath.toFile() );
@@ -536,11 +562,10 @@ public class WebjarsURLConnection extends URLConnection {
         // ignored
       }
 
-      logger.debug( "Closing JarInputStream." );
       try {
         jarInputStream.close();
       } catch ( IOException ioexception ) {
-        logger.debug( "Tried to close JarInputStream, but it was already closed.", ioexception );
+        logger.debug( webjarUrl + ": Tried to close JarInputStream, but it was already closed.", ioexception );
       }
     }
   }
@@ -555,7 +580,7 @@ public class WebjarsURLConnection extends URLConnection {
 
   private void addFileToZip( JarOutputStream zip, String entry, File file ) throws IOException {
     int bytesIn;
-    byte[] readBuffer = new byte[ BYTES_BUFFER_SIZE ];
+    byte[] readBuffer = new byte[BYTES_BUFFER_SIZE];
 
     FileInputStream inputStream = null;
     try {
@@ -610,7 +635,7 @@ public class WebjarsURLConnection extends URLConnection {
         matcher = globalPattern.matcher( line );
         if ( matcher.find() ) {
           final String var = matcher.group( 2 );
-          final String varSegment = var.split( "\\.", 2 )[ 0 ];
+          final String varSegment = var.split( "\\.", 2 )[0];
           if ( !varSegment.startsWith( "on" ) && !JS_KNOWN_GLOBALS.contains( varSegment ) && !exports
               .contains( var ) ) {
             exports.add( var );

@@ -30,12 +30,20 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Enumeration;
 import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 public class WebjarsURLConnectionTest {
   private static JSONParser parser;
@@ -50,7 +58,7 @@ public class WebjarsURLConnectionTest {
 
     System.setProperty( "java.protocol.handler.pkgs", "org.ops4j.pax.url" );
     System.setProperty( "org.ops4j.pax.url.mvn.repositories",
-            input.toURI().toURL().toString() + "@snapshots@id=mock-repo" );
+        input.toURI().toURL().toString() + "@snapshots@id=mock-repo" );
     System.setProperty( "org.ops4j.pax.url.mvn.localRepository", input.toURI().toURL().toString() );
     System.setProperty( "org.ops4j.pax.url.mvn.proxySupport", "false" );
   }
@@ -65,30 +73,30 @@ public class WebjarsURLConnectionTest {
   }
 
   @Test
-  public void testClassicWebjarAltered() throws IOException, ParseException {
-    ZipFile zipInputStream = getDeployedJar( new URL( "mvn:org.webjars/smart-table/2.0.3-1" ) );
+  public void testNoSourceFolder() throws IOException, ParseException {
+    ZipFile zipInputStream = getDeployedJar( new URL( "mvn:org.webjars/smart-table/2.0.3-1-no-source-folder" ) );
 
     verifyManifest( zipInputStream );
-    verifyBlueprint( zipInputStream, "smart-table/2.0.3-1" );
-    verifyRequireJsonFalse( zipInputStream, "org.webjars/smart-table", "2.0.3-1a" );
+    verifyNoRequireJson( zipInputStream );
+    verifyNoBlueprint( zipInputStream );
   }
 
   @Test
-  public void testClassicWebjarNoResources() throws IOException, ParseException {
-    ZipFile zipInputStream = getDeployedJar( new URL( "mvn:org.webjars/smart-table/2.0.3-1" ) );
+  public void testNoResourceFolder() throws IOException, ParseException {
+    ZipFile zipInputStream = getDeployedJar( new URL( "mvn:org.webjars/smart-table/2.0.3-1-no-resource-folder" ) );
 
     verifyManifest( zipInputStream );
-    verifyBlueprint( zipInputStream, "smart-table/2.0.3-1" );
-    verifyRequireJsonFalse( zipInputStream, "org.webjars/smart-table", "2.0.3-1b" );
+    verifyNoRequireJson( zipInputStream );
+    verifyNoBlueprint( zipInputStream );
   }
 
   @Test
   public void testClassicWebjarScriptedConfig() throws IOException, ParseException {
-    ZipFile zipInputStream = getDeployedJar( new URL( "mvn:org.webjars/angularjs/1.3.0-rc.0" ) );
+    ZipFile zipInputStream = getDeployedJar( new URL( "mvn:org.webjars/jquery/2.2.1" ) );
 
     verifyManifest( zipInputStream );
-    verifyBlueprint( zipInputStream, "angularjs/1.3.0-rc.0" );
-    verifyRequireJson( zipInputStream, "org.webjars/angularjs", "1.3.0-rc.0" );
+    verifyBlueprint( zipInputStream, "jquery/2.2.1" );
+    verifyRequireJson( zipInputStream, "org.webjars/jquery", "2.2.1" );
   }
 
   @Test
@@ -130,20 +138,16 @@ public class WebjarsURLConnectionTest {
     try {
       connection.transform_thread.get();
     } catch ( Exception exception ) {
-      fail( "Thread failed to execute tranform() method: " + exception.getMessage() );
+      fail( "Thread failed to execute transform() method: " + exception.getMessage() );
     }
   }
 
-  @Test
+  @Test( expected = IOException.class )
   public void testInputStreamException() throws IOException {
     WebjarsURLConnection connection = new WebjarsURLConnection( new URL( "mvn:org.webjars/angular-dateparser/1.0.9xx" ) );
     connection.connect();
 
-    try {
-      InputStream inputStream = connection.getInputStream();
-    } catch ( Exception exception ) {
-      fail( "Thread failed to execute tranform() method: " + exception.getMessage() );
-    }
+    connection.getInputStream();
   }
 
   private void verifyManifest( ZipFile zipInputStream ) throws IOException {
@@ -151,7 +155,7 @@ public class WebjarsURLConnectionTest {
     assertNotNull( entry );
     Manifest manifest = new Manifest( zipInputStream.getInputStream( entry ) );
     assertTrue( "Bundle-SymbolicName is not pentaho-webjars-",
-            manifest.getMainAttributes().getValue( "Bundle-SymbolicName" ).startsWith( "pentaho-webjars-" ) );
+        manifest.getMainAttributes().getValue( "Bundle-SymbolicName" ).startsWith( "pentaho-webjars-" ) );
   }
 
   private void verifyBlueprint( ZipFile zipInputStream, String expectedPath ) throws IOException {
@@ -159,8 +163,29 @@ public class WebjarsURLConnectionTest {
     assertNotNull( entry );
 
     String bpFile = IOUtils.toString( zipInputStream.getInputStream( entry ), "UTF-8" );
-    assertTrue( "blueprint.xml does not include path for " + expectedPath,
-        bpFile.contains( "<property name=\"path\" value=\"/META-INF/resources/webjars/" + expectedPath + "\"/>" ) );
+
+    Pattern distPattern = Pattern.compile( "<bean id=\"resourceMappingDist\".*>.*" +
+        "<property name=\"alias\" value=\"\\/" + expectedPath + "\"\\/>.*" +
+        "<property name=\"path\" value=\"\\/META-INF\\/resources\\/dist-gen\"\\/>.*" +
+        "<\\/bean>", Pattern.DOTALL );
+
+    Matcher matcher = distPattern.matcher( bpFile );
+
+    assertTrue( "blueprint.xml does not include path for minified " + expectedPath, matcher.find() );
+
+    distPattern = Pattern.compile( "<bean id=\"resourceMappingSrc\".*>.*" +
+        "<property name=\"alias\" value=\"\\/webjar-src\\/" + expectedPath + "\"\\/>.*" +
+        "<property name=\"path\" value=\"\\/META-INF\\/resources\\/webjars\\/" + expectedPath + "\"\\/>.*" +
+        "<\\/bean>", Pattern.DOTALL );
+
+    matcher = distPattern.matcher( bpFile );
+
+    assertTrue( "blueprint.xml does not include path for " + expectedPath + " sources", matcher.find() );
+  }
+
+  private void verifyNoBlueprint( ZipFile zipInputStream ) throws IOException {
+    ZipEntry entry = zipInputStream.getEntry( "OSGI-INF/blueprint/blueprint.xml" );
+    assertNull( entry );
   }
 
   private void verifyRequireJson( ZipFile zipInputStream, String artifactId, String version ) throws IOException, ParseException {
@@ -183,24 +208,9 @@ public class WebjarsURLConnectionTest {
     assertTrue( "version is " + version, versionInfo.containsKey( version ) );
   }
 
-  private void verifyRequireJsonFalse( ZipFile zipInputStream, String artifactId, String version ) throws IOException, ParseException {
+  private void verifyNoRequireJson( ZipFile zipInputStream ) throws IOException, ParseException {
     ZipEntry entry = zipInputStream.getEntry( "META-INF/js/require.json" );
-    assertNotNull( entry );
-
-    String jsonFile = IOUtils.toString( zipInputStream.getInputStream( entry ), "UTF-8" );
-
-    JSONObject json = (JSONObject) parser.parse( jsonFile );
-
-    assertTrue( "dependency metadata exists", json.containsKey( "requirejs-osgi-meta" ) );
-    final JSONObject meta = (JSONObject) json.get( "requirejs-osgi-meta" );
-
-    assertTrue( "artifact info exists", meta.containsKey( "artifacts" ) );
-    final JSONObject artifactInfo = (JSONObject) meta.get( "artifacts" );
-
-    assertTrue( "artifact is " + artifactId, artifactInfo.containsKey( artifactId ) );
-    final JSONObject versionInfo = (JSONObject) artifactInfo.get( artifactId );
-
-    assertFalse( "version is " + version, versionInfo.containsKey( version ) );
+    assertNull( entry );
   }
 
   private ZipFile getDeployedJar( URL webjar_url ) throws IOException {
