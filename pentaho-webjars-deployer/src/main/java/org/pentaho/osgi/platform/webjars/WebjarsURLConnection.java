@@ -274,9 +274,9 @@ public class WebjarsURLConnection extends URLConnection {
               pomProjectVersion = RequireJsGenerator.getWebjarVersionFromPom( jarInputStream );
 
               // fill in the version if bower.json was already processed
-              if ( requireConfig != null &&
-                  requireConfig.getModuleInfo() != null &&
-                  requireConfig.getModuleInfo().getVersion() == null ) {
+              if ( requireConfig != null
+                  && requireConfig.getModuleInfo() != null
+                  && requireConfig.getModuleInfo().getVersion() == null ) {
                 requireConfig.getModuleInfo().setVersion( pomProjectVersion );
               }
             } catch ( Exception ignored ) {
@@ -377,9 +377,10 @@ public class WebjarsURLConnection extends URLConnection {
 
                   // on bower webjars, check if the version information is present
                   // if not fill it with the version extracted from pom, if already gathered
-                  if ( isBowerWebjar &&
-                      requireConfig != null && requireConfig.getModuleInfo() != null &&
-                      requireConfig.getModuleInfo().getVersion() == null ) {
+                  if ( isBowerWebjar
+                      && requireConfig != null
+                      && requireConfig.getModuleInfo() != null
+                      && requireConfig.getModuleInfo().getVersion() == null ) {
                     if ( pomProjectVersion != null ) {
                       requireConfig.getModuleInfo().setVersion( pomProjectVersion );
                     }
