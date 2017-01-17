@@ -69,18 +69,14 @@ import java.util.zip.ZipEntry;
  */
 public class WebjarsURLConnection extends URLConnection {
 
-  public static final ExecutorService EXECUTOR = Executors.newFixedThreadPool( 5, new ThreadFactory() {
-    @SuppressWarnings( "NullableProblems" )
-    @Override
-    public Thread newThread( Runnable r ) {
-      Thread thread = Executors.defaultThreadFactory().newThread( r );
-      thread.setDaemon( true );
-      thread.setName( "WebjarsURLConnection pool" );
-      return thread;
-    }
+  private static final ExecutorService EXECUTOR = Executors.newFixedThreadPool( 5, r -> {
+    Thread thread = Executors.defaultThreadFactory().newThread( r );
+    thread.setDaemon( true );
+    thread.setName( "WebjarsURLConnection pool" );
+    return thread;
   } );
 
-  public Future<Void> transform_thread;
+  Future<Void> transform_thread;
 
   private static final String DEBUG_MESSAGE_FAILED_WRITING =
       "Problem transfering Jar content, probably JarOutputStream was already closed.";
@@ -172,9 +168,12 @@ public class WebjarsURLConnection extends URLConnection {
     JS_KNOWN_GLOBALS.add( "window" );
   }
 
-  private Logger logger = LoggerFactory.getLogger( getClass() );
+  private final Logger logger = LoggerFactory.getLogger( getClass() );
 
   private URLConnection urlConnection;
+
+  private String lastPrefix;
+  private SourceMap.LocationMapping lastLocationMapping;
 
   public WebjarsURLConnection( URL url ) {
     super( url );
@@ -194,18 +193,15 @@ public class WebjarsURLConnection extends URLConnection {
       final PipedOutputStream pipedOutputStream = new PipedOutputStream();
       PipedInputStream pipedInputStream = new PipedInputStream( pipedOutputStream );
 
-      transform_thread = EXECUTOR.submit( new Callable<Void>() {
-        @Override
-        public Void call() throws Exception {
-          try {
-            transform( originalInputStream, pipedOutputStream );
-          } catch ( Exception e ) {
-            logger.error( getURL().toString() + ": Error Transforming zip", e );
-            pipedOutputStream.close();
-            throw e;
-          }
-          return null;
+      transform_thread = EXECUTOR.submit( () -> {
+        try {
+          transform( originalInputStream, pipedOutputStream );
+        } catch ( Exception e ) {
+          logger.error( getURL().toString() + ": Error Transforming zip", e );
+          pipedOutputStream.close();
+          throw e;
         }
+        return null;
       } );
 
 
@@ -315,16 +311,20 @@ public class WebjarsURLConnection extends URLConnection {
         }
 
         if ( !entry.isDirectory() ) {
-          File outputFile = null;
-          BufferedOutputStream bos = null;
+          File temporarySourceFile = null;
+          BufferedOutputStream temporarySourceFileOutputStream = null;
 
           if ( isPackageFile ) {
-            outputFile = new File( absTempPath.toAbsolutePath() + File.separator + name );
-            outputFile.getParentFile().mkdirs();
+            // only save to the temp folder resources from the package's source folder
+            temporarySourceFile = new File( absTempPath.toAbsolutePath() + File.separator + name );
 
-            bos = new BufferedOutputStream( new FileOutputStream( outputFile ) );
+            //noinspection ResultOfMethodCallIgnored
+            temporarySourceFile.getParentFile().mkdirs();
+
+            temporarySourceFileOutputStream = new BufferedOutputStream( new FileOutputStream( temporarySourceFile ) );
           }
 
+          //region Copy the file from the source jar to the generated jar
           ZipEntry zipEntry = new ZipEntry( name );
           jarOutputStream.putNextEntry( zipEntry );
 
@@ -332,23 +332,26 @@ public class WebjarsURLConnection extends URLConnection {
           int read;
           while ( ( read = jarInputStream.read( bytes ) ) != -1 ) {
             if ( isPackageFile ) {
-              bos.write( bytes, 0, read );
+              // also output to the temp source file
+              temporarySourceFileOutputStream.write( bytes, 0, read );
             }
 
             jarOutputStream.write( bytes, 0, read );
           }
 
           jarOutputStream.closeEntry();
+          // endregion
 
           if ( isPackageFile ) {
-            bos.close();
+            temporarySourceFileOutputStream.close();
 
-            if ( !isAmdPackage && isJsFile( name ) && findAmdDefine( new FileInputStream( outputFile ),
+            if ( !isAmdPackage && isJsFile( name ) && findAmdDefine( new FileInputStream( temporarySourceFile ),
                 exportedGlobals ) ) {
               isAmdPackage = true;
             }
           }
 
+          //region Generate the requirejs configuration
           if ( requireConfig == null || ( isClassicWebjar && !wasReadFromPom ) ) {
             if ( isClassicWebjar ) {
               if ( name.endsWith( WEBJARS_REQUIREJS_NAME ) ) {
@@ -357,7 +360,7 @@ public class WebjarsURLConnection extends URLConnection {
                 if ( matcher.matches() ) {
                   try {
                     requireConfig = RequireJsGenerator.processJsScript(
-                        matcher.group( 1 ), matcher.group( 2 ), new FileInputStream( outputFile ) );
+                        matcher.group( 1 ), matcher.group( 2 ), new FileInputStream( temporarySourceFile ) );
 
                     logger.debug( webjarUrl + ": Classic WebJar -> read requirejs configuration from webjars-requirejs.js" );
                   } catch ( Exception ignored ) {
@@ -370,7 +373,7 @@ public class WebjarsURLConnection extends URLConnection {
               Matcher matcher = isNpmWebjar ? NPM_PATTERN.matcher( name ) : BOWER_PATTERN.matcher( name );
               if ( matcher.matches() ) {
                 try {
-                  requireConfig = RequireJsGenerator.parseJsonPackage( new FileInputStream( outputFile ) );
+                  requireConfig = RequireJsGenerator.parseJsonPackage( new FileInputStream( temporarySourceFile ) );
 
                   // on bower webjars, check if the version information is present
                   // if not fill it with the version extracted from pom, if already gathered
@@ -393,6 +396,7 @@ public class WebjarsURLConnection extends URLConnection {
               }
             }
           }
+          //endregion
         }
 
         jarInputStream.closeEntry();
@@ -407,20 +411,7 @@ public class WebjarsURLConnection extends URLConnection {
         );
 
         try {
-          CompilerOptions options = new CompilerOptions();
-          CompilationLevel.SIMPLE_OPTIMIZATIONS.setOptionsForCompilationLevel( options );
-
-          options.setSourceMapOutputPath( "." );
-
-          WarningLevel.QUIET.setOptionsForWarningLevel( options );
-          options.setWarningLevel( DiagnosticGroups.LINT_CHECKS, CheckLevel.OFF );
-
-          options.setLanguageIn( CompilerOptions.LanguageMode.ECMASCRIPT5 );
-
-          SourceFile externs = SourceFile.fromCode( "externs.js", "" );
-
-          String lastPrefix = null;
-          SourceMap.LocationMapping lm = null;
+          CompilerOptions options = initCompilationResources();
 
           for ( File srcFile : scrFiles ) {
             final String name = srcFile.getName();
@@ -434,63 +425,29 @@ public class WebjarsURLConnection extends URLConnection {
 
             if ( isJsFile( name ) ) {
               // Check if there is a .map with the same name
+              // if so, assume it is already minified and just copy both files
               File mapFile = new File( name + ".map", srcFile.getParent() );
               if ( mapFile.exists() ) {
-                addFileToZip( jarOutputStream, relOutFilePath, srcFile );
-                addFileToZip( jarOutputStream, relOutFilePath + ".map", mapFile );
+                copyFileToZip( jarOutputStream, relOutFilePath, srcFile );
+                copyFileToZip( jarOutputStream, relOutFilePath + ".map", mapFile );
                 continue;
               }
 
-              final Path srcFileFolder = srcFile.toPath().getParent();
-              final String prefix = srcFileFolder.toString();
-              if ( lastPrefix == null || !lastPrefix.equals( prefix ) ) {
-                String relPath = absSrcPath.relativize( srcFileFolder ).toString();
-                if ( !relPath.isEmpty() ) {
-                  relPath = File.separator + relPath;
-                }
+              options.setSourceMapLocationMappings( getLocationMappings( srcFile.toPath().getParent(), absSrcPath, packageName, packageVersion ) );
 
-                String reverseRelPath = srcFileFolder.relativize( absSrcPath ).toString();
-                if ( !reverseRelPath.isEmpty() ) {
-                  reverseRelPath += File.separator;
-                }
+              try {
+                CompiledScript compiledScript = new CompiledScript( srcFile, relSrcFilePath, options ).invoke();
 
-                final String replacement =
-                    "../../" + reverseRelPath + WEBJAR_SRC_ALIAS_PREFIX + File.separator
-                        + packageName + File.separator
-                        + packageVersion + relPath;
-
-                lm = new SourceMap.LocationMapping( prefix, replacement );
-
-                lastPrefix = prefix;
-              }
-
-              List<SourceMap.LocationMapping> lms = new ArrayList<>();
-              lms.add( lm );
-              options.setSourceMapLocationMappings( lms );
-
-              Compiler compiler = new Compiler();
-
-              SourceFile input = SourceFile.fromFile( srcFile );
-              input.setOriginalPath( relSrcFilePath );
-
-              Result res = compiler.compile( externs, input, options );
-              if ( res.success ) {
-                StringBuilder code = new StringBuilder( compiler.toSource() );
-                code.append( "\n//# sourceMappingURL=" ).append( name ).append( ".map" );
-
-                StringBuilder sourcemap = new StringBuilder();
-                SourceMap sm = compiler.getSourceMap();
-                sm.appendTo( sourcemap, name );
-
-                addFileToZip( jarOutputStream, relOutFilePath, code.toString() );
-                addFileToZip( jarOutputStream, relOutFilePath + ".map", sourcemap.toString() );
-              } else {
-                addFileToZip( jarOutputStream, relOutFilePath, srcFile );
-
+                addContentToZip( jarOutputStream, relOutFilePath, compiledScript.getCode() );
+                addContentToZip( jarOutputStream, relOutFilePath + ".map", compiledScript.getSourcemap() );
+              } catch ( Exception failedCompilationException ) {
                 logger.warn( webjarUrl + ": error minifing " + relSrcFilePath + ", copied original version" );
+
+                copyFileToZip( jarOutputStream, relOutFilePath, srcFile );
               }
             } else if ( !isMapFile( name ) ) {
-              addFileToZip( jarOutputStream, relOutFilePath, srcFile );
+              // just copy all resources (except .map files)
+              copyFileToZip( jarOutputStream, relOutFilePath, srcFile );
             }
           }
         } catch ( Exception e ) {
@@ -512,30 +469,17 @@ public class WebjarsURLConnection extends URLConnection {
             final RequireJsGenerator.ModuleInfo moduleInfo =
                 requireConfig.getConvertedConfig( artifactInfo, isAmdPackage, exports );
 
-            addFileToZip( jarOutputStream, PENTAHO_RJS_LOCATION, moduleInfo.exportRequireJs() );
+            addContentToZip( jarOutputStream, PENTAHO_RJS_LOCATION, moduleInfo.exportRequireJs() );
 
             try {
               String blueprintTemplate;
               if ( minificationFailed ) {
-                blueprintTemplate = IOUtils.toString( getClass().getResourceAsStream(
-                    "/org/pentaho/osgi/platform/webjars/blueprint-template.xml" ) );
-
-                blueprintTemplate = blueprintTemplate.replace( "{dist_path}", relSrcPath );
-                blueprintTemplate = blueprintTemplate.replace( "{dist_alias}", moduleInfo.getVersionedPath() );
+                blueprintTemplate = generateBlueprintWithoutMinifiedResources( relSrcPath, moduleInfo );
               } else {
-                blueprintTemplate =
-                    IOUtils.toString( getClass().getResourceAsStream(
-                        "/org/pentaho/osgi/platform/webjars/blueprint-minified-template.xml" ) );
-
-                blueprintTemplate = blueprintTemplate.replace( "{src_path}", relSrcPath );
-                blueprintTemplate = blueprintTemplate
-                    .replace( "{src_alias}", WEBJAR_SRC_ALIAS_PREFIX + File.separator + moduleInfo.getVersionedPath() );
-
-                blueprintTemplate = blueprintTemplate.replace( "{dist_path}", MINIFIED_RESOURCES_OUTPUT_PATH );
-                blueprintTemplate = blueprintTemplate.replace( "{dist_alias}", moduleInfo.getVersionedPath() );
+                blueprintTemplate = generateBlueprint( relSrcPath, moduleInfo );
               }
 
-              addFileToZip( jarOutputStream, "OSGI-INF/blueprint/blueprint.xml", blueprintTemplate );
+              addContentToZip( jarOutputStream, "OSGI-INF/blueprint/blueprint.xml", blueprintTemplate );
             } catch ( Exception e ) {
               logger.error( webjarUrl + ": error saving OSGI-INF/blueprint/blueprint.xml - " + e.getMessage() );
             }
@@ -570,6 +514,79 @@ public class WebjarsURLConnection extends URLConnection {
     }
   }
 
+  private String generateBlueprintWithoutMinifiedResources( String relSrcPath, RequireJsGenerator.ModuleInfo moduleInfo ) throws IOException {
+    String blueprintTemplate;
+    blueprintTemplate = IOUtils.toString( getClass().getResourceAsStream(
+        "/org/pentaho/osgi/platform/webjars/blueprint-template.xml" ) );
+
+    blueprintTemplate = blueprintTemplate.replace( "{dist_path}", relSrcPath );
+    blueprintTemplate = blueprintTemplate.replace( "{dist_alias}", moduleInfo.getVersionedPath() );
+    return blueprintTemplate;
+  }
+
+  private String generateBlueprint( String relSrcPath, RequireJsGenerator.ModuleInfo moduleInfo ) throws IOException {
+    String blueprintTemplate;
+    blueprintTemplate =
+        IOUtils.toString( getClass().getResourceAsStream(
+            "/org/pentaho/osgi/platform/webjars/blueprint-minified-template.xml" ) );
+
+    blueprintTemplate = blueprintTemplate.replace( "{src_path}", relSrcPath );
+    blueprintTemplate = blueprintTemplate
+        .replace( "{src_alias}", WEBJAR_SRC_ALIAS_PREFIX + File.separator + moduleInfo.getVersionedPath() );
+
+    blueprintTemplate = blueprintTemplate.replace( "{dist_path}", MINIFIED_RESOURCES_OUTPUT_PATH );
+    blueprintTemplate = blueprintTemplate.replace( "{dist_alias}", moduleInfo.getVersionedPath() );
+    return blueprintTemplate;
+  }
+
+  private CompilerOptions initCompilationResources() {
+    CompilerOptions options = new CompilerOptions();
+    CompilationLevel.SIMPLE_OPTIMIZATIONS.setOptionsForCompilationLevel( options );
+
+    options.setSourceMapOutputPath( "." );
+
+    WarningLevel.QUIET.setOptionsForWarningLevel( options );
+    options.setWarningLevel( DiagnosticGroups.LINT_CHECKS, CheckLevel.OFF );
+
+    options.setLanguageIn( CompilerOptions.LanguageMode.ECMASCRIPT5 );
+
+    // make sure these are clear
+    this.lastPrefix = null;
+    this.lastLocationMapping = null;
+
+    return options;
+  }
+
+  private List<SourceMap.LocationMapping> getLocationMappings( Path srcFileFolder, Path absSrcPath, String packageName, String packageVersion ) {
+    // reuses the lastLocationMapping if the script's folder is the same than the previous processed script
+
+    final String prefix = srcFileFolder.toString();
+    if ( lastPrefix == null || !lastPrefix.equals( prefix ) ) {
+      String relPath = absSrcPath.relativize( srcFileFolder ).toString();
+      if ( !relPath.isEmpty() ) {
+        relPath = File.separator + relPath;
+      }
+
+      String reverseRelPath = srcFileFolder.relativize( absSrcPath ).toString();
+      if ( !reverseRelPath.isEmpty() ) {
+        reverseRelPath += File.separator;
+      }
+
+      final String replacement =
+          "../../" + reverseRelPath + WEBJAR_SRC_ALIAS_PREFIX + File.separator
+              + packageName + File.separator
+              + packageVersion + relPath;
+
+      lastLocationMapping = new SourceMap.LocationMapping( prefix, replacement );
+
+      lastPrefix = prefix;
+    }
+
+    List<SourceMap.LocationMapping> lms = new ArrayList<>();
+    lms.add( lastLocationMapping );
+    return lms;
+  }
+
   private boolean isJsFile( String name ) {
     return name.endsWith( ".js" );
   }
@@ -578,7 +595,7 @@ public class WebjarsURLConnection extends URLConnection {
     return name.endsWith( ".map" );
   }
 
-  private void addFileToZip( JarOutputStream zip, String entry, File file ) throws IOException {
+  private void copyFileToZip( JarOutputStream zip, String entry, File file ) throws IOException {
     int bytesIn;
     byte[] readBuffer = new byte[BYTES_BUFFER_SIZE];
 
@@ -605,7 +622,7 @@ public class WebjarsURLConnection extends URLConnection {
     }
   }
 
-  private void addFileToZip( JarOutputStream zip, String entry, String content ) throws IOException {
+  private void addContentToZip( JarOutputStream zip, String entry, String content ) throws IOException {
     ZipEntry zipEntry = new ZipEntry( entry );
     zip.putNextEntry( zipEntry );
     zip.write( content.getBytes( "UTF-8" ) );
@@ -665,5 +682,53 @@ public class WebjarsURLConnection extends URLConnection {
     manifest.getMainAttributes()
         .put( new Attributes.Name( Constants.BUNDLE_VERSION ), artifactInfo.getOsgiCompatibleVersion() );
     return manifest;
+  }
+
+  private static class CompiledScript {
+    private static final SourceFile EMPTY_EXTERNS_SOURCE_FILE = SourceFile.fromCode( "externs.js", "" );
+
+    private final File srcFile;
+    private final String relSrcFilePath;
+    private final CompilerOptions options;
+
+    private StringBuilder code;
+    private StringBuilder sourcemap;
+
+    CompiledScript( File srcFile, String relSrcFilePath, CompilerOptions options ) {
+      this.srcFile = srcFile;
+      this.relSrcFilePath = relSrcFilePath;
+      this.options = options;
+    }
+
+    String getCode() {
+      return code.toString();
+    }
+
+    String getSourcemap() {
+      return sourcemap.toString();
+    }
+
+    CompiledScript invoke() throws Exception {
+      Compiler compiler = new Compiler();
+
+      SourceFile input = SourceFile.fromFile( srcFile );
+      input.setOriginalPath( relSrcFilePath );
+
+      Result res = compiler.compile( EMPTY_EXTERNS_SOURCE_FILE, input, options );
+      if ( res.success ) {
+        String name = srcFile.getName();
+
+        code = new StringBuilder( compiler.toSource() );
+        code.append( "\n//# sourceMappingURL=" ).append( name ).append( ".map" );
+
+        sourcemap = new StringBuilder();
+        SourceMap sm = compiler.getSourceMap();
+        sm.appendTo( sourcemap, name );
+
+        return this;
+      }
+
+      throw new Exception( "Failed script compilation" );
+    }
   }
 }
