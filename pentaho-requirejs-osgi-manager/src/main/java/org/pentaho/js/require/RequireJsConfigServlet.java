@@ -85,23 +85,54 @@ public class RequireJsConfigServlet extends HttpServlet {
     resp.setContentType( "text/javascript" );
     PrintWriter printWriter = new PrintWriter( resp.getOutputStream() );
     try {
-      printWriter.write( "\nif(typeof CONTEXT_PATH == 'undefined'){\n" );
-      printWriter.write( "\twindow.CONTEXT_PATH = '/';\n" );
-      printWriter.write( "}\n" );
       final String requirejsParameter = req.getParameter( "requirejs" );
       final String configParameter = req.getParameter( "config" );
 
       if ( requirejsParameter == null || Boolean.valueOf( requirejsParameter ) ) {
         printWriter.write( requireJs );
       }
-      printWriter.write( "\nrequireCfg = " );
+
+      printWriter.write( "\n(function(w) {" );
+      printWriter.write( "\n  if(typeof CONTEXT_PATH == 'undefined'){" );
+      printWriter.write( "\n    w.CONTEXT_PATH = '/';" );
+      printWriter.write( "\n  }" );
+      printWriter.write( "\n" );
+
+      printWriter.write( "\n  var legacyConfig = null;" );
+      printWriter.write( "\n  if(typeof requireCfg !== 'undefined' && requireCfg != null && requireCfg.config != null) {" );
+      printWriter.write( "\n    legacyConfig = requireCfg.config;" );
+      printWriter.write( "\n  }" );
+      printWriter.write( "\n" );
+
+      printWriter.write( "\n  requireCfg = " );
       printWriter.write( manager.getRequireJsConfig() );
       printWriter.write( "\n" );
-      String config = req.getParameter( "config" );
-      printWriter.write( "requireCfg.baseUrl = '" + manager.getContextRoot() + "';\n" );
+
+      printWriter.write( "\n  requireCfg.baseUrl = '" + manager.getContextRoot() + "';" );
+      printWriter.write( "\n" );
+
+      printWriter.write( "\n  if(legacyConfig != null) {" );
+      printWriter.write( "\n    for (var key in legacyConfig) {" );
+      printWriter.write( "\n      if (Object.prototype.hasOwnProperty.call(legacyConfig, key)) {" );
+      printWriter.write( "\n        if(!requireCfg.config[key]) {;" );
+      printWriter.write( "\n          requireCfg.config[key] = {};" );
+      printWriter.write( "\n        }" );
+      printWriter.write( "\n" );
+      printWriter.write( "\n        for (var moduleId in legacyConfig[key]) {" );
+      printWriter.write( "\n          if (Object.prototype.hasOwnProperty.call(legacyConfig[key], moduleId)) {" );
+      printWriter.write( "\n            requireCfg.config[key][moduleId] = legacyConfig[key][moduleId];" );
+      printWriter.write( "\n          }" );
+      printWriter.write( "\n        }" );
+      printWriter.write( "\n      }" );
+      printWriter.write( "\n    }" );
+      printWriter.write( "\n  }" );
+      printWriter.write( "\n" );
+
       if ( configParameter == null || Boolean.valueOf( configParameter ) ) {
-        printWriter.write( "\nrequire.config(requireCfg);" );
+        printWriter.write( "\n  require.config(requireCfg);" );
       }
+
+      printWriter.write( "\n}(window));\n" );
     } finally {
       printWriter.close();
     }
