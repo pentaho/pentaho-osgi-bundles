@@ -15,6 +15,11 @@
   <url>http://www.pentaho.com</url>
   <dependencies>
     <dependency>
+      <groupId>com.google.javascript</groupId>
+      <artifactId>closure-compiler</artifactId>
+      <version>v20161201</version>
+    </dependency>
+    <dependency>
       <groupId>org.apache.felix</groupId>
       <artifactId>org.apache.felix.framework</artifactId>
       <version>${felix.version}</version>
@@ -48,11 +53,12 @@
       <plugin>
         <groupId>org.apache.felix</groupId>
         <artifactId>maven-bundle-plugin</artifactId>
-        <version>2.3.7</version>
         <extensions>true</extensions>
         <configuration>
           <instructions>
             <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
+            <Embed-Dependency>closure-compiler</Embed-Dependency>
+            <Import-Package>!com.google.errorprone.annotations.concurrent,!com.google.javascript.refactoring,!sun.misc,!org.apache.tools.ant,!org.apache.tools.ant.types,!org.apache.tools.ant.types.resources,*</Import-Package>
           </instructions>
         </configuration>
       </plugin>
