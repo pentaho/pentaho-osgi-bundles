@@ -109,7 +109,7 @@ public class WebjarsURLConnection extends URLConnection {
     }
   }
 
-  static class WebjarsTransformer implements Callable<Void> {
+  private static class WebjarsTransformer implements Callable<Void> {
     private static final String DEBUG_MESSAGE_FAILED_WRITING =
         "Problem transfering Jar content, probably JarOutputStream was already closed.";
 
