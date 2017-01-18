@@ -27,6 +27,7 @@ import com.google.javascript.jscomp.SourceFile;
 import com.google.javascript.jscomp.SourceMap;
 import com.google.javascript.jscomp.WarningLevel;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.filefilter.TrueFileFilter;
 import org.osgi.framework.Constants;
@@ -60,6 +61,7 @@ import java.util.jar.Attributes;
 import java.util.jar.JarInputStream;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
+import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
@@ -305,7 +307,7 @@ public class WebjarsURLConnection extends URLConnection {
 
             if ( isPackageFile ) {
               // only save to the temp folder resources from the package's source folder
-              temporarySourceFile = new File( absoluteTempPath.toAbsolutePath() + File.separator + name );
+              temporarySourceFile = new File( absoluteTempPath.toAbsolutePath() + File.separator + FilenameUtils.separatorsToSystem( name ) );
 
               //noinspection ResultOfMethodCallIgnored
               temporarySourceFile.getParentFile().mkdirs();
@@ -375,8 +377,8 @@ public class WebjarsURLConnection extends URLConnection {
                 continue;
               }
 
-              final String relSrcFilePath = absoluteResourcesPath.relativize( srcFile.toPath() ).toString();
-              final String relOutFilePath = MINIFIED_RESOURCES_OUTPUT_PATH + File.separator + relSrcFilePath;
+              final String relSrcFilePath = FilenameUtils.separatorsToUnix( absoluteResourcesPath.relativize( srcFile.toPath() ).toString() );
+              final String relOutFilePath = MINIFIED_RESOURCES_OUTPUT_PATH + "/" + relSrcFilePath;
 
               if ( isJsFile( name ) ) {
                 // Check if there is a .map with the same name
@@ -601,13 +603,13 @@ public class WebjarsURLConnection extends URLConnection {
           packageNameFromResourcesPath = matcher.group( 1 );
           packageVersionFromResourcesPath = matcher.group( 2 );
 
-          relativeResourcesPath = "META-INF/resources/webjars/" + packageNameFromResourcesPath + File.separator + packageVersionFromResourcesPath;
-          absoluteResourcesPath = absoluteTempPath.resolve( relativeResourcesPath );
+          relativeResourcesPath = "META-INF/resources/webjars/" + packageNameFromResourcesPath + "/" + packageVersionFromResourcesPath;
+          absoluteResourcesPath = absoluteTempPath.resolve( FilenameUtils.separatorsToSystem( relativeResourcesPath ) );
 
           isPackageFile = true;
         }
       } else {
-        isPackageFile = name.contains( packageNameFromResourcesPath + File.separator + packageVersionFromResourcesPath );
+        isPackageFile = name.contains( packageNameFromResourcesPath + "/" + packageVersionFromResourcesPath );
       }
 
       return isPackageFile;
@@ -621,7 +623,7 @@ public class WebjarsURLConnection extends URLConnection {
 
       blueprintTemplate = blueprintTemplate.replace( "{src_path}", relSrcPath );
       blueprintTemplate = blueprintTemplate
-          .replace( "{src_alias}", WEBJAR_SRC_ALIAS_PREFIX + File.separator + moduleInfo.getVersionedPath() );
+          .replace( "{src_alias}", WEBJAR_SRC_ALIAS_PREFIX + "/" + moduleInfo.getVersionedPath() );
 
       blueprintTemplate = blueprintTemplate.replace( "{dist_path}", MINIFIED_RESOURCES_OUTPUT_PATH );
       blueprintTemplate = blueprintTemplate.replace( "{dist_alias}", moduleInfo.getVersionedPath() );
@@ -740,19 +742,19 @@ public class WebjarsURLConnection extends URLConnection {
 
       final String prefix = srcFileFolder.toString();
       if ( lastPrefix == null || !lastPrefix.equals( prefix ) ) {
-        String relPath = absSrcPath.relativize( srcFileFolder ).toString();
+        String relPath = FilenameUtils.separatorsToUnix( absSrcPath.relativize( srcFileFolder ).toString() );
         if ( !relPath.isEmpty() ) {
-          relPath = File.separator + relPath;
+          relPath = "/" + relPath;
         }
 
-        String reverseRelPath = srcFileFolder.relativize( absSrcPath ).toString();
+        String reverseRelPath = FilenameUtils.separatorsToUnix( srcFileFolder.relativize( absSrcPath ).toString() );
         if ( !reverseRelPath.isEmpty() ) {
-          reverseRelPath += File.separator;
+          reverseRelPath += "/";
         }
 
         final String replacement =
-            "../../" + reverseRelPath + WEBJAR_SRC_ALIAS_PREFIX + File.separator
-                + packageName + File.separator
+            "../../" + reverseRelPath + WEBJAR_SRC_ALIAS_PREFIX + "/"
+                + packageName + "/"
                 + packageVersion + relPath;
 
         lastLocationMapping = new SourceMap.LocationMapping( prefix, replacement );
@@ -791,6 +793,8 @@ public class WebjarsURLConnection extends URLConnection {
 
       CompiledScript invoke() throws Exception {
         Compiler compiler = new Compiler();
+
+        compiler.setLoggingLevel( Level.OFF );
 
         SourceFile input = SourceFile.fromFile( srcFile );
         input.setOriginalPath( relSrcFilePath );
