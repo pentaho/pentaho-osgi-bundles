@@ -118,6 +118,60 @@ public class RequireJsConfigServletTest {
   }
 
 
+  @Test
+  public void testDoGetWithoutRequireScript() throws ServletException, IOException {
+    HttpServletRequest request = mock( HttpServletRequest.class );
+    when( request.getParameter( "requirejs" ) ).thenReturn( "false" );
+    HttpServletResponse response = mock( HttpServletResponse.class );
+    final ByteArrayOutputStream outputStream = new ByteArrayOutputStream(  );
+    when( response.getOutputStream() ).thenReturn( new ServletOutputStream() {
+      @Override public void write( int b ) throws IOException {
+        outputStream.write( b );
+      }
+    } );
+    String testConfig = "TEST_CONFIG";
+    when( requireJsConfigManager.getRequireJsConfig() ).thenReturn( testConfig );
+    requireJsConfigServlet.doGet( request, response );
+
+    assertFalse( outputStream.toString( "UTF-8" ).contains( "var requirejs, require, define;" ) );
+  }
+
+
+  @Test
+  public void testDoGetWithRequireScript() throws ServletException, IOException {
+    HttpServletRequest request = mock( HttpServletRequest.class );
+    when( request.getParameter( "requirejs" ) ).thenReturn( "true" );
+    HttpServletResponse response = mock( HttpServletResponse.class );
+    final ByteArrayOutputStream outputStream = new ByteArrayOutputStream(  );
+    when( response.getOutputStream() ).thenReturn( new ServletOutputStream() {
+      @Override public void write( int b ) throws IOException {
+        outputStream.write( b );
+      }
+    } );
+    String testConfig = "TEST_CONFIG";
+    when( requireJsConfigManager.getRequireJsConfig() ).thenReturn( testConfig );
+    requireJsConfigServlet.doGet( request, response );
+
+    assertTrue( outputStream.toString( "UTF-8" ).contains( "var requirejs, require, define;" ) );
+  }
+
+
+  @Test
+  public void testDoGetWithRequireScriptByDefault() throws ServletException, IOException {
+    HttpServletRequest request = mock( HttpServletRequest.class );
+    HttpServletResponse response = mock( HttpServletResponse.class );
+    final ByteArrayOutputStream outputStream = new ByteArrayOutputStream(  );
+    when( response.getOutputStream() ).thenReturn( new ServletOutputStream() {
+      @Override public void write( int b ) throws IOException {
+        outputStream.write( b );
+      }
+    } );
+    String testConfig = "TEST_CONFIG";
+    when( requireJsConfigManager.getRequireJsConfig() ).thenReturn( testConfig );
+    requireJsConfigServlet.doGet( request, response );
+
+    assertTrue( outputStream.toString( "UTF-8" ).contains( "var requirejs, require, define;" ) );
+  }
 
 
   @Test
