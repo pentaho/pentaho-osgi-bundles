@@ -2,7 +2,7 @@
  *
  * Pentaho Data Integration
  *
- * Copyright (C) 2002-2013 by Pentaho : http://www.pentaho.com
+ * Copyright (C) 2002-2017 by Pentaho : http://www.pentaho.com
  *
  *******************************************************************************
  *
@@ -83,22 +83,69 @@ public class RequireJsConfigServlet extends HttpServlet {
   @Override
   protected void doGet( HttpServletRequest req, HttpServletResponse resp ) throws ServletException, IOException {
     resp.setContentType( "text/javascript" );
-    PrintWriter printWriter = new PrintWriter( resp.getOutputStream() );
-    try {
-      printWriter.write( requireJs );
-      printWriter.write( "\nif(typeof CONTEXT_PATH == 'undefined'){\n" );
-      printWriter.write( "\twindow.CONTEXT_PATH = '/';\n" );
-      printWriter.write( "}\n" );
-      printWriter.write( "\nrequireCfg = " );
-      printWriter.write( manager.getRequireJsConfig() );
-      printWriter.write( "\n" );
-      String config = req.getParameter( "config" );
-      printWriter.write( "requireCfg.baseUrl = '" + manager.getContextRoot() + "';\n" );
-      if ( config == null || Boolean.valueOf( config ) ) {
-        printWriter.write( "require.config(requireCfg);" );
+
+    try ( PrintWriter printWriter = new PrintWriter( resp.getOutputStream() ) ) {
+      // should the requirejs lib code be outputted? (defaults to true)
+      final boolean outputRequireJs = getBooleanValue( req.getParameter( "requirejs" ), true );
+
+      // should require.config be called automatically? (defaults to true)
+      final boolean callRequireConfig = getBooleanValue( req.getParameter( "config" ), true );
+
+      if ( outputRequireJs ) {
+        printWriter.write( requireJs );
       }
-    } finally {
-      printWriter.close();
+
+      printWriter.write( "\n(function(w) {" );
+
+      // ensure CONTEXT_PATH is defined
+      printWriter.write( "\n  if(typeof CONTEXT_PATH == 'undefined'){" );
+      printWriter.write( "\n    w.CONTEXT_PATH = '" + manager.getContextRoot() + "';" );
+      printWriter.write( "\n  }" );
+      printWriter.write( "\n" );
+
+      // store webcontext.js' requirejs module configurations if existing
+      printWriter.write( "\n  var legacyConfig = null;" );
+      printWriter.write( "\n  if(typeof requireCfg !== 'undefined' && requireCfg != null && requireCfg.config != null) {" );
+      printWriter.write( "\n    legacyConfig = requireCfg.config;" );
+      printWriter.write( "\n  }" );
+      printWriter.write( "\n" );
+
+      printWriter.write( "\n  requireCfg = " + manager.getRequireJsConfig() + "\n" );
+
+      printWriter.write( "\n  requireCfg.baseUrl = '" + manager.getContextRoot() + "';" );
+      printWriter.write( "\n" );
+
+      // merge the requirejs module's configurations (first level only) to avoid overwriting them
+      printWriter.write( "\n  if(legacyConfig != null) {" );
+      printWriter.write( "\n    for (var key in legacyConfig) {" );
+      printWriter.write( "\n      if (Object.prototype.hasOwnProperty.call(legacyConfig, key)) {" );
+      printWriter.write( "\n        if(!requireCfg.config[key]) {;" );
+      printWriter.write( "\n          requireCfg.config[key] = {};" );
+      printWriter.write( "\n        }" );
+      printWriter.write( "\n" );
+      printWriter.write( "\n        for (var moduleId in legacyConfig[key]) {" );
+      printWriter.write( "\n          if (Object.prototype.hasOwnProperty.call(legacyConfig[key], moduleId)) {" );
+      printWriter.write( "\n            requireCfg.config[key][moduleId] = legacyConfig[key][moduleId];" );
+      printWriter.write( "\n          }" );
+      printWriter.write( "\n        }" );
+      printWriter.write( "\n      }" );
+      printWriter.write( "\n    }" );
+      printWriter.write( "\n  }" );
+      printWriter.write( "\n" );
+
+      if ( callRequireConfig ) {
+        printWriter.write( "\n  require.config(requireCfg);" );
+      }
+
+      printWriter.write( "\n}(window));\n" );
     }
+  }
+
+  private boolean getBooleanValue( String parameter, boolean defaultValue ) {
+    if ( parameter == null ) {
+      return defaultValue;
+    }
+
+    return Boolean.valueOf( parameter );
   }
 }
