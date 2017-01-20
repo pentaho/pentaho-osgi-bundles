@@ -5,23 +5,19 @@
   <parent>
     <groupId>pentaho</groupId>
     <artifactId>pentaho-osgi-bundles</artifactId>
-    <version>7.0-SNAPSHOT</version>
+    <version>7.0.0.2-52</version>
   </parent>
-  
   <artifactId>pentaho-notification-webservice-bundle</artifactId>
-  <version>7.0-SNAPSHOT</version>
+  <version>7.0.0.2-52</version>
   <packaging>bundle</packaging>
-  
   <name>Pentaho Community Edition Project: ${project.artifactId}</name>
   <description>a Pentaho open source project</description>
   <url>http://www.pentaho.com</url>
-  
   <properties>
     <requirejs.version>2.1.14</requirejs.version>
-    <requirejs.version.full>${requirejs.version}-1</requirejs.version.full>
     <jasmine.serverPort>8234</jasmine.serverPort>
+    <requirejs.version.full>${requirejs.version}-1</requirejs.version.full>
   </properties>
-  
   <dependencies>
     <dependency>
       <groupId>pentaho</groupId>

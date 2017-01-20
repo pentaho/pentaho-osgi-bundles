@@ -2,16 +2,14 @@
 <project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <modelVersion>4.0.0</modelVersion>
-
   <parent>
     <groupId>pentaho</groupId>
     <artifactId>pentaho-osgi-bundles</artifactId>
-    <version>7.0-SNAPSHOT</version>
+    <version>7.0.0.2-52</version>
   </parent>
-
   <artifactId>pentaho-metastore-locator</artifactId>
+  <version>7.0.0.2-52</version>
   <packaging>pom</packaging>
-
   <developers>
     <developer>
       <name>Matt Campbell</name>
@@ -35,12 +33,10 @@
       </roles>
     </developer>
   </developers>
-
   <modules>
     <module>api</module>
     <module>impl</module>
   </modules>
-
   <dependencies>
     <dependency>
       <groupId>com.google.guava</groupId>
@@ -66,5 +62,4 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
-
 </project>
