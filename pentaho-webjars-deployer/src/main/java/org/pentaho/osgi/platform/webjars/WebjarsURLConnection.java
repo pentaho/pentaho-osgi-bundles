@@ -740,7 +740,7 @@ public class WebjarsURLConnection extends URLConnection {
     private List<SourceMap.LocationMapping> getLocationMappings( Path srcFileFolder, Path absSrcPath, String packageName, String packageVersion ) {
       // reuses the lastLocationMapping if the script's folder is the same than the previous processed script
 
-      final String prefix = srcFileFolder.toString();
+      final String prefix = FilenameUtils.separatorsToUnix( srcFileFolder.toString() );
       if ( lastPrefix == null || !lastPrefix.equals( prefix ) ) {
         String relPath = FilenameUtils.separatorsToUnix( absSrcPath.relativize( srcFileFolder ).toString() );
         if ( !relPath.isEmpty() ) {
