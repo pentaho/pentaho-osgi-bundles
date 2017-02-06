@@ -2,7 +2,7 @@
  *
  * Pentaho Data Integration
  *
- * Copyright (C) 2002-2016 by Pentaho : http://www.pentaho.com
+ * Copyright (C) 2002-2017 by Pentaho : http://www.pentaho.com
  *
  *******************************************************************************
  *
@@ -36,21 +36,26 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
-/**
- * Created by bryan on 8/5/14.
- */
 public class RequireJsConfigManager {
-  public static final String PACKAGE_JSON_PATH = "META-INF/js/package.json";
-  public static final String REQUIRE_JSON_PATH = "META-INF/js/require.json";
-  public static final String EXTERNAL_RESOURCES_JSON_PATH = "META-INF/js/externalResources.json";
-  public static final String STATIC_RESOURCES_JSON_PATH = "META-INF/js/staticResources.json";
+  static final String PACKAGE_JSON_PATH = "META-INF/js/package.json";
+  static final String REQUIRE_JSON_PATH = "META-INF/js/require.json";
+  static final String EXTERNAL_RESOURCES_JSON_PATH = "META-INF/js/externalResources.json";
+  static final String STATIC_RESOURCES_JSON_PATH = "META-INF/js/staticResources.json";
+
+  private static final ScheduledExecutorService executorService =
+      Executors.newScheduledThreadPool( 2, r -> {
+        Thread thread = Executors.defaultThreadFactory().newThread( r );
+        thread.setDaemon( true );
+        thread.setName( "RequireJSConfigManager pool" );
+        return thread;
+      } );
 
   private final Map<Long, Map<String, Object>> configMap = new HashMap<>();
   private final Map<Long, RequireJsConfiguration> requireConfigMap = new HashMap<>();
@@ -58,44 +63,111 @@ public class RequireJsConfigManager {
   private final JSONParser parser = new JSONParser();
   private BundleContext bundleContext;
 
-  private static ScheduledExecutorService executorService =
-    Executors.newSingleThreadScheduledExecutor( new ThreadFactory() {
-      @Override
-      public Thread newThread( Runnable r ) {
-        Thread thread = Executors.defaultThreadFactory().newThread( r );
-        thread.setDaemon( true );
-        thread.setName( "RequireJSConfigManager pool" );
-        return thread;
-      }
-    } );
-
-  private volatile Future<String> cache;
+  private volatile ConcurrentHashMap<String, Future<String>> cachedConfigurations;
   private volatile long lastModified;
 
-  private String contextRoot = "/";
   private RequireJsBundleListener bundleListener;
-
-  public BundleContext getBundleContext() {
-    return bundleContext;
-  }
 
   public void setBundleContext( BundleContext bundleContext ) {
     this.bundleContext = bundleContext;
   }
 
-  public boolean updateBundleContext( Bundle bundle ) {
+  public void init() throws Exception {
+    if ( this.bundleListener != null ) {
+      throw new Exception( "Already initialized." );
+    }
+
+    // setting initial capacity to three (relative url and absolute http/https url scenarios)
+    this.cachedConfigurations = new ConcurrentHashMap<>(3);
+
+    this.bundleListener = new RequireJsBundleListener( this );
+    this.bundleContext.addBundleListener( this.bundleListener );
+
+    for ( Bundle bundle : this.bundleContext.getBundles() ) {
+      this.updateBundleContext( bundle );
+    }
+    this.updateBundleContext( this.bundleContext.getBundle() );
+  }
+
+  public void destroy() {
+    this.invalidateCachedConfigurations();
+
+    if ( this.bundleListener != null ) {
+      this.bundleContext.removeBundleListener( this.bundleListener );
+    }
+
+    this.bundleListener = null;
+  }
+
+  public void bundleChanged( Bundle bundle ) {
+    boolean shouldRefresh = true;
+    try {
+      shouldRefresh = this.updateBundleContext( bundle );
+    } catch ( Exception e ) {
+      // Ignore TODO possibly log
+    } finally {
+      if ( shouldRefresh ) {
+        this.invalidateCachedConfigurations();
+      }
+    }
+  }
+
+  public String getRequireJsConfig( String baseUrl ) {
+    String result = null;
+    int tries = 3;
+    Exception lastException = null;
+    while ( tries-- > 0 && result == null ) {
+      Future<String> cache = this.getCachedConfiguration( baseUrl );
+
+      try {
+        result = cache.get();
+      } catch ( InterruptedException e ) {
+        // ignore
+      } catch ( ExecutionException e ) {
+        lastException = e;
+
+        this.invalidateCachedConfigurations();
+      }
+    }
+
+    if ( result == null ) {
+      result = "{}; // Error computing RequireJS Config: ";
+      if ( lastException != null && lastException.getCause() != null ) {
+        result += lastException.getCause().getMessage();
+      } else {
+        result += "unknown error";
+      }
+    }
+
+    return result;
+  }
+
+  public long getLastModified() {
+    return this.lastModified;
+  }
+
+  private boolean updateBundleContext( Bundle bundle ) {
     switch ( bundle.getState() ) {
       case Bundle.STOPPING:
       case Bundle.RESOLVED:
       case Bundle.UNINSTALLED:
       case Bundle.INSTALLED:
-        return updateBundleContextStopped( bundle );
+        return this.updateBundleContextStopped( bundle );
       case Bundle.ACTIVE:
-        break;
+        return this.updateBundleContextActivated( bundle );
       default:
         return true;
     }
+  }
 
+  private boolean updateBundleContextStopped( Bundle bundle ) {
+    Map<String, Object> bundleConfig = this.configMap.remove( bundle.getBundleId() );
+    RequireJsConfiguration requireJsConfiguration = this.requireConfigMap.remove( bundle.getBundleId() );
+
+    return bundleConfig != null || requireJsConfiguration != null;
+  }
+
+  private boolean updateBundleContextActivated( Bundle bundle ) {
     boolean shouldInvalidate = false;
 
     URL packageJsonUrl = bundle.getResource( PACKAGE_JSON_PATH );
@@ -105,22 +177,22 @@ public class RequireJsConfigManager {
     URL staticResourcesUrl = bundle.getResource( STATIC_RESOURCES_JSON_PATH );
 
     if ( configFileUrl != null ) {
-      Map<String, Object> requireJsonObject = loadJsonObject( configFileUrl );
+      Map<String, Object> requireJsonObject = this.loadJsonObject( configFileUrl );
 
       if ( requireJsonObject != null ) {
-        putInConfigMap( bundle.getBundleId(), requireJsonObject );
+        this.putInConfigMap( bundle.getBundleId(), requireJsonObject );
 
         shouldInvalidate = true;
       }
     }
 
     if ( !shouldInvalidate && packageJsonUrl != null ) {
-      shouldInvalidate = parsePackageInformation( bundle, packageJsonUrl );
+      shouldInvalidate = this.parsePackageInformation( bundle, packageJsonUrl );
     }
 
     if ( externalResourcesUrl != null ) {
-      Map<String, Object> externalResourceJsonObject = loadJsonObject( externalResourcesUrl );
-      Map<String, Object> staticResourceJsonObject = loadJsonObject( staticResourcesUrl );
+      Map<String, Object> externalResourceJsonObject = this.loadJsonObject( externalResourcesUrl );
+      Map<String, Object> staticResourceJsonObject = this.loadJsonObject( staticResourcesUrl );
 
       if ( externalResourceJsonObject != null ) {
         List<String> requireJsList = (List<String>) externalResourceJsonObject.get( "requirejs" );
@@ -150,7 +222,7 @@ public class RequireJsConfigManager {
             requireJsList = translatedList;
           }
 
-          putInRequireConfigMap( bundle.getBundleId(), new RequireJsConfiguration( bundle, requireJsList ) );
+          this.putInRequireConfigMap( bundle.getBundleId(), new RequireJsConfiguration( bundle, requireJsList ) );
           shouldInvalidate = true;
         }
       }
@@ -166,12 +238,12 @@ public class RequireJsConfigManager {
 
       if ( gen != null ) {
         RequireJsGenerator.ArtifactInfo artifactInfo =
-          new RequireJsGenerator.ArtifactInfo( "osgi-bundles", bundle.getSymbolicName(),
-            bundle.getVersion().toString() );
+            new RequireJsGenerator.ArtifactInfo( "osgi-bundles", bundle.getSymbolicName(),
+                bundle.getVersion().toString() );
         final RequireJsGenerator.ModuleInfo moduleInfo = gen.getConvertedConfig( artifactInfo );
         Map<String, Object> requireJsonObject = moduleInfo.getRequireJs();
 
-        putInConfigMap( bundle.getBundleId(), requireJsonObject );
+        this.putInConfigMap( bundle.getBundleId(), requireJsonObject );
 
         return true;
       }
@@ -183,11 +255,11 @@ public class RequireJsConfigManager {
   }
 
   private void putInConfigMap( long bundleId, Map<String, Object> config ) {
-    configMap.put( bundleId, config );
+    this.configMap.put( bundleId, config );
   }
 
   private void putInRequireConfigMap( long bundleId, RequireJsConfiguration config ) {
-    requireConfigMap.put( bundleId, config );
+    this.requireConfigMap.put( bundleId, config );
   }
 
   private Map<String, Object> loadJsonObject( URL url ) {
@@ -205,7 +277,7 @@ public class RequireJsConfigManager {
       inputStreamReader = new InputStreamReader( urlConnection.getInputStream() );
       bufferedReader = new BufferedReader( inputStreamReader );
 
-      return (Map<String, Object>) parser.parse( bufferedReader );
+      return (Map<String, Object>) this.parser.parse( bufferedReader );
     } catch ( Exception ignored ) {
       // ignored
     } finally {
@@ -227,96 +299,18 @@ public class RequireJsConfigManager {
     return null;
   }
 
-  public boolean updateBundleContextStopped( Bundle bundle ) {
-    Map<String, Object> bundleConfig = configMap.remove( bundle.getBundleId() );
-    RequireJsConfiguration requireJsConfiguration = requireConfigMap.remove( bundle.getBundleId() );
-
-    return bundleConfig != null || requireJsConfiguration != null;
+  // package-private for unit testing
+  Future<String> getCachedConfiguration( String baseUrl ) {
+    return this.cachedConfigurations.computeIfAbsent( baseUrl, k -> executorService.schedule( new RebuildCacheCallable( baseUrl, new HashMap<>( this.configMap ),
+        new ArrayList<>( this.requireConfigMap.values() ) ), 250, TimeUnit.MILLISECONDS ) );
   }
 
-  public void invalidateCache( boolean shouldInvalidate ) {
-    if ( shouldInvalidate ) {
-      lastModified = System.currentTimeMillis();
+  // package-private for unit testing
+  void invalidateCachedConfigurations() {
+    this.lastModified = System.currentTimeMillis();
 
-      if ( this.cache != null ) {
-        this.cache.cancel( true );
-      }
-
-      this.cache = executorService.schedule( new RebuildCacheCallable( new HashMap<>( this.configMap ),
-        new ArrayList<>( requireConfigMap.values() ) ), 250, TimeUnit.MILLISECONDS );
-    }
+    this.cachedConfigurations.forEach( ( s, stringFuture ) -> stringFuture.cancel( true ) );
+    this.cachedConfigurations.clear();
   }
 
-  public String getRequireJsConfig() {
-    Future<String> cache = null;
-    String result = null;
-    int tries = 3;
-    Exception lastException = null;
-    while ( tries-- > 0 && ( result == null || cache != this.cache ) ) {
-      cache = this.cache;
-      try {
-        result = cache.get();
-      } catch ( InterruptedException e ) {
-        // ignore
-      } catch ( ExecutionException e ) {
-        lastException = e;
-        invalidateCache( true );
-      }
-    }
-    if ( result == null ) {
-      result = "{}; // Error computing RequireJS Config: ";
-      if ( lastException != null ) {
-        result += lastException.getCause().getMessage();
-      } else {
-        result += "unknown error";
-      }
-    }
-    return result;
-  }
-
-  public long getLastModified() {
-    return lastModified;
-  }
-
-  protected void setLastModified( long lastModified ) {
-    this.lastModified = lastModified;
-  }
-
-  public void bundleChanged( Bundle bundle ) {
-    boolean shouldRefresh = true;
-    try {
-      shouldRefresh = updateBundleContext( bundle );
-    } catch ( Exception e ) {
-      // Ignore TODO possibly log
-    } finally {
-      invalidateCache( shouldRefresh );
-    }
-  }
-
-  public void init() throws Exception {
-    bundleListener = new RequireJsBundleListener( this );
-    bundleContext.addBundleListener( bundleListener );
-    for ( Bundle bundle : bundleContext.getBundles() ) {
-      updateBundleContext( bundle );
-    }
-    updateBundleContext( bundleContext.getBundle() );
-    invalidateCache( true );
-  }
-
-  public void destroy() {
-    if ( bundleListener != null ) {
-      bundleContext.removeBundleListener( bundleListener );
-    }
-  }
-
-  public String getContextRoot() {
-    return this.contextRoot;
-  }
-
-  public void setContextRoot( String contextRoot ) {
-    // ensure that the given string is properly bounded with slashes
-    contextRoot = ( contextRoot.startsWith( "/" ) == false ) ? "/" + contextRoot : contextRoot;
-    contextRoot = ( contextRoot.endsWith( "/" ) == false ) ? contextRoot + "/" : contextRoot;
-    this.contextRoot = contextRoot;
-  }
 }

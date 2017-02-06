@@ -31,168 +31,236 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-/**
- * Created by bryan on 8/15/14.
- */
 public class RequireJsConfigServletTest {
-  private RequireJsConfigManager requireJsConfigManager;
+  private String contextRoot;
+  private String serverAddress;
+  private String testConfig;
+
+  private RequireJsConfigManager mockRequireJsConfigManager;
+
+  private HttpServletRequest mockRequest;
+  private HttpServletResponse mockResponse;
+  private ByteArrayOutputStream mockResponseOutputStream;
+
   private RequireJsConfigServlet requireJsConfigServlet;
 
   @Before
   public void setup() throws IOException {
-    requireJsConfigManager = mock( RequireJsConfigManager.class );
-    requireJsConfigServlet = new RequireJsConfigServlet();
-    requireJsConfigServlet.setManager( requireJsConfigManager );
-  }
+    this.contextRoot = "/the/context/root/";
 
-  @Test
-  public void testGetManager() throws IOException {
-    assertEquals( requireJsConfigManager, requireJsConfigServlet.getManager() );
+    this.testConfig = "{ \"mock\": \"This is just a mock require configuration!\" };";
+
+    String scheme = "https";
+    String serverName = "di.pentaho.local";
+    int port = 9055;
+
+    this.serverAddress = scheme + "://" + serverName + ":" + port;
+
+    this.mockRequireJsConfigManager = mock( RequireJsConfigManager.class );
+
+    when( this.mockRequireJsConfigManager.getRequireJsConfig( anyString() ) ).thenReturn( this.testConfig );
+
+    this.requireJsConfigServlet = new RequireJsConfigServlet();
+    this.requireJsConfigServlet.setManager( this.mockRequireJsConfigManager );
+    this.requireJsConfigServlet.setContextRoot( this.contextRoot );
+
+    this.mockRequest = mock( HttpServletRequest.class );
+
+    when( this.mockRequest.getScheme() ).thenReturn( scheme );
+    when( this.mockRequest.getServerName() ).thenReturn( serverName );
+    when( this.mockRequest.getServerPort() ).thenReturn( port );
+
+    when( this.mockRequest.getHeader( "referer" ) ).thenReturn( this.serverAddress + "/some/app" );
+
+    this.mockResponse = mock( HttpServletResponse.class );
+    this.mockResponseOutputStream = new ByteArrayOutputStream();
+    when( this.mockResponse.getOutputStream() ).thenReturn( new ServletOutputStream() {
+      @Override
+      public void write( int b ) throws IOException {
+        RequireJsConfigServletTest.this.mockResponseOutputStream.write( b );
+      }
+    } );
   }
 
   @Test
   public void testGetLastModified() {
-    when( requireJsConfigManager .getLastModified() ).thenReturn( 10L );
-    assertEquals( 10L, requireJsConfigServlet.getLastModified( null ) );
+    // last modification date should be the same than the last modification of the require configurations manager
+    when( this.mockRequireJsConfigManager.getLastModified() ).thenReturn( 10L );
+
+    final long lastModified = this.requireJsConfigServlet.getLastModified( this.mockRequest );
+
+    assertEquals( 10L, lastModified );
+    //noinspection ResultOfMethodCallIgnored
+    verify( this.mockRequireJsConfigManager, times( 1 ) ).getLastModified();
   }
 
   @Test
-  public void testDoGetWithConfig() throws ServletException, IOException {
-    HttpServletRequest request = mock( HttpServletRequest.class );
-    HttpServletResponse response = mock( HttpServletResponse.class );
-    final ByteArrayOutputStream outputStream = new ByteArrayOutputStream(  );
-    when( response.getOutputStream() ).thenReturn( new ServletOutputStream() {
-      @Override public void write( int b ) throws IOException {
-        outputStream.write( b );
-      }
-    } );
-    String testConfig = "TEST_CONFIG";
-    when( requireJsConfigManager.getRequireJsConfig() ).thenReturn( testConfig );
-    requireJsConfigServlet.doGet( request, response );
-    assertTrue( outputStream.toString( "UTF-8" ).contains( testConfig ) );
-    assertTrue( outputStream.toString( "UTF-8" ).contains( "require.config(requireCfg);" ) );
+  public void testDoGetWithDefaults() throws ServletException, IOException {
+    this.requireJsConfigServlet.doGet( this.mockRequest, this.mockResponse );
+
+    final String response = this.mockResponseOutputStream.toString( "UTF-8" );
+
+    assertTrue( this.responseIncludesRequireJsScript( response ) );
+    assertTrue( this.responseSetsContextPathGlobal( response, this.contextRoot ) );
+    this.requireJsConfigManagerIsCalledWithTheProperContextRoot( this.contextRoot );
+    assertTrue( this.responseDefinesRequireCfgVariable( response, this.testConfig ) );
+    assertTrue( this.responseCallRequireConfig( response ) );
+  }
+
+  @Test
+  public void testDoGetWithRequireJsTrue() throws ServletException, IOException {
+    when( this.mockRequest.getParameter( "requirejs" ) ).thenReturn( "true" );
+
+    this.requireJsConfigServlet.doGet( this.mockRequest, this.mockResponse );
+
+    final String response = this.mockResponseOutputStream.toString( "UTF-8" );
+
+    assertTrue( this.responseIncludesRequireJsScript( response ) );
+  }
+
+  @Test
+  public void testDoGetWithRequireJsFalse() throws ServletException, IOException {
+    when( this.mockRequest.getParameter( "requirejs" ) ).thenReturn( "false" );
+
+    this.requireJsConfigServlet.doGet( this.mockRequest, this.mockResponse );
+
+    final String response = this.mockResponseOutputStream.toString( "UTF-8" );
+
+    assertFalse( this.responseIncludesRequireJsScript( response ) );
   }
 
   @Test
   public void testDoGetWithConfigTrue() throws ServletException, IOException {
-    HttpServletRequest request = mock( HttpServletRequest.class );
-    HttpServletResponse response = mock( HttpServletResponse.class );
-    when( request.getParameter( "config" ) ).thenReturn( "true" );
-    final ByteArrayOutputStream outputStream = new ByteArrayOutputStream(  );
-    when( response.getOutputStream() ).thenReturn( new ServletOutputStream() {
-      @Override public void write( int b ) throws IOException {
-        outputStream.write( b );
-      }
-    } );
-    String testConfig = "TEST_CONFIG";
-    when( requireJsConfigManager.getRequireJsConfig() ).thenReturn( testConfig );
-    requireJsConfigServlet.doGet( request, response );
-    assertTrue( outputStream.toString( "UTF-8" ).contains( testConfig ) );
-    assertTrue( outputStream.toString( "UTF-8" ).contains( "require.config(requireCfg);" ) );
+    when( this.mockRequest.getParameter( "config" ) ).thenReturn( "true" );
+
+    this.requireJsConfigServlet.doGet( this.mockRequest, this.mockResponse );
+
+    final String response = this.mockResponseOutputStream.toString( "UTF-8" );
+
+    assertTrue( this.responseCallRequireConfig( response ) );
   }
 
   @Test
-  public void testDoGetWithoutConfig() throws ServletException, IOException {
-    HttpServletRequest request = mock( HttpServletRequest.class );
-    when( request.getParameter( "config" ) ).thenReturn( "false" );
-    HttpServletResponse response = mock( HttpServletResponse.class );
-    final ByteArrayOutputStream outputStream = new ByteArrayOutputStream(  );
-    when( response.getOutputStream() ).thenReturn( new ServletOutputStream() {
-      @Override public void write( int b ) throws IOException {
-        outputStream.write( b );
-      }
-    } );
-    String testConfig = "TEST_CONFIG";
-    when( requireJsConfigManager.getRequireJsConfig() ).thenReturn( testConfig );
-    requireJsConfigServlet.doGet( request, response );
-    assertTrue( outputStream.toString( "UTF-8" ).contains( testConfig ) );
-    assertFalse( outputStream.toString( "UTF-8" ).endsWith( "require.config(requireCfg);" ) );
+  public void testDoGetWithConfigFalse() throws ServletException, IOException {
+    when( this.mockRequest.getParameter( "config" ) ).thenReturn( "false" );
+
+    this.requireJsConfigServlet.doGet( this.mockRequest, this.mockResponse );
+
+    final String response = this.mockResponseOutputStream.toString( "UTF-8" );
+
+    assertFalse( this.responseCallRequireConfig( response ) );
   }
 
-
   @Test
-  public void testDoGetWithoutRequireScript() throws ServletException, IOException {
-    HttpServletRequest request = mock( HttpServletRequest.class );
-    when( request.getParameter( "requirejs" ) ).thenReturn( "false" );
-    HttpServletResponse response = mock( HttpServletResponse.class );
-    final ByteArrayOutputStream outputStream = new ByteArrayOutputStream(  );
-    when( response.getOutputStream() ).thenReturn( new ServletOutputStream() {
-      @Override public void write( int b ) throws IOException {
-        outputStream.write( b );
-      }
-    } );
-    String testConfig = "TEST_CONFIG";
-    when( requireJsConfigManager.getRequireJsConfig() ).thenReturn( testConfig );
-    requireJsConfigServlet.doGet( request, response );
+  public void testDoGetWithFullyQualifiedUrlTrue() throws ServletException, IOException {
+    when( this.mockRequest.getParameter( "fullyQualifiedUrl" ) ).thenReturn( "true" );
 
-    assertFalse( outputStream.toString( "UTF-8" ).contains( "var requirejs, require, define;" ) );
+    this.requireJsConfigServlet.doGet( this.mockRequest, this.mockResponse );
+
+    final String response = this.mockResponseOutputStream.toString( "UTF-8" );
+
+    String fullContextRoot = this.serverAddress + this.contextRoot;
+
+    assertTrue( this.responseSetsContextPathGlobal( response, fullContextRoot ) );
+    this.requireJsConfigManagerIsCalledWithTheProperContextRoot( fullContextRoot );
   }
 
-
   @Test
-  public void testDoGetWithRequireScript() throws ServletException, IOException {
-    HttpServletRequest request = mock( HttpServletRequest.class );
-    when( request.getParameter( "requirejs" ) ).thenReturn( "true" );
-    HttpServletResponse response = mock( HttpServletResponse.class );
-    final ByteArrayOutputStream outputStream = new ByteArrayOutputStream(  );
-    when( response.getOutputStream() ).thenReturn( new ServletOutputStream() {
-      @Override public void write( int b ) throws IOException {
-        outputStream.write( b );
-      }
-    } );
-    String testConfig = "TEST_CONFIG";
-    when( requireJsConfigManager.getRequireJsConfig() ).thenReturn( testConfig );
-    requireJsConfigServlet.doGet( request, response );
+  public void testDoGetWithFullyQualifiedUrlFalse() throws ServletException, IOException {
+    when( this.mockRequest.getParameter( "fullyQualifiedUrl" ) ).thenReturn( "false" );
 
-    assertTrue( outputStream.toString( "UTF-8" ).contains( "var requirejs, require, define;" ) );
+    this.requireJsConfigServlet.doGet( this.mockRequest, this.mockResponse );
+
+    final String response = this.mockResponseOutputStream.toString( "UTF-8" );
+
+    assertTrue( this.responseSetsContextPathGlobal( response, this.contextRoot ) );
+    this.requireJsConfigManagerIsCalledWithTheProperContextRoot( this.contextRoot );
   }
 
-
   @Test
-  public void testDoGetWithRequireScriptByDefault() throws ServletException, IOException {
-    HttpServletRequest request = mock( HttpServletRequest.class );
-    HttpServletResponse response = mock( HttpServletResponse.class );
-    final ByteArrayOutputStream outputStream = new ByteArrayOutputStream(  );
-    when( response.getOutputStream() ).thenReturn( new ServletOutputStream() {
-      @Override public void write( int b ) throws IOException {
-        outputStream.write( b );
-      }
-    } );
-    String testConfig = "TEST_CONFIG";
-    when( requireJsConfigManager.getRequireJsConfig() ).thenReturn( testConfig );
-    requireJsConfigServlet.doGet( request, response );
+  public void testDoGetWithFullyQualifiedUrlDefaultOutsideReferer() throws ServletException, IOException {
+    when( this.mockRequest.getHeader( "referer" ) ).thenReturn( "http://dashboard.somewhere.com/other/app" );
 
-    assertTrue( outputStream.toString( "UTF-8" ).contains( "var requirejs, require, define;" ) );
+    this.requireJsConfigServlet.doGet( this.mockRequest, this.mockResponse );
+
+    final String response = this.mockResponseOutputStream.toString( "UTF-8" );
+
+    String fullContextRoot = this.serverAddress + this.contextRoot;
+
+    assertTrue( this.responseSetsContextPathGlobal( response, fullContextRoot ) );
+    this.requireJsConfigManagerIsCalledWithTheProperContextRoot( fullContextRoot );
   }
 
+  @Test
+  public void testDoGetWithFullyQualifiedUrlDefaultLocalReferer() throws ServletException, IOException {
+    when( this.mockRequest.getHeader( "referer" ) ).thenReturn( this.serverAddress + "/other/app" );
+
+    this.requireJsConfigServlet.doGet( this.mockRequest, this.mockResponse );
+
+    final String response = this.mockResponseOutputStream.toString( "UTF-8" );
+
+    assertTrue( this.responseSetsContextPathGlobal( response, this.contextRoot ) );
+    this.requireJsConfigManagerIsCalledWithTheProperContextRoot( this.contextRoot );
+  }
 
   @Test
-  public void testSetContextRoot() throws ServletException, IOException {
+  public void testDoGetWithFullyQualifiedUrlDefaultNullReferer() throws ServletException, IOException {
+    when( this.mockRequest.getHeader( "referer" ) ).thenReturn( null );
 
-    HttpServletRequest request = mock( HttpServletRequest.class );
-    when( request.getParameter( "config" ) ).thenReturn( "false" );
-    HttpServletResponse response = mock( HttpServletResponse.class );
-    final ByteArrayOutputStream outputStream = new ByteArrayOutputStream(  );
-    when( response.getOutputStream() ).thenReturn( new ServletOutputStream() {
-      @Override public void write( int b ) throws IOException {
-        outputStream.write( b );
-      }
-    } );
-    String testConfig = "TEST_CONFIG";
-    when( requireJsConfigManager.getRequireJsConfig() ).thenReturn( testConfig );
-    when( requireJsConfigManager.getContextRoot() ).thenReturn("/test/root/");
+    this.requireJsConfigServlet.doGet( this.mockRequest, this.mockResponse );
 
-    requireJsConfigServlet.doGet( request, response );
-    String output = outputStream.toString( "UTF-8" );
-    assertTrue( output.contains( "requireCfg.baseUrl = '/test/root/" ) );
+    final String response = this.mockResponseOutputStream.toString( "UTF-8" );
 
+    assertTrue( this.responseSetsContextPathGlobal( response, this.contextRoot ) );
+    this.requireJsConfigManagerIsCalledWithTheProperContextRoot( this.contextRoot );
+  }
+
+  @Test
+  public void testContextRootFixes() throws ServletException, IOException {
+    String[] contextPermutations = new String[]{"partial/root", "/partial/root", "partial/root/"};
+
+    for ( String contextPermutation : contextPermutations ) {
+      reset( this.mockRequireJsConfigManager );
+
+      this.requireJsConfigServlet.setContextRoot( contextPermutation );
+
+      this.requireJsConfigServlet.doGet( this.mockRequest, this.mockResponse );
+
+      final String response = this.mockResponseOutputStream.toString( "UTF-8" );
+
+      assertTrue( this.responseSetsContextPathGlobal( response, "/partial/root/" ) );
+      this.requireJsConfigManagerIsCalledWithTheProperContextRoot( "/partial/root/" );
+    }
+  }
+
+  private boolean responseIncludesRequireJsScript( String response ) {
+    return response.contains( "var requirejs,require,define;" );
+  }
+
+  private boolean responseSetsContextPathGlobal( String response, String contextRoot ) {
+    return response.contains( "w.CONTEXT_PATH = '" + contextRoot + "';" );
+  }
+
+  private void requireJsConfigManagerIsCalledWithTheProperContextRoot( String contextRoot ) {
+    verify( this.mockRequireJsConfigManager, times( 1 ) ).getRequireJsConfig( contextRoot );
+  }
+
+  private boolean responseDefinesRequireCfgVariable( String response, String requireConfiguration ) {
+    return response.contains( "var requireCfg = " + requireConfiguration );
+  }
+
+  private boolean responseCallRequireConfig( String response ) {
+    return response.contains( "require.config(requireCfg);" );
   }
 }

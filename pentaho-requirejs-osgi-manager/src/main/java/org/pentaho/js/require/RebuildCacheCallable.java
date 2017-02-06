@@ -2,7 +2,7 @@
  *
  * Pentaho Data Integration
  *
- * Copyright (C) 2002-2014 by Pentaho : http://www.pentaho.com
+ * Copyright (C) 2002-2017 by Pentaho : http://www.pentaho.com
  *
  *******************************************************************************
  *
@@ -33,33 +33,79 @@ import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.Callable;
+import java.util.stream.Collectors;
 
-/**
- * Created by bryan on 8/15/14.
- */
 public class RebuildCacheCallable implements Callable<String> {
+  private final String baseUrl;
+
   private final Map<Long, Map<String, Object>> configMap;
+
+  // pentaho-platform-plugin configuration scripts (legacy)
   private final List<RequireJsConfiguration> requireJsConfigurations;
 
-  public RebuildCacheCallable( Map<Long, Map<String, Object>> configMap,
+  public RebuildCacheCallable( String baseUrl, Map<Long, Map<String, Object>> configMap,
                                List<RequireJsConfiguration> requireJsConfigurations ) {
+
+    // Make sure the baseUrl ends in a slash.
+    // like https://github.com/requirejs/requirejs/blob/14526943c937aab3c022235335f20e260395fe15/require.js#L1145
+    this.baseUrl = baseUrl.endsWith( "/" ) ? baseUrl : baseUrl + "/";
+
     this.configMap = configMap;
     this.requireJsConfigurations = new ArrayList<>( requireJsConfigurations );
-    Collections.sort( this.requireJsConfigurations, new Comparator<RequireJsConfiguration>() {
-      @Override public int compare( RequireJsConfiguration o1, RequireJsConfiguration o2 ) {
-        long longResult = o1.getBundle().getBundleId() - o2.getBundle().getBundleId();
-        if ( longResult < 0L ) {
-          return -1;
-        } else if ( longResult > 0L ) {
-          return 1;
-        } else {
-          return 0;
-        }
+
+    // sort configuration scripts by bundle ID, just to ensure some consistency
+    Collections.sort( this.requireJsConfigurations, ( o1, o2 ) -> {
+      long longResult = o1.getBundle().getBundleId() - o2.getBundle().getBundleId();
+      if ( longResult < 0L ) {
+        return -1;
+      } else if ( longResult > 0L ) {
+        return 1;
+      } else {
+        return 0;
       }
     } );
+
+  }
+
+  private static void makePathsAbsolute( Map<String, Object> result, String baseUrl ) {
+    HashMap<String, String> paths = (HashMap<String, String>) result.get( "paths" );
+    paths.forEach( ( moduleId, location ) -> {
+      if ( checkNeedsBaseUrl( location ) ) {
+        paths.put( moduleId, baseUrl + location );
+      }
+    } );
+
+    ArrayList<Object> packages = (ArrayList<Object>) result.get( "packages" );
+    final ArrayList<Object> convertedPackages = packages.stream()
+        .filter( Objects::nonNull )
+        .map( packageDefinition -> {
+          if ( packageDefinition instanceof HashMap ) {
+            final HashMap<String, String> complexPackageDefinition = (HashMap<String, String>) packageDefinition;
+
+            if ( complexPackageDefinition.containsKey( "location" ) ) {
+              String location = complexPackageDefinition.get( "location" );
+              if ( checkNeedsBaseUrl( location ) ) {
+                complexPackageDefinition.put( "location", baseUrl + location );
+                return complexPackageDefinition;
+              }
+            }
+          }
+
+          return packageDefinition;
+        } )
+        .collect( Collectors.toCollection( ArrayList<Object>::new ) );
+
+    result.put( "packages", convertedPackages );
+  }
+
+  private static boolean checkNeedsBaseUrl( String value ) {
+    // keeping logic of https://github.com/requirejs/requirejs/blob/14526943c937aab3c022235335f20e260395fe15/require.js#L1459
+    return ( value.charAt( 0 ) != '/' && !value.matches( "/^[\\w\\+\\.\\-]+:/" ) );
   }
 
   @Override
@@ -73,6 +119,8 @@ public class RebuildCacheCallable implements Callable<String> {
     Map<String, Object> result = merger.getRequireConfig();
 
     RequireJsDependencyResolver.processMetaInformation( result );
+
+    RebuildCacheCallable.makePathsAbsolute( result, this.baseUrl );
 
     StringBuilder sb = new StringBuilder( JSONObject.toJSONString( result ) );
     sb.append( ";" );

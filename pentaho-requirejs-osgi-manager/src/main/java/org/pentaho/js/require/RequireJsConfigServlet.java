@@ -32,43 +32,18 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 
-/**
- * Created by bryan on 8/5/14.
- */
 public class RequireJsConfigServlet extends HttpServlet {
-  private final String requireJs;
+  private String contextRoot;
   private RequireJsConfigManager manager;
 
-  public RequireJsConfigServlet() throws IOException {
-    InputStream inputStream = null;
-    InputStreamReader inputStreamReader = null;
-    BufferedReader reader = null;
-    try {
-      inputStream = getClass().getClassLoader().getResourceAsStream( "js/require.js" );
-      inputStreamReader = new InputStreamReader( inputStream );
-      reader = new BufferedReader( inputStreamReader );
-      String line;
-      StringBuilder sb = new StringBuilder();
-      while ( ( line = reader.readLine() ) != null ) {
-        sb.append( line );
-        sb.append( "\n" );
-      }
-      requireJs = sb.toString();
-    } finally {
-      if ( inputStreamReader != null ) {
-        inputStreamReader.close();
-      }
-      if ( reader != null ) {
-        reader.close();
-      }
-      if ( inputStream != null ) {
-        inputStream.close();
-      }
-    }
-  }
+  private String requireJs;
 
-  public RequireJsConfigManager getManager() {
-    return manager;
+  public void setContextRoot( String contextRoot ) {
+    // ensure that the given string is properly bounded with slashes
+    contextRoot = ( !contextRoot.startsWith( "/" ) ) ? "/" + contextRoot : contextRoot;
+    contextRoot = ( !contextRoot.endsWith( "/" ) ) ? contextRoot + "/" : contextRoot;
+
+    this.contextRoot = contextRoot;
   }
 
   public void setManager( RequireJsConfigManager manager ) {
@@ -77,7 +52,7 @@ public class RequireJsConfigServlet extends HttpServlet {
 
   @Override
   protected long getLastModified( HttpServletRequest req ) {
-    return manager.getLastModified();
+    return this.manager.getLastModified();
   }
 
   @Override
@@ -85,21 +60,17 @@ public class RequireJsConfigServlet extends HttpServlet {
     resp.setContentType( "text/javascript" );
 
     try ( PrintWriter printWriter = new PrintWriter( resp.getOutputStream() ) ) {
-      // should the requirejs lib code be outputted? (defaults to true)
-      final boolean outputRequireJs = getBooleanValue( req.getParameter( "requirejs" ), true );
+      RequestContext requestContext = new RequestContext( req );
 
-      // should require.config be called automatically? (defaults to true)
-      final boolean callRequireConfig = getBooleanValue( req.getParameter( "config" ), true );
-
-      if ( outputRequireJs ) {
-        printWriter.write( requireJs );
+      if ( requestContext.shouldOutputRequireJs() ) {
+        printWriter.write( this.getRequireJsScript() );
       }
 
       printWriter.write( "\n(function(w) {" );
 
       // ensure CONTEXT_PATH is defined
       printWriter.write( "\n  if(typeof CONTEXT_PATH == 'undefined'){" );
-      printWriter.write( "\n    w.CONTEXT_PATH = '" + manager.getContextRoot() + "';" );
+      printWriter.write( "\n    w.CONTEXT_PATH = '" + this.getContextRoot( requestContext ) + "';" );
       printWriter.write( "\n  }" );
       printWriter.write( "\n" );
 
@@ -110,9 +81,10 @@ public class RequireJsConfigServlet extends HttpServlet {
       printWriter.write( "\n  }" );
       printWriter.write( "\n" );
 
-      printWriter.write( "\n  requireCfg = " + manager.getRequireJsConfig() + "\n" );
+      printWriter.write( "\n  var requireCfg = " + this.manager.getRequireJsConfig( this.getContextRoot( requestContext ) ) + "\n" );
 
-      printWriter.write( "\n  requireCfg.baseUrl = '" + manager.getContextRoot() + "';" );
+      // Ensure embeddability: http://requirejs.org/docs/api.html#config-skipDataMain
+      printWriter.write( "\n  requireCfg.skipDataMain = true;" );
       printWriter.write( "\n" );
 
       // merge the requirejs module's configurations (first level only) to avoid overwriting them
@@ -133,7 +105,7 @@ public class RequireJsConfigServlet extends HttpServlet {
       printWriter.write( "\n  }" );
       printWriter.write( "\n" );
 
-      if ( callRequireConfig ) {
+      if ( requestContext.shouldCallRequireConfig() ) {
         printWriter.write( "\n  require.config(requireCfg);" );
       }
 
@@ -141,11 +113,87 @@ public class RequireJsConfigServlet extends HttpServlet {
     }
   }
 
-  private boolean getBooleanValue( String parameter, boolean defaultValue ) {
-    if ( parameter == null ) {
-      return defaultValue;
+  private class RequestContext {
+    private final boolean outputRequireJs;
+    private final boolean callRequireConfig;
+    private final boolean useFullyQualifiedUrl;
+
+    private final String serverAddress;
+
+    RequestContext( HttpServletRequest req ) {
+      // should the requirejs lib code be outputted? (defaults to true)
+      this.outputRequireJs = this.getBooleanValue( req.getParameter( "requirejs" ), true );
+
+      // should require.config be called automatically? (defaults to true)
+      this.callRequireConfig = this.getBooleanValue( req.getParameter( "config" ), true );
+
+      final String referer = req.getHeader( "referer" );
+      this.serverAddress = req.getScheme() + "://" + req.getServerName() + ":" + req.getServerPort();
+
+      // should the CONTEXT_PATH / baseUrl be a fully qualified URL?
+      // (defaults to automatically determined using the request's referer)
+      this.useFullyQualifiedUrl = this.getBooleanValue( req.getParameter( "fullyQualifiedUrl" ), referer != null && !referer.startsWith( this.serverAddress ) );
     }
 
-    return Boolean.valueOf( parameter );
+    boolean shouldOutputRequireJs() {
+      return this.outputRequireJs;
+    }
+
+    boolean shouldCallRequireConfig() {
+      return this.callRequireConfig;
+    }
+
+    boolean shouldUseFullyQualifiedUrl() {
+      return this.useFullyQualifiedUrl;
+    }
+
+    String getServerAddress() {
+      return this.serverAddress;
+    }
+
+    private boolean getBooleanValue( String parameter, boolean defaultValue ) {
+      if ( parameter == null ) {
+        return defaultValue;
+      }
+
+      return Boolean.valueOf( parameter );
+    }
+  }
+
+  private String getContextRoot( RequestContext requestContext ) {
+    return (requestContext.shouldUseFullyQualifiedUrl() ? requestContext.getServerAddress() : "") + this.contextRoot;
+  }
+
+  private String getRequireJsScript() throws IOException {
+    if ( this.requireJs == null) {
+      InputStream inputStream = null;
+      InputStreamReader inputStreamReader = null;
+      BufferedReader reader = null;
+      try {
+        inputStream = this.getClass().getClassLoader().getResourceAsStream( "js/require.js" );
+        inputStreamReader = new InputStreamReader( inputStream );
+        reader = new BufferedReader( inputStreamReader );
+        String line;
+        StringBuilder sb = new StringBuilder();
+        while ( ( line = reader.readLine() ) != null ) {
+          sb.append( line );
+          sb.append( "\n" );
+        }
+
+        this.requireJs = sb.toString();
+      } finally {
+        if ( inputStreamReader != null ) {
+          inputStreamReader.close();
+        }
+        if ( reader != null ) {
+          reader.close();
+        }
+        if ( inputStream != null ) {
+          inputStream.close();
+        }
+      }
+    }
+
+    return this.requireJs;
   }
 }

@@ -1,0 +1,12 @@
+{
+  "bundles": {},
+  "map": { "*" : {} },
+  "packages": [],
+  "paths": {
+    "lib6": "lib6"
+  },
+  "shim" : {
+  },
+  "config" : {
+  }
+}
