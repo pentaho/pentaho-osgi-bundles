@@ -105,9 +105,7 @@ public class RequireJsConfigServlet extends HttpServlet {
       printWriter.write( "\n  }" );
       printWriter.write( "\n" );
 
-      if ( requestContext.shouldCallRequireConfig() ) {
-        printWriter.write( "\n  require.config(requireCfg);" );
-      }
+      printWriter.write( "\n  require.config(requireCfg);" );
 
       printWriter.write( "\n}(window));\n" );
     }
@@ -152,7 +150,6 @@ public class RequireJsConfigServlet extends HttpServlet {
 
   private class RequestContext {
     private final boolean outputRequireJs;
-    private final boolean callRequireConfig;
     private final boolean useFullyQualifiedUrl;
 
     private final String serverAddress;
@@ -160,9 +157,6 @@ public class RequireJsConfigServlet extends HttpServlet {
     RequestContext( HttpServletRequest req ) {
       // should the requirejs lib code be outputted? (defaults to true)
       this.outputRequireJs = this.getBooleanValue( req.getParameter( "requirejs" ), true );
-
-      // should require.config be called automatically? (defaults to true)
-      this.callRequireConfig = this.getBooleanValue( req.getParameter( "config" ), true );
 
       final String referer = req.getHeader( "referer" );
       this.serverAddress = req.getScheme() + "://" + req.getServerName() + ":" + req.getServerPort();
@@ -174,10 +168,6 @@ public class RequireJsConfigServlet extends HttpServlet {
 
     boolean shouldOutputRequireJs() {
       return this.outputRequireJs;
-    }
-
-    boolean shouldCallRequireConfig() {
-      return this.callRequireConfig;
     }
 
     boolean shouldUseFullyQualifiedUrl() {

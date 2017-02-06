@@ -141,28 +141,6 @@ public class RequireJsConfigServletTest {
   }
 
   @Test
-  public void testDoGetWithConfigTrue() throws ServletException, IOException {
-    when( this.mockRequest.getParameter( "config" ) ).thenReturn( "true" );
-
-    this.requireJsConfigServlet.doGet( this.mockRequest, this.mockResponse );
-
-    final String response = this.mockResponseOutputStream.toString( "UTF-8" );
-
-    assertTrue( this.responseCallRequireConfig( response ) );
-  }
-
-  @Test
-  public void testDoGetWithConfigFalse() throws ServletException, IOException {
-    when( this.mockRequest.getParameter( "config" ) ).thenReturn( "false" );
-
-    this.requireJsConfigServlet.doGet( this.mockRequest, this.mockResponse );
-
-    final String response = this.mockResponseOutputStream.toString( "UTF-8" );
-
-    assertFalse( this.responseCallRequireConfig( response ) );
-  }
-
-  @Test
   public void testDoGetWithFullyQualifiedUrlTrue() throws ServletException, IOException {
     when( this.mockRequest.getParameter( "fullyQualifiedUrl" ) ).thenReturn( "true" );
 
