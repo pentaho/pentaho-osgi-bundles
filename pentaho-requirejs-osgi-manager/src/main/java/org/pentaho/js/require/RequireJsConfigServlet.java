@@ -113,6 +113,43 @@ public class RequireJsConfigServlet extends HttpServlet {
     }
   }
 
+  private String getContextRoot( RequestContext requestContext ) {
+    return ( requestContext.shouldUseFullyQualifiedUrl() ? requestContext.getServerAddress() : "" ) + this.contextRoot;
+  }
+
+  private String getRequireJsScript() throws IOException {
+    if ( this.requireJs == null ) {
+      InputStream inputStream = null;
+      InputStreamReader inputStreamReader = null;
+      BufferedReader reader = null;
+      try {
+        inputStream = this.getClass().getClassLoader().getResourceAsStream( "js/require.js" );
+        inputStreamReader = new InputStreamReader( inputStream );
+        reader = new BufferedReader( inputStreamReader );
+        String line;
+        StringBuilder sb = new StringBuilder();
+        while ( ( line = reader.readLine() ) != null ) {
+          sb.append( line );
+          sb.append( "\n" );
+        }
+
+        this.requireJs = sb.toString();
+      } finally {
+        if ( inputStreamReader != null ) {
+          inputStreamReader.close();
+        }
+        if ( reader != null ) {
+          reader.close();
+        }
+        if ( inputStream != null ) {
+          inputStream.close();
+        }
+      }
+    }
+
+    return this.requireJs;
+  }
+
   private class RequestContext {
     private final boolean outputRequireJs;
     private final boolean callRequireConfig;
@@ -158,42 +195,5 @@ public class RequireJsConfigServlet extends HttpServlet {
 
       return Boolean.valueOf( parameter );
     }
-  }
-
-  private String getContextRoot( RequestContext requestContext ) {
-    return (requestContext.shouldUseFullyQualifiedUrl() ? requestContext.getServerAddress() : "") + this.contextRoot;
-  }
-
-  private String getRequireJsScript() throws IOException {
-    if ( this.requireJs == null) {
-      InputStream inputStream = null;
-      InputStreamReader inputStreamReader = null;
-      BufferedReader reader = null;
-      try {
-        inputStream = this.getClass().getClassLoader().getResourceAsStream( "js/require.js" );
-        inputStreamReader = new InputStreamReader( inputStream );
-        reader = new BufferedReader( inputStreamReader );
-        String line;
-        StringBuilder sb = new StringBuilder();
-        while ( ( line = reader.readLine() ) != null ) {
-          sb.append( line );
-          sb.append( "\n" );
-        }
-
-        this.requireJs = sb.toString();
-      } finally {
-        if ( inputStreamReader != null ) {
-          inputStreamReader.close();
-        }
-        if ( reader != null ) {
-          reader.close();
-        }
-        if ( inputStream != null ) {
-          inputStream.close();
-        }
-      }
-    }
-
-    return this.requireJs;
   }
 }

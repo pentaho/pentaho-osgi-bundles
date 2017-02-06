@@ -78,7 +78,7 @@ public class RequireJsConfigManager {
     }
 
     // setting initial capacity to three (relative url and absolute http/https url scenarios)
-    this.cachedConfigurations = new ConcurrentHashMap<>(3);
+    this.cachedConfigurations = new ConcurrentHashMap<>( 3 );
 
     this.bundleListener = new RequireJsBundleListener( this );
     this.bundleContext.addBundleListener( this.bundleListener );
