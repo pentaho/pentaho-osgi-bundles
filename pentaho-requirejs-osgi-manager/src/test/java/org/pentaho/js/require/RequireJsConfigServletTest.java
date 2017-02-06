@@ -245,7 +245,7 @@ public class RequireJsConfigServletTest {
   }
 
   private boolean responseIncludesRequireJsScript( String response ) {
-    return response.contains( "var requirejs,require,define;" );
+    return response.contains( "var requirejs, require, define;" );
   }
 
   private boolean responseSetsContextPathGlobal( String response, String contextRoot ) {

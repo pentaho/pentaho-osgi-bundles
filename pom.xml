@@ -59,7 +59,7 @@
     <cxf.version>3.0.6</cxf.version>
     <felix-fileinstall.version>3.4.2</felix-fileinstall.version>
     <mockito.version>1.9.5</mockito.version>
-    <requirejs.version>2.1.19</requirejs.version>
+    <requirejs.version>2.3.2</requirejs.version>
   </properties>
   <build>
     <finalName>${project.artifactId}</finalName>
