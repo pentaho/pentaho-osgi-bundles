@@ -2,7 +2,7 @@
  *
  * Pentaho Data Integration
  *
- * Copyright (C) 2002-2014 by Pentaho : http://www.pentaho.com
+ * Copyright (C) 2002-2017 by Pentaho : http://www.pentaho.com
  *
  *******************************************************************************
  *
@@ -35,13 +35,12 @@ import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 
-/**
- * Created by bryan on 8/15/14.
- */
 public class RebuildCacheCallableTest {
+  private final String baseUrl = "/some/base/path";
+
   private List<RequireJsConfiguration> requireJsConfigurations;
 
-  public static void testEquals( Object object1, Object object2 ) {
+  private static void testEquals( Object object1, Object object2 ) {
     if ( object1 instanceof JSONObject && object2 instanceof JSONObject ) {
       testEquals( (JSONObject) object1, (JSONObject) object2 );
     } else if ( object1 instanceof JSONArray && object2 instanceof JSONArray ) {
@@ -67,7 +66,7 @@ public class RebuildCacheCallableTest {
 
   @Before
   public void setup() {
-    requireJsConfigurations = new ArrayList<RequireJsConfiguration>();
+    this.requireJsConfigurations = new ArrayList<>();
   }
 
   @Test
@@ -116,7 +115,7 @@ public class RebuildCacheCallableTest {
     JSONObject configObj = new JSONObject();
     configObj.put( "service", new JSONObject() );
     expected.put( "config", configObj );
-    String config = new RebuildCacheCallable( configMap, requireJsConfigurations ).call();
+    String config = new RebuildCacheCallable( this.baseUrl, configMap, this.requireJsConfigurations ).call();
     if ( config.endsWith( ";" ) ) {
       config = config.substring( 0, config.length() - 1 );
     }
@@ -139,7 +138,7 @@ public class RebuildCacheCallableTest {
     array2.add( "2" );
     array2.add( 3L );
     object2.put( objectKey, array2 );
-    String config = new RebuildCacheCallable( configMap, requireJsConfigurations ).call();
+    new RebuildCacheCallable( this.baseUrl, configMap, this.requireJsConfigurations ).call();
   }
 
   @Test( expected = Exception.class )
@@ -154,7 +153,7 @@ public class RebuildCacheCallableTest {
     JSONObject object2 = new JSONObject();
     configMap.put( 2L, object2 );
     object2.put( objectKey, new JSONObject() );
-    String config = new RebuildCacheCallable( configMap, requireJsConfigurations ).call();
+    new RebuildCacheCallable( this.baseUrl, configMap, this.requireJsConfigurations ).call();
   }
 
   @Test
@@ -180,16 +179,16 @@ public class RebuildCacheCallableTest {
     object2.put( moduleKey, subobject2 );
 
     JSONObject shim2 = new JSONObject();
-    shim1.put( objectKey, object2 );
+    shim2.put( objectKey, object2 );
 
     configMap.put( 2L, shim2 );
 
-    String config = new RebuildCacheCallable( configMap, requireJsConfigurations ).call();
+    String config = new RebuildCacheCallable( this.baseUrl, configMap, this.requireJsConfigurations ).call();
     if ( config.endsWith( ";" ) ) {
       config = config.substring( 0, config.length() - 1 );
     }
     Object configValue = JSONValue.parse( config );
-    testEquals(new JSONArray(), ( (JSONObject) ((JSONObject) ((JSONObject) configValue).get(objectKey)).get(moduleKey)).get(subobjectKey));
+    testEquals( new JSONArray(), ( (JSONObject) ( (JSONObject) ( (JSONObject) configValue ).get( objectKey ) ).get( moduleKey ) ).get( subobjectKey ) );
   }
 
   @Test( expected = Exception.class )
@@ -204,7 +203,7 @@ public class RebuildCacheCallableTest {
     JSONObject object2 = new JSONObject();
     configMap.put( 2L, object2 );
     object2.put( objectKey, "B" );
-    String config = new RebuildCacheCallable( configMap, requireJsConfigurations ).call();
+    new RebuildCacheCallable( this.baseUrl, configMap, this.requireJsConfigurations ).call();
   }
 
   @Test( expected = Exception.class )
@@ -219,7 +218,7 @@ public class RebuildCacheCallableTest {
     JSONObject object2 = new JSONObject();
     configMap.put( 2L, object2 );
     object2.put( objectKey, new JSONArray() );
-    String config = new RebuildCacheCallable( configMap, requireJsConfigurations ).call();
+    new RebuildCacheCallable( this.baseUrl, configMap, this.requireJsConfigurations ).call();
   }
 
   @Test( expected = Exception.class )
@@ -234,7 +233,7 @@ public class RebuildCacheCallableTest {
     JSONObject object2 = new JSONObject();
     configMap.put( 2L, object2 );
     object2.put( new Object(), new JSONArray() );
-    String config = new RebuildCacheCallable( configMap, requireJsConfigurations ).call();
+    new RebuildCacheCallable( this.baseUrl, configMap, this.requireJsConfigurations ).call();
   }
 
   @Test
@@ -249,7 +248,7 @@ public class RebuildCacheCallableTest {
     configMap.put( 1L, object1 );
 
     JSONObject relativePath = new JSONObject();
-    relativePath.put(moduleKey, modulePath);
+    relativePath.put( moduleKey, modulePath );
 
     object1.put( objectKey, relativePath );
 
@@ -257,15 +256,68 @@ public class RebuildCacheCallableTest {
     configMap.put( 2L, object2 );
 
     JSONObject absolutePath = new JSONObject();
-    absolutePath.put(moduleKey, "/" + modulePath);
+    absolutePath.put( moduleKey, "/" + modulePath );
 
     object2.put( objectKey, absolutePath );
 
-    String config = new RebuildCacheCallable( configMap, requireJsConfigurations ).call();
+    String config = new RebuildCacheCallable( this.baseUrl, configMap, this.requireJsConfigurations ).call();
     if ( config.endsWith( ";" ) ) {
       config = config.substring( 0, config.length() - 1 );
     }
     Object configValue = JSONValue.parse( config );
     testEquals( modulePath, ( (JSONObject) ( (JSONObject) configValue ).get( objectKey ) ).get( moduleKey ) );
+  }
+
+  @Test
+  public void testOutputAbsolutePaths() throws Exception {
+    String relativePath = "module/relative-path/script";
+    String absolutePath = "/module/absolute-path/script";
+
+    Map<Long, Map<String, Object>> configMap = new HashMap<>();
+
+    JSONObject object1 = new JSONObject();
+    configMap.put( 1L, object1 );
+
+    JSONObject pathDefinition = new JSONObject();
+    pathDefinition.put( "module1", relativePath );
+    pathDefinition.put( "module2", absolutePath );
+
+    object1.put( "paths", pathDefinition );
+
+    JSONObject object2 = new JSONObject();
+    configMap.put( 2L, object2 );
+
+    final JSONArray packagesArray = new JSONArray();
+
+    JSONObject packageDefinition = new JSONObject();
+    packageDefinition.put( "name", "package1" );
+    packageDefinition.put( "location", relativePath );
+
+    packagesArray.add( packageDefinition );
+
+    packageDefinition = new JSONObject();
+    packageDefinition.put( "name", "package2" );
+    packageDefinition.put( "location", absolutePath );
+
+    packagesArray.add( packageDefinition );
+
+    object2.put( "packages", packagesArray );
+
+    String config = new RebuildCacheCallable( this.baseUrl, configMap, this.requireJsConfigurations ).call();
+    if ( config.endsWith( ";" ) ) {
+      config = config.substring( 0, config.length() - 1 );
+    }
+
+    System.out.print( config );
+    Object configValue = JSONValue.parse( config );
+
+    // check that the baseUrl is prepended to paths
+    // (both relative and absolute, because of path earlier conversion)
+    testEquals( this.baseUrl + "/" + relativePath, ( (JSONObject) ( (JSONObject) configValue ).get( "paths" ) ).get( "module1" ) );
+    testEquals( this.baseUrl + absolutePath, ( (JSONObject) ( (JSONObject) configValue ).get( "paths" ) ).get( "module2" ) );
+
+    // check that the baseUrl is prepended to package locations
+    testEquals( this.baseUrl + "/" + relativePath, ( (JSONObject) ( (JSONArray) ( (JSONObject) configValue ).get( "packages" ) ).get( 0 )).get( "location" ) );
+    testEquals( absolutePath, ( (JSONObject) ( (JSONArray) ( (JSONObject) configValue ).get( "packages" ) ).get( 1 )).get( "location" ) );
   }
 }

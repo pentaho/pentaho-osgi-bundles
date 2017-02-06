@@ -1,0 +1,6 @@
+{
+  "requirejs": [
+    "testExternal/lib8-require-js-cfg.js",
+    "/resources/external/lib8-require-js-cfg.js"
+  ]
+}

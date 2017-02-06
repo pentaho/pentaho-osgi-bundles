@@ -1,0 +1,5 @@
+{
+  "requirejs": [
+    "/resources/external/lib3-require-js-cfg.js"
+  ]
+}
