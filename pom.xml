@@ -116,6 +116,7 @@
         <module>pentaho-metastore-locator</module>
         <module>pentaho-spring-dm-extender</module>
         <module>pentaho-pdi-platform</module>
+        <module>pentaho-object-tunnel</module>
       </modules>
       <distributionManagement>
         <site>
@@ -153,6 +154,7 @@
         <module>pentaho-cache-manager</module>
         <module>pentaho-authentication-mapper</module>
         <module>pentaho-spring-dm-extender</module>
+        <module>pentaho-object-tunnel</module>
       </modules>
       <distributionManagement>
         <site>
