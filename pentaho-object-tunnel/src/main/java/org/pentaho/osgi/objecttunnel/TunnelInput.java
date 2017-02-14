@@ -24,8 +24,10 @@
 
 package org.pentaho.osgi.objecttunnel;
 
+import io.reactivex.processors.PublishProcessor;
 import org.reactivestreams.Publisher;
 import org.reactivestreams.Subscriber;
+import org.reactivestreams.Subscription;
 
 import java.io.ObjectInputStream;
 import java.util.ArrayList;
@@ -48,6 +50,7 @@ public class TunnelInput implements Publisher<TunneledInputObject>, AutoCloseabl
   private AtomicBoolean initialized = new AtomicBoolean( false );
   private volatile int errorThreshold = 5;
   private volatile int errorCount = 0;
+  private PublishProcessor<TunneledInputObject> publishProcessor = PublishProcessor.create();
 
   public TunnelInput( ObjectInputStream input, Map<Class, TunnelSerializer> rawSerializerMap ) {
     this.input = input;
@@ -57,7 +60,7 @@ public class TunnelInput implements Publisher<TunneledInputObject>, AutoCloseabl
   @Override public void close() throws Exception {
     closed.set( true );
     input.close();
-    subscribers.forEach( Subscriber::onComplete );
+    publishProcessor.onComplete();
   }
 
   int getErrorCount() {
@@ -103,23 +106,25 @@ public class TunnelInput implements Publisher<TunneledInputObject>, AutoCloseabl
     }
     Executors.newSingleThreadExecutor().submit( () -> {
       while ( !closed.get() && errorCount < errorThreshold ) {
+        Exception capturedException = null;
         try {
           TunneledPayload payload = (TunneledPayload) input.readObject();
 
           String type = payload.getType(); // Fully Qualified ClassName
           if ( serializerMap.containsKey( type ) ) {
             Object unmarshalled = serializerMap.get( type ).deserialize( payload.getObjectStr() );
-            subscribers.forEach( subscriber -> subscriber.onNext( new TunneledInputObject( type, unmarshalled ) ) );
+            publishProcessor.onNext( new TunneledInputObject( type, unmarshalled ) );
           }
           errorCount = 0;
 
         } catch ( Exception e ) {
+          // Something unexpected. Keep exception in case we want to throw
           errorCount++;
-          // Something unexpected. Pass it on
-          subscribers.forEach( subscriber -> subscriber.onError( e ) );
+          capturedException = e;
         }
         if ( errorCount == errorThreshold ) {
           try {
+            publishProcessor.onError( capturedException );
             close();
           } catch ( Exception ignored ) {
             //ignored
@@ -133,6 +138,6 @@ public class TunnelInput implements Publisher<TunneledInputObject>, AutoCloseabl
     if ( closed.get() ) {
       throw new IllegalStateException( "TunnelInput has been closed" );
     }
-    subscribers.add( s );
+    publishProcessor.subscribe( s );
   }
 }
