@@ -34,6 +34,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -53,6 +55,7 @@ public class TunneledInputTest {
   private TunnelInput tunnel;
   private ObjectOutputStream outputStream;
   private ByteArrayOutputStream byteArrayOutputStream;
+  private Map<Class, TunnelSerializer> serializerMap;
 
   @Before
   public void setup() throws Exception {
@@ -66,8 +69,22 @@ public class TunneledInputTest {
 
     byte[] bytes = byteArrayOutputStream.toByteArray();
     ObjectInputStream objectInputStream = new ObjectInputStream( new ByteArrayInputStream( bytes ) );
-    tunnel = new TunnelInput( objectInputStream );
+    serializerMap = Collections.singletonMap( UUID.class, new TunnelSerializer<UUID>() {
 
+      @Override public List<Class> getSupportedClasses() {
+        return Collections.singletonList( UUID.class );
+      }
+
+      @Override public String serialize( UUID object ) {
+        return object.toString();
+      }
+
+      @Override public UUID deserialize( String serializedString ) {
+        return UUID.fromString( serializedString );
+      }
+
+    } );
+    tunnel = new TunnelInput( objectInputStream, serializerMap );
   }
 
   @Test
@@ -75,8 +92,6 @@ public class TunneledInputTest {
     outputStream.writeObject( new TunneledPayload( "type", UUID.randomUUID().toString() ) );
 
     createTunnel();
-
-    tunnel.setDeserializeFunctions( Collections.singletonMap( "type", UUID::fromString ) );
 
     CountDownLatch latch = new CountDownLatch( 1 );
     tunnel.subscribe( new SubscriberAdapter<TunneledInputObject>() {
@@ -94,16 +109,16 @@ public class TunneledInputTest {
   public void testTunnelInputErrorThreshold() throws Exception {
     // Write 11 objects on the stream.
     for ( int i = 0; i < 11; i++ ) {
-      outputStream.writeObject( new TunneledPayload( "type", UUID.randomUUID().toString() ) );
+      outputStream.writeObject( new TunneledPayload( UUID.class.getName(), UUID.randomUUID().toString() ) );
     }
 
     // Consume the output and create a tunnel on the input
     createTunnel();
 
     // setup factory that always throws an exception.
-    tunnel.setDeserializeFunctions( Collections.singletonMap( "type", s -> {
+    tunnel.setDeserializer( UUID.class, s -> {
       throw new IllegalStateException( "I am bad" );
-    } ) );
+    } );
 
     // The tunnel will continue until 10 consecutive errors
     tunnel.setErrorThreshold( 10 );
@@ -144,14 +159,14 @@ public class TunneledInputTest {
     AtomicInteger count = new AtomicInteger( 0 );
     AtomicReference<String> uuid = new AtomicReference<>( null );
     // setup factory that throws an exception except for the 4th item.
-    tunnel.setDeserializeFunctions( Collections.singletonMap( "UUID", s -> {
+    tunnel.setDeserializer( UUID.class, s -> {
       count.incrementAndGet();
       if ( count.get() == 4 ) {
         uuid.set( s );
         return UUID.fromString( s );
       }
       throw new IllegalStateException( "I am bad" );
-    } ) );
+    } );
 
     // The tunnel will continue until 10 consecutive errors
     tunnel.setErrorThreshold( 10 );

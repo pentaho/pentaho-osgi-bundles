@@ -32,6 +32,8 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
@@ -42,16 +44,17 @@ import static org.mockito.Mockito.*;
  */
 public class TunneledOutputTest {
 
+  private Map<Class, TunnelSerializer> serializerMap = new HashMap<>();
   @Test
   public void testOutput() throws Exception {
     ByteArrayOutputStream bos = new ByteArrayOutputStream();
     ObjectOutputStream outputStream = new ObjectOutputStream( bos );
-    TunnelOutput output = new TunnelOutput( outputStream );
-    output.setSerializeFunctions( Collections.singletonMap( "UUID", o -> {
+    TunnelOutput output = new TunnelOutput( outputStream, serializerMap );
+    output.setSerializer( UUID.class, o -> {
       return o.toString();
-    } ) );
+    } );
     UUID uuid = UUID.randomUUID();
-    output.writeObject( "UUID", uuid );
+    output.writeObject( uuid );
 
     byte[] bytes = bos.toByteArray();
     ObjectInputStream inputStream = new ObjectInputStream( new ByteArrayInputStream( bytes ) );
@@ -64,7 +67,7 @@ public class TunneledOutputTest {
   public void checkClose() throws Exception {
 
     ObjectOutputStream mockOutputStream = mock( ObjectOutputStream.class );
-    TunnelOutput output = new TunnelOutput( mockOutputStream );
+    TunnelOutput output = new TunnelOutput( mockOutputStream, serializerMap );
     output.close();
     verify( mockOutputStream, times( 1 ) ).close();
   }
@@ -73,17 +76,17 @@ public class TunneledOutputTest {
   public void testNoFactory() throws Exception {
 
     ObjectOutputStream mockOutputStream = mock( ObjectOutputStream.class );
-    TunnelOutput output = new TunnelOutput( mockOutputStream );
-    output.writeObject( "will not be found", "bar" );
+    TunnelOutput output = new TunnelOutput( mockOutputStream, serializerMap );
+    output.writeObject( "bar" );
   }
 
   @Test( expected = NullPointerException.class )
   public void testConditions() throws Exception {
 
     ObjectOutputStream mockOutputStream = mock( ObjectOutputStream.class );
-    TunnelOutput output = new TunnelOutput( mockOutputStream );
-    output.setSerializeFunctions( Collections.singletonMap( "foo", o -> "" ) );
-    output.writeObject( "foo", null );
+    TunnelOutput output = new TunnelOutput( mockOutputStream, serializerMap );
+    output.setSerializer( String.class, o -> "" );
+    output.writeObject(  null );
   }
 
   @Test( expected = IOException.class )
@@ -94,8 +97,8 @@ public class TunneledOutputTest {
         throw new IOException( "I am IO" );
       }
     };
-    TunnelOutput output = new TunnelOutput( outputStream );
-    output.setSerializeFunctions( Collections.singletonMap( "foo", o -> "" ) );
-    output.writeObject( "foo", "bar" );
+    TunnelOutput output = new TunnelOutput( outputStream, serializerMap );
+    output.setSerializer( String.class, o -> "" );
+    output.writeObject( "bar" );
   }
 }

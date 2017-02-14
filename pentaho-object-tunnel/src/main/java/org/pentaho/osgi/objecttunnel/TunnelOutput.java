@@ -42,14 +42,15 @@ import java.util.stream.Stream;
 public class TunnelOutput implements AutoCloseable {
 
   private ObjectOutputStream output;
+  private Map<Class, TunnelSerializer> serializerMap = new HashMap<>(  );
   private List<Subscriber<? super TunneledInputObject>> subscribers = new ArrayList<>();
   private AtomicBoolean closed = new AtomicBoolean( false );
-  private Map<String, Function<Object, String>> serializeFunctions = new HashMap<>();
   private AtomicBoolean initialized = new AtomicBoolean( false );
   private volatile int errorThreshold = 5;
 
-  public TunnelOutput( ObjectOutputStream output ) {
+  public TunnelOutput( ObjectOutputStream output, Map<Class, TunnelSerializer> serializerMap ) {
     this.output = output;
+    this.serializerMap.putAll( serializerMap );
   }
 
   @Override public void close() throws Exception {
@@ -57,22 +58,33 @@ public class TunnelOutput implements AutoCloseable {
     output.close();
   }
 
-  public void setSerializeFunctions(
-    Map<String, Function<Object, String>> serializeFunctions ) {
-    this.serializeFunctions.clear();
-    this.serializeFunctions.putAll( serializeFunctions );
+  void setSerializer( Class clazz, Function<Object, String> serializer ) {
+    serializerMap.put( clazz, new TunnelSerializer() {
+      @Override public List<Class> getSupportedClasses() {
+        return null;
+      }
+
+      @Override public String serialize( Object object ) {
+        return serializer.apply( object );
+      }
+
+      @Override public Object deserialize( String serializedString ) {
+        return null;
+      }
+    } );
   }
 
-  public void writeObject( String type, Object object ) throws IOException {
-    if ( !serializeFunctions.containsKey( type ) ) {
+  public void writeObject( Object object ) throws IOException {
+    Class<?> type = object.getClass();
+    if ( !serializerMap.containsKey( type ) ) {
       throw new IllegalArgumentException( "No Serialize Function for given type: " + type );
     }
     if ( object == null ) {
       throw new NullPointerException( "Given TunnelInput Object is null" );
     }
     try {
-      Stream.of( serializeFunctions.get( type ) ).map( s -> s.apply( object ) )
-        .map( o -> new TunneledPayload( type, o ) ).forEach(
+      Stream.of( serializerMap.get( type ) ).map( s -> s.serialize( object ) )
+        .map( o -> new TunneledPayload( type.getName(), o ) ).forEach(
           o -> {
             try {
               output.writeObject( o );
@@ -88,12 +100,10 @@ public class TunnelOutput implements AutoCloseable {
 
   private static class ExceptionWrapper extends RuntimeException {
     IOException ioe;
-
     ExceptionWrapper( IOException e ) {
       super( e );
       ioe = e;
     }
-
   }
 
 
