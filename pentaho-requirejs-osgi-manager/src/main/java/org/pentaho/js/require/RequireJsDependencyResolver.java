@@ -319,6 +319,12 @@ public class RequireJsDependencyResolver {
     ArrayList<Version> validVersions = new ArrayList<>();
     ArrayList<String> validVersionsStrings = new ArrayList<>();
 
+    // resolve version prematurely for exact matches to allow our own non-semantic versioning such as "7.1-SNAPSHOT"
+    if ( availableVersions.contains( versionFilter ) ) {
+      validVersionsStrings.add( versionFilter );
+      return validVersionsStrings;
+    }
+
     for ( String availableVersion : availableVersions ) {
       try {
         Version parsedAvailableVersion = Version.valueOf( availableVersion );
@@ -359,7 +365,7 @@ public class RequireJsDependencyResolver {
   private boolean versionSatisfiesFilter( Version parsedAvailableVersion, String versionFilter ) {
     // Java SemVer v0.9.0's version filter expression parser doesn't handle qualifiers
     // shortcut if equals enables the most common use case (dependency with explicit version)
-    // other cases like "~2.3-alpha.1" or ">=7.1-SNAPSHOT" will still fail until the lib is fixed
+    // other cases like "~2.1.3-alpha.1" or ">=7.1-SNAPSHOT" will still fail until the lib is fixed
     // https://github.com/zafarkhaja/jsemver/pull/34 addresses this
     return versionFilter.equals( parsedAvailableVersion.toString() ) || parsedAvailableVersion.satisfies( versionFilter );
   }
