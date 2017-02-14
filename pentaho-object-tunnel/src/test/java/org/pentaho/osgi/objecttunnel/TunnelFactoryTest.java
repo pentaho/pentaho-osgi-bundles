@@ -42,16 +42,16 @@ import static org.mockito.Mockito.mock;
  * Created by nbaker on 2/14/17.
  */
 public class TunnelFactoryTest {
-  TunnelFactory factory = new TunnelFactory();
+  TunnelFactory factory;
 
   @Before
   public void setup() throws Exception {
-    factory.setSerializers( Collections.singletonList( new TunnelSerializer<UUID>() {
+    factory = new TunnelFactory( Collections.singletonList( new TunnelSerializer<UUID>() {
       @Override public List<Class> getSupportedClasses() {
         return Collections.singletonList( UUID.class );
       }
 
-      @Override public String serialize( UUID object ) {
+      @Override public String serialize( Object object ) {
         return object.toString();
       }
 

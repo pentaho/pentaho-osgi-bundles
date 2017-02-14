@@ -75,7 +75,7 @@ public class TunneledInputTest {
         return Collections.singletonList( UUID.class );
       }
 
-      @Override public String serialize( UUID object ) {
+      @Override public String serialize( Object object ) {
         return object.toString();
       }
 
@@ -183,10 +183,10 @@ public class TunneledInputTest {
 
       @Override public void onError( Throwable t ) {
         errored.set( true );
+        latch.countDown();
       }
 
       @Override public void onComplete() {
-        latch.countDown();
       }
     } );
     tunnel.open();
