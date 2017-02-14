@@ -27,7 +27,6 @@ package org.pentaho.osgi.objecttunnel;
 import org.reactivestreams.Publisher;
 import org.reactivestreams.Subscriber;
 
-import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -43,27 +42,22 @@ import java.util.function.Function;
 public class TunnelInput implements Publisher<TunneledInputObject>, AutoCloseable {
 
   private ObjectInputStream input;
+  private Map<String, TunnelSerializer> serializerMap = new HashMap<>();
   private List<Subscriber<? super TunneledInputObject>> subscribers = new ArrayList<>();
   private AtomicBoolean closed = new AtomicBoolean( false );
-  private Map<String, Function<String, Object>> deserializeFunctions = new HashMap<>();
   private AtomicBoolean initialized = new AtomicBoolean( false );
   private volatile int errorThreshold = 5;
   private volatile int errorCount = 0;
 
-  public TunnelInput( ObjectInputStream input ) {
+  public TunnelInput( ObjectInputStream input, Map<Class, TunnelSerializer> rawSerializerMap ) {
     this.input = input;
+    rawSerializerMap.entrySet().forEach( entry  -> serializerMap.put( entry.getKey().toString(), entry.getValue() ) );
   }
 
   @Override public void close() throws Exception {
     closed.set( true );
     input.close();
     subscribers.forEach( Subscriber::onComplete );
-  }
-
-  public void setDeserializeFunctions(
-    Map<String, Function<String, Object>> deserializeFunctions ) {
-    this.deserializeFunctions.clear();
-    this.deserializeFunctions.putAll( deserializeFunctions );
   }
 
   int getErrorCount() {
@@ -82,6 +76,27 @@ public class TunnelInput implements Publisher<TunneledInputObject>, AutoCloseabl
     this.errorThreshold = errorThreshold;
   }
 
+  /**
+   * Test Method
+   * @param clazz
+   * @param func
+   */
+  void setDeserializer( Class clazz, Function<String, Object> func ) {
+    serializerMap.put( clazz.getName(), new TunnelSerializer() {
+      @Override public List<Class> getSupportedClasses() {
+        return null;
+      }
+
+      @Override public String serialize( Object object ) {
+        return null;
+      }
+
+      @Override public Object deserialize( String serializedString ) {
+        return func.apply( serializedString );
+      }
+    } );
+  }
+
   public void open() {
     if ( initialized.getAndSet( true ) ) {
       return;
@@ -91,20 +106,13 @@ public class TunnelInput implements Publisher<TunneledInputObject>, AutoCloseabl
         try {
           TunneledPayload payload = (TunneledPayload) input.readObject();
 
-          String type = payload.getType();
-          if ( deserializeFunctions.containsKey( type ) ) {
-            Object unmarshalled = deserializeFunctions.get( type ).apply( payload.getObjectStr() );
+          String type = payload.getType(); // Fully Qualified ClassName
+          if ( serializerMap.containsKey( type ) ) {
+            Object unmarshalled = serializerMap.get( type ).deserialize( payload.getObjectStr() );
             subscribers.forEach( subscriber -> subscriber.onNext( new TunneledInputObject( type, unmarshalled ) ) );
           }
           errorCount = 0;
 
-        } catch ( IOException e ) {
-          errorCount++;
-          subscribers.forEach( subscriber -> subscriber.onError( e ) );
-        } catch ( ClassNotFoundException e ) {
-          errorCount++;
-          // We only deserialize one class, so this is unlikely.
-          subscribers.forEach( subscriber -> subscriber.onError( e ) );
         } catch ( Exception e ) {
           errorCount++;
           // Something unexpected. Pass it on
