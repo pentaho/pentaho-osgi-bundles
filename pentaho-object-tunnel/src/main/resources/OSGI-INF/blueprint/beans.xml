@@ -33,10 +33,10 @@
 
 
   <bean id="factory" class="org.pentaho.osgi.objecttunnel.TunnelFactory">
-    <argument ref="serializers" />
+    <property name="serializers" ref="serializers" />
   </bean>
 
-  <service interface="org.pentaho.osgi.objecttunnel.TunnelFactory" ref="factory" />
+  <service auto-export="class-hierarchy" ref="factory" />
 
   <reference-list id="serializers" interface="org.pentaho.osgi.objecttunnel.TunnelSerializer" availability="optional" >
     <reference-listener ref="factory" bind-method="addSerializer" unbind-method="removeSerializer" />

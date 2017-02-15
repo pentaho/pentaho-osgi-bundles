@@ -41,7 +41,11 @@ public class TunnelFactory {
   private Map<Class, TunnelSerializer> serializerMap = new HashMap<>(  );
   private List<TunnelSerializer<?>> serializers;
 
-  public TunnelFactory( List<TunnelSerializer<?>> serializers ) {
+  public TunnelFactory(){
+
+  }
+
+  public void setSerializers( List<TunnelSerializer<?>> serializers ) {
 
     this.serializers = serializers;
     populateSerializerMap();
