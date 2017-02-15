@@ -26,6 +26,7 @@ package org.pentaho.osgi.objecttunnel;
 
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -39,15 +40,16 @@ import java.util.Map;
 public class TunnelFactory {
 
   private Map<Class, TunnelSerializer> serializerMap = new HashMap<>(  );
-  private List<TunnelSerializer<?>> serializers;
+  private List<TunnelSerializer<?>> serializers = new ArrayList<>(  );
 
   public TunnelFactory(){
 
   }
 
   public void setSerializers( List<TunnelSerializer<?>> serializers ) {
-
-    this.serializers = serializers;
+    if( serializers != null ) {
+      this.serializers.addAll( serializers );
+    }
     populateSerializerMap();
   }
 
