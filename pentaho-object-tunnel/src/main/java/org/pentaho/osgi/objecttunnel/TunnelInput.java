@@ -54,7 +54,7 @@ public class TunnelInput implements Publisher<TunneledInputObject>, AutoCloseabl
 
   public TunnelInput( ObjectInputStream input, Map<Class, TunnelSerializer> rawSerializerMap ) {
     this.input = input;
-    rawSerializerMap.entrySet().forEach( entry  -> serializerMap.put( entry.getKey().toString(), entry.getValue() ) );
+    rawSerializerMap.entrySet().forEach( entry -> serializerMap.put( entry.getKey().toString(), entry.getValue() ) );
   }
 
   @Override public void close() throws Exception {
@@ -81,6 +81,7 @@ public class TunnelInput implements Publisher<TunneledInputObject>, AutoCloseabl
 
   /**
    * Test Method
+   *
    * @param clazz
    * @param func
    */
@@ -108,15 +109,14 @@ public class TunnelInput implements Publisher<TunneledInputObject>, AutoCloseabl
       while ( !closed.get() && errorCount < errorThreshold ) {
         Exception capturedException = null;
         try {
-          TunneledPayload payload = (TunneledPayload) input.readObject();
-
-          String type = payload.getType(); // Fully Qualified ClassName
-          if ( serializerMap.containsKey( type ) ) {
-            Object unmarshalled = serializerMap.get( type ).deserialize( payload.getObjectStr() );
-            publishProcessor.onNext( new TunneledInputObject( type, unmarshalled ) );
+          Object object = input.readObject();
+          if ( object instanceof TunneledPayload ) {
+            processTunneledPayload( (TunneledPayload) object );
+          } else if ( object == TunnelMarker.END ) {
+            close();
+          } else {
+            throw new IllegalStateException( "Unexpected object in stream: " + object.toString() );
           }
-          errorCount = 0;
-
         } catch ( Exception e ) {
           // Something unexpected. Keep exception in case we want to throw
           errorCount++;
@@ -132,6 +132,15 @@ public class TunnelInput implements Publisher<TunneledInputObject>, AutoCloseabl
         }
       }
     } );
+  }
+
+  private void processTunneledPayload( TunneledPayload payload ) {
+    String type = payload.getType(); // Fully Qualified ClassName
+    if ( serializerMap.containsKey( type ) ) {
+      Object unmarshalled = serializerMap.get( type ).deserialize( payload.getObjectStr() );
+      publishProcessor.onNext( new TunneledInputObject( type, unmarshalled ) );
+    }
+    errorCount = 0;
   }
 
   @Override public void subscribe( Subscriber<? super TunneledInputObject> s ) {

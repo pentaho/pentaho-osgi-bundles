@@ -22,7 +22,7 @@
  *
  */
 
-package org.pentaho.pdi.engine.daemon.service;
+package org.pentaho.osgi.objecttunnel;
 
 /**
  * Static notification objects that can be used to control data-flow through the tunnel
