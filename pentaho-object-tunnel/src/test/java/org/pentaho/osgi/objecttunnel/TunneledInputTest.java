@@ -24,6 +24,8 @@
 
 package org.pentaho.osgi.objecttunnel;
 
+import io.reactivex.Flowable;
+import io.reactivex.Single;
 import org.junit.Before;
 import org.junit.Test;
 import org.reactivestreams.Subscriber;
@@ -38,12 +40,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -103,6 +107,17 @@ public class TunneledInputTest {
     tunnel.open();
 
     latch.await( 2, TimeUnit.SECONDS );
+  }
+
+  @Test
+  public void testTunnelClose() throws Exception {
+    outputStream.writeObject( TunnelMarker.END );
+    createTunnel();
+
+    Future<Boolean> empty = Flowable.fromPublisher( tunnel ).isEmpty().toFuture();
+
+    tunnel.open();
+    assertTrue( empty.get( 2, TimeUnit.SECONDS ) );
   }
 
   @Test
