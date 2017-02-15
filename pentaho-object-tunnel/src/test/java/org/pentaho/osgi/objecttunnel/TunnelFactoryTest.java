@@ -46,7 +46,9 @@ public class TunnelFactoryTest {
 
   @Before
   public void setup() throws Exception {
-    factory = new TunnelFactory( Collections.singletonList( new TunnelSerializer<UUID>() {
+    factory = new TunnelFactory( );
+
+    factory.setSerializers( Collections.singletonList( new TunnelSerializer<UUID>() {
       @Override public List<Class> getSupportedClasses() {
         return Collections.singletonList( UUID.class );
       }
