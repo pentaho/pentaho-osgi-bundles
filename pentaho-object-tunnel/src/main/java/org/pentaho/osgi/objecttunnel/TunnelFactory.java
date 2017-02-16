@@ -65,10 +65,12 @@ public class TunnelFactory {
   }
 
   public void addSerializer( TunnelSerializer<?> serializer ){
+    serializers.add( serializer );
     populateSerializerMap();
   }
 
   public void removeSerializer( TunnelSerializer<?> serializer ){
+    serializers.remove( serializer );
     populateSerializerMap();
   }
 
