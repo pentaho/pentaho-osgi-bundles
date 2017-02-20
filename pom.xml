@@ -58,6 +58,8 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <cxf.version>3.0.6</cxf.version>
     <felix-fileinstall.version>3.4.2</felix-fileinstall.version>
+    <org.apache.felix.http.api.version>2.3.2</org.apache.felix.http.api.version>
+    <pax-web-extender-whiteboard.version>3.1.4</pax-web-extender-whiteboard.version>
     <mockito.version>1.9.5</mockito.version>
     <requirejs.version>2.1.19</requirejs.version>
   </properties>
