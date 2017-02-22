@@ -54,7 +54,7 @@ public class TunnelInput implements Publisher<TunneledInputObject>, AutoCloseabl
 
   public TunnelInput( ObjectInputStream input, Map<Class, TunnelSerializer> rawSerializerMap ) {
     this.input = input;
-    rawSerializerMap.entrySet().forEach( entry -> serializerMap.put( entry.getKey().toString(), entry.getValue() ) );
+    rawSerializerMap.entrySet().forEach( entry -> serializerMap.put( entry.getKey().getName(), entry.getValue() ) );
   }
 
   @Override public void close() throws Exception {
@@ -114,12 +114,19 @@ public class TunnelInput implements Publisher<TunneledInputObject>, AutoCloseabl
             processTunneledPayload( (TunneledPayload) object );
           } else if ( object == TunnelMarker.END ) {
             close();
+            return;
           } else {
             throw new IllegalStateException( "Unexpected object in stream: " + object.toString() );
           }
         } catch ( Exception e ) {
-          // Something unexpected. Keep exception in case we want to throw
+          // Something unexpected.
           errorCount++;
+          // Delay the loop so we give time for socket issues to resolve
+          try {
+            Thread.sleep( 300 );
+          } catch ( InterruptedException ignored ) {
+          }
+          // Keep exception in case we want to throw
           capturedException = e;
         }
         if ( errorCount == errorThreshold ) {
