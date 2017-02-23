@@ -37,7 +37,7 @@
              interface="org.ops4j.pax.web.extender.whiteboard.ResourceMapping">
         <bean class="org.ops4j.pax.web.extender.whiteboard.runtime.DefaultResourceMapping">
             <property name="alias" value="/${project.artifactId}/${project.version}"/>
-            <property name="path" value="/web"/>
+            <property name="path" value="/web-pentaho-i18n-webservice"/>
         </bean>
     </service>
 </blueprint>
