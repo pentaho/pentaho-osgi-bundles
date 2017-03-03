@@ -12,7 +12,7 @@
  * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  * See the GNU Lesser General Public License for more details.
  *
- * Copyright 2015 Pentaho Corporation. All rights reserved.
+ * Copyright 2015-2017 Pentaho Corporation. All rights reserved.
  */
 
 package org.pentaho.osgi.impl;
@@ -42,18 +42,25 @@ public class BeanFactoryLocatorImpl implements BeanFactoryLocator {
     try {
       BundleContext bundleContext = bundle.getBundleContext();
       Collection<ServiceReference<BlueprintContainer>> serviceReferences = bundleContext
-          .getServiceReferences( BlueprintContainer.class,
-              "(osgi.blueprint.container.symbolicname=" + bundle.getSymbolicName() + ")" );
+        .getServiceReferences( BlueprintContainer.class,
+          "(osgi.blueprint.container.symbolicname=" + bundle.getSymbolicName() + ")" );
       if ( serviceReferences.size() == 0 ) {
         return null;
       }
       ServiceReference<BlueprintContainer> reference = serviceReferences.iterator().next();
       BlueprintContainer service = bundleContext.getService( reference );
-      return new BeanFactoryBlueprintImpl( service, bundleContext );
+      return new BeanFactoryBlueprintImpl( service );
     } catch ( InvalidSyntaxException e ) {
       logger.error( "Error finding blueprint container", e );
       return null;
     }
 
+  }
+
+  @Override public BeanFactory getBeanFactory( Object serviceObject ) {
+    if ( serviceObject instanceof BlueprintContainer ) {
+      return new BeanFactoryBlueprintImpl( (BlueprintContainer) serviceObject );
+    }
+    return null;
   }
 }
