@@ -12,7 +12,7 @@
  * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  * See the GNU Lesser General Public License for more details.
  *
- * Copyright 2015 Pentaho Corporation. All rights reserved.
+ * Copyright 2015-2017 Pentaho Corporation. All rights reserved.
  */
 
 package org.pentaho.osgi.api;
@@ -25,5 +25,19 @@ import org.osgi.framework.Bundle;
  */
 public interface BeanFactoryLocator {
 
-  BeanFactory getBeanFactory(Bundle bundle);
+  /**
+   * Lookup Blueprint container for given bnudle.
+   *
+   * @param bundle
+   * @return
+   */
+  BeanFactory getBeanFactory( Bundle bundle );
+
+  /**
+   * The service object might already by a blueprintContainer. Return a factory with it if so.
+   *
+   * @param serviceObject
+   * @return
+   */
+  BeanFactory getBeanFactory( Object serviceObject );
 }

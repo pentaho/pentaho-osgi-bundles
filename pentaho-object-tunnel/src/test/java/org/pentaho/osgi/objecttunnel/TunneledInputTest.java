@@ -137,6 +137,7 @@ public class TunneledInputTest {
 
     // The tunnel will continue until 10 consecutive errors
     tunnel.setErrorThreshold( 10 );
+    tunnel.setDampeningMillis( 0 ); // we don't need it to pause between errors
 
     CountDownLatch latch = new CountDownLatch( 1 );
     AtomicBoolean errored = new AtomicBoolean( false );
