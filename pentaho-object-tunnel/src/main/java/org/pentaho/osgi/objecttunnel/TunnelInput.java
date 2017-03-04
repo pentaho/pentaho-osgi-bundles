@@ -51,6 +51,7 @@ public class TunnelInput implements Publisher<TunneledInputObject>, AutoCloseabl
   private volatile int errorThreshold = 5;
   private volatile int errorCount = 0;
   private PublishProcessor<TunneledInputObject> publishProcessor = PublishProcessor.create();
+  private int error_dampening_millis = 300;
 
   public TunnelInput( ObjectInputStream input, Map<Class, TunnelSerializer> rawSerializerMap ) {
     this.input = input;
@@ -65,6 +66,10 @@ public class TunnelInput implements Publisher<TunneledInputObject>, AutoCloseabl
 
   int getErrorCount() {
     return errorCount;
+  }
+
+  public void setDampeningMillis( int millis ) {
+    this.error_dampening_millis = millis;
   }
 
   /**
@@ -123,7 +128,7 @@ public class TunnelInput implements Publisher<TunneledInputObject>, AutoCloseabl
           errorCount++;
           // Delay the loop so we give time for socket issues to resolve
           try {
-            Thread.sleep( 300 );
+            Thread.sleep( error_dampening_millis );
           } catch ( InterruptedException ignored ) {
           }
           // Keep exception in case we want to throw
