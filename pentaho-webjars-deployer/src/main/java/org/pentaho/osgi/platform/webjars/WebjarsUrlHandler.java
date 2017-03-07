@@ -27,8 +27,13 @@ import java.net.URLConnection;
  * Created by nbaker on 9/6/14.
  */
 public class WebjarsUrlHandler extends AbstractURLStreamHandlerService {
+  private boolean minificationEnabled;
+
+  public WebjarsUrlHandler( boolean minificationEnabled ) {
+    this.minificationEnabled = minificationEnabled;
+  }
 
   @Override public URLConnection openConnection( URL url ) throws IOException {
-    return new WebjarsURLConnection( new URL( url.getPath() ) );
+    return new WebjarsURLConnection( new URL( url.getPath() ), this.minificationEnabled );
   }
 }

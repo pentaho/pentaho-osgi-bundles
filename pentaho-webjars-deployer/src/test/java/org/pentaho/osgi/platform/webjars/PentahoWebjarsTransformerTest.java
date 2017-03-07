@@ -34,7 +34,7 @@ public class PentahoWebjarsTransformerTest {
     URL.setURLStreamHandlerFactory( new URLStreamHandlerFactory() {
       @Override public URLStreamHandler createURLStreamHandler( String protocol ) {
         if("pentaho-webjars".equals(protocol)){
-          return new WebjarsUrlHandler();
+          return new WebjarsUrlHandler( true );
         }
         return null;
       }
