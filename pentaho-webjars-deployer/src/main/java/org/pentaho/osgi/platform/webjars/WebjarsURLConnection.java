@@ -82,8 +82,16 @@ public class WebjarsURLConnection extends URLConnection {
 
   private final Logger logger = LoggerFactory.getLogger( getClass() );
 
+  private final boolean minificationEnabled;
+
   public WebjarsURLConnection( URL url ) {
+    this( url, true );
+  }
+
+  public WebjarsURLConnection( URL url, boolean minificationEnabled ) {
     super( url );
+
+    this.minificationEnabled = minificationEnabled;
   }
 
   @Override
@@ -101,7 +109,7 @@ public class WebjarsURLConnection extends URLConnection {
       urlConnection.connect();
       final InputStream originalInputStream = urlConnection.getInputStream();
 
-      transform_thread = EXECUTOR.submit( new WebjarsTransformer( url, originalInputStream, pipedOutputStream ) );
+      transform_thread = EXECUTOR.submit( new WebjarsTransformer( url, originalInputStream, pipedOutputStream, this.minificationEnabled ) );
 
       return pipedInputStream;
     } catch ( Exception e ) {
@@ -209,6 +217,8 @@ public class WebjarsURLConnection extends URLConnection {
     private final InputStream inputStream;
     private final OutputStream outputStream;
 
+    private final boolean minificationEnabled;
+
     //region transformation state
 
     /* artifact information */
@@ -246,11 +256,13 @@ public class WebjarsURLConnection extends URLConnection {
 
     //endregion
 
-    WebjarsTransformer( URL url, InputStream inputStream, PipedOutputStream outputStream ) {
+    WebjarsTransformer( URL url, InputStream inputStream, PipedOutputStream outputStream, boolean minificationEnabled ) {
       this.url = url;
 
       this.inputStream = inputStream;
       this.outputStream = outputStream;
+
+      this.minificationEnabled = minificationEnabled;
     }
 
     @Override
@@ -367,50 +379,52 @@ public class WebjarsURLConnection extends URLConnection {
               TrueFileFilter.INSTANCE
           );
 
-          try {
-            CompilerOptions options = initCompilationResources();
+          if ( this.minificationEnabled ) {
+            try {
+              CompilerOptions options = initCompilationResources();
 
-            for ( File srcFile : scrFiles ) {
-              final String name = srcFile.getName();
+              for ( File srcFile : scrFiles ) {
+                final String name = srcFile.getName();
 
-              if ( name.endsWith( WEBJARS_REQUIREJS_NAME ) ) {
-                continue;
-              }
-
-              final String relSrcFilePath = FilenameUtils.separatorsToUnix( absoluteResourcesPath.relativize( srcFile.toPath() ).toString() );
-              final String relOutFilePath = MINIFIED_RESOURCES_OUTPUT_PATH + "/" + relSrcFilePath;
-
-              if ( isJsFile( name ) ) {
-                // Check if there is a .map with the same name
-                // if so, assume it is already minified and just copy both files
-                File mapFile = new File( name + ".map", srcFile.getParent() );
-                if ( mapFile.exists() ) {
-                  copyFileToZip( jarOutputStream, relOutFilePath, srcFile );
-                  copyFileToZip( jarOutputStream, relOutFilePath + ".map", mapFile );
+                if ( name.endsWith( WEBJARS_REQUIREJS_NAME ) ) {
                   continue;
                 }
 
-                options.setSourceMapLocationMappings( getLocationMappings( srcFile.toPath().getParent(), absoluteResourcesPath, packageNameFromResourcesPath, packageVersionFromResourcesPath ) );
+                final String relSrcFilePath = FilenameUtils.separatorsToUnix( absoluteResourcesPath.relativize( srcFile.toPath() ).toString() );
+                final String relOutFilePath = MINIFIED_RESOURCES_OUTPUT_PATH + "/" + relSrcFilePath;
 
-                try {
-                  CompiledScript compiledScript = new CompiledScript( srcFile, relSrcFilePath, options ).invoke();
+                if ( isJsFile( name ) ) {
+                  // Check if there is a .map with the same name
+                  // if so, assume it is already minified and just copy both files
+                  File mapFile = new File( name + ".map", srcFile.getParent() );
+                  if ( mapFile.exists() ) {
+                    copyFileToZip( jarOutputStream, relOutFilePath, srcFile );
+                    copyFileToZip( jarOutputStream, relOutFilePath + ".map", mapFile );
+                    continue;
+                  }
 
-                  addContentToZip( jarOutputStream, relOutFilePath, compiledScript.getCode() );
-                  addContentToZip( jarOutputStream, relOutFilePath + ".map", compiledScript.getSourcemap() );
-                } catch ( Exception failedCompilationException ) {
-                  logger.warn( webjarUrl + ": error minifing " + relSrcFilePath + ", copied original version" );
+                  options.setSourceMapLocationMappings( getLocationMappings( srcFile.toPath().getParent(), absoluteResourcesPath, packageNameFromResourcesPath, packageVersionFromResourcesPath ) );
 
+                  try {
+                    CompiledScript compiledScript = new CompiledScript( srcFile, relSrcFilePath, options ).invoke();
+
+                    addContentToZip( jarOutputStream, relOutFilePath, compiledScript.getCode() );
+                    addContentToZip( jarOutputStream, relOutFilePath + ".map", compiledScript.getSourcemap() );
+                  } catch ( Exception failedCompilationException ) {
+                    logger.warn( webjarUrl + ": error minifing " + relSrcFilePath + ", copied original version" );
+
+                    copyFileToZip( jarOutputStream, relOutFilePath, srcFile );
+                  }
+                } else if ( !isMapFile( name ) ) {
+                  // just copy all resources (except .map files)
                   copyFileToZip( jarOutputStream, relOutFilePath, srcFile );
                 }
-              } else if ( !isMapFile( name ) ) {
-                // just copy all resources (except .map files)
-                copyFileToZip( jarOutputStream, relOutFilePath, srcFile );
               }
-            }
-          } catch ( Exception e ) {
-            minificationFailed = true;
+            } catch ( Exception e ) {
+              minificationFailed = true;
 
-            logger.warn( webjarUrl + ": exception minifing, serving original files", e );
+              logger.warn( webjarUrl + ": exception minifing, serving original files", e );
+            }
           }
 
           if ( requireConfig == null ) {
@@ -430,7 +444,7 @@ public class WebjarsURLConnection extends URLConnection {
 
               try {
                 String blueprintTemplate;
-                if ( minificationFailed ) {
+                if ( !this.minificationEnabled || minificationFailed ) {
                   blueprintTemplate = generateBlueprintWithoutMinifiedResources( relativeResourcesPath, moduleInfo );
                 } else {
                   blueprintTemplate = generateBlueprint( relativeResourcesPath, moduleInfo );

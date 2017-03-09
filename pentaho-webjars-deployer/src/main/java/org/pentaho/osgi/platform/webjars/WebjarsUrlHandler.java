@@ -12,7 +12,7 @@
  * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  * See the GNU Lesser General Public License for more details.
  *
- * Copyright 2014 Pentaho Corporation. All rights reserved.
+ * Copyright 2014-2017 Pentaho Corporation. All rights reserved.
  */
 
 package org.pentaho.osgi.platform.webjars;
@@ -27,8 +27,13 @@ import java.net.URLConnection;
  * Created by nbaker on 9/6/14.
  */
 public class WebjarsUrlHandler extends AbstractURLStreamHandlerService {
+  private boolean minificationEnabled;
+
+  public WebjarsUrlHandler( boolean minificationEnabled ) {
+    this.minificationEnabled = minificationEnabled;
+  }
 
   @Override public URLConnection openConnection( URL url ) throws IOException {
-    return new WebjarsURLConnection( new URL( url.getPath() ) );
+    return new WebjarsURLConnection( new URL( url.getPath() ), this.minificationEnabled );
   }
 }

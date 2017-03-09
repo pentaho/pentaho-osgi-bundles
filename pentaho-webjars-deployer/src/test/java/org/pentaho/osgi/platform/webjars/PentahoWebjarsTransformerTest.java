@@ -12,7 +12,7 @@
  * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  * See the GNU Lesser General Public License for more details.
  *
- * Copyright 2014 Pentaho Corporation. All rights reserved.
+ * Copyright 2014-2017 Pentaho Corporation. All rights reserved.
  */
 
 package org.pentaho.osgi.platform.webjars;
@@ -34,7 +34,7 @@ public class PentahoWebjarsTransformerTest {
     URL.setURLStreamHandlerFactory( new URLStreamHandlerFactory() {
       @Override public URLStreamHandler createURLStreamHandler( String protocol ) {
         if("pentaho-webjars".equals(protocol)){
-          return new WebjarsUrlHandler();
+          return new WebjarsUrlHandler( true );
         }
         return null;
       }
