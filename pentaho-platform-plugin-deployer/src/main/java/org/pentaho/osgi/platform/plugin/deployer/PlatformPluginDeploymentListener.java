@@ -2,7 +2,7 @@
  *
  * Pentaho Data Integration
  *
- * Copyright (C) 2002-2014 by Pentaho : http://www.pentaho.com
+ * Copyright (C) 2002-2017 by Pentaho : http://www.pentaho.com
  *
  *******************************************************************************
  *
@@ -39,6 +39,7 @@ import java.util.zip.ZipFile;
  */
 public class PlatformPluginDeploymentListener implements ArtifactUrlTransformer {
   public static final String PROTOCOL = "pentaho-platform-plugin-file";
+  public static final String PLUGIN_XML_FILENAME = "plugin.xml";
   private Logger logger = LoggerFactory.getLogger( PlatformPluginDeploymentListener.class );
   private URLFactory urlFactory = new URLFactory() {
     @Override public URL create( String protocol, String file ) throws MalformedURLException {
@@ -65,7 +66,7 @@ public class PlatformPluginDeploymentListener implements ArtifactUrlTransformer 
       Enumeration<? extends ZipEntry> entries = zipFile.entries();
       while ( entries.hasMoreElements() ) {
         String[] splitName = entries.nextElement().getName().split( "/" );
-        if ( splitName.length == 2 && "plugin.xml".equals( splitName[ 1 ] ) ) {
+        if ( splitName.length == 2 && PLUGIN_XML_FILENAME.equals( splitName[ 1 ] ) ) {
           return true;
         }
       }

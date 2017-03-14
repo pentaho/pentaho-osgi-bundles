@@ -2,7 +2,7 @@
  *
  * Pentaho Data Integration
  *
- * Copyright (C) 2002-2014 by Pentaho : http://www.pentaho.com
+ * Copyright (C) 2002-2017 by Pentaho : http://www.pentaho.com
  *
  *******************************************************************************
  *
@@ -22,12 +22,9 @@
 
 package org.pentaho.osgi.platform.plugin.deployer.impl.handlers;
 
-import org.pentaho.osgi.platform.plugin.deployer.api.PluginHandlingException;
-import org.pentaho.osgi.platform.plugin.deployer.api.PluginMetadata;
 import org.pentaho.osgi.platform.plugin.deployer.api.XmlPluginFileHandler;
-import org.w3c.dom.Node;
 
-import java.util.List;
+import static org.pentaho.osgi.platform.plugin.deployer.PlatformPluginDeploymentListener.PLUGIN_XML_FILENAME;
 
 /**
  * Created by bryan on 8/29/14.
@@ -39,7 +36,7 @@ public abstract class PluginXmlFileHandler extends XmlPluginFileHandler {
   @Override public boolean handles( String fileName ) {
     if ( fileName != null ) {
       String[] splitName = fileName.split( "/" );
-      if ( splitName.length == 2 && "plugin.xml".equals( splitName[ 1 ] ) ) {
+      if ( splitName.length == 2 && PLUGIN_XML_FILENAME.equals( splitName[ 1 ] ) ) {
         return true;
       }
     }
