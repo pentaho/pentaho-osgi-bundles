@@ -2,7 +2,7 @@
  *
  * Pentaho Data Integration
  *
- * Copyright (C) 2002-2016 by Pentaho : http://www.pentaho.com
+ * Copyright (C) 2002-2017 by Pentaho : http://www.pentaho.com
  *
  *******************************************************************************
  *
@@ -50,6 +50,8 @@ import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
+
+import static org.pentaho.osgi.platform.plugin.deployer.PlatformPluginDeploymentListener.PLUGIN_XML_FILENAME;
 
 /**
  * Created by bryan on 8/28/14.
@@ -188,8 +190,20 @@ public class PluginZipFileProcessor {
 
           if ( currentFile.isDirectory() ) {
             File[] dirFiles = currentFile.listFiles();
+            File pluginXmlFile = null;
             for ( File file : dirFiles ) {
+              if ( PLUGIN_XML_FILENAME.equals( file.getName() ) ) {
+                pluginXmlFile = file;
+                continue;
+              }
               fileStack.push( file );
+            }
+
+            // Ensures the plugin.xml file is read before plugin.spring.xml. This is needed so
+            // {@link org.pentaho.osgi.platform.plugin.deployer.impl.handlers.SpringFileHandler#handle()}
+            // can get the proper bundleName and set the service entry point.
+            if ( null != pluginXmlFile ) {
+              fileStack.push( pluginXmlFile );
             }
           }
         }
