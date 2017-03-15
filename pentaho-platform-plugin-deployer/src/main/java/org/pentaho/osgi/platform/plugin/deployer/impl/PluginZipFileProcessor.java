@@ -41,6 +41,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.Stack;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -187,7 +189,22 @@ public class PluginZipFileProcessor {
           }
 
           if ( currentFile.isDirectory() ) {
-            File[] dirFiles = currentFile.listFiles();
+            File[] dirFiles = currentFile.listFiles( );
+            //Ensure plugin.xml is always the first file to be handled, otherwise plugin metadata will be incomplete
+            //for the other plugin handlers
+            //Since we're pushing to a stack, plugin.xml is the last entry in this array
+            Arrays.sort( dirFiles, new Comparator<File>() {
+              @Override
+              public int compare( File o1, File o2 ) {
+                if ( "plugin.xml".equals( o1.getName() ) ) {
+                  return 100;
+                }
+                if ( "plugin.xml".equals( o2.getName() ) ) {
+                  return -100;
+                }
+                return o2.compareTo( o1 );
+              }
+            } );
             for ( File file : dirFiles ) {
               fileStack.push( file );
             }
