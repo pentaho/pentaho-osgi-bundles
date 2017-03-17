@@ -119,6 +119,7 @@
         <module>pentaho-spring-dm-extender</module>
         <module>pentaho-pdi-platform</module>
         <module>pentaho-object-tunnel</module>
+        <module>pentaho-zookeeper-fragment</module>
       </modules>
       <distributionManagement>
         <site>
@@ -157,6 +158,7 @@
         <module>pentaho-authentication-mapper</module>
         <module>pentaho-spring-dm-extender</module>
         <module>pentaho-object-tunnel</module>
+        <module>pentaho-zookeeper-fragment</module>
       </modules>
       <distributionManagement>
         <site>
