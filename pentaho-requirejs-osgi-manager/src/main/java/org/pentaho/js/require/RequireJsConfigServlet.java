@@ -58,6 +58,7 @@ public class RequireJsConfigServlet extends HttpServlet {
   @Override
   protected void doGet( HttpServletRequest req, HttpServletResponse resp ) throws ServletException, IOException {
     resp.setContentType( "text/javascript" );
+    resp.setHeader( "Cache-Control", "must-revalidate" );
 
     try ( PrintWriter printWriter = new PrintWriter( resp.getOutputStream() ) ) {
       RequestContext requestContext = new RequestContext( req );

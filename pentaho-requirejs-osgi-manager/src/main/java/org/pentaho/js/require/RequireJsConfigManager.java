@@ -301,8 +301,11 @@ public class RequireJsConfigManager {
 
   // package-private for unit testing
   Future<String> getCachedConfiguration( String baseUrl ) {
-    return this.cachedConfigurations.computeIfAbsent( baseUrl, k -> executorService.schedule( new RebuildCacheCallable( baseUrl, new HashMap<>( this.configMap ),
-        new ArrayList<>( this.requireConfigMap.values() ) ), 250, TimeUnit.MILLISECONDS ) );
+    return this.cachedConfigurations.computeIfAbsent( baseUrl, k -> {
+      this.lastModified = System.currentTimeMillis();
+      return executorService.schedule( new RebuildCacheCallable( baseUrl, new HashMap<>( this.configMap ),
+              new ArrayList<>( this.requireConfigMap.values() ) ), 250, TimeUnit.MILLISECONDS );
+    } );
   }
 
   // package-private for unit testing
