@@ -64,7 +64,7 @@ public class RequireJsConfigManager {
   private BundleContext bundleContext;
 
   private volatile ConcurrentHashMap<String, Future<String>> cachedConfigurations;
-  private volatile long lastModified;
+  private volatile long lastModified = System.currentTimeMillis();
 
   private RequireJsBundleListener bundleListener;
 
