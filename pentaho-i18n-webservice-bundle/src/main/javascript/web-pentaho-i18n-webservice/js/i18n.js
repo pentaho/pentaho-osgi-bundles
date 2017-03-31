@@ -14,42 +14,57 @@
  * limitations under the License.
  */
 
- /**
+/**
  * RequireJS loader plugin for loading localized messages via the OSGI i18n web service.
  */
- define(["pentaho/util/MessageBundle", "dojo/request"], 
-  function (MessageBundle, request) { 
-  "use strict";
+define(["pentaho/util/MessageBundle", "whatwg-fetch"],
+  function(MessageBundle) {
+    "use strict";
 
-  return {
+    /* globals fetch, Request */
 
-    load: function(bundlePath, require, onLoad, config) {
-      if(config.isBuild) {
-        // Indicate that the optimizer should not wait for this resource and complete optimization.
-        // This resource will be resolved dynamically during run time in the web browser.
-        onLoad();
-      } else {
-        var baseUrl = CONTEXT_PATH && CONTEXT_PATH == '/' ? CONTEXT_PATH : CONTEXT_PATH + "osgi/";
-        var locale = typeof SESSION_LOCALE !== "undefined" ? SESSION_LOCALE : "en";
-        var url = baseUrl + "cxf/i18n/" + bundlePath + "/" + locale;
-        var options = {
-          "headers": {
-            "Accept": "application/JSON"
-          }
-        };
-        
-        request(url, options).then(function (data) {
-          if (data) {
-            var bundle = new MessageBundle(JSON.parse(data));
-            onLoad(bundle);
-          } else {
-            onLoad();
-          }
-        }, function (err) {          
-          throw new Error("Error accessing i18n OSGI web service with bundlePath: " + bundlePath + "'."); 
-        });        
+    return {
+
+      load: function(bundlePath, require, onLoad, config) {
+        if (config.isBuild) {
+          // Indicate that the optimizer should not wait for this resource and complete optimization.
+          // This resource will be resolved dynamically during run time in the web browser.
+          onLoad();
+        } else {
+          var baseUrl = CONTEXT_PATH && CONTEXT_PATH == '/' ? CONTEXT_PATH : CONTEXT_PATH + "osgi/";
+          var locale = typeof SESSION_LOCALE !== "undefined" ? SESSION_LOCALE : "en";
+
+          var url = baseUrl + "cxf/i18n/" + bundlePath + "/" + locale;
+          var options = {
+            method: "GET",
+            headers: {
+              "Accept": "application/json"
+            }
+          };
+
+          var request = new Request(url, options);
+
+          fetch(request)
+          .then(function(res) {
+            if (res.status === 200) {
+              return res.text();
+            }
+
+            throw new Error("Error accessing i18n OSGI web service with bundlePath: " + bundlePath + "'.");
+          })
+          .then(function(data) {
+            if (data) {
+              var bundle = new MessageBundle(JSON.parse(data));
+              onLoad(bundle);
+            } else {
+              onLoad();
+            }
+          })
+          .catch(function(err) {
+            throw new Error("Error accessing i18n OSGI web service with bundlePath: " + bundlePath + "'.");
+          });
+        }
       }
-    }
-  };
+    };
 
-});
+  });
