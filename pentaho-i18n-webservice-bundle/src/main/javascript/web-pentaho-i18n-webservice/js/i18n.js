@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
- /**
+/**
  * RequireJS loader plugin for loading localized messages via the OSGI i18n web service.
  */
 define([
   "pentaho/i18n/MessageBundle",
   "pentaho/environment",
-  "dojo/request"
-], function (MessageBundle, environment, request) {
+  "whatwg-fetch"
+], function (MessageBundle, environment) {
   "use strict";
 
   return {
@@ -45,21 +45,33 @@ define([
 
         var url = baseUrl + "i18n/" + resourceKey + "/" + resourceLocale;
         var options = {
-          "headers": {
-            "Accept": "application/JSON"
+          method: "GET",
+          headers: {
+            "Accept": "application/json"
           }
         };
 
-        request(url, options).then(function (data) {
-          if (data) {
-            var bundle = new MessageBundle(JSON.parse(data));
-            onLoad(bundle);
-          } else {
-            onLoad();
-          }
-        }, function (/* error */) {
-          throw new Error("Error accessing i18n OSGI web service with bundlePath: " + bundlePath + "'.");
-        });
+        var request = new Request(url, options);
+
+        fetch(request)
+          .then(function(res) {
+            if (res.status === 200) {
+              return res.text();
+            }
+
+            throw new Error("Error accessing i18n OSGI web service with bundlePath: " + bundlePath + "'.");
+          })
+          .then(function(data) {
+            if (data) {
+              var bundle = new MessageBundle(JSON.parse(data));
+              onLoad(bundle);
+            } else {
+              onLoad();
+            }
+          })
+          .catch(function(/* error */) {
+            throw new Error("Error accessing i18n OSGI web service with bundlePath: " + bundlePath + "'.");
+          });
       }
     }
   };

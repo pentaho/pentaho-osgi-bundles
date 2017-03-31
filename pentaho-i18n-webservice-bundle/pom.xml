@@ -2,18 +2,33 @@
 <project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <modelVersion>4.0.0</modelVersion>
+
   <parent>
     <groupId>pentaho</groupId>
     <artifactId>pentaho-osgi-bundles</artifactId>
     <version>8.1-SNAPSHOT</version>
   </parent>
+
   <artifactId>pentaho-i18n-webservice-bundle</artifactId>
   <version>8.1-SNAPSHOT</version>
   <packaging>bundle</packaging>
+
   <name>Pentaho Community Edition Project: ${project.artifactId}</name>
   <description>a Pentaho open source project</description>
   <url>http://www.pentaho.com</url>
+
+  <properties>
+    <whatwg-fetch.version>2.0.1</whatwg-fetch.version>
+  </properties>
+
   <dependencies>
+    <dependency>
+      <groupId>org.webjars.npm</groupId>
+      <artifactId>whatwg-fetch</artifactId>
+      <version>${whatwg-fetch.version}</version>
+      <scope>provided</scope>
+    </dependency>
+
     <dependency>
       <groupId>pentaho</groupId>
       <artifactId>pentaho-i18n-bundle</artifactId>
@@ -74,7 +89,10 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
+
   <build>
+    <finalName>${project.artifactId}</finalName>
+
     <resources>
       <resource>
         <filtering>false</filtering>
@@ -87,6 +105,7 @@
           <exclude>OSGI-INF/blueprint/*</exclude>
         </excludes>
       </resource>
+
       <resource>
         <filtering>true</filtering>
         <directory>src/main/resources</directory>
@@ -96,7 +115,7 @@
         </includes>
       </resource>
     </resources>
-    <finalName>${project.artifactId}</finalName>
+
     <plugins>
       <plugin>
         <groupId>org.apache.felix</groupId>
