@@ -34,6 +34,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -60,6 +61,8 @@ public class PluginZipFileProcessor {
   public static final String BLUEPRINT = "OSGI-INF/blueprint/blueprint.xml";
   public static final String BLUEPRINT_REGEX = ".*\\/OSGI-INF\\/blueprint\\/.*\\.xml";
   public static final String MANIFEST_REGEX = ".*\\/META-INF\\/MANIFEST.MF";
+  public static final String MANIFEST_MF = "MANIFEST.MF";
+  public static final String OSGI_INF_BLUEPRINT = "OSGI-INF/blueprint/";
 
   private final List<PluginFileHandler> pluginFileHandlers;
   private final String name;
@@ -90,6 +93,9 @@ public class PluginZipFileProcessor {
   }
 
   public void process( ZipInputStream zipInputStream, ZipOutputStream zipOutputStream ) throws IOException {
+
+    PluginFileHandler[] handlers = pluginFileHandlers.toArray( new PluginFileHandler[]{} );
+
     File dir = Files.createTempDir();
     PluginMetadata pluginMetadata = null;
     try {
@@ -112,10 +118,10 @@ public class PluginZipFileProcessor {
         byte[] zipBytes = byteArrayOutputStream.toByteArray();
         String name = zipEntry.getName();
         boolean shouldOutput = true;
-        if ( name.matches( MANIFEST_REGEX ) ) {
+        if ( name.endsWith( MANIFEST_MF ) ) {
           shouldOutput = false;
           manifest = new Manifest( new ByteArrayInputStream( zipBytes ) );
-        } else if ( name.matches( BLUEPRINT_REGEX ) ) {
+        } else if ( name.contains( OSGI_INF_BLUEPRINT ) && !name.endsWith( OSGI_INF_BLUEPRINT ) ) {
           shouldOutput = false;
           try {
             DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
@@ -177,11 +183,12 @@ public class PluginZipFileProcessor {
             sb.setLength( sb.length() - 1 );
           }
           String currentPath = sb.toString();
-          for ( PluginFileHandler pluginFileHandler : pluginFileHandlers ) {
-            if ( pluginFileHandler.handles( currentPath ) ) {
+
+          for ( int i = 0; i < handlers.length; i++ ) {
+            if ( handlers[i].handles( currentPath ) ) {
               try {
                 // There is no short-circuit. Multiple handlers can do work on any given resource
-                pluginFileHandler.handle( currentPath, currentFile, pluginMetadata );
+                handlers[i].handle( currentPath, currentFile, pluginMetadata );
               } catch ( PluginHandlingException e ) {
                 throw new IOException( e );
               }
@@ -189,14 +196,38 @@ public class PluginZipFileProcessor {
           }
 
           if ( currentFile.isDirectory() ) {
-            File[] dirFiles = currentFile.listFiles();
-            File pluginXmlFile = null;
-            for ( File file : dirFiles ) {
-              if ( PLUGIN_XML_FILENAME.equals( file.getName() ) ) {
-                pluginXmlFile = file;
-                continue;
+
+            File[] dirFiles = currentFile.listFiles( new FileFilter() {
+
+              @Override
+              public boolean accept( File f ) {
+
+                if ( f == null ) {
+                  return false;
+
+                } else if ( f.isDirectory() || PLUGIN_XML_FILENAME.equals( f.getName() ) ) {
+                  return true; // need to keep these, otherwise the existing logic won't work as intended
+
+                } else {
+                  for ( int i = 0; i < handlers.length; i++ ) {
+                    if ( handlers[i].handles( f.getAbsolutePath().replace( dir.getAbsolutePath(), "" ) ) ) {
+                      return true; // we just need one
+                    }
+                  }
+                }
+                return false;
               }
-              fileStack.push( file );
+            } );
+
+            File pluginXmlFile = null;
+            if ( dirFiles != null ) {
+              for ( int i = 0; i < dirFiles.length; i++ ) {
+                if ( PLUGIN_XML_FILENAME.equals( dirFiles[i].getName() ) ) {
+                  pluginXmlFile = dirFiles[i];
+                  continue;
+                }
+                fileStack.push( dirFiles[i] );
+              }
             }
 
             // Ensures the plugin.xml file is read before plugin.spring.xml. This is needed so

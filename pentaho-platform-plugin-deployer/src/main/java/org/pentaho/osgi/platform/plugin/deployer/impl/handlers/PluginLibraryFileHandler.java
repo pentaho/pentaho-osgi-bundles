@@ -1,7 +1,7 @@
 /*
  * ******************************************************************************
  *
- * Copyright (C) 2002-2016 by Pentaho : http://www.pentaho.com
+ * Copyright (C) 2002-2017 by Pentaho : http://www.pentaho.com
  *
  * ******************************************************************************
  *
@@ -46,9 +46,10 @@ public class PluginLibraryFileHandler implements PluginFileHandler {
 
   public static final Pattern LIB_PATTERN = Pattern.compile( ".+\\/lib\\/.+\\.jar"  );
   public static final String JAR = ".jar";
+  public static final String LIB = "/lib/";
 
   @Override public boolean handles( String fileName ) {
-    return LIB_PATTERN.matcher( fileName ).matches();
+    return fileName != null && fileName.contains( LIB ) && fileName.endsWith( JAR );
   }
 
   @Override public void handle( String relativePath, File file, PluginMetadata pluginMetadata )
