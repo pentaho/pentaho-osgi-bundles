@@ -67,6 +67,9 @@
   </bean>
   <service id="PluginLibraryFileHandlerService" ref="PluginLibraryFileHandler" interface="org.pentaho.osgi.platform.plugin.deployer.api.PluginFileHandler"/>
 
+  <bean id="PluginResourcesFileHandler" class="org.pentaho.osgi.platform.plugin.deployer.impl.handlers.ResourcesFileHandler">
+  </bean>
+  <service id="PluginResourcesFileHandlerService" ref="PluginResourcesFileHandler" interface="org.pentaho.osgi.platform.plugin.deployer.api.PluginFileHandler"/>
 
   <bean id="SpringFileHandler" class="org.pentaho.osgi.platform.plugin.deployer.impl.handlers.SpringFileHandler">
   </bean>

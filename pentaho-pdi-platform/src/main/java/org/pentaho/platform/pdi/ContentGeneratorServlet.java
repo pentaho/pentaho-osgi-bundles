@@ -5,8 +5,6 @@ package org.pentaho.platform.pdi;
  */
 
 import org.pentaho.platform.api.engine.IContentGenerator;
-import org.pentaho.platform.engine.core.system.PentahoSessionHolder;
-import org.pentaho.platform.engine.core.system.StandaloneSession;
 import org.pentaho.platform.web.http.api.resources.ContentGeneratorDescriptor;
 import org.pentaho.platform.web.http.api.resources.GeneratorStreamingOutput;
 import org.springframework.context.ApplicationContext;
@@ -33,7 +31,7 @@ public class ContentGeneratorServlet extends HttpServlet {
       throws ServletException, IOException {
 
     // We are anonymous for now
-    PentahoSessionHolder.setSession( new StandaloneSession( "bob" ) );
+    //PentahoSessionHolder.setSession( new StandaloneSession( "admin" ) );
 
     IContentGenerator contentGenerator = (IContentGenerator) applicationContext.getBean( beanId );
     Thread.currentThread().setContextClassLoader( applicationContext.getClassLoader() );
