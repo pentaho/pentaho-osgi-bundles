@@ -32,6 +32,7 @@
     </service-properties>
     <bean class="org.pentaho.osgi.platform.plugin.deployer.PlatformPluginMavenURLHandler">
       <property name="pluginFileHandlers" ref="pluginFileHandlers"/>
+      <property name="bundleStateManager" ref="bundleStateManager"/>
     </bean>
   </service>
 
@@ -75,6 +76,11 @@
     <bean class="org.pentaho.osgi.platform.plugin.deployer.impl.handlers.pluginxml.PluginXmlPluginIdHandler"/>
   </service>
 
+  <bean id="platformDeployerBundleListener" class="org.pentaho.osgi.platform.plugin.deployer.impl.PlatformDeployerBundleListener" scope="singleton" init-method="init">
+    <property name="bundleContext" ref="blueprintBundleContext"/>
+    <property name="bundleStateManager" ref="bundleStateManager"/>
+  </bean>
+  <bean id="bundleStateManager" class="org.pentaho.osgi.platform.plugin.deployer.impl.BundleStateManager"/>
 
   <reference-list id="pluginFileHandlers" interface="org.pentaho.osgi.platform.plugin.deployer.api.PluginFileHandler" availability="optional" />
 </blueprint>

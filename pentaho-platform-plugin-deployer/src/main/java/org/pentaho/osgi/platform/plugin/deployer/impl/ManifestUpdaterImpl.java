@@ -2,7 +2,7 @@
  *
  * Pentaho Data Integration
  *
- * Copyright (C) 2002-2014 by Pentaho : http://www.pentaho.com
+ * Copyright (C) 2002-2017 by Pentaho : http://www.pentaho.com
  *
  *******************************************************************************
  *
@@ -86,6 +86,8 @@ public class ManifestUpdaterImpl implements ManifestUpdater {
     mainAttributes.putValue( "Bundle-SymbolicName", bundleName != null ? bundleName : symbolicName );
     mainAttributes.putValue( "Bundle-Name", name );
     mainAttributes.putValue( "Bundle-Version", version );
+    //Custom attribute to recognize if this is platform plugin
+    mainAttributes.putValue( "Bundle-PlatformPluginName", symbolicName );
     mainAttributes
         .putValue( "Export-Service", join( getExportServices(), "," ) );
     mainAttributes

@@ -2,7 +2,7 @@
  *
  * Pentaho Data Integration
  *
- * Copyright (C) 2002-2016 by Pentaho : http://www.pentaho.com
+ * Copyright (C) 2002-2017 by Pentaho : http://www.pentaho.com
  *
  *******************************************************************************
  *
@@ -69,7 +69,7 @@ public class PluginZipFileProcessorTest {
   public void testProcessBackgroundWithException() throws IOException {
     List<PluginFileHandler> pluginFileHandlers = new ArrayList<PluginFileHandler>();
     PluginZipFileProcessor pluginZipFileProcessor =
-      new PluginZipFileProcessor( pluginFileHandlers, "test", "test-symbolic", "version" );
+      new PluginZipFileProcessor( pluginFileHandlers, false, "test", "test-symbolic", "version" );
     ZipOutputStream zipOutputStream = mock( ZipOutputStream.class );
     ZipInputStream zipInputStream = mock( ZipInputStream.class );
     ExceptionSettable<IOException> exceptionSettable = mock( ExceptionSettable.class );
@@ -84,7 +84,7 @@ public class PluginZipFileProcessorTest {
   public void testProcessBackgroundWithNoException() throws IOException {
     List<PluginFileHandler> pluginFileHandlers = new ArrayList<PluginFileHandler>();
     PluginZipFileProcessor pluginZipFileProcessor =
-      new PluginZipFileProcessor( pluginFileHandlers, "test", "test-symbolic", "version" );
+      new PluginZipFileProcessor( pluginFileHandlers, false, "test", "test-symbolic", "version" );
     ZipOutputStream zipOutputStream = mock( ZipOutputStream.class );
     ZipInputStream zipInputStream = mock( ZipInputStream.class );
     ExceptionSettable<IOException> exceptionSettable = mock( ExceptionSettable.class );
@@ -96,7 +96,7 @@ public class PluginZipFileProcessorTest {
   public void testProcess() throws IOException {
     List<PluginFileHandler> pluginFileHandlers = new ArrayList<PluginFileHandler>();
     PluginZipFileProcessor pluginZipFileProcessor =
-      new PluginZipFileProcessor( pluginFileHandlers, "test", "test-symbolic", "version" );
+      new PluginZipFileProcessor( pluginFileHandlers, false, "test", "test-symbolic", "version" );
     ZipOutputStream zipOutputStream = mock( ZipOutputStream.class );
     pluginZipFileProcessor.process( new ZipInputStream( this.getClass().getClassLoader()
         .getResourceAsStream( "org/pentaho/osgi/platform/plugin/deployer/testCanHandleWithPluginXmlOneDirDown.zip" ) ),
@@ -115,7 +115,7 @@ public class PluginZipFileProcessorTest {
   public void testProcessCloseExceptions() throws IOException {
     List<PluginFileHandler> pluginFileHandlers = new ArrayList<PluginFileHandler>();
     PluginZipFileProcessor pluginZipFileProcessor =
-      new PluginZipFileProcessor( pluginFileHandlers, "test", "test-symbolic", "version" );
+      new PluginZipFileProcessor( pluginFileHandlers, false, "test", "test-symbolic", "version" );
     ZipInputStream zipInputStream = mock( ZipInputStream.class );
     ZipOutputStream zipOutputStream = mock( ZipOutputStream.class );
     pluginZipFileProcessor.process( zipInputStream, zipOutputStream );
@@ -128,7 +128,7 @@ public class PluginZipFileProcessorTest {
     List<PluginFileHandler> pluginFileHandlers =
       new ArrayList<PluginFileHandler>( Arrays.asList( new PluginXmlStaticPathsHandler() ) );
     PluginZipFileProcessor pluginZipFileProcessor =
-      new PluginZipFileProcessor( pluginFileHandlers, "test", "test-symbolic", "version" );
+      new PluginZipFileProcessor( pluginFileHandlers, false, "test", "test-symbolic", "version" );
     ZipOutputStream zipOutputStream = mock( ZipOutputStream.class );
     pluginZipFileProcessor.process( new ZipInputStream( this.getClass().getClassLoader()
         .getResourceAsStream( "org/pentaho/osgi/platform/plugin/deployer/testWithManifestAndBlueprint.zip" ) ),
@@ -158,4 +158,19 @@ public class PluginZipFileProcessorTest {
       return argument instanceof ZipEntry && name.equals( ( (ZipEntry) argument ).getName() );
     }
   }
+
+  @Test
+  public void testProcessManifest() throws IOException {
+    List<PluginFileHandler> pluginFileHandlers =
+      new ArrayList<PluginFileHandler>( Arrays.asList( new PluginXmlStaticPathsHandler() ) );
+
+    ZipOutputStream zipOutputStream = mock( ZipOutputStream.class );
+    ZipInputStream zipInputStream = mock( ZipInputStream.class );
+    PluginZipFileProcessor pluginZipFileProcessor =
+      new PluginZipFileProcessor( pluginFileHandlers, true, "test", "test-symbolic", "version" );
+    pluginZipFileProcessor.processManifest( zipOutputStream );
+    verify( zipOutputStream, times( 1 ) )
+      .putNextEntry( argThat( new ZipEntryMatcher( new ZipEntry( JarFile.MANIFEST_NAME ) ) ) );
+  }
+
 }
