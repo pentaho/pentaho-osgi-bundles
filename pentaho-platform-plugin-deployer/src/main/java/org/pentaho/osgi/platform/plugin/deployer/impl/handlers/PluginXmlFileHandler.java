@@ -24,8 +24,6 @@ package org.pentaho.osgi.platform.plugin.deployer.impl.handlers;
 
 import org.pentaho.osgi.platform.plugin.deployer.api.XmlPluginFileHandler;
 
-import static org.pentaho.osgi.platform.plugin.deployer.PlatformPluginDeploymentListener.PLUGIN_XML_FILENAME;
-
 /**
  * Created by bryan on 8/29/14.
  */
@@ -34,11 +32,8 @@ public abstract class PluginXmlFileHandler extends XmlPluginFileHandler {
     super( xpath );
   }
   @Override public boolean handles( String fileName ) {
-    if ( fileName != null ) {
-      String[] splitName = fileName.split( "/" );
-      if ( splitName.length == 2 && PLUGIN_XML_FILENAME.equals( splitName[ 1 ] ) ) {
-        return true;
-      }
+    if ( fileName != null && fileName.endsWith( "/plugin.xml" ) ) {
+      return true;
     }
     return false;
   }
