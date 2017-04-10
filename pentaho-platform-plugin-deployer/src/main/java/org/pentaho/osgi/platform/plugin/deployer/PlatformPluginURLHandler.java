@@ -2,7 +2,7 @@
  *
  * Pentaho Data Integration
  *
- * Copyright (C) 2002-2014 by Pentaho : http://www.pentaho.com
+ * Copyright (C) 2002-2017 by Pentaho : http://www.pentaho.com
  *
  *******************************************************************************
  *
@@ -24,6 +24,7 @@ package org.pentaho.osgi.platform.plugin.deployer;
 
 import org.osgi.service.url.AbstractURLStreamHandlerService;
 import org.pentaho.osgi.platform.plugin.deployer.api.PluginFileHandler;
+import org.pentaho.osgi.platform.plugin.deployer.impl.BundleStateManager;
 
 import java.io.IOException;
 import java.net.URL;
@@ -35,9 +36,14 @@ import java.util.List;
  */
 public class PlatformPluginURLHandler extends AbstractURLStreamHandlerService {
   private List<PluginFileHandler> pluginFileHandlers;
+  private BundleStateManager bundleStateManager;
 
   public void setPluginFileHandlers( List<PluginFileHandler> pluginFileHandlers ) {
     this.pluginFileHandlers = pluginFileHandlers;
+  }
+
+  public void setBundleStateManager( BundleStateManager bundleStateManager ) {
+    this.bundleStateManager = bundleStateManager;
   }
 
   @Override public URLConnection openConnection( URL u ) throws IOException {

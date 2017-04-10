@@ -2,7 +2,7 @@
  *
  * Pentaho Data Integration
  *
- * Copyright (C) 2002-2014 by Pentaho : http://www.pentaho.com
+ * Copyright (C) 2002-2017 by Pentaho : http://www.pentaho.com
  *
  *******************************************************************************
  *
@@ -25,6 +25,7 @@ package org.pentaho.osgi.platform.plugin.deployer;
 import org.apache.karaf.util.DeployerUtils;
 import org.apache.karaf.util.maven.Parser;
 import org.pentaho.osgi.platform.plugin.deployer.api.PluginFileHandler;
+import org.pentaho.osgi.platform.plugin.deployer.impl.BundleStateManager;
 import org.pentaho.osgi.platform.plugin.deployer.impl.PluginZipFileProcessor;
 
 import java.io.IOException;
@@ -49,6 +50,7 @@ public class PlatformPluginBundlingURLConnection extends URLConnection {
   public static final int TEN_MEGABYTES = 10 * 1024 * 1024;
   private static final Pattern maxSizePattern = Pattern.compile( "maxSize=([0-9]+)" );
   private final List<PluginFileHandler> pluginFileHandlers;
+  private BundleStateManager bundleStateManager;
 
   private static ExecutorService executorService = Executors.newSingleThreadExecutor( new ThreadFactory() {
     @Override
@@ -61,8 +63,14 @@ public class PlatformPluginBundlingURLConnection extends URLConnection {
   } );
 
   public PlatformPluginBundlingURLConnection( URL u, List<PluginFileHandler> pluginFileHandlers ) {
+    this( u, pluginFileHandlers, null );
+  }
+
+  public PlatformPluginBundlingURLConnection( URL u, List<PluginFileHandler> pluginFileHandlers, BundleStateManager bundleStateManager ) {
     super( u );
     this.pluginFileHandlers = pluginFileHandlers;
+    this.bundleStateManager = bundleStateManager;
+
   }
 
   public static int getMaxSize( String query ) {
@@ -83,13 +91,13 @@ public class PlatformPluginBundlingURLConnection extends URLConnection {
   @Override
   public InputStream getInputStream() throws IOException {
     final ExceptionPipedInputStream pipedInputStream =
-        new ExceptionPipedInputStream( getMaxSize( getURL().getQuery() ) );
+      new ExceptionPipedInputStream( getMaxSize( getURL().getQuery() ) );
 
 
     String path = getURL().toString();
     String artifactName;
     String[] nameVersion;
-    if( path.startsWith( "file:" ) ){
+    if ( path.startsWith( "file:" ) ) {
       artifactName = path.substring( path.lastIndexOf( "/" ) + 1 );
       nameVersion = new String[] {
         artifactName.substring( 0, artifactName.lastIndexOf( "." ) == -1 ? artifactName.length() : artifactName.lastIndexOf( "." ) ),
@@ -105,15 +113,20 @@ public class PlatformPluginBundlingURLConnection extends URLConnection {
       nameVersion = DeployerUtils.extractNameVersionType( mvnPath );
     }
 
+    //Check to see if the bundle is already installed
+    boolean isPluginProcessedBefore = bundleStateManager.isBundleInstalled( nameVersion[0] + nameVersion[1] );
+
     final PipedOutputStream pipedOutputStream = new PipedOutputStream( pipedInputStream );
     final ZipOutputStream zipOutputStream = new ZipOutputStream( pipedOutputStream );
     URLConnection connection = getURL().openConnection();
     InputStream connectionInputStream = connection.getInputStream();
     ZipInputStream zipInputStream = new ZipInputStream( connectionInputStream );
     final PluginZipFileProcessor pluginZipFileProcessor =
-        new PluginZipFileProcessor( pluginFileHandlers, nameVersion[ 0 ], nameVersion[ 0 ], nameVersion[ 1 ] );
+      new PluginZipFileProcessor( pluginFileHandlers, isPluginProcessedBefore, nameVersion[ 0 ],
+        nameVersion[ 0 ], nameVersion[ 1 ] );
     pluginZipFileProcessor.processBackground( executorService, zipInputStream, zipOutputStream,
-        pipedInputStream );
+      pipedInputStream );
     return pipedInputStream;
+
   }
 }

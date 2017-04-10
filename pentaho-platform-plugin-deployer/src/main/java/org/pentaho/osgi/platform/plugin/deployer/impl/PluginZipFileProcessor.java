@@ -28,6 +28,9 @@ import org.pentaho.osgi.platform.plugin.deployer.api.PluginHandlingException;
 import org.pentaho.osgi.platform.plugin.deployer.api.PluginMetadata;
 import org.w3c.dom.Document;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -64,33 +67,55 @@ public class PluginZipFileProcessor {
   public static final String MANIFEST_MF = "MANIFEST.MF";
   public static final String OSGI_INF_BLUEPRINT = "OSGI-INF/blueprint/";
 
+  private Logger logger = LoggerFactory.getLogger( getClass() );
   private final List<PluginFileHandler> pluginFileHandlers;
   private final String name;
   private final String symbolicName;
   private final String version;
 
-  public PluginZipFileProcessor( List<PluginFileHandler> pluginFileHandlers, String name, String symbolicName,
+  private boolean isPluginProcessedBefore;
+
+  public PluginZipFileProcessor( List<PluginFileHandler> pluginFileHandlers, boolean isPluginProcessedBefore, String name, String symbolicName,
                                  String version ) {
     this.pluginFileHandlers = pluginFileHandlers;
     this.name = name;
     this.symbolicName = symbolicName;
     this.version = version;
+    this.isPluginProcessedBefore = isPluginProcessedBefore;
   }
+
+
 
   public Future<Void> processBackground( ExecutorService executorService, final ZipInputStream zipInputStream,
                                          final ZipOutputStream zipOutputStream,
                                          final ExceptionSettable<IOException> exceptionSettable ) {
     return executorService.submit( new Callable<Void>() {
       @Override public Void call() throws Exception {
+        long elapsedTime = System.currentTimeMillis();
+        if ( logger.isDebugEnabled() ) {
+          logger.debug( "Start processing zip plugin '" + name + "'" );
+        }
+
         try {
-          process( zipInputStream, zipOutputStream );
+          if ( isPluginProcessedBefore ) {
+            logger.debug( "Found bundle " + name + " installed. Processing manifest instead " );
+            processManifest( zipOutputStream );
+          } else {
+            process( zipInputStream, zipOutputStream );
+          }
         } catch ( IOException e ) {
           exceptionSettable.setException( e );
+        }
+
+        if ( logger.isDebugEnabled() ) {
+          logger.debug( "Finished processing zip plugin'" + name + "'" );
+          logger.debug( "Elapsed time in millis:" + ( System.currentTimeMillis() - elapsedTime ) );
         }
         return null;
       }
     } );
   }
+
 
   public void process( ZipInputStream zipInputStream, ZipOutputStream zipOutputStream ) throws IOException {
 
@@ -326,6 +351,24 @@ public class PluginZipFileProcessor {
       }
       recursiveDelete( dir );
     }
+  }
+
+  public void processManifest( ZipOutputStream zipOutputStream ) throws IOException {
+    Manifest manifest = null;
+
+    String manifestFolder = JarFile.MANIFEST_NAME.split( "/" )[ 0 ] + "/";
+    ZipEntry manifestFolderEntry = new ZipEntry( manifestFolder );
+    zipOutputStream.putNextEntry( manifestFolderEntry );
+    zipOutputStream.closeEntry();
+
+    ZipEntry manifestEntry = new ZipEntry( JarFile.MANIFEST_NAME );
+    zipOutputStream.putNextEntry( manifestEntry );
+    new ManifestUpdaterImpl().write( manifest, zipOutputStream, name, symbolicName, version );
+    zipOutputStream.closeEntry();
+
+    zipOutputStream.flush();
+
+    zipOutputStream.close();
   }
 
   private void recursiveDelete( File file ) {
