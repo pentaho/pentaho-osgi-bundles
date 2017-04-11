@@ -1,7 +1,7 @@
 /*
  * ******************************************************************************
  *
- * Copyright (C) 2002-2017 by Pentaho : http://www.pentaho.com
+ * Copyright (C) 2002-2016 by Pentaho : http://www.pentaho.com
  *
  * ******************************************************************************
  *
@@ -27,9 +27,8 @@ import org.pentaho.osgi.platform.plugin.deployer.api.PluginMetadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -52,14 +51,12 @@ public class PluginLibraryFileHandler implements PluginFileHandler {
     return fileName != null && fileName.contains( LIB ) && fileName.endsWith( JAR );
   }
 
-  @Override public void handle( String relativePath, File file, PluginMetadata pluginMetadata )
-      throws PluginHandlingException {
-//    pluginMetadata.getManifestUpdater().getClasspathEntries().add( relativePath );
-    FileInputStream fin = null;
-    JarInputStream jarInputStream = null;
-    try {
-      fin = new FileInputStream( file );
-      jarInputStream = new JarInputStream( fin );
+  @Override public boolean handle( String relativePath, byte[] file, PluginMetadata pluginMetadata )
+    throws PluginHandlingException {
+    //    pluginMetadata.getManifestUpdater().getClasspathEntries().add( relativePath );
+    try ( ByteArrayInputStream fin = new ByteArrayInputStream( file );
+          JarInputStream jarInputStream = new JarInputStream( fin ); ) {
+
 
       Object bundleSymbolicName = jarInputStream.getManifest().getMainAttributes().getValue( "Bundle-SymbolicName" );
       if ( bundleSymbolicName != null ) {
@@ -68,8 +65,9 @@ public class PluginLibraryFileHandler implements PluginFileHandler {
         log.info( String.format(
           "Jar identified as an OSGi bundle [%s]; no auto-deploy. Assumed to be provided by the container.",
           bundleSymbolicName.toString() ) );
-        return;
+        return false;
       }
+
 
       ZipEntry nextEntry;
       while ( ( nextEntry = jarInputStream.getNextEntry() ) != null ) {
@@ -77,42 +75,34 @@ public class PluginLibraryFileHandler implements PluginFileHandler {
           continue;
         }
         String name = nextEntry.getName();
-        ByteArrayOutputStream byteArrayOutputStream = null;
-
         // Get the contents
-        try {
-          byteArrayOutputStream =
-              new ByteArrayOutputStream( (int) Math.min( Integer.MAX_VALUE, Math.max( 0, nextEntry.getSize() ) ) );
+        try ( ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream(
+          (int) Math.min( Integer.MAX_VALUE, Math.max( 0, nextEntry.getSize() ) ) ) ) {
           ByteStreams.copy( jarInputStream, byteArrayOutputStream );
 
-        } finally {
-          byteArrayOutputStream.close();
-        }
+          if ( name.matches( ".+\\.xml" ) ) {
+            String contents = byteArrayOutputStream.toString( "UTF-8" );
+            if ( contents.contains( "http://www.springframework.org/schema/beans" ) ) {
+              // It is a spring file. move it to SpringDM location
+              FileWriter fileWriter = pluginMetadata.getFileWriter( "META-INF/spring/" + name );
+              fileWriter.append( contents );
+              fileWriter.close();
+            }
 
-        if ( name.matches( ".+\\.xml" ) ) {
-          String contents = byteArrayOutputStream.toString( "UTF-8" );
-          if ( contents.contains( "http://www.springframework.org/schema/beans" ) ) {
-            // It is a spring file. move it to SpringDM location
-            FileWriter fileWriter = pluginMetadata.getFileWriter( "META-INF/spring/" + name );
-            fileWriter.append( contents );
-            fileWriter.close();
-            continue;
+          } else {
+
+            OutputStream fileOut = pluginMetadata.getFileOutputStream( nextEntry.getName() );
+            fileOut.write( byteArrayOutputStream.toByteArray() );
+            fileOut.close();
+
           }
-        }
-        OutputStream fileOut = pluginMetadata.getFileOutputStream( nextEntry.getName() );
-        fileOut.write( byteArrayOutputStream.toByteArray() );
-        fileOut.close();
 
+        }
       }
+
     } catch ( IOException e ) {
       e.printStackTrace();
-    } finally {
-      try {
-        jarInputStream.close();
-        fin.close();
-      } catch ( IOException e ) {
-        e.printStackTrace();
-      }
     }
+    return false;
   }
 }

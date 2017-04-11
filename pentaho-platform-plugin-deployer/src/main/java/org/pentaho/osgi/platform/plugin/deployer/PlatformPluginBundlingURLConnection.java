@@ -37,6 +37,7 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
+import java.util.jar.JarOutputStream;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipInputStream;
@@ -100,9 +101,11 @@ public class PlatformPluginBundlingURLConnection extends URLConnection {
     if ( path.startsWith( "file:" ) ) {
       artifactName = path.substring( path.lastIndexOf( "/" ) + 1 );
       nameVersion = new String[] {
-        artifactName.substring( 0, artifactName.lastIndexOf( "." ) == -1 ? artifactName.length() : artifactName.lastIndexOf( "." ) ),
+        artifactName.substring( 0,
+          artifactName.lastIndexOf( "." ) == -1 ? artifactName.length() : artifactName.lastIndexOf( "." ) ),
         "0.0.0"
       };
+
     } else {
       Parser parser = new Parser( path );
       String mvnPath = parser.getArtifactPath();
@@ -117,14 +120,20 @@ public class PlatformPluginBundlingURLConnection extends URLConnection {
     boolean isPluginProcessedBefore = bundleStateManager.isBundleInstalled( nameVersion[0] + nameVersion[1] );
 
     final PipedOutputStream pipedOutputStream = new PipedOutputStream( pipedInputStream );
-    final ZipOutputStream zipOutputStream = new ZipOutputStream( pipedOutputStream );
-    URLConnection connection = getURL().openConnection();
-    InputStream connectionInputStream = connection.getInputStream();
-    ZipInputStream zipInputStream = new ZipInputStream( connectionInputStream );
+    final ZipOutputStream zipOutputStream = new JarOutputStream( pipedOutputStream );
     final PluginZipFileProcessor pluginZipFileProcessor =
       new PluginZipFileProcessor( pluginFileHandlers, isPluginProcessedBefore, nameVersion[ 0 ],
         nameVersion[ 0 ], nameVersion[ 1 ] );
-    pluginZipFileProcessor.processBackground( executorService, zipInputStream, zipOutputStream,
+    pluginZipFileProcessor.processBackground( executorService, () -> {
+        try {
+          URLConnection connection = getURL().openConnection();
+          InputStream connectionInputStream = connection.getInputStream();
+          ZipInputStream zipInputStream = new ZipInputStream( connectionInputStream );
+          return zipInputStream;
+        } catch ( IOException ioe ) {
+          throw new RuntimeException( ioe );
+        }
+      }, zipOutputStream,
       pipedInputStream );
     return pipedInputStream;
 

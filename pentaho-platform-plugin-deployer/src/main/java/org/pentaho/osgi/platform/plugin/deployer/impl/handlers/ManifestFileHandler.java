@@ -40,8 +40,9 @@ public class ManifestFileHandler implements PluginFileHandler {
     return fileName != null && fileName.contains( LIB ) && fileName.endsWith( JAR );
   }
 
-  @Override public void handle( String relativePath, File file, PluginMetadata pluginMetadata )
+  @Override public boolean handle( String relativePath, byte[] file, PluginMetadata pluginMetadata )
       throws PluginHandlingException {
 //    pluginMetadata.getManifestUpdater().getClasspathEntries().add( relativePath );
+    return false;
   }
 }

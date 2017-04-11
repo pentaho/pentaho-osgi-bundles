@@ -23,39 +23,33 @@
 package org.pentaho.osgi.platform.plugin.deployer.impl;
 
 import com.google.common.io.Files;
+import org.apache.commons.io.IOUtils;
 import org.pentaho.osgi.platform.plugin.deployer.api.PluginFileHandler;
 import org.pentaho.osgi.platform.plugin.deployer.api.PluginHandlingException;
 import org.pentaho.osgi.platform.plugin.deployer.api.PluginMetadata;
-import org.w3c.dom.Document;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.xml.XMLConstants;
-import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.Stack;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Supplier;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
-
-import static org.pentaho.osgi.platform.plugin.deployer.PlatformPluginDeploymentListener.PLUGIN_XML_FILENAME;
 
 /**
  * Created by bryan on 8/28/14.
@@ -75,7 +69,8 @@ public class PluginZipFileProcessor {
 
   private boolean isPluginProcessedBefore;
 
-  public PluginZipFileProcessor( List<PluginFileHandler> pluginFileHandlers, boolean isPluginProcessedBefore, String name, String symbolicName,
+  public PluginZipFileProcessor( List<PluginFileHandler> pluginFileHandlers, boolean isPluginProcessedBefore,
+                                 String name, String symbolicName,
                                  String version ) {
     this.pluginFileHandlers = pluginFileHandlers;
     this.name = name;
@@ -85,42 +80,37 @@ public class PluginZipFileProcessor {
   }
 
 
-
-  public Future<Void> processBackground( ExecutorService executorService, final ZipInputStream zipInputStream,
+  public Future<Void> processBackground( ExecutorService executorService,
+                                         final Supplier<ZipInputStream> zipInputStreamProvider,
                                          final ZipOutputStream zipOutputStream,
-                                         final ExceptionSettable<IOException> exceptionSettable ) {
-    return executorService.submit( new Callable<Void>() {
-      @Override public Void call() throws Exception {
-        long elapsedTime = System.currentTimeMillis();
-        if ( logger.isDebugEnabled() ) {
-          logger.debug( "Start processing zip plugin '" + name + "'" );
-        }
-
-        try {
-          if ( isPluginProcessedBefore ) {
-            logger.debug( "Found bundle " + name + " installed. Processing manifest instead " );
-            processManifest( zipOutputStream );
-          } else {
-            process( zipInputStream, zipOutputStream );
-          }
-        } catch ( IOException e ) {
-          exceptionSettable.setException( e );
-        }
-
-        if ( logger.isDebugEnabled() ) {
-          logger.debug( "Finished processing zip plugin'" + name + "'" );
-          logger.debug( "Elapsed time in millis:" + ( System.currentTimeMillis() - elapsedTime ) );
-        }
-        return null;
+                                         final ExceptionSettable<Throwable> exceptionSettable ) {
+    return executorService.submit( () -> {
+      long elapsedTime = System.currentTimeMillis();
+      if ( logger.isDebugEnabled() ) {
+        logger.debug( "Start processing zip plugin '" + name + "'" );
       }
+
+      try {
+        if ( isPluginProcessedBefore ) {
+          logger.debug( "Found bundle " + name + " installed. Processing manifest instead " );
+          processManifest( zipOutputStream );
+        } else {
+          process( zipInputStreamProvider, zipOutputStream );
+        }
+      } catch ( IOException e ) {
+        exceptionSettable.setException( e );
+      }
+
+      if ( logger.isDebugEnabled() ) {
+        logger.debug( "Finished processing zip plugin'" + name + "'" );
+        logger.debug( "Elapsed time in millis:" + ( System.currentTimeMillis() - elapsedTime ) );
+      }
+      return null;
     } );
   }
 
-
-  public void process( ZipInputStream zipInputStream, ZipOutputStream zipOutputStream ) throws IOException {
-
-    PluginFileHandler[] handlers = pluginFileHandlers.toArray( new PluginFileHandler[]{} );
-
+  public void process( Supplier<ZipInputStream> zipInputStreamProvider, ZipOutputStream zipOutputStream )
+    throws IOException {
     File dir = Files.createTempDir();
     PluginMetadata pluginMetadata = null;
     try {
@@ -129,172 +119,82 @@ public class PluginZipFileProcessor {
       throw new IOException( e );
     }
     Manifest manifest = null;
+    ZipInputStream zipInputStream = zipInputStreamProvider.get();
     try {
-      ZipEntry zipEntry = null;
-      Document blueprint = null;
-      while ( ( zipEntry = zipInputStream.getNextEntry() ) != null ) {
-        ByteArrayOutputStream byteArrayOutputStream =
-          new ByteArrayOutputStream( (int) Math.max( 0, Math.min( Integer.MAX_VALUE, zipEntry.getSize() ) ) );
-        byte[] buffer = new byte[ 1024 ];
-        int read;
-        while ( ( read = zipInputStream.read( buffer ) ) > 0 ) {
-          byteArrayOutputStream.write( buffer, 0, read );
-        }
-        byte[] zipBytes = byteArrayOutputStream.toByteArray();
-        String name = zipEntry.getName();
-        boolean shouldOutput = true;
-        if ( name.endsWith( MANIFEST_MF ) ) {
-          shouldOutput = false;
-          manifest = new Manifest( new ByteArrayInputStream( zipBytes ) );
-        } else if ( name.contains( OSGI_INF_BLUEPRINT ) && !name.endsWith( OSGI_INF_BLUEPRINT ) ) {
-          shouldOutput = false;
-          try {
-            DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
-            documentBuilderFactory.setFeature( XMLConstants.FEATURE_SECURE_PROCESSING, true );
-            documentBuilderFactory.setFeature( "http://apache.org/xml/features/disallow-doctype-decl", true );
-            documentBuilderFactory.setNamespaceAware( true );
-            blueprint =
-              documentBuilderFactory.newDocumentBuilder().parse( new ByteArrayInputStream( zipBytes ) );
-            pluginMetadata.setBlueprint( blueprint );
-          } catch ( Exception e ) {
-            throw new IOException( e );
-          }
-        }
-        if ( shouldOutput ) {
-          File outFile = new File( dir.getAbsolutePath() + "/" + zipEntry.getName() );
-          int tries = 100;
-          File outParent = outFile.getParentFile();
-          while ( !outParent.exists() && tries-- > 0 ) {
-            outParent.mkdirs();
-          }
-          if ( zipEntry.isDirectory() ) {
-            tries = 100;
-            while ( !outFile.exists() && tries-- > 0 ) {
-              outFile.mkdir();
-            }
-          } else {
-            FileOutputStream fileOutputStream = null;
-            try {
-              fileOutputStream = new FileOutputStream( outFile );
-              int len = 0;
-              fileOutputStream.write( zipBytes );
-            } finally {
-              if ( fileOutputStream != null ) {
-                fileOutputStream.close();
-              }
-            }
-          }
-        }
-      }
+      ZipEntry zipEntry;
 
+      List<PluginFileHandler> handlers = new ArrayList<>();
       if ( pluginFileHandlers != null ) {
-        Stack<File> fileStack = new Stack<File>();
-        fileStack.push( dir );
-        while ( fileStack.size() > 0 ) {
-          File currentFile = fileStack.pop();
-          File searchFile = currentFile;
-          Stack<String> dirStack = new Stack<String>();
-          while ( !searchFile.equals( dir ) ) {
-            dirStack.push( searchFile.getName() );
-            searchFile = searchFile.getParentFile();
-          }
-          String currentFileName = null;
-          StringBuilder sb = new StringBuilder();
-          while ( dirStack.size() > 0 ) {
-            sb.append( dirStack.pop() );
-            sb.append( "/" );
-          }
-          if ( sb.length() > 0 ) {
-            sb.setLength( sb.length() - 1 );
-          }
-          String currentPath = sb.toString();
+        handlers.addAll( pluginFileHandlers );
+      }
 
-          for ( int i = 0; i < handlers.length; i++ ) {
-            if ( handlers[i].handles( currentPath ) ) {
-              try {
-                // There is no short-circuit. Multiple handlers can do work on any given resource
-                handlers[i].handle( currentPath, currentFile, pluginMetadata );
-              } catch ( PluginHandlingException e ) {
-                throw new IOException( e );
-              }
+      while ( ( zipEntry = zipInputStream.getNextEntry() ) != null ) {
+        String name = zipEntry.getName();
+
+        AtomicBoolean output = new AtomicBoolean( false );
+        boolean wasHandled = false;
+        byte[] bytes = null;
+        for ( int i = 0; i < handlers.size(); i++ ) {
+          PluginFileHandler pluginFileHandler = handlers.get( i );
+
+          if ( pluginFileHandler.handles( zipEntry.getName() ) ) {
+            wasHandled = true;
+            if ( bytes == null ) {
+              bytes = getEntryBytes( zipInputStream );
             }
-          }
-
-          if ( currentFile.isDirectory() ) {
-
-            File[] dirFiles = currentFile.listFiles( new FileFilter() {
-
-              @Override
-              public boolean accept( File f ) {
-
-                if ( f == null ) {
-                  return false;
-
-                } else if ( f.isDirectory() || PLUGIN_XML_FILENAME.equals( f.getName() ) ) {
-                  return true; // need to keep these, otherwise the existing logic won't work as intended
-
-                } else {
-                  for ( int i = 0; i < handlers.length; i++ ) {
-                    if ( handlers[i].handles( f.getAbsolutePath().replace( dir.getAbsolutePath(), "" ) ) ) {
-                      return true; // we just need one
-                    }
-                  }
-                }
-                return false;
-              }
-            } );
-
-            File pluginXmlFile = null;
-            if ( dirFiles != null ) {
-              for ( int i = 0; i < dirFiles.length; i++ ) {
-                if ( PLUGIN_XML_FILENAME.equals( dirFiles[i].getName() ) ) {
-                  pluginXmlFile = dirFiles[i];
-                  continue;
-                }
-                fileStack.push( dirFiles[i] );
-              }
-            }
-
-            // Ensures the plugin.xml file is read before plugin.spring.xml. This is needed so
-            // {@link org.pentaho.osgi.platform.plugin.deployer.impl.handlers.SpringFileHandler#handle()}
-            // can get the proper bundleName and set the service entry point.
-            if ( null != pluginXmlFile ) {
-              fileStack.push( pluginXmlFile );
+            try {
+              // There is no short-circuit. Multiple handlers can do work on any given resource
+              boolean handlerSaysOutput = pluginFileHandler
+                .handle( zipEntry.getName(), bytes, pluginMetadata );
+              output.compareAndSet( false, handlerSaysOutput );
+            } catch ( PluginHandlingException e ) {
+              throw new IOException( e );
             }
           }
         }
-      }
-
-      int tries = 100;
-      File blueprintDir =
-        new File( dir.getAbsolutePath() + "/" + BLUEPRINT.substring( 0, BLUEPRINT.lastIndexOf( '/' ) ) );
-      while ( !blueprintDir.exists() && tries-- > 0 ) {
-        blueprintDir.mkdirs();
-      }
-      FileOutputStream blueprintOutputStream = null;
-      try {
-        blueprintOutputStream = new FileOutputStream( dir.getAbsolutePath() + "/" + BLUEPRINT );
-        pluginMetadata.writeBlueprint( name, blueprintOutputStream );
-      } finally {
-        if ( blueprintOutputStream != null ) {
-          blueprintOutputStream.close();
+        if ( !wasHandled || output.get() ) {
+          if ( bytes == null ) {
+            bytes = getEntryBytes( zipInputStream );
+          }
+          zipOutputStream.putNextEntry( new ZipEntry( name ) );
+          if ( zipEntry.isDirectory() == false ) {
+            IOUtils.write( bytes, zipOutputStream );
+          }
+          zipOutputStream.closeEntry();
         }
       }
     } finally {
-      try {
-        zipInputStream.close();
-      } catch ( IOException e ) {
-        //Noop
+      IOUtils.closeQuietly( zipInputStream );
+    }
+
+    // Write blueprint to disk, picked up with others later
+    int tries = 100;
+    File blueprintDir =
+      new File( dir.getAbsolutePath() + "/" + BLUEPRINT.substring( 0, BLUEPRINT.lastIndexOf( '/' ) ) );
+    while ( !blueprintDir.exists() && tries-- > 0 ) {
+      blueprintDir.mkdirs();
+    }
+    FileOutputStream blueprintOutputStream = null;
+    try {
+      blueprintOutputStream = new FileOutputStream( dir.getAbsolutePath() + "/" + BLUEPRINT );
+      pluginMetadata.writeBlueprint( name, blueprintOutputStream );
+    } finally {
+      if ( blueprintOutputStream != null ) {
+        blueprintOutputStream.close();
       }
     }
+
+
     Set<String> createdEntries = new HashSet<String>();
 
+    // 1. Write Manifest Directory
     String manifestFolder = JarFile.MANIFEST_NAME.split( "/" )[ 0 ] + "/";
     ZipEntry manifestFolderEntry = new ZipEntry( manifestFolder );
     zipOutputStream.putNextEntry( manifestFolderEntry );
     zipOutputStream.closeEntry();
     createdEntries.add( manifestFolder );
 
+    // 2. Write Manifest
     ZipEntry manifestEntry = new ZipEntry( JarFile.MANIFEST_NAME );
     zipOutputStream.putNextEntry( manifestEntry );
     pluginMetadata.getManifestUpdater()
@@ -302,6 +202,7 @@ public class PluginZipFileProcessor {
     zipOutputStream.closeEntry();
     createdEntries.add( JarFile.MANIFEST_NAME );
 
+    // Handlers may have written files to disk which need to be added.
     Stack<File> dirStack = new Stack<File>();
     dirStack.push( dir );
     int len = 0;
@@ -344,13 +245,15 @@ public class PluginZipFileProcessor {
         }
       }
     } finally {
-      try {
-        zipOutputStream.close();
-      } catch ( IOException e ) {
-        // Noop
-      }
+      IOUtils.closeQuietly( zipOutputStream );
       recursiveDelete( dir );
     }
+  }
+
+  private byte[] getEntryBytes( ZipInputStream zipInputStream ) throws IOException {
+
+    return IOUtils.toByteArray( zipInputStream );
+
   }
 
   public void processManifest( ZipOutputStream zipOutputStream ) throws IOException {

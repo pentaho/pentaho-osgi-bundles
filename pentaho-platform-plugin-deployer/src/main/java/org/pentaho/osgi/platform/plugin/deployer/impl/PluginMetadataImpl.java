@@ -27,6 +27,8 @@ import org.pentaho.osgi.platform.plugin.deployer.api.PluginMetadata;
 import org.pentaho.osgi.platform.plugin.deployer.impl.handlers.pluginxml.PluginXmlStaticPathsHandler;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -45,6 +47,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import static org.pentaho.osgi.platform.plugin.deployer.impl.handlers.pluginxml.PluginXmlStaticPathsHandler
     .BLUEPRINT_BEAN_NS;
@@ -57,6 +61,7 @@ public class PluginMetadataImpl implements PluginMetadata {
   private Document blueprint;
   private final File rootDirectory;
   private List<String> contentTypes = new ArrayList<>();
+  private List<Runnable> runAtEndables = new ArrayList<>(  );
 
   public PluginMetadataImpl( File rootDirectory ) throws ParserConfigurationException {
     blueprint = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
@@ -73,10 +78,21 @@ public class PluginMetadataImpl implements PluginMetadata {
   }
 
   @Override public void setBlueprint( Document blueprint ) {
-    this.blueprint = blueprint;
+    NodeList childNodes = blueprint.getDocumentElement().getChildNodes();
+    for ( int i = 0; i < childNodes.getLength(); i++ ) {
+      Node node = this.blueprint.importNode(childNodes.item( i ), true);
+      this.blueprint.getDocumentElement().appendChild( node );
+    }
   }
 
   @Override public void writeBlueprint( String name, OutputStream outputStream ) throws IOException {
+
+    // Run any deferred tasks
+    if( runAtEndables.size() > 0 ) {
+      ExecutorService executorService = Executors.newSingleThreadExecutor();
+      runAtEndables.forEach( executorService::submit );
+    }
+
     Result output = new StreamResult( outputStream );
     Document blueprint = getBlueprint();
     Element bean = blueprint.createElementNS( BLUEPRINT_BEAN_NS,
@@ -143,5 +159,9 @@ public class PluginMetadataImpl implements PluginMetadata {
 
   @Override public List<String> getContentTypes() {
     return contentTypes;
+  }
+
+  @Override public void executeAtEnd( Runnable runnable ) {
+    runAtEndables.add( runnable );
   }
 }

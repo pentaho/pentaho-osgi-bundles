@@ -32,9 +32,7 @@ import org.xml.sax.InputSource;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathFactory;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
+import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -50,12 +48,10 @@ public abstract class XmlPluginFileHandler implements PluginFileHandler {
     this.xpath = xpath;
   }
 
-  @Override public void handle( String relativePath, File file, PluginMetadata pluginMetadata )
+  @Override public boolean handle( String relativePath, byte[] file, PluginMetadata pluginMetadata )
     throws PluginHandlingException {
-    FileInputStream fileInputStream = null;
-    try {
+    try ( ByteArrayInputStream fileInputStream = new ByteArrayInputStream( file ) ){
       XPath xPath = XPathFactory.newInstance().newXPath();
-      fileInputStream = new FileInputStream( file );
       InputSource inputSource = new InputSource( fileInputStream );
       NodeList nodeList = (NodeList) xPath.evaluate( xpath, inputSource, XPathConstants.NODESET );
       List<Node> nodes = new ArrayList<Node>( nodeList.getLength() );
@@ -65,15 +61,8 @@ public abstract class XmlPluginFileHandler implements PluginFileHandler {
       handle( relativePath, nodes, pluginMetadata );
     } catch ( Exception e ) {
       throw new PluginHandlingException( e );
-    } finally {
-      if ( fileInputStream != null ) {
-        try {
-          fileInputStream.close();
-        } catch ( IOException e ) {
-          //Ignore
-        }
-      }
     }
+    return false;
   }
 
   protected abstract void handle( String relativePath, List<Node> nodes, PluginMetadata pluginMetadata )
