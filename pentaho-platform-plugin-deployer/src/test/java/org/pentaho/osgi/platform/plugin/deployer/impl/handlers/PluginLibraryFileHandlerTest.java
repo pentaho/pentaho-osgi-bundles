@@ -20,6 +20,7 @@
 
 package org.pentaho.osgi.platform.plugin.deployer.impl.handlers;
 
+import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -28,6 +29,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.pentaho.osgi.platform.plugin.deployer.api.PluginMetadata;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.OutputStream;
 
@@ -68,7 +70,7 @@ public class PluginLibraryFileHandlerTest {
     File f = new File( testResources,
       "org/pentaho/osgi/platform/plugin/deployer/impl/handlers/test-dummy-bundle.jar" );
 
-    pluginLibraryFileHandler.handle( "", f, pluginMetadata );
+    pluginLibraryFileHandler.handle( "", IOUtils.toByteArray( new FileInputStream( f ) ), pluginMetadata );
 
     verify( pluginMetadata, never() ).getFileOutputStream( anyString() );
     verify( pluginMetadata, never() ).getFileWriter( anyString() );
@@ -82,13 +84,13 @@ public class PluginLibraryFileHandlerTest {
     when( pluginMetadata.getFileOutputStream( anyString() ) ).thenReturn( outputStream );
     when( pluginMetadata.getFileWriter( anyString() ) ).thenReturn( fileWriter );
 
-    pluginLibraryFileHandler.handle( "", f, pluginMetadata );
+    pluginLibraryFileHandler.handle( "", IOUtils.toByteArray( new FileInputStream( f ) ), pluginMetadata );
 
     verify( pluginMetadata ).getFileOutputStream( "org/pentaho/App.class" );
     verify( pluginMetadata ).getFileWriter( "META-INF/spring/beans.xml" );
 
-    verify( outputStream, times( 3 ) ).write( any() );
-    verify( outputStream, times( 3 ) ).close();
+    verify( outputStream, times( 2 ) ).write( any() );
+    verify( outputStream, times( 2 ) ).close();
 
     verify( fileWriter ).append( anyString() );
     verify( fileWriter ).close();

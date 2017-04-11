@@ -46,4 +46,6 @@ public interface PluginMetadata {
   List<String> getContentTypes();
 
   void setBlueprint( Document blueprint );
+
+  void executeAtEnd( Runnable runnable );
 }

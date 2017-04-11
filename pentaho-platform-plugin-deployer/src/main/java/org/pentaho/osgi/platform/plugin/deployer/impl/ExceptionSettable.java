@@ -25,6 +25,6 @@ package org.pentaho.osgi.platform.plugin.deployer.impl;
 /**
  * Created by bryan on 8/28/14.
  */
-public interface ExceptionSettable<T extends Exception> {
+public interface ExceptionSettable<T extends Throwable> {
   public void setException( T exception );
 }

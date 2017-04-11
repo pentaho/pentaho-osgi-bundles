@@ -30,8 +30,8 @@ import java.io.PipedInputStream;
 /**
  * Created by bryan on 8/26/14.
  */
-public class ExceptionPipedInputStream extends PipedInputStream implements ExceptionSettable<IOException> {
-  private IOException ioException = null;
+public class ExceptionPipedInputStream extends PipedInputStream implements ExceptionSettable<Throwable> {
+  private Throwable throwable = null;
 
   public ExceptionPipedInputStream( int pipeSize ) {
     super( pipeSize );
@@ -42,34 +42,34 @@ public class ExceptionPipedInputStream extends PipedInputStream implements Excep
   }
 
   @Override public synchronized int read() throws IOException {
-    if ( ioException != null ) {
-      throw new IOException( "Got exception in producer thread.", ioException );
+    if ( throwable != null ) {
+      throw new IOException( "Got exception in producer thread.", throwable );
     }
     return super.read();
   }
 
   @Override public synchronized int read( byte[] b, int off, int len ) throws IOException {
-    if ( ioException != null ) {
-      throw new IOException( "Got exception in producer thread.", ioException );
+    if ( throwable != null ) {
+      throw new IOException( "Got exception in producer thread.", throwable );
     }
     return super.read( b, off, len );
   }
 
   @Override public synchronized void close() throws IOException {
-    if ( ioException != null ) {
-      throw new IOException( "Got exception in producer thread.", ioException );
+    if ( throwable != null ) {
+      throw new IOException( "Got exception in producer thread.", throwable );
     }
     super.close();
   }
 
   @Override public synchronized int read( byte[] b ) throws IOException {
-    if ( ioException != null ) {
-      throw new IOException( "Got exception in producer thread.", ioException );
+    if ( throwable != null ) {
+      throw new IOException( "Got exception in producer thread.", throwable );
     }
     return super.read( b );
   }
 
-  @Override public void setException( IOException exception ) {
-    this.ioException = exception;
+  @Override public void setException( Throwable exception ) {
+    this.throwable = exception;
   }
 }

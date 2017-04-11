@@ -14,67 +14,69 @@ import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
 import static org.pentaho.osgi.platform.plugin.deployer.impl.handlers.pluginxml.PluginXmlStaticPathsHandler
-    .BLUEPRINT_BEAN_NS;
+  .BLUEPRINT_BEAN_NS;
 
 /**
  * Created by nbaker on 7/18/16.
  */
 public class PluginXmlLifecycleListenerHandler extends PluginXmlFileHandler {
 
-  public PluginXmlLifecycleListenerHandler(  ) {
+  public PluginXmlLifecycleListenerHandler() {
     super( "//lifecycle-listener" );
   }
 
   @Override protected void handle( String relativePath, List<Node> nodes, PluginMetadata pluginMetadata )
-      throws PluginHandlingException {
-    Document blueprint = pluginMetadata.getBlueprint();
+    throws PluginHandlingException {
 
-    for ( Node node : nodes ) {
-      Map<String, String> attributes = getAttributes( node );
-      if( attributes.containsKey( "ignore" ) ){
-        continue;
-      }
+    pluginMetadata.executeAtEnd( () -> {
+      Document blueprint = pluginMetadata.getBlueprint();
 
-      String clazz = attributes.get( "class" );
-      XPathFactory xPathFactory = XPathFactory.newInstance();
-      XPath xpath = xPathFactory.newXPath();
-      xpath.setNamespaceContext( new NamespaceContext() {
-        @Override public String getNamespaceURI( String prefix ) {
-          return "http://www.osgi.org/xmlns/blueprint/v1.0.0";
-        }
-
-        @Override public String getPrefix( String namespaceURI ) {
-          return null;
-        }
-
-        @Override public Iterator getPrefixes( String namespaceURI ) {
-          return null;
-        }
-      } );
-      String expression = "//bp:bean[@class='"+clazz+"']";
-      try {
-        XPathExpression compiledExpression = xpath.compile( expression );
-        NodeList nodeList = (NodeList) compiledExpression.evaluate( blueprint, XPathConstants.NODESET );
-        if( nodeList.getLength() > 0 ){
-          // alredy defined, maybe by plugin author
+      for ( Node node : nodes ) {
+        Map<String, String> attributes = getAttributes( node );
+        if ( attributes.containsKey( "ignore" ) ) {
           continue;
         }
-      } catch ( XPathExpressionException e ) {
-        e.printStackTrace();
-      }
-      Element bean = blueprint.createElementNS( BLUEPRINT_BEAN_NS,
+
+        String clazz = attributes.get( "class" );
+        XPathFactory xPathFactory = XPathFactory.newInstance();
+        XPath xpath = xPathFactory.newXPath();
+        xpath.setNamespaceContext( new NamespaceContext() {
+          @Override public String getNamespaceURI( String prefix ) {
+            return "http://www.osgi.org/xmlns/blueprint/v1.0.0";
+          }
+
+          @Override public String getPrefix( String namespaceURI ) {
+            return null;
+          }
+
+          @Override public Iterator getPrefixes( String namespaceURI ) {
+            return null;
+          }
+        } );
+        String expression = "//bp:bean[@class='" + clazz + "']";
+        try {
+          XPathExpression compiledExpression = xpath.compile( expression );
+          NodeList nodeList = (NodeList) compiledExpression.evaluate( blueprint, XPathConstants.NODESET );
+          if ( nodeList.getLength() > 0 ) {
+            // alredy defined, maybe by plugin author
+            continue;
+          }
+        } catch ( XPathExpressionException e ) {
+          e.printStackTrace();
+        }
+        Element bean = blueprint.createElementNS( BLUEPRINT_BEAN_NS,
           "bean" );
-      bean.setAttribute( "class", clazz );
-      bean.setAttribute( "init-method", "init" );
-      blueprint.getDocumentElement().appendChild( bean );
-    }
+        bean.setAttribute( "class", clazz );
+        bean.setAttribute( "init-method", "init" );
+        blueprint.getDocumentElement().appendChild( bean );
+      }
+
+    } );
+
   }
 }

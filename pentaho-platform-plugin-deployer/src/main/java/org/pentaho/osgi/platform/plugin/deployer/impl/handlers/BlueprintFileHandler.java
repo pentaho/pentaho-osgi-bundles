@@ -25,19 +25,21 @@ package org.pentaho.osgi.platform.plugin.deployer.impl.handlers;
 import org.pentaho.osgi.platform.plugin.deployer.api.PluginFileHandler;
 import org.pentaho.osgi.platform.plugin.deployer.api.PluginHandlingException;
 import org.pentaho.osgi.platform.plugin.deployer.api.PluginMetadata;
+import org.w3c.dom.Document;
 
-import java.io.File;
-import java.io.FileReader;
+import javax.xml.XMLConstants;
+import javax.xml.parsers.DocumentBuilderFactory;
+import java.io.ByteArrayInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.regex.Pattern;
 
 /**
+ * Finds blueprint files embedded one directory down and moves it up where it can be picked up by OSGI
  * Created by nbaker on 7/21/16.
  */
 public class BlueprintFileHandler implements PluginFileHandler {
 
-  public static final Pattern LIB_PATTERN = Pattern.compile( ".+\\/OSGI-INF\\/blueprint\\/.*\\.xml" );
   public static final String JAR = ".jar";
   public static final String XML = ".xml";
   public static final String OSGI_INF_BLUEPRINT = "OSGI-INF/blueprint/";
@@ -46,17 +48,20 @@ public class BlueprintFileHandler implements PluginFileHandler {
     return fileName != null && fileName.contains( OSGI_INF_BLUEPRINT ) && fileName.endsWith( XML );
   }
 
-  @Override public void handle( String relativePath, File file, PluginMetadata pluginMetadata )
+  @Override public boolean handle( String relativePath, byte[] file, PluginMetadata pluginMetadata )
       throws PluginHandlingException {
-    try ( FileReader fileReader = new FileReader( file );
-          FileWriter fileWriter = pluginMetadata.getFileWriter( relativePath.substring( relativePath.indexOf( "/" ) + 1 ) ) ) {
-      int read;
-      while ( ( read = fileReader.read() ) != -1 ) {
-        fileWriter.write( read );
-      }
-    } catch ( IOException e ) {
+    try {
+      DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+      documentBuilderFactory.setFeature( XMLConstants.FEATURE_SECURE_PROCESSING, true );
+      documentBuilderFactory.setFeature( "http://apache.org/xml/features/disallow-doctype-decl", true );
+      documentBuilderFactory.setNamespaceAware( true );
+      Document blueprint =
+        documentBuilderFactory.newDocumentBuilder().parse( new ByteArrayInputStream( file ) );
+      pluginMetadata.setBlueprint( blueprint );
+    } catch ( Exception e ) {
       e.printStackTrace();
     }
+    return false;
   }
 }
 

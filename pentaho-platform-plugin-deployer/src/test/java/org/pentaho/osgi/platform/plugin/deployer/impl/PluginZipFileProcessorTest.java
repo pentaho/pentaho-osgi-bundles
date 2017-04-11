@@ -72,10 +72,10 @@ public class PluginZipFileProcessorTest {
       new PluginZipFileProcessor( pluginFileHandlers, false, "test", "test-symbolic", "version" );
     ZipOutputStream zipOutputStream = mock( ZipOutputStream.class );
     ZipInputStream zipInputStream = mock( ZipInputStream.class );
-    ExceptionSettable<IOException> exceptionSettable = mock( ExceptionSettable.class );
+    ExceptionSettable<Throwable> exceptionSettable = mock( ExceptionSettable.class );
     IOException myException = new IOException( "TEST_EXCEPTION" );
     when( zipInputStream.getNextEntry() ).thenThrow( myException );
-    pluginZipFileProcessor.processBackground( executorService, zipInputStream, zipOutputStream, exceptionSettable );
+    pluginZipFileProcessor.processBackground( executorService, () -> zipInputStream, zipOutputStream, exceptionSettable );
     verify( exceptionSettable ).setException( myException );
   }
 
@@ -87,8 +87,8 @@ public class PluginZipFileProcessorTest {
       new PluginZipFileProcessor( pluginFileHandlers, false, "test", "test-symbolic", "version" );
     ZipOutputStream zipOutputStream = mock( ZipOutputStream.class );
     ZipInputStream zipInputStream = mock( ZipInputStream.class );
-    ExceptionSettable<IOException> exceptionSettable = mock( ExceptionSettable.class );
-    pluginZipFileProcessor.processBackground( executorService, zipInputStream, zipOutputStream, exceptionSettable );
+    ExceptionSettable<Throwable> exceptionSettable = mock( ExceptionSettable.class );
+    pluginZipFileProcessor.processBackground( executorService, () -> zipInputStream, zipOutputStream, exceptionSettable );
     verifyNoMoreInteractions( exceptionSettable );
   }
 
@@ -98,7 +98,7 @@ public class PluginZipFileProcessorTest {
     PluginZipFileProcessor pluginZipFileProcessor =
       new PluginZipFileProcessor( pluginFileHandlers, false, "test", "test-symbolic", "version" );
     ZipOutputStream zipOutputStream = mock( ZipOutputStream.class );
-    pluginZipFileProcessor.process( new ZipInputStream( this.getClass().getClassLoader()
+    pluginZipFileProcessor.process( () -> new ZipInputStream( this.getClass().getClassLoader()
         .getResourceAsStream( "org/pentaho/osgi/platform/plugin/deployer/testCanHandleWithPluginXmlOneDirDown.zip" ) ),
       zipOutputStream );
     verify( zipOutputStream ).putNextEntry( argThat( new ZipEntryMatcher( new ZipEntry( "test-plugin/" ) ) ) );
@@ -118,7 +118,7 @@ public class PluginZipFileProcessorTest {
       new PluginZipFileProcessor( pluginFileHandlers, false, "test", "test-symbolic", "version" );
     ZipInputStream zipInputStream = mock( ZipInputStream.class );
     ZipOutputStream zipOutputStream = mock( ZipOutputStream.class );
-    pluginZipFileProcessor.process( zipInputStream, zipOutputStream );
+    pluginZipFileProcessor.process( () -> zipInputStream, zipOutputStream );
     doThrow( new IOException() ).when( zipInputStream ).close();
     doThrow( new IOException() ).when( zipOutputStream ).close();
   }
@@ -130,7 +130,7 @@ public class PluginZipFileProcessorTest {
     PluginZipFileProcessor pluginZipFileProcessor =
       new PluginZipFileProcessor( pluginFileHandlers, false, "test", "test-symbolic", "version" );
     ZipOutputStream zipOutputStream = mock( ZipOutputStream.class );
-    pluginZipFileProcessor.process( new ZipInputStream( this.getClass().getClassLoader()
+    pluginZipFileProcessor.process( () -> new ZipInputStream( this.getClass().getClassLoader()
         .getResourceAsStream( "org/pentaho/osgi/platform/plugin/deployer/testWithManifestAndBlueprint.zip" ) ),
       zipOutputStream );
     verify( zipOutputStream ).putNextEntry( argThat( new ZipEntryMatcher( new ZipEntry( "META-INF/" ) ) ) );
@@ -141,8 +141,6 @@ public class PluginZipFileProcessorTest {
     verify( zipOutputStream, times( 1 ) ).putNextEntry(
       argThat( new ZipEntryMatcher( new ZipEntry( PluginZipFileProcessor.BLUEPRINT ) ) ) );
     verify( zipOutputStream ).putNextEntry( argThat( new ZipEntryMatcher( new ZipEntry( "test-plugin/" ) ) ) );
-    verify( zipOutputStream )
-      .putNextEntry( argThat( new ZipEntryMatcher( new ZipEntry( "test-plugin/plugin.xml" ) ) ) );
     verify( zipOutputStream )
       .putNextEntry( argThat( new ZipEntryMatcher( new ZipEntry( "test-plugin/other-file" ) ) ) );
   }

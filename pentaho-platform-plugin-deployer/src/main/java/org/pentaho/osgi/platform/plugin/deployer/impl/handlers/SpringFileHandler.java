@@ -28,14 +28,12 @@ import org.pentaho.osgi.platform.plugin.deployer.api.PluginMetadata;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Reader;
+import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.jar.JarInputStream;
 import java.util.regex.Matcher;
@@ -50,7 +48,6 @@ import static org.pentaho.osgi.platform.plugin.deployer.impl.handlers.pluginxml.
  */
 public class SpringFileHandler implements PluginFileHandler {
 
-  public static final String LIB_PATTERN = ".+\\/lib\\/.+\\.jar";
   public static final String PLUGIN_SPRING_XML = ".+\\/plugin.spring.xml";
   private final Pattern beanPattern = Pattern.compile( ".*id=\"(.+?)\".+[(\\r\\n|\\r|\\n)]*" );
   public static final String PLUGIN_SPRING_XML_FILENAME = "plugin.spring.xml";
@@ -63,16 +60,13 @@ public class SpringFileHandler implements PluginFileHandler {
             && ( ( fileName.contains( LIB ) && fileName.endsWith( JAR ) ) || fileName.endsWith( PLUGIN_SPRING_XML_FILENAME ) );
   }
 
-  @Override public void handle( String relativePath, File file, PluginMetadata pluginMetadata )
+  @Override public boolean handle( String relativePath, byte[] file, PluginMetadata pluginMetadata )
     throws PluginHandlingException {
 
     if ( relativePath.contains( LIB ) && relativePath.endsWith( JAR ) ) {
 
-      FileInputStream fin = null;
-      JarInputStream jarInputStream = null;
-      try {
-        fin = new FileInputStream( file );
-        jarInputStream = new JarInputStream( fin );
+
+      try ( ByteArrayInputStream fin = new ByteArrayInputStream( file ); JarInputStream jarInputStream = new JarInputStream( fin ); ){
 
         ZipEntry nextEntry;
         while ( ( nextEntry = jarInputStream.getNextEntry() ) != null ) {
@@ -104,16 +98,9 @@ public class SpringFileHandler implements PluginFileHandler {
         }
       } catch ( IOException e ) {
         e.printStackTrace();
-      } finally {
-        try {
-          jarInputStream.close();
-          fin.close();
-        } catch ( IOException e ) {
-          e.printStackTrace();
-        }
       }
     } else if ( relativePath.matches( PLUGIN_SPRING_XML ) ) {
-      try ( Reader fileReader = new BufferedReader( new FileReader( file ) );
+      try ( Reader fileReader = new StringReader( new String( file, "UTF-8"  ) );
             FileWriter fileWriter = pluginMetadata.getFileWriter( "META-INF/spring/plugin.spring.xml" ) ) {
         fileReader.mark( 0 );
         int read;
@@ -174,22 +161,9 @@ public class SpringFileHandler implements PluginFileHandler {
       } catch ( IOException e ) {
         e.printStackTrace();
       }
-
-/*
-<service id="MyWhiteboardServletBeanService"
-    interface="javax.servlet.Servlet">
-    <service-properties>
-        <entry key="alias" value="/content/analyzer/editor"/>
-        <entry key="servlet-name" value="analyzerEditor"/>
-    </service-properties>
-    <bean class="org.pentaho.osgi.utils.ContentGeneratorServlet">
-        <argument ref="spring"/>
-        <argument value="xanalyzer.editor"/>
-    </bean>
-</service>
-
- */
+      return false;
     }
 
+    return true;
   }
 }

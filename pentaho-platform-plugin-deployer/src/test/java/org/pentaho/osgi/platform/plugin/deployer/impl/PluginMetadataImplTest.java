@@ -29,8 +29,11 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.pentaho.osgi.platform.plugin.deployer.impl.handlers.pluginxml.PluginXmlStaticPathsHandler;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
+import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -45,6 +48,7 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * Created by bryan on 8/27/14.
@@ -122,9 +126,14 @@ public class PluginMetadataImplTest {
 
   @Test
   public void testSetBlueprint() throws Exception {
+
+    Document document = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
+    Element root = document.createElement( "blueprint" );
+    document.appendChild( root );
+    root.appendChild( document.createElement( "bean" ) );
     PluginMetadataImpl pluginMetadata = new PluginMetadataImpl( mockRootDirectory );
-    pluginMetadata.setBlueprint( blueprintDoc );
-    assertEquals( blueprintDoc, pluginMetadata.getBlueprint() );
+    pluginMetadata.setBlueprint( document );
+    assertEquals( "bean", pluginMetadata.getBlueprint().getDocumentElement().getChildNodes().item( 0 ).getNodeName() );
   }
 
   @Test
