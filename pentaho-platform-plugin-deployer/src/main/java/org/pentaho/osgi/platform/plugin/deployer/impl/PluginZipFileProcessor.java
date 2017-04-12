@@ -56,7 +56,6 @@ import java.util.zip.ZipOutputStream;
  */
 public class PluginZipFileProcessor {
   public static final String BLUEPRINT = "OSGI-INF/blueprint/blueprint.xml";
-  public static final String PLUGIN_XML_FILENAME = "plugin.xml";
   public static final String PLUGIN_SPRING_XML_FILENAME = "plugin.spring.xml";
 
   private Logger logger = LoggerFactory.getLogger( getClass() );
@@ -84,13 +83,11 @@ public class PluginZipFileProcessor {
                                          final ExceptionSettable<Throwable> exceptionSettable ) {
     return executorService.submit( () -> {
       long elapsedTime = System.currentTimeMillis();
-      if ( logger.isDebugEnabled() ) {
-        logger.debug( "Start processing zip plugin '" + name + "'" );
-      }
+      logger.debug( "Start processing zip plugin '{}'", name );
 
       try {
         if ( isPluginProcessedBefore ) {
-          logger.debug( "Found bundle " + name + " installed. Processing manifest instead " );
+          logger.debug( "Found bundle {} installed. Processing manifest instead", name );
           processManifest( zipOutputStream );
         } else {
           process( zipInputStreamProvider, zipOutputStream );
@@ -99,10 +96,8 @@ public class PluginZipFileProcessor {
         exceptionSettable.setException( e );
       }
 
-      if ( logger.isDebugEnabled() ) {
-        logger.debug( "Finished processing zip plugin'" + name + "'" );
-        logger.debug( "Elapsed time in millis:" + ( System.currentTimeMillis() - elapsedTime ) );
-      }
+      logger.debug( "Finished processing zip plugin '{}'", name );
+      logger.debug( "Elapsed time in millis: {} ", ( System.currentTimeMillis() - elapsedTime ) );
       return null;
     } );
   }
@@ -119,23 +114,25 @@ public class PluginZipFileProcessor {
     Manifest manifest = null;
     ZipInputStream zipInputStream = zipInputStreamProvider.get();
     try {
+      logger.debug( "Processing plugin - Name: {} SymbolicName: {} Version: {}",
+              this.name, this.symbolicName, this.version );
       ZipEntry zipEntry;
 
-      boolean processedPluginXml = false;
       byte[]  pluginSpringXmlBytes = null;
       String pluginSpringXmlName = null;
       while ( ( zipEntry = zipInputStream.getNextEntry() ) != null ) {
         String name = zipEntry.getName();
 
         byte[] bytes = getEntryBytes( zipInputStream );
-        if ( !processedPluginXml && name != null && name.endsWith( PLUGIN_SPRING_XML_FILENAME ) ) {
+        // [BACKLOG-14815]
+        // Ensures the plugin.xml file is read before plugin.spring.xml. This is needed so
+        // {@link org.pentaho.osgi.platform.plugin.deployer.impl.handlers.SpringFileHandler#handle()}
+        // can get the proper bundleName and set the service entry point.
+        if ( pluginSpringXmlBytes == null && name != null && name.endsWith( PLUGIN_SPRING_XML_FILENAME ) ) {
           pluginSpringXmlBytes = bytes; // Store plugin.spring.xml for processing after plugin.xml
           pluginSpringXmlName = name;
         } else {
           processEntry( zipOutputStream, pluginMetadata, zipEntry.isDirectory(), name, bytes );
-          if ( name != null && name.endsWith( PLUGIN_XML_FILENAME ) ) {
-            processedPluginXml = true;
-          }
         }
       }
 
@@ -234,18 +231,23 @@ public class PluginZipFileProcessor {
 
   private void processEntry( ZipOutputStream zipOutputStream, PluginMetadata pluginMetadata,
                              boolean isDirectory, String name, byte[] bytes ) throws IOException {
+    logger.trace( "Processing zip entry: {} ", name );
     AtomicBoolean output = new AtomicBoolean( false );
     boolean wasHandled = false;
     for ( PluginFileHandler pluginFileHandler : pluginFileHandlers ) {
 
       if ( pluginFileHandler.handles( name ) ) {
         wasHandled = true;
+        logger.trace( "Plugin file handler {} will handle {}", pluginFileHandler.toString(), name );
         try {
           // There is no short-circuit. Multiple handlers can do work on any given resource
           boolean handlerSaysOutput = pluginFileHandler
                   .handle( name, bytes, pluginMetadata );
+          logger.trace( "Plugin file handler {} handled {}", pluginFileHandler.toString(), name );
           output.compareAndSet( false, handlerSaysOutput );
         } catch ( PluginHandlingException e ) {
+          logger.error( "Plugin file handler " + pluginFileHandler.toString() + " threw exception when handling "
+                  + name, e );
           throw new IOException( e );
         }
       }
