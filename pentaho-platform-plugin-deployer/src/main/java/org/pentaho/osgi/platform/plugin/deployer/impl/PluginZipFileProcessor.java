@@ -56,10 +56,8 @@ import java.util.zip.ZipOutputStream;
  */
 public class PluginZipFileProcessor {
   public static final String BLUEPRINT = "OSGI-INF/blueprint/blueprint.xml";
-  public static final String BLUEPRINT_REGEX = ".*\\/OSGI-INF\\/blueprint\\/.*\\.xml";
-  public static final String MANIFEST_REGEX = ".*\\/META-INF\\/MANIFEST.MF";
-  public static final String MANIFEST_MF = "MANIFEST.MF";
-  public static final String OSGI_INF_BLUEPRINT = "OSGI-INF/blueprint/";
+  public static final String PLUGIN_XML_FILENAME = "plugin.xml";
+  public static final String PLUGIN_SPRING_XML_FILENAME = "plugin.spring.xml";
 
   private Logger logger = LoggerFactory.getLogger( getClass() );
   private final List<PluginFileHandler> pluginFileHandlers;
@@ -72,7 +70,7 @@ public class PluginZipFileProcessor {
   public PluginZipFileProcessor( List<PluginFileHandler> pluginFileHandlers, boolean isPluginProcessedBefore,
                                  String name, String symbolicName,
                                  String version ) {
-    this.pluginFileHandlers = pluginFileHandlers;
+    this.pluginFileHandlers = pluginFileHandlers != null ? pluginFileHandlers : new ArrayList<>();
     this.name = name;
     this.symbolicName = symbolicName;
     this.version = version;
@@ -110,7 +108,7 @@ public class PluginZipFileProcessor {
   }
 
   public void process( Supplier<ZipInputStream> zipInputStreamProvider, ZipOutputStream zipOutputStream )
-    throws IOException {
+          throws IOException {
     File dir = Files.createTempDir();
     PluginMetadata pluginMetadata = null;
     try {
@@ -123,54 +121,38 @@ public class PluginZipFileProcessor {
     try {
       ZipEntry zipEntry;
 
-      List<PluginFileHandler> handlers = new ArrayList<>();
-      if ( pluginFileHandlers != null ) {
-        handlers.addAll( pluginFileHandlers );
-      }
-
+      boolean processedPluginXml = false;
+      byte[]  pluginSpringXmlBytes = null;
+      String pluginSpringXmlName = null;
       while ( ( zipEntry = zipInputStream.getNextEntry() ) != null ) {
         String name = zipEntry.getName();
 
-        AtomicBoolean output = new AtomicBoolean( false );
-        boolean wasHandled = false;
-        byte[] bytes = null;
-        for ( int i = 0; i < handlers.size(); i++ ) {
-          PluginFileHandler pluginFileHandler = handlers.get( i );
-
-          if ( pluginFileHandler.handles( zipEntry.getName() ) ) {
-            wasHandled = true;
-            if ( bytes == null ) {
-              bytes = getEntryBytes( zipInputStream );
-            }
-            try {
-              // There is no short-circuit. Multiple handlers can do work on any given resource
-              boolean handlerSaysOutput = pluginFileHandler
-                .handle( zipEntry.getName(), bytes, pluginMetadata );
-              output.compareAndSet( false, handlerSaysOutput );
-            } catch ( PluginHandlingException e ) {
-              throw new IOException( e );
-            }
+        byte[] bytes = getEntryBytes( zipInputStream );
+        if ( !processedPluginXml && name != null && name.endsWith( PLUGIN_SPRING_XML_FILENAME ) ) {
+          pluginSpringXmlBytes = bytes; // Store plugin.spring.xml for processing after plugin.xml
+          pluginSpringXmlName = name;
+        } else {
+          processEntry( zipOutputStream, pluginMetadata, zipEntry.isDirectory(), name, bytes );
+          if ( name != null && name.endsWith( PLUGIN_XML_FILENAME ) ) {
+            processedPluginXml = true;
           }
-        }
-        if ( !wasHandled || output.get() ) {
-          if ( bytes == null ) {
-            bytes = getEntryBytes( zipInputStream );
-          }
-          zipOutputStream.putNextEntry( new ZipEntry( name ) );
-          if ( zipEntry.isDirectory() == false ) {
-            IOUtils.write( bytes, zipOutputStream );
-          }
-          zipOutputStream.closeEntry();
         }
       }
+
+      if ( pluginSpringXmlBytes != null ) {
+        processEntry( zipOutputStream, pluginMetadata, false, pluginSpringXmlName, pluginSpringXmlBytes );
+      }
+
     } finally {
       IOUtils.closeQuietly( zipInputStream );
     }
 
+
+
     // Write blueprint to disk, picked up with others later
     int tries = 100;
     File blueprintDir =
-      new File( dir.getAbsolutePath() + "/" + BLUEPRINT.substring( 0, BLUEPRINT.lastIndexOf( '/' ) ) );
+            new File( dir.getAbsolutePath() + "/" + BLUEPRINT.substring( 0, BLUEPRINT.lastIndexOf( '/' ) ) );
     while ( !blueprintDir.exists() && tries-- > 0 ) {
       blueprintDir.mkdirs();
     }
@@ -198,7 +180,7 @@ public class PluginZipFileProcessor {
     ZipEntry manifestEntry = new ZipEntry( JarFile.MANIFEST_NAME );
     zipOutputStream.putNextEntry( manifestEntry );
     pluginMetadata.getManifestUpdater()
-      .write( manifest, zipOutputStream, name, symbolicName, version );
+            .write( manifest, zipOutputStream, name, symbolicName, version );
     zipOutputStream.closeEntry();
     createdEntries.add( JarFile.MANIFEST_NAME );
 
@@ -250,6 +232,33 @@ public class PluginZipFileProcessor {
     }
   }
 
+  private void processEntry( ZipOutputStream zipOutputStream, PluginMetadata pluginMetadata,
+                             boolean isDirectory, String name, byte[] bytes ) throws IOException {
+    AtomicBoolean output = new AtomicBoolean( false );
+    boolean wasHandled = false;
+    for ( PluginFileHandler pluginFileHandler : pluginFileHandlers ) {
+
+      if ( pluginFileHandler.handles( name ) ) {
+        wasHandled = true;
+        try {
+          // There is no short-circuit. Multiple handlers can do work on any given resource
+          boolean handlerSaysOutput = pluginFileHandler
+                  .handle( name, bytes, pluginMetadata );
+          output.compareAndSet( false, handlerSaysOutput );
+        } catch ( PluginHandlingException e ) {
+          throw new IOException( e );
+        }
+      }
+    }
+    if ( !wasHandled || output.get() ) {
+      zipOutputStream.putNextEntry( new ZipEntry( name ) );
+      if ( isDirectory == false ) {
+        IOUtils.write( bytes, zipOutputStream );
+      }
+      zipOutputStream.closeEntry();
+    }
+  }
+
   private byte[] getEntryBytes( ZipInputStream zipInputStream ) throws IOException {
 
     return IOUtils.toByteArray( zipInputStream );
@@ -285,4 +294,3 @@ public class PluginZipFileProcessor {
     }
   }
 }
-
