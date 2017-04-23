@@ -5,15 +5,14 @@
   <parent>
     <groupId>pentaho</groupId>
     <artifactId>pentaho-osgi-bundles</artifactId>
-    <version>7.0-SNAPSHOT</version>
+    <version>7.0.0.5-89</version>
   </parent>
   <artifactId>pentaho-server-bundle</artifactId>
-  <version>7.0-SNAPSHOT</version>
+  <version>7.0.0.5-89</version>
   <packaging>bundle</packaging>
   <name>Pentaho Community Edition Project: ${project.artifactId}</name>
   <description>a Pentaho open source project</description>
   <url>http://www.pentaho.com</url>
-
   <dependencies>
     <dependency>
       <groupId>pentaho</groupId>
@@ -58,7 +57,6 @@
       <version>${junit.version}</version>
       <scope>test</scope>
     </dependency>
-
     <dependency>
       <groupId>pentaho</groupId>
       <artifactId>pentaho-platform-api</artifactId>
@@ -70,8 +68,8 @@
       <version>${dependency.pentaho-platform.revision}</version>
       <exclusions>
         <exclusion>
-          <groupId>*</groupId>
           <artifactId>*</artifactId>
+          <groupId>*</groupId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -80,7 +78,6 @@
       <artifactId>cxf-rt-frontend-jaxrs</artifactId>
       <version>${cxf.version}</version>
     </dependency>
-
     <dependency>
       <groupId>org.ops4j.pax.web</groupId>
       <artifactId>pax-web-spi</artifactId>
@@ -91,7 +88,6 @@
       <artifactId>javax.servlet-api</artifactId>
       <version>3.0.1</version>
     </dependency>
-
   </dependencies>
   <build>
     <finalName>${project.artifactId}</finalName>
