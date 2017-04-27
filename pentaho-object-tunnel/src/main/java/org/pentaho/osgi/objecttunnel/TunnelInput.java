@@ -120,6 +120,17 @@ public class TunnelInput implements Publisher<TunneledInputObject>, AutoCloseabl
           } else if ( object == TunnelMarker.END ) {
             close();
             return;
+          } else if ( object instanceof String ) {
+            // We would like to send a throwable, but this is not possible due to deserialization issues.
+            String str = object.toString();
+            if ( str.startsWith( "Error: " ) ) {
+              publishProcessor.onError( new Exception( str ) {
+                // Stacktrace from this point would be misleading, simply remove.
+                @Override public synchronized Throwable fillInStackTrace() {
+                  return this;
+                }
+              } );
+            }
           } else {
             throw new IllegalStateException( "Unexpected object in stream: " + object.toString() );
           }
