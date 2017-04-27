@@ -27,7 +27,6 @@ package org.pentaho.osgi.objecttunnel;
 import io.reactivex.processors.PublishProcessor;
 import org.reactivestreams.Publisher;
 import org.reactivestreams.Subscriber;
-import org.reactivestreams.Subscription;
 
 import java.io.ObjectInputStream;
 import java.util.ArrayList;
@@ -120,6 +119,17 @@ public class TunnelInput implements Publisher<TunneledInputObject>, AutoCloseabl
           } else if ( object == TunnelMarker.END ) {
             close();
             return;
+          } else if ( object instanceof String ) {
+            // We would like to send a throwable, but this is not possible due to deserialization issues.
+            String str = object.toString();
+            if ( str.startsWith( "Error: " ) ) {
+              publishProcessor.onError( new Exception( str ) {
+                // Stacktrace from this point would be misleading, simply remove.
+                @Override public synchronized Throwable fillInStackTrace() {
+                  return this;
+                }
+              } );
+            }
           } else {
             throw new IllegalStateException( "Unexpected object in stream: " + object.toString() );
           }
@@ -130,6 +140,7 @@ public class TunnelInput implements Publisher<TunneledInputObject>, AutoCloseabl
           try {
             Thread.sleep( error_dampening_millis );
           } catch ( InterruptedException ignored ) {
+            //ignored
           }
           // Keep exception in case we want to throw
           capturedException = e;
