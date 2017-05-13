@@ -214,6 +214,29 @@ public class TunneledInputTest {
 
   }
 
+  @Test
+  public void testErrorStringToException() throws Exception {
+    CountDownLatch latch = new CountDownLatch( 1 );
+    AtomicBoolean errored = new AtomicBoolean( false );
+
+    String errorStr = "Error: this is an Exception message";
+    outputStream.writeObject( errorStr );
+    // Consume the output and create a tunnel on the input
+    createTunnel();
+
+    tunnel.subscribe( new SubscriberAdapter<TunneledInputObject>() {
+      @Override public void onError( Throwable t ) {
+        assertEquals( errorStr, t.getMessage() );
+        errored.set( true );
+        latch.countDown();
+      }
+    } );
+    tunnel.open();
+
+    latch.await( 30, TimeUnit.SECONDS );
+
+    assertTrue( errored.get() );
+  }
 
   private static class SubscriberAdapter<T> implements Subscriber<T> {
     @Override public void onSubscribe( Subscription s ) {
