@@ -5,10 +5,10 @@
   <parent>
     <groupId>pentaho</groupId>
     <artifactId>pentaho-osgi-bundles</artifactId>
-    <version>6.1-SNAPSHOT</version>
+    <version>6.1.0.14-354</version>
   </parent>
   <artifactId>pentaho-requirejs-osgi-manager</artifactId>
-  <version>6.1-SNAPSHOT</version>
+  <version>6.1.0.14-354</version>
   <packaging>bundle</packaging>
   <name>Pentaho Community Edition Project: ${project.artifactId}</name>
   <description>a Pentaho open source project</description>
@@ -87,10 +87,8 @@
         </configuration>
       </plugin>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-dependency-plugin</artifactId>
         <version>2.10</version>
-        <inherited>false</inherited>
         <executions>
           <execution>
             <id>unpack2</id>
@@ -110,6 +108,7 @@
             </configuration>
           </execution>
         </executions>
+        <inherited>false</inherited>
       </plugin>
       <plugin>
         <artifactId>maven-resources-plugin</artifactId>
@@ -127,7 +126,7 @@
                 <resource>
                   <directory>target/dependency/META-INF/resources/webjars/requirejs/${requirejs.version}</directory>
                   <includes>
-                      <include>require.js</include>
+                    <include>require.js</include>
                   </includes>
                 </resource>
               </resources>
