@@ -17,8 +17,8 @@
  /**
  * RequireJS loader plugin for loading localized messages via the OSGI i18n web service.
  */
- define(["pentaho/util/MessageBundle", "dojo/request"], 
-  function (MessageBundle, request) { 
+ define(["pentaho/i18n/MessageBundle", "dojo/request"],
+  function (MessageBundle, request) {
   "use strict";
 
   return {
@@ -37,7 +37,7 @@
             "Accept": "application/JSON"
           }
         };
-        
+
         request(url, options).then(function (data) {
           if (data) {
             var bundle = new MessageBundle(JSON.parse(data));
@@ -45,9 +45,9 @@
           } else {
             onLoad();
           }
-        }, function (err) {          
-          throw new Error("Error accessing i18n OSGI web service with bundlePath: " + bundlePath + "'."); 
-        });        
+        }, function (err) {
+          throw new Error("Error accessing i18n OSGI web service with bundlePath: " + bundlePath + "'.");
+        });
       }
     }
   };
