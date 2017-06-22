@@ -1,5 +1,5 @@
 /*!
- * Copyright 2010 - 2016 Pentaho Corporation.  All rights reserved.
+ * Copyright 2010 - 2017 Pentaho Corporation.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,15 +19,16 @@ package org.pentaho.osgi.metastore.locator.api.impl;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.pentaho.di.repository.Repository;
-import org.pentaho.metastore.api.IMetaStore;
+import org.pentaho.osgi.blueprint.collection.utils.ServiceMap;
+import org.pentaho.osgi.metastore.locator.api.MetastoreLocator;
 import org.pentaho.osgi.metastore.locator.api.MetastoreProvider;
 
-import java.util.Collections;
+import com.google.common.collect.ImmutableMap;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
-import static org.mockito.Mockito.*;
+
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 /**
  * Created by bryan on 4/15/16.
@@ -42,39 +43,15 @@ public class MetastoreLocatorImplTest {
 
   @Test
   public void testgetMetastoreNone() {
-    assertNull( metastoreLocator.getMetastore() );
+    assertNull( metastoreLocator.getMetastore( "" ) );
   }
 
   @Test
   public void testgetMetastoreSingleNull() {
     MetastoreProvider provider = mock( MetastoreProvider.class );
-    metastoreLocator.itemAdded( provider, null );
-    assertNull( metastoreLocator.getMetastore() );
+    metastoreLocator.itemAdded( provider, ImmutableMap.of( ServiceMap.SERVICE_KEY_PROPERTY,
+        MetastoreLocator.LOCAL_PROVIDER_KEY ) );
+    assertNull( metastoreLocator.getMetastore( MetastoreLocator.LOCAL_PROVIDER_KEY ) );
     verify( provider ).getMetastore();
-  }
-
-  @Test
-  public void testgetMetastoreMultiple() {
-    MetastoreProvider provider1 = mock( MetastoreProvider.class );
-    MetastoreProvider provider2 = mock( MetastoreProvider.class );
-    MetastoreProvider provider3 = mock( MetastoreProvider.class );
-    MetastoreProvider provider4 = mock( MetastoreProvider.class );
-    metastoreLocator
-      .itemAdded( provider1, Collections.singletonMap( MetastoreLocatorImpl.SERVICE_RANKING, 30 ) );
-    metastoreLocator
-      .itemAdded( provider2, Collections.singletonMap( MetastoreLocatorImpl.SERVICE_RANKING, 40 ) );
-    metastoreLocator
-      .itemAdded( provider3, Collections.singletonMap( MetastoreLocatorImpl.SERVICE_RANKING, 50 ) );
-    metastoreLocator
-      .itemAdded( provider4, Collections.singletonMap( MetastoreLocatorImpl.SERVICE_RANKING, 20 ) );
-
-    IMetaStore metaStore = mock( IMetaStore.class );
-    when( provider1.getMetastore() ).thenReturn( metaStore );
-
-    assertEquals( metaStore, metastoreLocator.getMetastore() );
-    verify( provider1 ).getMetastore();
-    verify( provider2 ).getMetastore();
-    verify( provider3 ).getMetastore();
-    verify( provider4, never() ).getMetastore();
   }
 }
