@@ -1,5 +1,5 @@
 /*!
- * Copyright 2010 - 2016 Pentaho Corporation.  All rights reserved.
+ * Copyright 2010 - 2017 Pentaho Corporation.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,14 +14,19 @@
  * limitations under the License.
  *
  */
-
 package org.pentaho.osgi.metastore.locator.api;
 
 import org.pentaho.metastore.api.IMetaStore;
 
 /**
- * Created by bryan on 3/28/16.
+ * Created by tkafalas on 6/19/2017
  */
 public interface MetastoreLocator {
-  IMetaStore getMetastore();
+  final String LOCAL_PROVIDER_KEY = "LocalMetastoreProvider";
+  final String CARTE_PROVIDER_KEY = "CarteMetastoreProvider";
+  final String PMR_PROVIDER_KEY = "PmrMetastoreProvider";
+  final String REPOSITORY_PROVIDER_KEY = "RepositoryMetastoreProvider";
+
+  IMetaStore getMetastore( String providerKey );
+
 }
