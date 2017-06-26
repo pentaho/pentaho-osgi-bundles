@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://www.osgi.org/xmlns/blueprint/v1.0.0 http://www.osgi.org/xmlns/blueprint/v1.0.0/blueprint.xsd">
+
+  <bean id="managedResourceProvider" class="org.pentaho.osgi.manager.resource.ManagedResourceProvider" scope="singleton"
+        init-method="init">
+    <property name="bundleContext" ref="blueprintBundleContext"/>
+  </bean>
+
+  <bean id="managedResourceHandler" class="org.pentaho.osgi.manager.resource.ManagedResourceHandler" scope="singleton">
+    <property name="managedResourceProvider" ref="managedResourceProvider"/>
+  </bean>
+
+  <bean id="bundleListener" class="org.pentaho.osgi.manager.resource.BundleResourceListener" scope="singleton"
+        init-method="init">
+    <property name="bundleContext" ref="blueprintBundleContext"/>
+    <property name="resourceHandler" ref="managedResourceHandler" />
+  </bean>
+
+  <service id="ManagedResourceProvider" interface="org.pentaho.osgi.manager.resource.api.ResourceProvider"
+           ref="managedResourceProvider"/>
+
+</blueprint>
