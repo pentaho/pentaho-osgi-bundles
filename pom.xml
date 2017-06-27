@@ -160,6 +160,7 @@
         <module>pentaho-spring-dm-extender</module>
         <module>pentaho-object-tunnel</module>
         <module>pentaho-zookeeper-fragment</module>
+        <module>pentaho-bundle-resource-manager</module>
       </modules>
       <distributionManagement>
         <site>
