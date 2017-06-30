@@ -47,6 +47,7 @@ public class ManagedResourceHandler implements ResourceHandler {
 
   private ResourceProvider managedResourceProvider;
   private Logger logger = LoggerFactory.getLogger( ManagedResourceHandler.class );
+  public static String BUNDLE_MANAGED_RESOURCES_DIR = "/managed-resources";
 
   public void setManagedResourceProvider( ResourceProvider resourceProvider ) {
     this.managedResourceProvider = resourceProvider;
@@ -54,7 +55,7 @@ public class ManagedResourceHandler implements ResourceHandler {
 
   @Override public boolean hasManagedResources( Bundle bundle ) {
     try {
-      return bundle.getResources( ManagedResourceProvider.MANAGED_RESOURCES_DIR ) != null;
+      return bundle.getResources( BUNDLE_MANAGED_RESOURCES_DIR ) != null;
     } catch ( IOException e ) {
       return false;
     }
@@ -62,7 +63,7 @@ public class ManagedResourceHandler implements ResourceHandler {
 
   @Override public void handleManagedResources( Bundle blueprintBundle ) {
     File to = getOutputDirectory( blueprintBundle );
-    writeFilesToDisk( blueprintBundle, ManagedResourceProvider.MANAGED_RESOURCES_DIR, to );
+    writeFilesToDisk( blueprintBundle, BUNDLE_MANAGED_RESOURCES_DIR, to );
   }
 
   /**
@@ -104,7 +105,7 @@ public class ManagedResourceHandler implements ResourceHandler {
         URL url = fileUrls.nextElement();
 
         Path outPath = Paths
-          .get( to.getPath(), url.getFile().replace( ManagedResourceProvider.MANAGED_RESOURCES_DIR, "" ) );
+          .get( to.getPath(), url.getFile().replace( BUNDLE_MANAGED_RESOURCES_DIR, "" ) );
         File outFile = outPath.toFile();
         String fileName = outPath.getFileName().toString();
 

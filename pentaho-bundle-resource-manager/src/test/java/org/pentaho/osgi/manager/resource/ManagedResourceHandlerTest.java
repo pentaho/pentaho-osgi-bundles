@@ -171,12 +171,13 @@ public class ManagedResourceHandlerTest {
   }
 
   @Test public void testHasManagedResources() throws Exception {
-    doReturn( mock( Enumeration.class ) ).when( bundle ).getResources( ManagedResourceProvider.MANAGED_RESOURCES_DIR );
+    doReturn( mock( Enumeration.class ) ).when( bundle )
+      .getResources( ManagedResourceHandler.BUNDLE_MANAGED_RESOURCES_DIR );
     assertTrue( resourceHandler.hasManagedResources( bundle ) );
   }
 
   @Test public void testDoesNotHaveManagedResources() throws Exception {
-    doReturn( null ).when( bundle ).getResources( ManagedResourceProvider.MANAGED_RESOURCES_DIR );
+    doReturn( null ).when( bundle ).getResources( ManagedResourceHandler.BUNDLE_MANAGED_RESOURCES_DIR );
     assertFalse( resourceHandler.hasManagedResources( bundle ) );
   }
 
@@ -192,6 +193,6 @@ public class ManagedResourceHandlerTest {
     resourceHandler.handleManagedResources( bundle );
     verify( resourceHandler ).getOutputDirectory( bundle );
     verify( resourceHandler )
-      .writeFilesToDisk( eq( bundle ), eq( ManagedResourceProvider.MANAGED_RESOURCES_DIR ), any( File.class ) );
+      .writeFilesToDisk( eq( bundle ), eq( ManagedResourceHandler.BUNDLE_MANAGED_RESOURCES_DIR ), any( File.class ) );
   }
 }
