@@ -94,7 +94,9 @@ public class WebContextServlet extends HttpServlet {
 
         writeWebContextVar( printWriter, "CONTEXT_PATH", CONTEXT_PATH );
 
-        writeWebContextVar( printWriter, "SESSION_LOCALE", getLocale( httpRequest ) );
+        String locale = getLocale( httpRequest );
+        writeWebContextVar( printWriter, "SESSION_LOCALE", locale );
+        writeLocaleModule( printWriter, locale );
 
         writeWebContextVar( printWriter, "requireCfg", getRequireCfg(), false, false );
         writeEnvironmentModuleConfig( printWriter, httpRequest );
@@ -131,13 +133,15 @@ public class WebContextServlet extends HttpServlet {
     }
 
     writer.write( "\nvar " + variable + " = " + value + ";\n" );
+  }
 
-    if ( variable.equals( "SESSION_LOCALE" ) ) {
-      // If RequireJs is available, supply a module
-      writer.write( "\nif (typeof(pen) !== 'undefined' && pen.define) {" );
-      writer.write( "\n  pen.define('Locale', { locale: " + value + " });" );
-      writer.write( "\n}\n" );
-    }
+  private void writeLocaleModule( PrintWriter writer, String value ) {
+    value = escapeEnvironmentVar( value );
+
+    writer.write( "// If RequireJs is available, supply a module" );
+    writer.write( "\nif (typeof(pen) !== 'undefined' && pen.define) {" );
+    writer.write( "\n  pen.define('Locale', { locale: " + value + " });" );
+    writer.write( "\n}\n" );
   }
 
   private void writeEnvironmentModuleConfig( PrintWriter writer, HttpServletRequest request ) {
@@ -276,7 +280,7 @@ public class WebContextServlet extends HttpServlet {
             .append( "\n  bundles: {}," )
             .append( "\n  config: { \"pentaho/service\": {} }," )
             .append( "\n  packages: []" )
-            .append( "}" );
+            .append( "\n}" );
 
     return requireCfg.toString();
   }
