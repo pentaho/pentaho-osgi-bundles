@@ -1,7 +1,7 @@
 /*
  * ******************************************************************************
  *
- * Copyright (C) 2002-2016 by Pentaho : http://www.pentaho.com
+ * Copyright (C) 2002-2017 by Pentaho : http://www.pentaho.com
  *
  * ******************************************************************************
  *
@@ -21,15 +21,19 @@
 package org.pentaho.platform.pdi;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 import org.pentaho.di.i18n.LanguageChoice;
+import org.pentaho.platform.api.engine.ICacheManager;
 import org.pentaho.platform.api.engine.IPlatformWebResource;
+import org.pentaho.platform.engine.core.system.PentahoSystem;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -39,54 +43,178 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-/**
- * Created by nbaker on 7/27/16.
- */
 public class WebContextServlet extends HttpServlet {
   // this is the map that groups contexts to a set of urls to add to the context
   private Map<String, Set<IPlatformWebResource>> contextResourcesMap = new HashMap<>();
+  protected static ICacheManager cache = PentahoSystem.getCacheManager( null );
 
-  public static final String WEB_CONTEXT_JS = "webcontext.js"; //$NON-NLS-1$
+  static final String WEB_CONTEXT_JS = "webcontext.js"; //$NON-NLS-1$
 
-  @Override protected void doGet( HttpServletRequest httpRequest, HttpServletResponse httpResponse )
+  static final String CONTEXT_PATH = "/";
+  private static final String REQUIREJS_INIT_LOCATION = "requirejs-manager/js/require-init.js";
+
+  private static final Integer DEFAULT_WAIT_TIME = 30;
+
+  static final String CONTEXT = "context";
+  static final String LOCALE = "locale";
+
+  private Integer requireWaitTime;
+
+  public void setRequireWaitTime( Integer value ) {
+    this.requireWaitTime = value;
+  }
+
+  public Integer getRequireWaitTime() {
+    Integer waitTime = null;
+
+    if ( cache != null ) {
+      waitTime = (Integer) cache.getFromGlobalCache( PentahoSystem.WAIT_SECONDS );
+    }
+
+    if ( waitTime == null ) {
+      waitTime = this.requireWaitTime != null ? this.requireWaitTime : DEFAULT_WAIT_TIME;
+      if ( cache != null ) {
+        cache.putInGlobalCache( PentahoSystem.WAIT_SECONDS, waitTime );
+      }
+    }
+
+    return waitTime;
+  }
+
+  @Override
+  protected void doGet( HttpServletRequest httpRequest, HttpServletResponse httpResponse )
       throws ServletException, IOException {
 
     String requestStr = httpRequest.getRequestURI();
     if ( requestStr != null && requestStr.contains( WEB_CONTEXT_JS ) ) {
-
       httpResponse.setContentType( "text/javascript" ); //$NON-NLS-1$
-      String contextPath = "/";
-      StringBuilder stringBuilder = new StringBuilder();
-      stringBuilder.append( "var CONTEXT_PATH = '" + contextPath + "';\nvar dojoConfig = [];\n\n" );
 
-      Locale effectiveLocale = getLocale();
-      if ( StringUtils.isNotEmpty( httpRequest.getParameter( "locale" ) ) ) {
-        effectiveLocale = new Locale( httpRequest.getParameter( "locale" ) );
+      try ( PrintWriter printWriter = new PrintWriter( httpResponse.getOutputStream() ) ) {
+        writeWebContextVar( printWriter, "dojoConfig", "[]", false, false );
+
+        writeWebContextVar( printWriter, "CONTEXT_PATH", CONTEXT_PATH );
+
+        String locale = getLocale( httpRequest );
+        writeWebContextVar( printWriter, "SESSION_LOCALE", locale );
+        writeLocaleModule( printWriter, locale );
+
+        writeWebContextVar( printWriter, "requireCfg", getRequireCfg(), false, false );
+        writeEnvironmentModuleConfig( printWriter, httpRequest );
+
+        writeJsWebResources( printWriter, httpRequest );
+        writeCssWebResources( printWriter, httpRequest );
+
+        writeDocumentWriteResource( printWriter, REQUIREJS_INIT_LOCATION );
       }
-      appendLocale( stringBuilder, effectiveLocale );
-
-      String context = null;
-      if ( StringUtils.isNotEmpty( httpRequest.getParameter( "context" ) ) ) {
-        context = httpRequest.getParameter( "context" );
-      }
-
-      appendJsWebResources( stringBuilder, getWebResources( context, ".*\\.js" ) );
-      appendCssWebResources( stringBuilder, getWebResources( context, ".*\\.css" ) );
-
-      String requireJsLocation = "requirejs-manager/js/require-init.js";
-      stringBuilder.append(
-          "document.write(\"<script type='text/javascript' src='" + contextPath
-              + requireJsLocation + "'></scr\"+\"ipt>\");\n" );
-
-      httpResponse.getWriter().write( stringBuilder.toString() );
     } else {
       httpResponse.sendError( 404 );
     }
 
   }
 
+  @Override
+  public void destroy() {
+
+  }
+
+  // region Write Methods
+  private void writeWebContextVar( PrintWriter writer, String variable, String value ) {
+    writeWebContextVar( writer, variable, value, true, true );
+  }
+
+  private void writeWebContextVar( PrintWriter writer, String variable, String value,
+                                   boolean deprecated, boolean escapeValue ) {
+    if ( escapeValue ) {
+      value = escapeEnvironmentVar( value );
+    }
+
+    if ( deprecated ) {
+      writer.write( "\n/** @deprecated - use 'pentaho/context' module's variable instead */" );
+    }
+
+    writer.write( "\nvar " + variable + " = " + value + ";\n" );
+  }
+
+  private void writeLocaleModule( PrintWriter writer, String value ) {
+    value = escapeEnvironmentVar( value );
+
+    writer.write( "// If RequireJs is available, supply a module" );
+    writer.write( "\nif (typeof(pen) !== 'undefined' && pen.define) {" );
+    writer.write( "\n  pen.define('Locale', { locale: " + value + " });" );
+    writer.write( "\n}\n" );
+  }
+
+  private void writeEnvironmentModuleConfig( PrintWriter writer, HttpServletRequest request ) {
+    String locale = escapeEnvironmentVar( getLocale( request ) );
+    String serverUrl = escapeEnvironmentVar( CONTEXT_PATH );
+
+    writer.write( "\nrequireCfg.config[\"pentaho/context\"] = {" );
+    writer.write( "\n  theme: null," );
+    writer.write( "\n  locale: " + locale + "," );
+    writer.write( "\n  user: {" );
+    writer.write( "\n    id: null," );
+    writer.write( "\n    home: null" );
+    writer.write( "\n  }," );
+    writer.write( "\n  server: {" );
+    writer.write( "\n    url: " + serverUrl );
+    writer.write( "\n  }," );
+    writer.write( "\n  reservedChars: null" );
+    writer.write( "\n};\n" );
+  }
+
+  private void writeJsWebResources( PrintWriter writer, HttpServletRequest request ) {
+    String contextName = getContextName( request );
+    List<String> resources = getWebResources( contextName, ".*\\.js" );
+
+    writeWebResources( writer, resources );
+  }
+
+  private void writeCssWebResources( PrintWriter writer, HttpServletRequest request ) {
+    String contextName = getContextName( request );
+    List<String> resources = getWebResources( contextName, ".*\\.css" );
+
+    writeWebResources( writer, resources );
+  }
+
+  void writeWebResources( PrintWriter writer, List<String> resources ) {
+    resources.stream().forEach( location -> {
+      if ( location.startsWith( "/" ) ) {
+        location = location.substring( 1 );
+      }
+
+      writeDocumentWriteResource( writer, location );
+    } );
+  }
+
+  private void writeDocumentWriteResource( PrintWriter writer, String location ) {
+    boolean isJavascript = location.endsWith( ".js" );
+
+    writer.write( "document.write(\"" );
+
+    if ( isJavascript ) {
+      writer.write( "<script type='text/javascript' src=" );
+    } else {
+      writer.write( "<link rel='stylesheet' type='text/css' href=" );
+    }
+
+    writer.write( "'\" + CONTEXT_PATH + \"" + location + "'>" );
+
+    writer.append(  isJavascript ? ( "</scr\" + \"ipt>" ) : "" );
+    writer.write( "\");\n" );
+  }
+  // endregion
+
+  private String escapeEnvironmentVar( String variable ) {
+    if ( variable == null ) {
+      return null;
+    }
+
+    return "\"" + StringEscapeUtils.escapeJavaScript( variable ) + "\"";
+  }
+
   List<String> getWebResources( String context, String filePattern ) {
-    Set<IPlatformWebResource> resources = contextResourcesMap.get( context );
+    Set<IPlatformWebResource> resources = this.contextResourcesMap.get( context );
+
     if ( CollectionUtils.isNotEmpty( resources ) ) {
       List<String> webResources = resources.stream()
         .filter( iPlatformWebResource -> iPlatformWebResource.getLocation().matches( filePattern ) )
@@ -94,69 +222,101 @@ public class WebContextServlet extends HttpServlet {
         .collect( Collectors.toList() );
       return webResources;
     }
+
     return Collections.EMPTY_LIST;
   }
 
-  Locale getLocale() {
+  /**
+   * Gets the session locale from the http request. If no locale is defined,
+   * as fallback, the default locale will be used instead.
+   *
+   * @param request - The http request.
+   *
+   * @return the session locale.
+   */
+  private String getLocale( HttpServletRequest request ) {
     // set the locale from PDI
     Locale defaultLocale = LanguageChoice.getInstance().getDefaultLocale();
     if ( defaultLocale == null ) {
       defaultLocale = Locale.getDefault();
     }
-    return defaultLocale;
-  }
 
-  void appendLocale( StringBuilder sb, Locale locale ) {
-    sb.append(
-      "var SESSION_LOCALE = '" + locale.toString() + "';\n" ) // Global variable
-      // If RequireJs is available, supply a module
-      .append(
-        "if(typeof(pen) != 'undefined' && pen.define){pen.define('Locale', {locale:'"
-          + locale.toString() + "'})};\n" );
-  }
+    String locale = request.getParameter( LOCALE );
+    if ( StringUtils.isEmpty( locale ) ) {
+      locale = defaultLocale.toString();
+    }
 
-  @Override public void destroy() {
-
+    return locale;
   }
 
   /**
-   * Add any resource to the web context
-   * @param resource
+   * Gets Pentaho context name from the http request.
+   *
+   * @param request - The http request.
+   *
+   * @return the Pentaho context name.
+   */
+  private String getContextName( HttpServletRequest request ) {
+    String context = request.getParameter( CONTEXT );
+
+    return StringUtils.isNotEmpty( context ) ? context : null;
+  }
+
+  /**
+   * Gets the base structure of the `requireCfg` javascript object.
+   *
+   * @return
+   */
+  private String getRequireCfg() {
+    // setup a RequireJS config object for plugins to extend
+    StringBuilder requireCfg = new StringBuilder();
+
+    requireCfg
+            .append( "{" )
+            .append( "\n  waitSeconds: " ).append( getRequireWaitTime() ).append( "," )
+            .append( "\n  paths: {}," )
+            .append( "\n  shim: {}," )
+            .append( "\n  map: { \"*\": {} }," )
+            .append( "\n  bundles: {}," )
+            .append( "\n  config: { \"pentaho/service\": {} }," )
+            .append( "\n  packages: []" )
+            .append( "\n}" );
+
+    return requireCfg.toString();
+  }
+
+  /**
+   * Add any resource to the web context.
+   *
+   * @param resource - the platform web resource.
    */
   public void addPlatformWebResource( IPlatformWebResource resource ) {
+    if ( resource == null ) {
+      return;
+    }
+
+    String resourceContext = resource.getContext();
     // see if we are already aware of the specified context
-    if ( resource != null && !contextResourcesMap.containsKey( resource.getContext() ) ) {
-      contextResourcesMap.put( resource.getContext(), new HashSet<>() );
+    if ( !this.contextResourcesMap.containsKey( resourceContext ) ) {
+      this.contextResourcesMap.put( resourceContext, new HashSet<>() );
     }
-    contextResourcesMap.get( resource.getContext() ).add( resource );
+
+    this.contextResourcesMap.get( resourceContext ).add( resource );
   }
 
+  /**
+   * Remove any resource from the web context.
+   *
+   * @param resource - the platform web resource.
+   */
   public void removePlatformWebResource( IPlatformWebResource resource ) {
-    if ( resource != null && contextResourcesMap.containsKey( resource.getContext() ) ) {
-      contextResourcesMap.get( resource.getContext() ).remove( resource );
+    if ( resource == null ) {
+      return;
     }
-  }
 
-  void appendJsWebResources( StringBuilder sb, List<String> resources ) {
-    resources.stream()
-      .forEach( s -> {
-        if ( s.startsWith( "/" ) ) {
-          s = s.substring( 1 );
-        }
-        sb.append( "document.write(\"<script type='text/javascript' src='/"
-          + s + "'></scr\"+\"ipt>\");\n" );
-      } );
-  }
-
-  void appendCssWebResources( StringBuilder sb, List<String> resources ) {
-    resources.stream()
-      .forEach( s -> {
-        if ( s.startsWith( "/" ) ) {
-          s = s.substring( 1 );
-        }
-        sb.
-          append( "document.write(\"<link rel='stylesheet' type='text/css' "
-            + "href='/" + s + "'>\");\n" );
-      } );
+    String resourceContext = resource.getContext();
+    if ( this.contextResourcesMap.containsKey( resourceContext ) ) {
+      this.contextResourcesMap.get( resourceContext ).remove( resource );
+    }
   }
 }

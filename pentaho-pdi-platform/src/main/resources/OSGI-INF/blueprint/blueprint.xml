@@ -5,13 +5,24 @@
   http://aries.apache.org/blueprint/xmlns/blueprint-cm/v1.1.0 http://aries.apache.org/schemas/blueprint-cm/blueprint-cm-1.1.0.xsd">
 
 
-    <bean id="WebContext" class="org.pentaho.platform.pdi.WebContextServlet" />
+    <!-- START: Configuration -->
+    <cm:property-placeholder persistent-id="org.pentaho.platform.pdi"
+                             update-strategy="reload">
+        <cm:default-properties>
+            <cm:property name="requireCfg.waitTime" value="30"/>
+        </cm:default-properties>
+    </cm:property-placeholder>
+    <!-- END: Configuration -->
+
+    <bean id="WebContext" class="org.pentaho.platform.pdi.WebContextServlet">
+        <property name="requireWaitTime" value="${requireCfg.waitTime}"/>
+    </bean>
 
     <reference-list id="contextualExternalResources"
                     interface="org.pentaho.platform.api.engine.IPlatformWebResource"
                     member-type="service-object"
                     availability="optional">
-        <reference-listener ref="WebContext" bind-method="addPlatformWebResource" unbind-method="removePlatformWebResource"/>
+        <reference-listener ref="WebContext" bind-method="addPlatformWebResource" unbind-method="removePlatformWebResource" />
     </reference-list>
 
 

@@ -227,7 +227,7 @@ public class RequireJsConfigServletTest {
   }
 
   private boolean responseSetsContextPathGlobal( String response, String contextRoot ) {
-    return response.contains( "w.CONTEXT_PATH = '" + contextRoot + "';" );
+    return response.contains( "w.CONTEXT_PATH = \"" + contextRoot + "\";" );
   }
 
   private void requireJsConfigManagerIsCalledWithTheProperContextRoot( String contextRoot ) {

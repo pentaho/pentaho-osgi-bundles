@@ -1,7 +1,7 @@
 /*
  * ******************************************************************************
  *
- * Copyright (C) 2002-2016 by Pentaho : http://www.pentaho.com
+ * Copyright (C) 2002-2017 by Pentaho : http://www.pentaho.com
  *
  * ******************************************************************************
  *
@@ -20,38 +20,73 @@
 
 package org.pentaho.platform.pdi;
 
+import org.apache.commons.lang.StringEscapeUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.pentaho.platform.api.engine.IPlatformWebResource;
 
+import javax.servlet.ServletException;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.doReturn;
 
-/**
- * Created by rfellows on 9/9/16.
- */
 @RunWith( MockitoJUnitRunner.class )
 public class WebContextServletTest {
-  WebContextServlet webContextServlet;
+  private WebContextServlet webContextServlet;
 
   private IPlatformWebResource jsFile;
   private IPlatformWebResource txtFile;
 
+  private HttpServletRequest httpRequest;
+  private HttpServletResponse httpResponse;
+  private ByteArrayOutputStream mockResponseOutputStream;
+
   @Before
   public void setUp() throws Exception {
-    webContextServlet = new WebContextServlet();
+    webContextServlet = spy( new WebContextServlet() );
     jsFile = new PlatformWebResource( "analyzer", "scripts/includeMe.js" );
     txtFile = new PlatformWebResource( "analyzer", "scripts/includeMe.txt" );
+
+    HttpServletRequest mockRequest = mock( HttpServletRequest.class );
+    when( mockRequest.getRequestURI() ).thenReturn( "fake/uri/" + WebContextServlet.WEB_CONTEXT_JS );
+    when( mockRequest.getParameter( WebContextServlet.CONTEXT ) ).thenReturn( "testContext" );
+    when( mockRequest.getParameter( WebContextServlet.LOCALE ) ).thenReturn( "xp_TO" );
+
+    this.httpRequest = mockRequest;
+
+    HttpServletResponse mockResponse = mock( HttpServletResponse.class );
+
+
+    this.mockResponseOutputStream = new java.io.ByteArrayOutputStream();
+    when( mockResponse.getOutputStream() ).thenReturn( new ServletOutputStream() {
+      @Override
+      public void write( int b ) throws IOException {
+        WebContextServletTest.this.mockResponseOutputStream.write( b );
+      }
+    } );
+
+    this.httpResponse = mockResponse;
   }
 
   @Test
   public void testGetWebResources_NoMatches() throws Exception {
     List<String> webResources = webContextServlet.getWebResources( "analyzer", ".*\\.js" );
+
     assertNotNull( webResources );
     assertEquals( 0, webResources.size() );
   }
@@ -60,39 +95,147 @@ public class WebContextServletTest {
   public void testGetWebResources_Match() throws Exception {
     webContextServlet.addPlatformWebResource( jsFile );
     webContextServlet.addPlatformWebResource( txtFile );
+
     List<String> webResources = webContextServlet.getWebResources( "analyzer", ".*\\.js" );
+
     assertNotNull( webResources );
     assertEquals( 1, webResources.size() );
     assertEquals( "scripts/includeMe.js", webResources.get( 0 ) );
   }
 
   @Test
-  public void testAppendWebResourcesToDoc() throws Exception {
-    StringBuilder sb = new StringBuilder();
+  public void testWriteWebResourcesJSToDoc() throws Exception {
     List<String> resources = new ArrayList<>();
     resources.add( "scripts/includeMe.js" );
     resources.add( "scripts/includeMeToo.js" );
 
-    webContextServlet.appendJsWebResources( sb, resources );
+    PrintWriter writer = new PrintWriter( this.mockResponseOutputStream );
+    this.webContextServlet.writeWebResources( writer, resources );
 
-    String result = sb.toString();
-    String expected = "document.write(\"<script type='text/javascript' src='/scripts/includeMe.js'></scr\"+\"ipt>\");\n"
-      + "document.write(\"<script type='text/javascript' src='/scripts/includeMeToo.js'></scr\"+\"ipt>\");\n";
-    assertEquals( expected, result );
+    String response = getServletResponse( writer );
+
+    resources.forEach( resource -> {
+      String expected = getDocumentWriteExpected( resource );
+
+      assertTrue( response.contains( expected ) );
+
+    } );
 
   }
 
   @Test
-  public void testAppendCssWebResourcesToDoc() throws Exception {
-    StringBuilder sb = new StringBuilder();
+  public void testWriteWebResourcesCssToDoc() throws Exception {
     List<String> resources = new ArrayList<>();
     resources.add( "styles/awesome.css" );
 
-    webContextServlet.appendCssWebResources( sb, resources );
+    PrintWriter writer = new PrintWriter( this.mockResponseOutputStream );
+    this.webContextServlet.writeWebResources( writer, resources );
 
-    String result = sb.toString();
-    String expected = "document.write(\"<link rel='stylesheet' type='text/css' href='/styles/awesome.css'>\");\n";
-    assertEquals( expected, result );
+    String response = getServletResponse( writer );
+
+    resources.forEach( resource -> {
+      String expected = getDocumentWriteExpected( resource );
+
+      assertTrue( response.contains( expected ) );
+    } );
 
   }
+
+  @Test
+  public void testWebContextDefinesContextPath() throws ServletException, IOException {
+    final String response = doGetWebContextServlet();
+
+    String contextPath = WebContextServlet.CONTEXT_PATH;
+    assertTrue( response.contains( getWebContextVarDefinition( "CONTEXT_PATH", contextPath ) ) );
+  }
+
+  @Test
+  public void testWebContextDefinesSessionLocale() throws ServletException, IOException {
+    String sessionLocale = "fo_BA";
+    when( this.httpRequest.getParameter( "locale" ) ).thenReturn( sessionLocale );
+
+    final String response = doGetWebContextServlet();
+
+    assertTrue( response.contains( getWebContextVarDefinition( "SESSION_LOCALE", sessionLocale ) ) );
+  }
+
+  @Test
+  public void testDoGetDefinesRequireCfg() throws ServletException, IOException {
+    Integer waitTime = 1337;
+    doReturn( waitTime ).when( this.webContextServlet ).getRequireWaitTime();
+
+    String response = doGetWebContextServlet();
+
+    String expected = "var requireCfg = {" +
+              "\n  waitSeconds: " + waitTime + "," +
+              "\n  paths: {}," +
+              "\n  shim: {}," +
+              "\n  map: { \"*\": {} }," +
+              "\n  bundles: {}," +
+              "\n  config: { \"pentaho/service\": {} }," +
+              "\n  packages: []" +
+              "\n}";
+
+    assertTrue( response.contains( expected ) );
+  }
+
+  @Test
+  public void testWebContextDefinesPentahoEnvironmentModuleConfig() throws ServletException, IOException {
+    String serverUrl = "\"" + StringEscapeUtils.escapeJavaScript( WebContextServlet.CONTEXT_PATH ) + "\"";
+    String sessionLocale = "fo_BA";
+
+    when( this.httpRequest.getParameter( "locale" ) ).thenReturn( sessionLocale );
+    final String response = doGetWebContextServlet();
+
+    String contextModuleConfig = "\nrequireCfg.config[\"pentaho/context\"] = {" +
+            "\n  theme: null," +
+            "\n  locale: \"" + sessionLocale + "\"," +
+            "\n  user: {" +
+            "\n    id: null," +
+            "\n    home: null" +
+            "\n  }," +
+            "\n  server: {" +
+            "\n    url: " + serverUrl +
+            "\n  }," +
+            "\n  reservedChars: null" +
+            "\n}";
+
+    assertTrue( response.contains( contextModuleConfig ) );
+  }
+
+  // region Auxiliary Methods
+  private String doGetWebContextServlet() throws ServletException, IOException {
+    this.webContextServlet.doGet( this.httpRequest, this.httpResponse );
+    return getServletResponse();
+  }
+
+  private String getServletResponse() throws IOException {
+    return getServletResponse( null );
+  }
+
+  private String getServletResponse( PrintWriter writer ) throws IOException {
+    if ( writer != null ) {
+      writer.flush();
+    }
+
+    return this.mockResponseOutputStream.toString( "UTF-8" );
+  }
+
+  private String getWebContextVarDefinition( String variable, String value ) {
+    String escapedValue = "\"" + StringEscapeUtils.escapeJavaScript( value ) + "\"";
+
+    return "\n/** @deprecated - use 'pentaho/context' module's variable instead */" +
+            "\nvar " + variable + " = " + escapedValue + ";";
+  }
+
+  private String getDocumentWriteExpected( String resource ) {
+    String location = "'\" + CONTEXT_PATH + \"" + resource + "'";
+
+    if ( resource.endsWith( ".js" ) ) {
+      return "document.write(\"<script type='text/javascript' src=" + location + "></scr\" + \"ipt>\");\n";
+    } else {
+      return "document.write(\"<link rel='stylesheet' type='text/css' href=" + location + ">\");\n";
+    }
+  }
+  // endregion
 }

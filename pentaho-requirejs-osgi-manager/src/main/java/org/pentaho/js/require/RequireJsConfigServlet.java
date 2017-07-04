@@ -70,15 +70,15 @@ public class RequireJsConfigServlet extends HttpServlet {
       printWriter.write( "\n(function(w) {" );
 
       // ensure CONTEXT_PATH is defined
-      printWriter.write( "\n  if(typeof CONTEXT_PATH == 'undefined'){" );
-      printWriter.write( "\n    w.CONTEXT_PATH = '" + this.getContextRoot( requestContext ) + "';" );
+      printWriter.write( "\n  if (w.CONTEXT_PATH == null) {" );
+      printWriter.write( "\n    w.CONTEXT_PATH = \"" + this.getContextRoot( requestContext ) + "\";" );
       printWriter.write( "\n  }" );
       printWriter.write( "\n" );
 
       // store webcontext.js' requirejs module configurations if existing
       printWriter.write( "\n  var legacyConfig = null;" );
-      printWriter.write( "\n  if(typeof requireCfg !== 'undefined' && requireCfg != null && requireCfg.config != null) {" );
-      printWriter.write( "\n    legacyConfig = requireCfg.config;" );
+      printWriter.write( "\n  if (w.requireCfg != null && w.requireCfg.config != null) {" );
+      printWriter.write( "\n    legacyConfig = w.requireCfg.config;" );
       printWriter.write( "\n  }" );
       printWriter.write( "\n" );
 
@@ -89,10 +89,10 @@ public class RequireJsConfigServlet extends HttpServlet {
       printWriter.write( "\n" );
 
       // merge the requirejs module's configurations (first level only) to avoid overwriting them
-      printWriter.write( "\n  if(legacyConfig != null) {" );
+      printWriter.write( "\n  if (legacyConfig != null) {" );
       printWriter.write( "\n    for (var key in legacyConfig) {" );
       printWriter.write( "\n      if (Object.prototype.hasOwnProperty.call(legacyConfig, key)) {" );
-      printWriter.write( "\n        if(!requireCfg.config[key]) {;" );
+      printWriter.write( "\n        if (!requireCfg.config[key]) {" );
       printWriter.write( "\n          requireCfg.config[key] = {};" );
       printWriter.write( "\n        }" );
       printWriter.write( "\n" );
