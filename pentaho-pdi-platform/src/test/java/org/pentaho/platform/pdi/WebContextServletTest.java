@@ -20,6 +20,7 @@
 
 package org.pentaho.platform.pdi;
 
+import org.apache.commons.lang.StringEscapeUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -41,6 +42,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.doReturn;
 
 @RunWith( MockitoJUnitRunner.class )
 public class WebContextServletTest {
@@ -55,7 +58,7 @@ public class WebContextServletTest {
 
   @Before
   public void setUp() throws Exception {
-    webContextServlet = new WebContextServlet();
+    webContextServlet = spy( new WebContextServlet() );
     jsFile = new PlatformWebResource( "analyzer", "scripts/includeMe.js" );
     txtFile = new PlatformWebResource( "analyzer", "scripts/includeMe.txt" );
 
@@ -83,6 +86,7 @@ public class WebContextServletTest {
   @Test
   public void testGetWebResources_NoMatches() throws Exception {
     List<String> webResources = webContextServlet.getWebResources( "analyzer", ".*\\.js" );
+
     assertNotNull( webResources );
     assertEquals( 0, webResources.size() );
   }
@@ -91,7 +95,9 @@ public class WebContextServletTest {
   public void testGetWebResources_Match() throws Exception {
     webContextServlet.addPlatformWebResource( jsFile );
     webContextServlet.addPlatformWebResource( txtFile );
+
     List<String> webResources = webContextServlet.getWebResources( "analyzer", ".*\\.js" );
+
     assertNotNull( webResources );
     assertEquals( 1, webResources.size() );
     assertEquals( "scripts/includeMe.js", webResources.get( 0 ) );
@@ -106,8 +112,7 @@ public class WebContextServletTest {
     PrintWriter writer = new PrintWriter( this.mockResponseOutputStream );
     this.webContextServlet.writeWebResources( writer, resources );
 
-    writer.flush();
-    String response = this.mockResponseOutputStream.toString();
+    String response = getServletResponse( writer );
 
     resources.forEach( resource -> {
       String expected = getDocumentWriteExpected( resource );
@@ -126,8 +131,7 @@ public class WebContextServletTest {
     PrintWriter writer = new PrintWriter( this.mockResponseOutputStream );
     this.webContextServlet.writeWebResources( writer, resources );
 
-    writer.flush();
-    String response = this.mockResponseOutputStream.toString();
+    String response = getServletResponse( writer );
 
     resources.forEach( resource -> {
       String expected = getDocumentWriteExpected( resource );
@@ -138,10 +142,90 @@ public class WebContextServletTest {
   }
 
   @Test
-  public void testDoGetRequireCfgCreated() throws ServletException, IOException {
+  public void testWebContextDefinesContextPath() throws ServletException, IOException {
+    final String response = doGetWebContextServlet();
+
+    String contextPath = WebContextServlet.CONTEXT_PATH;
+    assertTrue( response.contains( getWebContextVarDefinition( "CONTEXT_PATH", contextPath ) ) );
+  }
+
+  @Test
+  public void testWebContextDefinesSessionLocale() throws ServletException, IOException {
+    String sessionLocale = "fo_BA";
+    when( this.httpRequest.getParameter( "locale" ) ).thenReturn( sessionLocale );
+
+    final String response = doGetWebContextServlet();
+
+    assertTrue( response.contains( getWebContextVarDefinition( "SESSION_LOCALE", sessionLocale ) ) );
+  }
+
+  @Test
+  public void testDoGetDefinesRequireCfg() throws ServletException, IOException {
+    Integer waitTime = 1337;
+    doReturn( waitTime ).when( this.webContextServlet ).getRequireWaitTime();
+
+    String response = doGetWebContextServlet();
+
+    String expected = "var requireCfg = {" +
+              "\n  waitSeconds: " + waitTime + "," +
+              "\n  paths: {}," +
+              "\n  shim: {}," +
+              "\n  map: { \"*\": {} }," +
+              "\n  bundles: {}," +
+              "\n  config: { \"pentaho/service\": {} }," +
+              "\n  packages: []" +
+              "\n}";
+
+    assertTrue( response.contains( expected ) );
+  }
+
+  @Test
+  public void testWebContextDefinesPentahoEnvironmentModuleConfig() throws ServletException, IOException {
+    String serverUrl = "\"" + StringEscapeUtils.escapeJavaScript( WebContextServlet.CONTEXT_PATH ) + "\"";
+    String sessionLocale = "fo_BA";
+
+    when( this.httpRequest.getParameter( "locale" ) ).thenReturn( sessionLocale );
+    final String response = doGetWebContextServlet();
+
+    String contextModuleConfig = "\nrequireCfg.config[\"pentaho/context\"] = {" +
+            "\n  theme: null," +
+            "\n  locale: \"" + sessionLocale + "\"," +
+            "\n  user: {" +
+            "\n    id: null," +
+            "\n    home: null" +
+            "\n  }," +
+            "\n  server: {" +
+            "\n    url: " + serverUrl +
+            "\n  }," +
+            "\n  reservedChars: null" +
+            "\n}";
+
+    assertTrue( response.contains( contextModuleConfig ) );
+  }
+
+  // region Auxiliary Methods
+  private String doGetWebContextServlet() throws ServletException, IOException {
     this.webContextServlet.doGet( this.httpRequest, this.httpResponse );
-    String response = this.mockResponseOutputStream.toString();
-    assertNotNull( response );
+    return getServletResponse();
+  }
+
+  private String getServletResponse() throws IOException {
+    return getServletResponse( null );
+  }
+
+  private String getServletResponse( PrintWriter writer ) throws IOException {
+    if ( writer != null ) {
+      writer.flush();
+    }
+
+    return this.mockResponseOutputStream.toString( "UTF-8" );
+  }
+
+  private String getWebContextVarDefinition( String variable, String value ) {
+    String escapedValue = "\"" + StringEscapeUtils.escapeJavaScript( value ) + "\"";
+
+    return "\n/** @deprecated - use 'pentaho/context' module's variable instead */" +
+            "\nvar " + variable + " = " + escapedValue + ";";
   }
 
   private String getDocumentWriteExpected( String resource ) {
@@ -153,4 +237,5 @@ public class WebContextServletTest {
       return "document.write(\"<link rel='stylesheet' type='text/css' href=" + location + ">\");\n";
     }
   }
+  // endregion
 }

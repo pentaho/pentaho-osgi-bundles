@@ -21,6 +21,7 @@
 package org.pentaho.platform.pdi;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 import org.pentaho.di.i18n.LanguageChoice;
 import org.pentaho.platform.api.engine.ICacheManager;
@@ -49,7 +50,7 @@ public class WebContextServlet extends HttpServlet {
 
   static final String WEB_CONTEXT_JS = "webcontext.js"; //$NON-NLS-1$
 
-  private static final String CONTEXT_PATH = "/";
+  static final String CONTEXT_PATH = "/";
   private static final String REQUIREJS_INIT_LOCATION = "requirejs-manager/js/require-init.js";
 
   private static final Integer DEFAULT_WAIT_TIME = 30;
@@ -89,13 +90,13 @@ public class WebContextServlet extends HttpServlet {
       httpResponse.setContentType( "text/javascript" ); //$NON-NLS-1$
 
       try ( PrintWriter printWriter = new PrintWriter( httpResponse.getOutputStream() ) ) {
-        writeWebContextVar( printWriter, "dojoConfig", "[]", false );
+        writeWebContextVar( printWriter, "dojoConfig", "[]", false, false );
 
         writeWebContextVar( printWriter, "CONTEXT_PATH", CONTEXT_PATH );
 
         writeWebContextVar( printWriter, "SESSION_LOCALE", getLocale( httpRequest ) );
 
-        writeWebContextVar( printWriter, "requireCfg", getRequireCfg(), false );
+        writeWebContextVar( printWriter, "requireCfg", getRequireCfg(), false, false );
         writeEnvironmentModuleConfig( printWriter, httpRequest );
 
         writeJsWebResources( printWriter, httpRequest );
@@ -116,21 +117,25 @@ public class WebContextServlet extends HttpServlet {
 
   // region Write Methods
   private void writeWebContextVar( PrintWriter writer, String variable, String value ) {
-    writeWebContextVar( writer, variable, value, true );
+    writeWebContextVar( writer, variable, value, true, true );
   }
 
-  private void writeWebContextVar( PrintWriter writer, String variable, String value, boolean escape ) {
-    if ( escape ) {
+  private void writeWebContextVar( PrintWriter writer, String variable, String value,
+                                   boolean deprecated, boolean escapeValue ) {
+    if ( escapeValue ) {
       value = escapeEnvironmentVar( value );
     }
 
-    writer.write( "\n/** @deprecated - use 'pentaho/context' module's variable instead */" );
-    writer.write( "\nvar " + variable + " = " + value );
+    if ( deprecated ) {
+      writer.write( "\n/** @deprecated - use 'pentaho/context' module's variable instead */" );
+    }
+
+    writer.write( "\nvar " + variable + " = " + value + ";\n" );
 
     if ( variable.equals( "SESSION_LOCALE" ) ) {
       // If RequireJs is available, supply a module
-      writer.write( "\nif (pen != null && pen.define) {" );
-      writer.write( "\n  pen.define('Locale', {locale: " + value + " });" );
+      writer.write( "\nif (typeof(pen) !== 'undefined' && pen.define) {" );
+      writer.write( "\n  pen.define('Locale', { locale: " + value + " });" );
       writer.write( "\n}\n" );
     }
   }
@@ -190,7 +195,7 @@ public class WebContextServlet extends HttpServlet {
 
     writer.write( "'\" + CONTEXT_PATH + \"" + location + "'>" );
 
-    writer.append(  isJavascript ? ("</scr\" + \"ipt>") : "" );
+    writer.append(  isJavascript ? ( "</scr\" + \"ipt>" ) : "" );
     writer.write( "\");\n" );
   }
   // endregion
@@ -200,7 +205,7 @@ public class WebContextServlet extends HttpServlet {
       return null;
     }
 
-    return "\"" + variable + "\"";
+    return "\"" + StringEscapeUtils.escapeJavaScript( variable ) + "\"";
   }
 
   List<String> getWebResources( String context, String filePattern ) {
@@ -259,15 +264,21 @@ public class WebContextServlet extends HttpServlet {
    * @return
    */
   private String getRequireCfg() {
-    return "{" +
-            "\n  waitSeconds: " + getRequireWaitTime() + "," +
-            "\n  paths: {}," +
-            "\n  shim: {}," +
-            "\n  map: { \"*\": {} }," +
-            "\n  bundles: {}," +
-            "\n  config: { \"pentaho/service\": {} }," +
-            "\n  packages: []" +
-            "\n};\n";
+    // setup a RequireJS config object for plugins to extend
+    StringBuilder requireCfg = new StringBuilder();
+
+    requireCfg
+            .append( "{" )
+            .append( "\n  waitSeconds: " ).append( getRequireWaitTime() ).append( "," )
+            .append( "\n  paths: {}," )
+            .append( "\n  shim: {}," )
+            .append( "\n  map: { \"*\": {} }," )
+            .append( "\n  bundles: {}," )
+            .append( "\n  config: { \"pentaho/service\": {} }," )
+            .append( "\n  packages: []" )
+            .append( "}" );
+
+    return requireCfg.toString();
   }
 
   /**
