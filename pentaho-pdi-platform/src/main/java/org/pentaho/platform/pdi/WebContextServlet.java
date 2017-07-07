@@ -54,11 +54,13 @@ public class WebContextServlet extends HttpServlet {
   private static final String REQUIREJS_INIT_LOCATION = "requirejs-manager/js/require-init.js";
 
   private static final Integer DEFAULT_WAIT_TIME = 30;
+  private static final String DEFAULT_SERVICES_ROOT = "cxf/";
 
   static final String CONTEXT = "context";
   static final String LOCALE = "locale";
 
   private Integer requireWaitTime;
+  private String servicesRoot;
 
   public void setRequireWaitTime( Integer value ) {
     this.requireWaitTime = value;
@@ -79,6 +81,20 @@ public class WebContextServlet extends HttpServlet {
     }
 
     return waitTime;
+  }
+
+  public void setServicesRoot( String value ) {
+    this.servicesRoot = value;
+  }
+
+  public String getServicesRoot() {
+    String servicesRoot = this.servicesRoot;
+
+    if ( StringUtils.isEmpty( this.servicesRoot ) ) {
+      servicesRoot = DEFAULT_SERVICES_ROOT;
+    }
+
+    return servicesRoot;
   }
 
   @Override
@@ -146,7 +162,9 @@ public class WebContextServlet extends HttpServlet {
 
   private void writeEnvironmentModuleConfig( PrintWriter writer, HttpServletRequest request ) {
     String locale = escapeEnvironmentVar( getLocale( request ) );
-    String serverUrl = escapeEnvironmentVar( CONTEXT_PATH );
+    String serverRoot = escapeEnvironmentVar( getServerRoot() );
+
+    String serverServices = escapeEnvironmentVar( getServerServices() );
 
     writer.write( "\nrequireCfg.config[\"pentaho/context\"] = {" );
     writer.write( "\n  theme: null," );
@@ -156,7 +174,8 @@ public class WebContextServlet extends HttpServlet {
     writer.write( "\n    home: null" );
     writer.write( "\n  }," );
     writer.write( "\n  server: {" );
-    writer.write( "\n    url: " + serverUrl );
+    writer.write( "\n    root: " + serverRoot + "," );
+    writer.write( "\n    services: " + serverServices );
     writer.write( "\n  }," );
     writer.write( "\n  reservedChars: null" );
     writer.write( "\n};\n" );
@@ -260,6 +279,14 @@ public class WebContextServlet extends HttpServlet {
     String context = request.getParameter( CONTEXT );
 
     return StringUtils.isNotEmpty( context ) ? context : null;
+  }
+
+  private String getServerRoot() {
+    return CONTEXT_PATH;
+  }
+
+  private String getServerServices() {
+    return CONTEXT_PATH + getServicesRoot();
   }
 
   /**

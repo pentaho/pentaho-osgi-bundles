@@ -10,12 +10,15 @@
                              update-strategy="reload">
         <cm:default-properties>
             <cm:property name="requireCfg.waitTime" value="30"/>
+            <!-- Note: must be prepended with the webb app context path! -->
+            <cm:property name="envModule.servicesRoot" value="cxf/"/>
         </cm:default-properties>
     </cm:property-placeholder>
     <!-- END: Configuration -->
 
     <bean id="WebContext" class="org.pentaho.platform.pdi.WebContextServlet">
         <property name="requireWaitTime" value="${requireCfg.waitTime}"/>
+        <property name="servicesRoot" value="${envModule.servicesRoot}"/>
     </bean>
 
     <reference-list id="contextualExternalResources"
