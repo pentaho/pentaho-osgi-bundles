@@ -135,8 +135,7 @@ public class WebContextServlet extends HttpServlet {
     }
 
     if ( deprecated ) {
-      //TODO Rename the module 'pentaho/context' to 'pentaho/environment' when BACKLOG-16424 is completed
-      writer.write( "\n/** @deprecated - use 'pentaho/context' module's variable instead */" );
+      writer.write( "\n/** @deprecated - use 'pentaho/environment' module's variable instead */" );
     }
 
     writer.write( "\nvar " + variable + " = " + value + ";\n" );
@@ -157,8 +156,7 @@ public class WebContextServlet extends HttpServlet {
 
     String serverServices = escapeEnvironmentVar( getServerServices() );
 
-    //TODO Rename the module 'pentaho/context' to 'pentaho/environment' when BACKLOG-16424 is completed
-    writer.write( "\nrequireCfg.config[\"pentaho/context\"] = {" );
+    writer.write( "\nrequireCfg.config[\"pentaho/environment\"] = {" );
     writer.write( "\n  theme: null," );
     writer.write( "\n  locale: " + locale + "," );
     writer.write( "\n  user: {" );
