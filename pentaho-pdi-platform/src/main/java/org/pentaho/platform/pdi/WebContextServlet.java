@@ -166,6 +166,7 @@ public class WebContextServlet extends HttpServlet {
 
     String serverServices = escapeEnvironmentVar( getServerServices() );
 
+    //TODO Rename the module 'pentaho/context' to 'pentaho/environment' when BACKLOG-16424 is completed
     writer.write( "\nrequireCfg.config[\"pentaho/context\"] = {" );
     writer.write( "\n  theme: null," );
     writer.write( "\n  locale: " + locale + "," );
@@ -281,11 +282,11 @@ public class WebContextServlet extends HttpServlet {
     return StringUtils.isNotEmpty( context ) ? context : null;
   }
 
-  private String getServerRoot() {
+  String getServerRoot() {
     return CONTEXT_PATH;
   }
 
-  private String getServerServices() {
+  String getServerServices() {
     return CONTEXT_PATH + getServicesRoot();
   }
 
