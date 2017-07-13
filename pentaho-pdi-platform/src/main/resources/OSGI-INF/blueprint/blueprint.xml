@@ -6,19 +6,24 @@
 
 
     <!-- START: Configuration -->
-    <cm:property-placeholder persistent-id="org.pentaho.platform.pdi"
-                             update-strategy="reload">
+    <cm:property-placeholder persistent-id="org.pentaho.platform.pdi" update-strategy="reload"
+                             placeholder-prefix="require(" placeholder-suffix=")">
         <cm:default-properties>
             <cm:property name="requireCfg.waitTime" value="30"/>
-            <!-- Note: must be prepended with the webb app context path! -->
-            <cm:property name="envModule.servicesRoot" value="cxf/"/>
+        </cm:default-properties>
+    </cm:property-placeholder>
+
+    <cm:property-placeholder persistent-id="org.apache.cxf.osgi" update-strategy="none"
+                             placeholder-prefix="cxf(" placeholder-suffix=")">
+        <cm:default-properties>
+            <cm:property name="org.apache.cxf.servlet.context" value=""/>
         </cm:default-properties>
     </cm:property-placeholder>
     <!-- END: Configuration -->
 
     <bean id="WebContext" class="org.pentaho.platform.pdi.WebContextServlet">
-        <property name="requireWaitTime" value="${requireCfg.waitTime}"/>
-        <property name="servicesRoot" value="${envModule.servicesRoot}"/>
+        <property name="requireWaitTime" value="require(requireCfg.waitTime)"/>
+        <property name="servicesRoot" value="cxf(org.apache.cxf.servlet.context)"/>
     </bean>
 
     <reference-list id="contextualExternalResources"

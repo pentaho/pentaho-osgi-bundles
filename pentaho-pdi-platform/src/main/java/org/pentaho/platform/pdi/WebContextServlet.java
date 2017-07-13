@@ -1,7 +1,7 @@
 /*
  * ******************************************************************************
  *
- * Copyright (C) 2002-2017 by Pentaho : http://www.pentaho.com
+ * Copyright (C) 2002 - 2017 by Pentaho : http://www.pentaho.com
  *
  * ******************************************************************************
  *
@@ -24,9 +24,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
 import org.pentaho.di.i18n.LanguageChoice;
-import org.pentaho.platform.api.engine.ICacheManager;
 import org.pentaho.platform.api.engine.IPlatformWebResource;
-import org.pentaho.platform.engine.core.system.PentahoSystem;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -46,15 +44,14 @@ import java.util.stream.Collectors;
 public class WebContextServlet extends HttpServlet {
   // this is the map that groups contexts to a set of urls to add to the context
   private Map<String, Set<IPlatformWebResource>> contextResourcesMap = new HashMap<>();
-  protected static ICacheManager cache = PentahoSystem.getCacheManager( null );
 
   static final String WEB_CONTEXT_JS = "webcontext.js"; //$NON-NLS-1$
 
   static final String CONTEXT_PATH = "/";
   private static final String REQUIREJS_INIT_LOCATION = "requirejs-manager/js/require-init.js";
 
-  private static final Integer DEFAULT_WAIT_TIME = 30;
   private static final String DEFAULT_SERVICES_ROOT = "cxf/";
+  private static final Integer DEFAULT_WAIT_TIME = 30;
 
   static final String CONTEXT = "context";
   static final String LOCALE = "locale";
@@ -67,17 +64,10 @@ public class WebContextServlet extends HttpServlet {
   }
 
   public Integer getRequireWaitTime() {
-    Integer waitTime = null;
-
-    if ( cache != null ) {
-      waitTime = (Integer) cache.getFromGlobalCache( PentahoSystem.WAIT_SECONDS );
-    }
+    Integer waitTime = this.requireWaitTime;
 
     if ( waitTime == null ) {
-      waitTime = this.requireWaitTime != null ? this.requireWaitTime : DEFAULT_WAIT_TIME;
-      if ( cache != null ) {
-        cache.putInGlobalCache( PentahoSystem.WAIT_SECONDS, waitTime );
-      }
+      waitTime = DEFAULT_WAIT_TIME;
     }
 
     return waitTime;
@@ -89,8 +79,7 @@ public class WebContextServlet extends HttpServlet {
 
   public String getServicesRoot() {
     String servicesRoot = this.servicesRoot;
-
-    if ( StringUtils.isEmpty( this.servicesRoot ) ) {
+    if ( StringUtils.isEmpty( servicesRoot ) ) {
       servicesRoot = DEFAULT_SERVICES_ROOT;
     }
 
@@ -103,6 +92,7 @@ public class WebContextServlet extends HttpServlet {
 
     String requestStr = httpRequest.getRequestURI();
     if ( requestStr != null && requestStr.contains( WEB_CONTEXT_JS ) ) {
+
       httpResponse.setContentType( "text/javascript" ); //$NON-NLS-1$
 
       try ( PrintWriter printWriter = new PrintWriter( httpResponse.getOutputStream() ) ) {
@@ -145,6 +135,7 @@ public class WebContextServlet extends HttpServlet {
     }
 
     if ( deprecated ) {
+      //TODO Rename the module 'pentaho/context' to 'pentaho/environment' when BACKLOG-16424 is completed
       writer.write( "\n/** @deprecated - use 'pentaho/context' module's variable instead */" );
     }
 
@@ -287,7 +278,18 @@ public class WebContextServlet extends HttpServlet {
   }
 
   String getServerServices() {
-    return CONTEXT_PATH + getServicesRoot();
+    String servicesRoot = getServicesRoot();
+    boolean isRootValid = StringUtils.isNotEmpty( servicesRoot );
+
+    if ( isRootValid && servicesRoot.startsWith( "/" ) ) {
+      servicesRoot = servicesRoot.substring( 1 );
+    }
+
+    if ( isRootValid && !servicesRoot.endsWith( "/" ) ) {
+      servicesRoot = servicesRoot + "/";
+    }
+
+    return CONTEXT_PATH + servicesRoot;
   }
 
   /**

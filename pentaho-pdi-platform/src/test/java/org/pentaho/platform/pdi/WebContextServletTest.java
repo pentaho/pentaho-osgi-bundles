@@ -194,7 +194,7 @@ public class WebContextServletTest {
     when( this.httpRequest.getParameter( "locale" ) ).thenReturn( sessionLocale );
     final String response = doGetWebContextServlet();
 
-    //TODO Rename the module 'pentaho/context' to 'pentaho/environment' when BACKLOG-16424 is completed
+    // TODO Rename the module 'pentaho/context' to 'pentaho/environment' when BACKLOG-16424 is completed
     String contextModuleConfig = "\nrequireCfg.config[\"pentaho/context\"] = {" +
             "\n  theme: null," +
             "\n  locale: \"" + sessionLocale + "\"," +
@@ -233,6 +233,7 @@ public class WebContextServletTest {
   private String getWebContextVarDefinition( String variable, String value ) {
     String escapedValue = escapeEnvironmentVariable( value );
 
+    // TODO Rename the module 'pentaho/context' to 'pentaho/environment' when BACKLOG-16424 is completed
     return "\n/** @deprecated - use 'pentaho/context' module's variable instead */" +
             "\nvar " + variable + " = " + escapedValue + ";";
   }
