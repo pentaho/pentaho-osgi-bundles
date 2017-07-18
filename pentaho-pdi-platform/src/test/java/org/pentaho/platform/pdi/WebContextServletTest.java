@@ -181,12 +181,20 @@ public class WebContextServletTest {
 
   @Test
   public void testWebContextDefinesPentahoEnvironmentModuleConfig() throws ServletException, IOException {
-    String serverUrl = "\"" + StringEscapeUtils.escapeJavaScript( WebContextServlet.CONTEXT_PATH ) + "\"";
+    String mockRoot = "/root/";
+    doReturn( mockRoot ).when( this.webContextServlet ).getServerRoot();
+
+    String mockServices = "/services/";
+    doReturn( mockServices ).when( this.webContextServlet ).getServerServices();
+
+    String serverRoot = escapeEnvironmentVariable( mockRoot );
+    String serverServices = escapeEnvironmentVariable( mockServices );
     String sessionLocale = "fo_BA";
 
     when( this.httpRequest.getParameter( "locale" ) ).thenReturn( sessionLocale );
     final String response = doGetWebContextServlet();
 
+    // TODO Rename the module 'pentaho/context' to 'pentaho/environment' when BACKLOG-16424 is completed
     String contextModuleConfig = "\nrequireCfg.config[\"pentaho/context\"] = {" +
             "\n  theme: null," +
             "\n  locale: \"" + sessionLocale + "\"," +
@@ -195,7 +203,8 @@ public class WebContextServletTest {
             "\n    home: null" +
             "\n  }," +
             "\n  server: {" +
-            "\n    url: " + serverUrl +
+            "\n    root: " + serverRoot + "," +
+            "\n    services: " + serverServices +
             "\n  }," +
             "\n  reservedChars: null" +
             "\n}";
@@ -222,8 +231,9 @@ public class WebContextServletTest {
   }
 
   private String getWebContextVarDefinition( String variable, String value ) {
-    String escapedValue = "\"" + StringEscapeUtils.escapeJavaScript( value ) + "\"";
+    String escapedValue = escapeEnvironmentVariable( value );
 
+    // TODO Rename the module 'pentaho/context' to 'pentaho/environment' when BACKLOG-16424 is completed
     return "\n/** @deprecated - use 'pentaho/context' module's variable instead */" +
             "\nvar " + variable + " = " + escapedValue + ";";
   }
@@ -236,6 +246,10 @@ public class WebContextServletTest {
     } else {
       return "document.write(\"<link rel='stylesheet' type='text/css' href=" + location + ">\");\n";
     }
+  }
+
+  private String escapeEnvironmentVariable( String value ) {
+    return "\"" + StringEscapeUtils.escapeJavaScript( value ) + "\"";
   }
   // endregion
 }
