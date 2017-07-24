@@ -184,14 +184,14 @@ public class WebContextServletTest {
     String mockRoot = "/root/";
     doReturn( mockRoot ).when( this.webContextServlet ).getServerRoot();
 
-    String mockOsgiRoot = mockRoot + "osgi/";
-    doReturn( mockOsgiRoot ).when( this.webContextServlet ).getServerOsgiRoot();
+    String mockServerPackages = mockRoot + "osgi/";
+    doReturn( mockServerPackages ).when( this.webContextServlet ).getServerPackages();
 
     String mockServices = mockRoot + "services/";
     doReturn( mockServices ).when( this.webContextServlet ).getServerServices();
 
     String serverRoot = escapeEnvironmentVariable( mockRoot );
-    String serverOsgiRoot = escapeEnvironmentVariable( mockOsgiRoot );
+    String serverPackages = escapeEnvironmentVariable( mockServerPackages );
     String serverServices = escapeEnvironmentVariable( mockServices );
 
     String sessionLocale = "fo_BA";
@@ -207,7 +207,7 @@ public class WebContextServletTest {
             "\n  }," +
             "\n  server: {" +
             "\n    root: " + serverRoot + "," +
-            "\n    osgiRoot: " + serverOsgiRoot + "," +
+            "\n    packages: " + serverPackages + "," +
             "\n    services: " + serverServices +
             "\n  }," +
             "\n  reservedChars: null" +

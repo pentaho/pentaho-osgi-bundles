@@ -153,7 +153,7 @@ public class WebContextServlet extends HttpServlet {
   private void writeEnvironmentModuleConfig( PrintWriter writer, HttpServletRequest request ) {
     String locale = escapeEnvironmentVar( getLocale( request ) );
     String serverRoot = escapeEnvironmentVar( getServerRoot() );
-    String osgiRoot = escapeEnvironmentVar( getServerOsgiRoot() );
+    String serverPackages = escapeEnvironmentVar( getServerPackages() );
 
     String serverServices = escapeEnvironmentVar( getServerServices() );
 
@@ -166,7 +166,7 @@ public class WebContextServlet extends HttpServlet {
     writer.write( "\n  }," );
     writer.write( "\n  server: {" );
     writer.write( "\n    root: " + serverRoot + "," );
-    writer.write( "\n    osgiRoot: " + osgiRoot + "," );
+    writer.write( "\n    packages: " + serverPackages + "," );
     writer.write( "\n    services: " + serverServices );
     writer.write( "\n  }," );
     writer.write( "\n  reservedChars: null" );
@@ -277,7 +277,7 @@ public class WebContextServlet extends HttpServlet {
     return CONTEXT_PATH;
   }
 
-  String getServerOsgiRoot() {
+  String getServerPackages() {
     return CONTEXT_PATH;
   }
 
