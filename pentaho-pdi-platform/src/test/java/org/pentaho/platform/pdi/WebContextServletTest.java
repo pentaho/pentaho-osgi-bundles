@@ -184,17 +184,21 @@ public class WebContextServletTest {
     String mockRoot = "/root/";
     doReturn( mockRoot ).when( this.webContextServlet ).getServerRoot();
 
-    String mockServices = "/services/";
+    String mockServerPackages = mockRoot + "osgi/";
+    doReturn( mockServerPackages ).when( this.webContextServlet ).getServerPackages();
+
+    String mockServices = mockRoot + "services/";
     doReturn( mockServices ).when( this.webContextServlet ).getServerServices();
 
     String serverRoot = escapeEnvironmentVariable( mockRoot );
+    String serverPackages = escapeEnvironmentVariable( mockServerPackages );
     String serverServices = escapeEnvironmentVariable( mockServices );
+
     String sessionLocale = "fo_BA";
-
     when( this.httpRequest.getParameter( "locale" ) ).thenReturn( sessionLocale );
-    final String response = doGetWebContextServlet();
 
-    String contextModuleConfig = "\nrequireCfg.config[\"pentaho/environment\"] = {" +
+    final String response = doGetWebContextServlet();
+    String environmentModuleConfig = "\nrequireCfg.config[\"pentaho/environment\"] = {" +
             "\n  theme: null," +
             "\n  locale: \"" + sessionLocale + "\"," +
             "\n  user: {" +
@@ -203,12 +207,13 @@ public class WebContextServletTest {
             "\n  }," +
             "\n  server: {" +
             "\n    root: " + serverRoot + "," +
+            "\n    packages: " + serverPackages + "," +
             "\n    services: " + serverServices +
             "\n  }," +
             "\n  reservedChars: null" +
             "\n}";
 
-    assertTrue( response.contains( contextModuleConfig ) );
+    assertTrue( response.contains( environmentModuleConfig ) );
   }
 
   // region Auxiliary Methods
