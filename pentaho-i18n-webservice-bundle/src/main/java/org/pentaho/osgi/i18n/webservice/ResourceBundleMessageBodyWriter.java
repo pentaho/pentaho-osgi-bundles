@@ -2,7 +2,7 @@
  *
  * Pentaho Data Integration
  *
- * Copyright (C) 2002-2014 by Pentaho : http://www.pentaho.com
+ * Copyright (C) 2002-2017 by Pentaho : http://www.pentaho.com
  *
  *******************************************************************************
  *
@@ -47,6 +47,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.ResourceBundle;
 
@@ -79,7 +80,7 @@ public class ResourceBundleMessageBodyWriter implements MessageBodyWriter<Resour
       }
       OutputStreamWriter outputStreamWriter = null;
       try {
-        outputStreamWriter = new OutputStreamWriter( entityStream );
+        outputStreamWriter = new OutputStreamWriter( entityStream, StandardCharsets.UTF_8 );
         resourceBundleJsonObject.writeJSONString( outputStreamWriter );
       } finally {
         if ( outputStreamWriter != null ) {
