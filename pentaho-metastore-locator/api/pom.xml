@@ -46,6 +46,7 @@
         <configuration>
           <instructions>
             <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
+            <Import-Package>org.pentaho.di.osgi,*</Import-Package>
           </instructions>
         </configuration>
       </plugin>
