@@ -47,12 +47,13 @@ public class ServiceMap<T> {
   }
 
   public void itemRemoved( T item, @SuppressWarnings( "rawtypes" ) Map config ) {
-    if ( item == null ) {
-      return;
-    }
-
+    //item is ignored.  It is in the signature because OSGI requires it.
     synchronized ( map ) {
-      map.remove( getKeyFromConfig( config ) );
+      try {
+        map.remove( getKeyFromConfig( config ) );
+      } catch ( IllegalArgumentException e ) {
+        // Do nothing, Defensive code may try remove something that is not registered or already removed.
+      }
     }
   }
 
