@@ -16,13 +16,14 @@
  */
 package org.pentaho.osgi.metastore.locator.api.impl;
 
+import org.pentaho.di.base.AbstractMeta;
 import org.pentaho.di.core.exception.KettleException;
 import org.pentaho.di.core.extension.ExtensionPoint;
 import org.pentaho.di.core.extension.ExtensionPointInterface;
 import org.pentaho.di.core.logging.LogChannelInterface;
 import org.pentaho.di.core.osgi.api.MetastoreLocatorOsgi;
+import org.pentaho.di.job.JobExecutionExtension;
 import org.pentaho.di.trans.Trans;
-import org.pentaho.di.trans.TransMeta;
 
 /**
  * Created by tkafalas on 7/10/2017.
@@ -38,9 +39,16 @@ public class MetastoreLocatorExtensionPoint implements ExtensionPointInterface {
   }
 
   @Override public void callExtensionPoint( LogChannelInterface log, Object object ) throws KettleException {
-    TransMeta transMeta = object instanceof Trans ? ( (Trans) object ).getTransMeta() : (TransMeta) object;
-    if ( transMeta.getMetastoreLocatorOsgi() == null ) {
-      transMeta.setMetastoreLocatorOsgi( metastoreLocatorOsgi );
+    AbstractMeta meta;
+    if ( object instanceof Trans ) {
+      meta = ( (Trans) object ).getTransMeta();
+    } else if ( object instanceof JobExecutionExtension ) {
+      meta = ( (JobExecutionExtension) object ).job.getJobMeta();
+    } else {
+      meta = (AbstractMeta) object;
+    }
+    if ( meta.getMetastoreLocatorOsgi() == null ) {
+      meta.setMetastoreLocatorOsgi( metastoreLocatorOsgi );
     }
   }
 }
