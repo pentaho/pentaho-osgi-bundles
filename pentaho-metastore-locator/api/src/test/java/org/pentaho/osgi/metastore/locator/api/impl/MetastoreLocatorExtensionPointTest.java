@@ -19,11 +19,13 @@ package org.pentaho.osgi.metastore.locator.api.impl;
 import org.junit.Test;
 import org.pentaho.di.core.logging.LogChannelInterface;
 import org.pentaho.di.core.osgi.api.MetastoreLocatorOsgi;
+import org.pentaho.di.trans.Trans;
 import org.pentaho.di.trans.TransMeta;
 
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * Created by tkafalas on 7/25/2017.
@@ -31,7 +33,7 @@ import static org.mockito.Mockito.verify;
 public class MetastoreLocatorExtensionPointTest {
 
   @Test
-  public void testCallExtensionPoint() throws Exception {
+  public void testCallExtensionPointWithTransMeta() throws Exception {
     MetastoreLocatorOsgi mockMetastoreLocator = mock( MetastoreLocatorOsgi.class );
     LogChannelInterface logChannelInterface = mock( LogChannelInterface.class );
     TransMeta mockTransMeta = mock( TransMeta.class );
@@ -39,6 +41,20 @@ public class MetastoreLocatorExtensionPointTest {
       new MetastoreLocatorExtensionPoint( mockMetastoreLocator );
 
     metastoreLocatorExtensionPoint.callExtensionPoint( logChannelInterface, mockTransMeta );
+    verify( mockTransMeta ).setMetastoreLocatorOsgi( eq( mockMetastoreLocator ) );
+  }
+
+  @Test
+  public void testCallExtensionPointWithTrans() throws Exception {
+    MetastoreLocatorOsgi mockMetastoreLocator = mock( MetastoreLocatorOsgi.class );
+    LogChannelInterface logChannelInterface = mock( LogChannelInterface.class );
+    TransMeta mockTransMeta = mock( TransMeta.class );
+    Trans mockTrans = mock( Trans.class );
+    when( mockTrans.getTransMeta() ).thenReturn( mockTransMeta );
+    MetastoreLocatorExtensionPoint metastoreLocatorExtensionPoint =
+      new MetastoreLocatorExtensionPoint( mockMetastoreLocator );
+
+    metastoreLocatorExtensionPoint.callExtensionPoint( logChannelInterface, mockTrans );
     verify( mockTransMeta ).setMetastoreLocatorOsgi( eq( mockMetastoreLocator ) );
   }
 

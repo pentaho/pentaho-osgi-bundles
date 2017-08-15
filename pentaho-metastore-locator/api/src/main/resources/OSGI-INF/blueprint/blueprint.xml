@@ -25,4 +25,14 @@
         <argument ref="metastoreLocatorImpl" />
         <pen:di-plugin type="org.pentaho.di.core.extension.ExtensionPointPluginType"/>
     </bean>
+
+    <bean id="MetastoreLocatorBeforeJobExtensionPoint" scope="singleton" class="org.pentaho.osgi.metastore.locator.api.impl.MetastoreLocatorBeforeJobExtensionPoint">
+        <argument ref="metastoreLocatorImpl" />
+        <pen:di-plugin type="org.pentaho.di.core.extension.ExtensionPointPluginType"/>
+    </bean>
+
+    <bean id="MetastoreLocatorBeforeJobSaveExtensionPoint" scope="singleton" class="org.pentaho.osgi.metastore.locator.api.impl.MetastoreLocatorBeforeJobSaveExtensionPoint">
+        <argument ref="metastoreLocatorImpl" />
+        <pen:di-plugin type="org.pentaho.di.core.extension.ExtensionPointPluginType"/>
+    </bean>
 </blueprint>
