@@ -14,7 +14,7 @@
   <description>a Pentaho open source project</description>
   <url>http://www.pentaho.com</url>
   <properties>
-    <dependency.mondrian.revision>3.15-SNAPSHOT</dependency.mondrian.revision>
+    <dependency.mondrian.revision>8.0-SNAPSHOT</dependency.mondrian.revision>
   </properties>
   <dependencies>
     <dependency>
