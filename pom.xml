@@ -5,11 +5,11 @@
   <parent>
     <groupId>org.pentaho</groupId>
     <artifactId>pentaho-ce-bundle-parent-pom</artifactId>
-    <version>7.1-SNAPSHOT</version>
+    <version>7.1.0.3-57</version>
   </parent>
   <groupId>pentaho</groupId>
   <artifactId>pentaho-osgi-bundles</artifactId>
-  <version>7.1-SNAPSHOT</version>
+  <version>7.1.0.3-57</version>
   <packaging>pom</packaging>
   <name>Pentaho Community Edition Project: ${project.artifactId}</name>
   <description>Parent project for Pentaho OSGI Bundles</description>
@@ -44,24 +44,24 @@
     <url>scm:git:git@github.com:pentaho/${project.artifactId}.git</url>
   </scm>
   <properties>
-    <dependency.pentaho-platform.revision>7.1-SNAPSHOT</dependency.pentaho-platform.revision>
-    <commons-io.version>2.4</commons-io.version>
-    <junit.version>4.11</junit.version>
-    <hamcrest.version>1.3</hamcrest.version>
-    <commons-lang.version>2.6</commons-lang.version>
-    <guava.version>17.0</guava.version>
-    <slf4j-api.version>1.7.7</slf4j-api.version>
-    <json-simple.version>1.1.1</json-simple.version>
-    <felix.version>4.2.1</felix.version>
-    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <karaf.version>3.0.3</karaf.version>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <cxf.version>3.0.6</cxf.version>
-    <felix-fileinstall.version>3.4.2</felix-fileinstall.version>
     <org.apache.felix.http.api.version>2.3.2</org.apache.felix.http.api.version>
-    <pax-web-extender-whiteboard.version>3.1.4</pax-web-extender-whiteboard.version>
+    <slf4j-api.version>1.7.7</slf4j-api.version>
+    <commons-io.version>2.4</commons-io.version>
     <mockito.version>1.9.5</mockito.version>
+    <hamcrest.version>1.3</hamcrest.version>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <pax-web-extender-whiteboard.version>3.1.4</pax-web-extender-whiteboard.version>
+    <junit.version>4.11</junit.version>
+    <felix-fileinstall.version>3.4.2</felix-fileinstall.version>
+    <cxf.version>3.0.6</cxf.version>
     <requirejs.version>2.1.19</requirejs.version>
+    <felix.version>4.2.1</felix.version>
+    <guava.version>17.0</guava.version>
+    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    <json-simple.version>1.1.1</json-simple.version>
+    <commons-lang.version>2.6</commons-lang.version>
+    <dependency.pentaho-platform.revision>7.1.0.3-57</dependency.pentaho-platform.revision>
+    <karaf.version>3.0.3</karaf.version>
   </properties>
   <build>
     <finalName>${project.artifactId}</finalName>

@@ -5,18 +5,18 @@
   <parent>
     <groupId>pentaho</groupId>
     <artifactId>pentaho-osgi-bundles</artifactId>
-    <version>7.1-SNAPSHOT</version>
+    <version>7.1.0.3-57</version>
   </parent>
   <artifactId>pentaho-proxy-spring4</artifactId>
-  <version>7.1-SNAPSHOT</version>
+  <version>7.1.0.3-57</version>
   <packaging>bundle</packaging>
   <name>Pentaho Community Edition Project: ${project.artifactId}</name>
   <description>a Pentaho open source project</description>
   <url>http://www.pentaho.com</url>
   <properties>
     <springframework.version>4.3.2.RELEASE</springframework.version>
-    <springsecurity.version>4.1.3.RELEASE</springsecurity.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <springsecurity.version>4.1.3.RELEASE</springsecurity.version>
   </properties>
   <dependencies>
     <dependency>
