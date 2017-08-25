@@ -16,10 +16,10 @@
   <url>http://www.pentaho.com</url>
   <licenses>
     <license>
-      <name>Apache License, Version 2.0</name>
-      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+      <name>GNU Lesser General Public License, version 2.1</name>
+      <url>http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html</url>
       <distribution>repo</distribution>
-      <comments>A business-friendly OSS license</comments>
+      <comments>This program is free software; you can redistribute it and/or modify it under the license.</comments>
     </license>
   </licenses>
   <developers>
