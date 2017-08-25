@@ -42,12 +42,12 @@ import java.util.stream.Collectors;
 public class RebuildCacheCallable implements Callable<String> {
   private final String baseUrl;
 
-  private final Map<Long, Map<String, Object>> configMap;
+  private final List<Map<String, Object>> configMap;
 
   // pentaho-platform-plugin configuration scripts (legacy)
   private final List<RequireJsConfiguration> requireJsConfigurations;
 
-  public RebuildCacheCallable( String baseUrl, Map<Long, Map<String, Object>> configMap,
+  public RebuildCacheCallable( String baseUrl, List<Map<String, Object>> configMap,
                                List<RequireJsConfiguration> requireJsConfigurations ) {
 
     // Make sure the baseUrl ends in a slash.
@@ -111,9 +111,7 @@ public class RebuildCacheCallable implements Callable<String> {
   public String call() throws Exception {
     RequireJsMerger merger = new RequireJsMerger();
 
-    for ( Long bundleId : configMap.keySet() ) {
-      merger.merge( configMap.get( bundleId ) );
-    }
+    this.configMap.forEach( merger::merge );
 
     Map<String, Object> result = merger.getRequireConfig();
 

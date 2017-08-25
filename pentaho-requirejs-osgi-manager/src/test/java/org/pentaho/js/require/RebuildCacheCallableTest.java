@@ -76,10 +76,10 @@ public class RebuildCacheCallableTest {
     String objectKey = "object";
     String dupKey = "dup";
 
-    Map<Long, Map<String, Object>> configMap = new HashMap<>();
+    List<Map<String, Object>> configMap = new ArrayList<>();
 
     JSONObject object1 = new JSONObject();
-    configMap.put( 1L, object1 );
+    configMap.add( object1 );
     JSONArray array1 = new JSONArray();
     array1.add( 1L );
     array1.add( "s" );
@@ -88,7 +88,7 @@ public class RebuildCacheCallableTest {
     object1.put( objectKey, new JSONObject() );
     object1.put( dupKey, "c" );
     JSONObject object2 = new JSONObject();
-    configMap.put( 2L, object2 );
+    configMap.add( object2 );
     JSONArray array2 = new JSONArray();
     array2.add( "2" );
     array2.add( 3L );
@@ -127,13 +127,13 @@ public class RebuildCacheCallableTest {
   public void testCannotMergeJSONObjectOtherException() throws Exception {
     String objectKey = "object";
 
-    Map<Long, Map<String, Object>> configMap = new HashMap<>();
+    List<Map<String, Object>> configMap = new ArrayList<>();
 
     JSONObject object1 = new JSONObject();
-    configMap.put( 1L, object1 );
+    configMap.add( object1 );
     object1.put( objectKey, new JSONObject() );
     JSONObject object2 = new JSONObject();
-    configMap.put( 2L, object2 );
+    configMap.add( object2 );
     JSONArray array2 = new JSONArray();
     array2.add( "2" );
     array2.add( 3L );
@@ -145,13 +145,13 @@ public class RebuildCacheCallableTest {
   public void testCannotMergeArrayJSONObjectException() throws Exception {
     String objectKey = "object";
 
-    Map<Long, Map<String, Object>> configMap = new HashMap<>();
+    List<Map<String, Object>> configMap = new ArrayList<>();
 
     JSONObject object1 = new JSONObject();
-    configMap.put( 1L, object1 );
+    configMap.add( object1 );
     object1.put( objectKey, new JSONArray() );
     JSONObject object2 = new JSONObject();
-    configMap.put( 2L, object2 );
+    configMap.add( object2 );
     object2.put( objectKey, new JSONObject() );
     new RebuildCacheCallable( this.baseUrl, configMap, this.requireJsConfigurations ).call();
   }
@@ -162,7 +162,7 @@ public class RebuildCacheCallableTest {
     String moduleKey = "moduleA";
     String subobjectKey = "deps";
 
-    Map<Long, Map<String, Object>> configMap = new HashMap<>();
+    List<Map<String, Object>> configMap = new ArrayList<>();
 
     JSONObject object1 = new JSONObject();
     object1.put( moduleKey, new JSONArray() );
@@ -170,7 +170,7 @@ public class RebuildCacheCallableTest {
     JSONObject shim1 = new JSONObject();
     shim1.put( objectKey, object1 );
 
-    configMap.put( 1L, shim1 );
+    configMap.add( shim1 );
 
     JSONObject subobject2 = new JSONObject();
     subobject2.put( subobjectKey, new JSONArray() );
@@ -181,7 +181,7 @@ public class RebuildCacheCallableTest {
     JSONObject shim2 = new JSONObject();
     shim2.put( objectKey, object2 );
 
-    configMap.put( 2L, shim2 );
+    configMap.add( shim2 );
 
     String config = new RebuildCacheCallable( this.baseUrl, configMap, this.requireJsConfigurations ).call();
     if ( config.endsWith( ";" ) ) {
@@ -195,13 +195,13 @@ public class RebuildCacheCallableTest {
   public void testCannotMergeArrayOtherException() throws Exception {
     String objectKey = "object";
 
-    Map<Long, Map<String, Object>> configMap = new HashMap<>();
+    List<Map<String, Object>> configMap = new ArrayList<>();
 
     JSONObject object1 = new JSONObject();
-    configMap.put( 1L, object1 );
+    configMap.add( object1 );
     object1.put( objectKey, new JSONArray() );
     JSONObject object2 = new JSONObject();
-    configMap.put( 2L, object2 );
+    configMap.add( object2 );
     object2.put( objectKey, "B" );
     new RebuildCacheCallable( this.baseUrl, configMap, this.requireJsConfigurations ).call();
   }
@@ -210,13 +210,13 @@ public class RebuildCacheCallableTest {
   public void testCannotMergeOtherArrayException() throws Exception {
     String objectKey = "object";
 
-    Map<Long, Map<String, Object>> configMap = new HashMap<>();
+    List<Map<String, Object>> configMap = new ArrayList<>();
 
     JSONObject object1 = new JSONObject();
-    configMap.put( 1L, object1 );
+    configMap.add( object1 );
     object1.put( objectKey, "B" );
     JSONObject object2 = new JSONObject();
-    configMap.put( 2L, object2 );
+    configMap.add( object2 );
     object2.put( objectKey, new JSONArray() );
     new RebuildCacheCallable( this.baseUrl, configMap, this.requireJsConfigurations ).call();
   }
@@ -225,13 +225,13 @@ public class RebuildCacheCallableTest {
   public void testCannotMergeObjectKeyException() throws Exception {
     String objectKey = "object";
 
-    Map<Long, Map<String, Object>> configMap = new HashMap<>();
+    List<Map<String, Object>> configMap = new ArrayList<>();
 
     JSONObject object1 = new JSONObject();
-    configMap.put( 1L, object1 );
+    configMap.add( object1 );
     object1.put( objectKey, "B" );
     JSONObject object2 = new JSONObject();
-    configMap.put( 2L, object2 );
+    configMap.add( object2 );
     object2.put( new Object(), new JSONArray() );
     new RebuildCacheCallable( this.baseUrl, configMap, this.requireJsConfigurations ).call();
   }
@@ -242,10 +242,10 @@ public class RebuildCacheCallableTest {
     String moduleKey = "module";
     String modulePath = "module/path/script";
 
-    Map<Long, Map<String, Object>> configMap = new HashMap<>();
+    List<Map<String, Object>> configMap = new ArrayList<>();
 
     JSONObject object1 = new JSONObject();
-    configMap.put( 1L, object1 );
+    configMap.add( object1 );
 
     JSONObject relativePath = new JSONObject();
     relativePath.put( moduleKey, modulePath );
@@ -253,7 +253,7 @@ public class RebuildCacheCallableTest {
     object1.put( objectKey, relativePath );
 
     JSONObject object2 = new JSONObject();
-    configMap.put( 2L, object2 );
+    configMap.add( object2 );
 
     JSONObject absolutePath = new JSONObject();
     absolutePath.put( moduleKey, "/" + modulePath );
@@ -273,10 +273,10 @@ public class RebuildCacheCallableTest {
     String relativePath = "module/relative-path/script";
     String absolutePath = "/module/absolute-path/script";
 
-    Map<Long, Map<String, Object>> configMap = new HashMap<>();
+    List<Map<String, Object>> configMap = new ArrayList<>();
 
     JSONObject object1 = new JSONObject();
-    configMap.put( 1L, object1 );
+    configMap.add( object1 );
 
     JSONObject pathDefinition = new JSONObject();
     pathDefinition.put( "module1", relativePath );
@@ -285,7 +285,7 @@ public class RebuildCacheCallableTest {
     object1.put( "paths", pathDefinition );
 
     JSONObject object2 = new JSONObject();
-    configMap.put( 2L, object2 );
+    configMap.add( object2 );
 
     final JSONArray packagesArray = new JSONArray();
 

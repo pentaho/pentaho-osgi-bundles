@@ -18,7 +18,7 @@ public class RequireJsMerger {
     this.requireConfig = createEmptyRequireConfig();
   }
 
-  public void merge( Map<String, Object> requireConfigPartial ) throws Exception {
+  public void merge( Map<String, Object> requireConfigPartial ) {
     requireConfig = this.merge( requireConfig, requireConfigPartial );
   }
 
@@ -64,7 +64,7 @@ public class RequireJsMerger {
     return jsonObject;
   }
 
-  private Object merge( String key, Object value1, Object value2 ) throws Exception {
+  private Object merge( String key, Object value1, Object value2 ) {
     if ( value1 == null ) {
       return value2 instanceof Map ? toRelativePathedObject( (Map) value2 ) : value2;
     } else if ( value2 == null ) {
@@ -73,18 +73,18 @@ public class RequireJsMerger {
       if ( value2 instanceof Map ) {
         return merge( (Map) value1, toRelativePathedObject( (Map) value2 ), key.equals( "shim" ) );
       } else {
-        throw new Exception( "Cannot merge key " + key + " due to different types" );
+        throw new RuntimeException( "Cannot merge key " + key + " due to different types" );
       }
     } else if ( value2 instanceof Map ) {
-      throw new Exception( "Cannot merge key " + key + " due to different types" );
+      throw new RuntimeException( "Cannot merge key " + key + " due to different types" );
     } else if ( value1 instanceof List ) {
       if ( value2 instanceof List ) {
         return merge( (List) value1, (List) value2 );
       } else {
-        throw new Exception( "Cannot merge key " + key + " due to different types" );
+        throw new RuntimeException( "Cannot merge key " + key + " due to different types" );
       }
     } else if ( value2 instanceof List ) {
-      throw new Exception( "Cannot merge key " + key + " due to different types" );
+      throw new RuntimeException( "Cannot merge key " + key + " due to different types" );
     } else {
       return value2;
     }
@@ -101,15 +101,15 @@ public class RequireJsMerger {
     return result;
   }
 
-  private Map<String, Object> merge( Map<String, Object> object1, Map<String, Object> object2 ) throws Exception {
+  private Map<String, Object> merge( Map<String, Object> object1, Map<String, Object> object2 ) {
     return this.merge( object1, object2, false );
   }
 
-  private Map<String, Object> merge( Map<String, Object> object1, Map<String, Object> object2, boolean insideShim ) throws Exception {
+  private Map<String, Object> merge( Map<String, Object> object1, Map<String, Object> object2, boolean insideShim ) {
     Set<String> keys = new HashSet<>( object1.keySet().size() );
     for ( Object key : object1.keySet() ) {
       if ( !( key instanceof String ) ) {
-        throw new Exception( "Key " + key + " was not a String" );
+        throw new RuntimeException( "Key " + key + " was not a String" );
       }
 
       keys.add( (String) key );
@@ -117,7 +117,7 @@ public class RequireJsMerger {
 
     for ( Object key : object2.keySet() ) {
       if ( !( key instanceof String ) ) {
-        throw new Exception( "Key " + key + " was not a String" );
+        throw new RuntimeException( "Key " + key + " was not a String" );
       }
 
       keys.add( (String) key );

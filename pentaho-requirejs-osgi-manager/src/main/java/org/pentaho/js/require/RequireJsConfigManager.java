@@ -25,6 +25,8 @@ package org.pentaho.js.require;
 import org.json.simple.parser.JSONParser;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.wiring.BundleCapability;
+import org.osgi.framework.wiring.BundleWiring;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -44,6 +46,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 public class RequireJsConfigManager {
+  static final String CAPABILITY_NAMESPACE = "org.pentaho.webpackage";
+
   static final String PACKAGE_JSON_PATH = "META-INF/js/package.json";
   static final String REQUIRE_JSON_PATH = "META-INF/js/require.json";
   static final String EXTERNAL_RESOURCES_JSON_PATH = "META-INF/js/externalResources.json";
@@ -56,8 +60,7 @@ public class RequireJsConfigManager {
         thread.setName( "RequireJSConfigManager pool" );
         return thread;
       } );
-
-  private final Map<Long, Map<String, Object>> configMap = new HashMap<>();
+  private final ConcurrentHashMap<Long, List<Map<String, Object>>> configMap = new ConcurrentHashMap<>();
   private final Map<Long, RequireJsConfiguration> requireConfigMap = new HashMap<>();
 
   private final JSONParser parser = new JSONParser();
@@ -161,14 +164,15 @@ public class RequireJsConfigManager {
   }
 
   private boolean updateBundleContextStopped( Bundle bundle ) {
-    Map<String, Object> bundleConfig = this.configMap.remove( bundle.getBundleId() );
+    List<Map<String, Object>> bundleConfig = this.configMap.remove( bundle.getBundleId() );
     RequireJsConfiguration requireJsConfiguration = this.requireConfigMap.remove( bundle.getBundleId() );
 
     return bundleConfig != null || requireJsConfiguration != null;
   }
 
   private boolean updateBundleContextActivated( Bundle bundle ) {
-    boolean shouldInvalidate = false;
+    // clear any previous configurations (for bundle updates)
+    boolean shouldInvalidate = updateBundleContextStopped( bundle );
 
     URL packageJsonUrl = bundle.getResource( PACKAGE_JSON_PATH );
     URL configFileUrl = bundle.getResource( REQUIRE_JSON_PATH );
@@ -177,6 +181,7 @@ public class RequireJsConfigManager {
     URL staticResourcesUrl = bundle.getResource( STATIC_RESOURCES_JSON_PATH );
 
     if ( configFileUrl != null ) {
+      // top priority: legacy META-INF/js/require.json
       Map<String, Object> requireJsonObject = this.loadJsonObject( configFileUrl );
 
       if ( requireJsonObject != null ) {
@@ -184,12 +189,49 @@ public class RequireJsConfigManager {
 
         shouldInvalidate = true;
       }
+    } else if ( packageJsonUrl != null ) {
+      // next: fixed META-INF/js/package.json
+      boolean didParsePackageJson = this.parsePackageInformation( bundle, packageJsonUrl );
+
+      shouldInvalidate = shouldInvalidate || didParsePackageJson;
+    } else {
+      // finally: capability based web roots
+      BundleWiring wiring = bundle.adapt( BundleWiring.class );
+
+      if ( wiring != null ) {
+        List<BundleCapability> capabilities = wiring.getCapabilities( CAPABILITY_NAMESPACE );
+
+        if ( capabilities != null ) {
+          for ( BundleCapability bundleCapability : capabilities ) {
+            Map<String, Object> attributes = bundleCapability.getAttributes();
+
+            String root = (String) attributes.get( "root" );
+            if ( root == null || "".equals( root ) ) {
+              root = "";
+            }
+
+            try {
+              URL capabilityPackageJsonUrl = bundle.getResource( root + "/package.json" );
+              if ( capabilityPackageJsonUrl != null ) {
+                boolean didParsePackageJson = this.parsePackageInformation( bundle, capabilityPackageJsonUrl );
+
+                shouldInvalidate = shouldInvalidate || didParsePackageJson;
+              }
+            } catch ( RuntimeException ignored ) {
+              // throwing will make everything fail
+              // what damage control should we do?
+              // **don't register this capability?** <-- this is what we're doing now
+              // ignore and use only the capability info?
+              // don't register all the bundle's capabilities?
+              // this is all post-bundle wiring phase, so only the requirejs configuration is affected
+              // the bundle is started and nothing will change that... or should we bundle.stop()?
+            }
+          }
+        }
+      }
     }
 
-    if ( !shouldInvalidate && packageJsonUrl != null ) {
-      shouldInvalidate = this.parsePackageInformation( bundle, packageJsonUrl );
-    }
-
+    // always process legacy META-INF/js/externalResources.json and META-INF/js/staticResources.json
     if ( externalResourcesUrl != null ) {
       Map<String, Object> externalResourceJsonObject = this.loadJsonObject( externalResourcesUrl );
       Map<String, Object> staticResourceJsonObject = this.loadJsonObject( staticResourcesUrl );
@@ -255,7 +297,8 @@ public class RequireJsConfigManager {
   }
 
   private void putInConfigMap( long bundleId, Map<String, Object> config ) {
-    this.configMap.put( bundleId, config );
+    List<Map<String, Object>> bundleConfigurations = this.configMap.computeIfAbsent( bundleId, key -> new ArrayList<>() );
+    bundleConfigurations.add( config );
   }
 
   private void putInRequireConfigMap( long bundleId, RequireJsConfiguration config ) {
@@ -303,7 +346,12 @@ public class RequireJsConfigManager {
   Future<String> getCachedConfiguration( String baseUrl ) {
     return this.cachedConfigurations.computeIfAbsent( baseUrl, k -> {
       this.lastModified = System.currentTimeMillis();
-      return executorService.schedule( new RebuildCacheCallable( baseUrl, new HashMap<>( this.configMap ),
+
+      List<Map<String, Object>> configurations = new ArrayList<>();
+
+      this.configMap.values().forEach( configurations::addAll );
+
+      return executorService.schedule( new RebuildCacheCallable( baseUrl, configurations,
               new ArrayList<>( this.requireConfigMap.values() ) ), 250, TimeUnit.MILLISECONDS );
     } );
   }

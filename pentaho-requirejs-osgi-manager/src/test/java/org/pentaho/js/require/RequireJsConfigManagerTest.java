@@ -28,8 +28,14 @@ import org.junit.Test;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Version;
+import org.osgi.framework.wiring.BundleCapability;
+import org.osgi.framework.wiring.BundleWiring;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
@@ -67,13 +73,19 @@ public class RequireJsConfigManagerTest {
 
     this.mockBundleCounter = 1L;
 
-    this.mockBundles = new Bundle[5];
+    this.mockBundles = new Bundle[6];
 
     this.mockBundles[0] = this.createMockBundle( "non-client-side-bundle", "0.1", Bundle.ACTIVE );
     this.mockBundles[1] = this.createMockPackageJsonBundle( "lib1", "1.0", Bundle.ACTIVE );
     this.mockBundles[2] = this.createMockRequireJsonBundle( "lib2", "2.0", Bundle.ACTIVE );
     this.mockBundles[3] = this.createMockExternalResourcesBundle( "lib3", "3.0", Bundle.ACTIVE );
     this.mockBundles[4] = this.createMockExternalStaticResourcesBundle( "lib4", "4.0", Bundle.ACTIVE );
+
+    List<BundleCapability> capabilities = new ArrayList<>();
+    capabilities.add( createMockWebPackageCapability( "/pentaho-webpackage-1a" ) );
+    capabilities.add( createMockWebPackageCapability( "/pentaho-webpackage-1b" ) );
+    capabilities.add( createMockWebPackageCapability( "/pentaho-webpackage-1c" ) );
+    this.mockBundles[5] = this.createMockWebPackageBundle( capabilities,"pentaho-webpackage-1", "1.0", Bundle.ACTIVE );
 
     this.mockBundleContext = mock( BundleContext.class );
     when( this.mockBundleContext.getBundle() ).thenReturn( this.mockContextBundle );
@@ -105,6 +117,10 @@ public class RequireJsConfigManagerTest {
     assertTrue( config.contains( "var lib4 = \"lib4: some external static code!\";" ) );
     assertTrue( config.contains( "var lib4 = \"lib4: some external code!\";" ) );
     assertTrue( config.contains( "/* End of bundle [" + this.mockBundles[4].getBundleId() + "] - lib4:4.0*/" ) );
+
+    assertTrue( config.contains( "pentaho-webpackage-1a_1.0" ) );
+    assertTrue( config.contains( "pentaho-webpackage-1b_1.1" ) );
+    assertTrue( config.contains( "pentaho-webpackage-1c_1.2" ) );
   }
 
   @Test( expected = Exception.class )
@@ -210,6 +226,27 @@ public class RequireJsConfigManagerTest {
   }
 
   @Test
+  public void testBundleChangedNewWebPackageBundle() throws IOException, ParseException {
+    List<BundleCapability> capabilities = new ArrayList<>();
+    capabilities.add( createMockWebPackageCapability( "/pentaho-webpackage-2a" ) );
+    capabilities.add( createMockWebPackageCapability( "/pentaho-webpackage-2b" ) );
+    capabilities.add( createMockWebPackageCapability( "/pentaho-webpackage-2c" ) );
+    Bundle mockBundle = this.createMockWebPackageBundle( capabilities,"pentaho-webpackage-2", "1.0", Bundle.ACTIVE );
+
+    this.requireJsConfigManager.bundleChanged( mockBundle );
+
+    // check that invalidateCachedConfigurations is called
+    verify( this.requireJsConfigManager, times( 1 ) ).invalidateCachedConfigurations();
+
+    String config = this.requireJsConfigManager.getRequireJsConfig( this.baseUrl );
+    // dirty quick check if the lib is in the require configuration
+    // proper testing is done on the pentaho-requirejs-utils module
+    assertTrue( config.contains( "pentaho-webpackage-2a_1.0" ) );
+    assertTrue( config.contains( "pentaho-webpackage-2b_1.1" ) );
+    assertTrue( config.contains( "pentaho-webpackage-2c_1.2" ) );
+  }
+
+  @Test
   public void testBundleChangedExistingNonClientBundle() throws IOException, ParseException {
     Bundle mockBundle = this.mockBundles[0];
     when( mockBundle.getState() ).thenReturn( Bundle.STOPPING );
@@ -283,6 +320,24 @@ public class RequireJsConfigManagerTest {
     assertFalse( config.contains( "var lib4 = \"lib4: some external static code!\";" ) );
     assertFalse( config.contains( "var lib4 = \"lib4: some external code!\";" ) );
     assertFalse( config.contains( "/* End of bundle [" + mockBundle.getBundleId() + "] - lib4:4.0*/" ) );
+  }
+
+  @Test
+  public void testBundleChangedExistingWebPackageBundle() throws IOException, ParseException {
+    Bundle mockBundle = this.mockBundles[5];
+    when( mockBundle.getState() ).thenReturn( Bundle.STOPPING );
+
+    this.requireJsConfigManager.bundleChanged( mockBundle );
+
+    // check that invalidateCachedConfigurations is called
+    verify( this.requireJsConfigManager, times( 1 ) ).invalidateCachedConfigurations();
+
+    String config = this.requireJsConfigManager.getRequireJsConfig( this.baseUrl );
+    // dirty quick check if the lib isn't anymore in the require configuration
+    // proper testing is done on the pentaho-requirejs-utils module
+    assertFalse( config.contains( "pentaho-webpackage-1a_1.0" ) );
+    assertFalse( config.contains( "pentaho-webpackage-1b_1.1" ) );
+    assertFalse( config.contains( "pentaho-webpackage-1c_1.2" ) );
   }
 
   @Test
@@ -396,5 +451,36 @@ public class RequireJsConfigManagerTest {
     when( mockBundle.getResource( "/resources/static/" + bundleName + "-require-js-cfg.js" ) ).thenReturn( this.getClass().getClassLoader().getResource( "org/pentaho/js/require/" + bundleName + "-static-resources-script.js" ) );
 
     return mockBundle;
+  }
+
+  private Bundle createMockWebPackageBundle( List<BundleCapability> capabilities, String bundleName, String bundleVersion, int bundleState ) {
+    final Bundle mockBundle = this.createMockBundle( bundleName, bundleVersion, bundleState );
+
+    BundleWiring wiring = mock( BundleWiring.class );
+
+    List<BundleCapability> bundleCapabilities = new ArrayList<>();
+
+    capabilities.forEach( bundleCapability -> {
+      bundleCapabilities.add( bundleCapability );
+
+      final String root = bundleCapability.getAttributes().get( "root" ).toString();
+      when( mockBundle.getResource( root + "/package.json" ) ).thenReturn( this.getClass().getClassLoader().getResource( "org/pentaho/js/require/" + root + "-package.json" ) );
+    } );
+
+    when( wiring.getCapabilities( RequireJsConfigManager.CAPABILITY_NAMESPACE ) ).thenReturn( bundleCapabilities );
+
+    when( mockBundle.adapt( BundleWiring.class ) ).thenReturn( wiring );
+
+    return mockBundle;
+  }
+
+  private BundleCapability createMockWebPackageCapability( String root ) {
+    Map<String, Object> attributes = new HashMap<>();
+    attributes.put( "root", root );
+
+    BundleCapability bundleCapability = mock( BundleCapability.class );
+    when( bundleCapability.getAttributes() ).thenReturn( attributes );
+
+    return bundleCapability;
   }
 }
