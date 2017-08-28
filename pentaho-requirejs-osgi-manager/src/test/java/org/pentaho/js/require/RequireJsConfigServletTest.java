@@ -142,7 +142,7 @@ public class RequireJsConfigServletTest {
 
   @Test
   public void testDoGetWithFullyQualifiedUrlTrue() throws ServletException, IOException {
-    when( this.mockRequest.getParameter( "fullyQualifiedUrl" ) ).thenReturn( "true" );
+    when( this.mockRequest.getParameter( "useFullyQualifiedUrl" ) ).thenReturn( "true" );
 
     this.requireJsConfigServlet.doGet( this.mockRequest, this.mockResponse );
 
@@ -156,7 +156,7 @@ public class RequireJsConfigServletTest {
 
   @Test
   public void testDoGetWithFullyQualifiedUrlFalse() throws ServletException, IOException {
-    when( this.mockRequest.getParameter( "fullyQualifiedUrl" ) ).thenReturn( "false" );
+    when( this.mockRequest.getParameter( "useFullyQualifiedUrl" ) ).thenReturn( "false" );
 
     this.requireJsConfigServlet.doGet( this.mockRequest, this.mockResponse );
 
