@@ -164,7 +164,7 @@ public class RequireJsConfigServlet extends HttpServlet {
 
       // should the CONTEXT_PATH / baseUrl be a fully qualified URL?
       // (defaults to automatically determined using the request's referer)
-      this.useFullyQualifiedUrl = this.getBooleanValue( req.getParameter( "fullyQualifiedUrl" ), referer != null && !referer.startsWith( this.serverAddress ) );
+      this.useFullyQualifiedUrl = this.getBooleanValue( req.getParameter( "useFullyQualifiedUrl" ), referer != null && !referer.startsWith( this.serverAddress ) );
     }
 
     boolean shouldOutputRequireJs() {
