@@ -27,6 +27,8 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.wiring.BundleCapability;
 import org.osgi.framework.wiring.BundleWiring;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -52,6 +54,8 @@ public class RequireJsConfigManager {
   static final String REQUIRE_JSON_PATH = "META-INF/js/require.json";
   static final String EXTERNAL_RESOURCES_JSON_PATH = "META-INF/js/externalResources.json";
   static final String STATIC_RESOURCES_JSON_PATH = "META-INF/js/staticResources.json";
+
+  private static Logger logger = LoggerFactory.getLogger( RequireJsConfigManager.class );
 
   private static final ScheduledExecutorService executorService =
       Executors.newScheduledThreadPool( 2, r -> {
@@ -196,39 +200,9 @@ public class RequireJsConfigManager {
       shouldInvalidate = shouldInvalidate || didParsePackageJson;
     } else {
       // finally: capability based web roots
-      BundleWiring wiring = bundle.adapt( BundleWiring.class );
+      boolean foundPentahoWebPackageCapability = this.processBundleCapabilities( bundle );
 
-      if ( wiring != null ) {
-        List<BundleCapability> capabilities = wiring.getCapabilities( CAPABILITY_NAMESPACE );
-
-        if ( capabilities != null ) {
-          for ( BundleCapability bundleCapability : capabilities ) {
-            Map<String, Object> attributes = bundleCapability.getAttributes();
-
-            String root = (String) attributes.get( "root" );
-            if ( root == null || "".equals( root ) ) {
-              root = "";
-            }
-
-            try {
-              URL capabilityPackageJsonUrl = bundle.getResource( root + "/package.json" );
-              if ( capabilityPackageJsonUrl != null ) {
-                boolean didParsePackageJson = this.parsePackageInformation( bundle, capabilityPackageJsonUrl );
-
-                shouldInvalidate = shouldInvalidate || didParsePackageJson;
-              }
-            } catch ( RuntimeException ignored ) {
-              // throwing will make everything fail
-              // what damage control should we do?
-              // **don't register this capability?** <-- this is what we're doing now
-              // ignore and use only the capability info?
-              // don't register all the bundle's capabilities?
-              // this is all post-bundle wiring phase, so only the requirejs configuration is affected
-              // the bundle is started and nothing will change that... or should we bundle.stop()?
-            }
-          }
-        }
-      }
+      shouldInvalidate = shouldInvalidate || foundPentahoWebPackageCapability;
     }
 
     // always process legacy META-INF/js/externalResources.json and META-INF/js/staticResources.json
@@ -271,6 +245,48 @@ public class RequireJsConfigManager {
     }
 
     return shouldInvalidate;
+  }
+
+  private boolean processBundleCapabilities( Bundle bundle ) {
+    BundleWiring wiring = bundle.adapt( BundleWiring.class );
+
+    boolean foundPentahoWebPackageCapability = false;
+
+    if ( wiring != null ) {
+      List<BundleCapability> capabilities = wiring.getCapabilities( CAPABILITY_NAMESPACE );
+
+      if ( capabilities != null ) {
+        for ( BundleCapability bundleCapability : capabilities ) {
+          Map<String, Object> attributes = bundleCapability.getAttributes();
+
+          String root = (String) attributes.get( "root" );
+          if ( root == null || "".equals( root ) ) {
+            root = "";
+          }
+
+          try {
+            URL capabilityPackageJsonUrl = bundle.getResource( root + "/package.json" );
+            if ( capabilityPackageJsonUrl != null ) {
+              boolean didParsePackageJson = this.parsePackageInformation( bundle, capabilityPackageJsonUrl );
+
+              foundPentahoWebPackageCapability = foundPentahoWebPackageCapability || didParsePackageJson;
+            } else {
+              logger.warn( bundle.getSymbolicName() + " [" + bundle.getBundleId() + "]: " + root + "/package.json not found." );
+            }
+          } catch ( RuntimeException ignored ) {
+            logger.error( bundle.getSymbolicName() + " [" + bundle.getBundleId() + "]: Error parsing " + root + "/package.json." );
+
+            // throwing here would make everything fail
+            // what damage control should we do?
+            // **don't register this capability?** <-- this is what we're doing now
+            // ignore and use only the capability info?
+            // don't register all the bundle's capabilities?
+          }
+        }
+      }
+    }
+
+    return foundPentahoWebPackageCapability;
   }
 
   private boolean parsePackageInformation( Bundle bundle, URL resourceUrl ) {

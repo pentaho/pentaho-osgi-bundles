@@ -58,12 +58,18 @@ public class RequireJsConfigManagerTest {
   private String baseUrl;
 
   private Bundle mockContextBundle;
-  private Bundle[] mockBundles;
 
   private BundleContext mockBundleContext;
 
   private RequireJsConfigManager requireJsConfigManager;
   private long mockBundleCounter;
+
+  private Bundle mockBundleNoClientSide;
+  private Bundle mockBundleWithPackageJson;
+  private Bundle mockBundleWithRequireJson;
+  private Bundle mockBundleWithExternalResources;
+  private Bundle mockBundleWithExternalAndStaticResources;
+  private Bundle mockBundleWebPackage;
 
   @Before
   public void setup() throws Exception {
@@ -73,23 +79,29 @@ public class RequireJsConfigManagerTest {
 
     this.mockBundleCounter = 1L;
 
-    this.mockBundles = new Bundle[6];
-
-    this.mockBundles[0] = this.createMockBundle( "non-client-side-bundle", "0.1", Bundle.ACTIVE );
-    this.mockBundles[1] = this.createMockPackageJsonBundle( "lib1", "1.0", Bundle.ACTIVE );
-    this.mockBundles[2] = this.createMockRequireJsonBundle( "lib2", "2.0", Bundle.ACTIVE );
-    this.mockBundles[3] = this.createMockExternalResourcesBundle( "lib3", "3.0", Bundle.ACTIVE );
-    this.mockBundles[4] = this.createMockExternalStaticResourcesBundle( "lib4", "4.0", Bundle.ACTIVE );
+    this.mockBundleNoClientSide = this.createMockBundle( "non-client-side-bundle", "0.1", Bundle.ACTIVE );
+    this.mockBundleWithPackageJson = this.createMockPackageJsonBundle( "lib1", "1.0", Bundle.ACTIVE );
+    this.mockBundleWithRequireJson = this.createMockRequireJsonBundle( "lib2", "2.0", Bundle.ACTIVE );
+    this.mockBundleWithExternalResources = this.createMockExternalResourcesBundle( "lib3", "3.0", Bundle.ACTIVE );
+    this.mockBundleWithExternalAndStaticResources = this.createMockExternalStaticResourcesBundle( "lib4", "4.0", Bundle.ACTIVE );
 
     List<BundleCapability> capabilities = new ArrayList<>();
     capabilities.add( createMockWebPackageCapability( "/pentaho-webpackage-1a" ) );
     capabilities.add( createMockWebPackageCapability( "/pentaho-webpackage-1b" ) );
     capabilities.add( createMockWebPackageCapability( "/pentaho-webpackage-1c" ) );
-    this.mockBundles[5] = this.createMockWebPackageBundle( capabilities,"pentaho-webpackage-1", "1.0", Bundle.ACTIVE );
+    this.mockBundleWebPackage = this.createMockWebPackageBundle( capabilities, "pentaho-webpackage-1", "1.0", Bundle.ACTIVE );
+
+    Bundle[] mockBundles = new Bundle[6];
+    mockBundles[0] = this.mockBundleNoClientSide;
+    mockBundles[1] = this.mockBundleWithPackageJson;
+    mockBundles[2] = this.mockBundleWithRequireJson;
+    mockBundles[3] = this.mockBundleWithExternalResources;
+    mockBundles[4] = this.mockBundleWithExternalAndStaticResources;
+    mockBundles[5] = this.mockBundleWebPackage;
 
     this.mockBundleContext = mock( BundleContext.class );
     when( this.mockBundleContext.getBundle() ).thenReturn( this.mockContextBundle );
-    when( this.mockBundleContext.getBundles() ).thenReturn( this.mockBundles );
+    when( this.mockBundleContext.getBundles() ).thenReturn( mockBundles );
 
     this.requireJsConfigManager = spy( new RequireJsConfigManager() );
     this.requireJsConfigManager.setBundleContext( this.mockBundleContext );
@@ -110,13 +122,13 @@ public class RequireJsConfigManagerTest {
     // check if the already registered bundles configurations appear in the require configuration
     assertTrue( config.contains( "lib1_1.0" ) );
     assertTrue( config.contains( "lib2" ) );
-    assertTrue( config.contains( "/* Following configurations are from bundle [" + this.mockBundles[3].getBundleId() + "] - lib3:3.0*/" ) );
+    assertTrue( config.contains( "/* Following configurations are from bundle [" + this.mockBundleWithExternalResources.getBundleId() + "] - lib3:3.0*/" ) );
     assertTrue( config.contains( "var lib3 = \"lib3: some external code!\";" ) );
-    assertTrue( config.contains( "/* End of bundle [" + this.mockBundles[3].getBundleId() + "] - lib3:3.0*/" ) );
-    assertTrue( config.contains( "/* Following configurations are from bundle [" + this.mockBundles[4].getBundleId() + "] - lib4:4.0*/" ) );
+    assertTrue( config.contains( "/* End of bundle [" + this.mockBundleWithExternalResources.getBundleId() + "] - lib3:3.0*/" ) );
+    assertTrue( config.contains( "/* Following configurations are from bundle [" + this.mockBundleWithExternalAndStaticResources.getBundleId() + "] - lib4:4.0*/" ) );
     assertTrue( config.contains( "var lib4 = \"lib4: some external static code!\";" ) );
     assertTrue( config.contains( "var lib4 = \"lib4: some external code!\";" ) );
-    assertTrue( config.contains( "/* End of bundle [" + this.mockBundles[4].getBundleId() + "] - lib4:4.0*/" ) );
+    assertTrue( config.contains( "/* End of bundle [" + this.mockBundleWithExternalAndStaticResources.getBundleId() + "] - lib4:4.0*/" ) );
 
     assertTrue( config.contains( "pentaho-webpackage-1a_1.0" ) );
     assertTrue( config.contains( "pentaho-webpackage-1b_1.1" ) );
@@ -231,7 +243,7 @@ public class RequireJsConfigManagerTest {
     capabilities.add( createMockWebPackageCapability( "/pentaho-webpackage-2a" ) );
     capabilities.add( createMockWebPackageCapability( "/pentaho-webpackage-2b" ) );
     capabilities.add( createMockWebPackageCapability( "/pentaho-webpackage-2c" ) );
-    Bundle mockBundle = this.createMockWebPackageBundle( capabilities,"pentaho-webpackage-2", "1.0", Bundle.ACTIVE );
+    Bundle mockBundle = this.createMockWebPackageBundle( capabilities, "pentaho-webpackage-2", "1.0", Bundle.ACTIVE );
 
     this.requireJsConfigManager.bundleChanged( mockBundle );
 
@@ -248,7 +260,7 @@ public class RequireJsConfigManagerTest {
 
   @Test
   public void testBundleChangedExistingNonClientBundle() throws IOException, ParseException {
-    Bundle mockBundle = this.mockBundles[0];
+    Bundle mockBundle = this.mockBundleNoClientSide;
     when( mockBundle.getState() ).thenReturn( Bundle.STOPPING );
 
     this.requireJsConfigManager.bundleChanged( mockBundle );
@@ -259,7 +271,7 @@ public class RequireJsConfigManagerTest {
 
   @Test
   public void testBundleChangedExistingPackageJsonBundle() throws IOException, ParseException {
-    Bundle mockBundle = this.mockBundles[1];
+    Bundle mockBundle = this.mockBundleWithPackageJson;
     when( mockBundle.getState() ).thenReturn( Bundle.STOPPING );
 
     this.requireJsConfigManager.bundleChanged( mockBundle );
@@ -275,7 +287,7 @@ public class RequireJsConfigManagerTest {
 
   @Test
   public void testBundleChangedExistingRequireJsonBundle() throws IOException, ParseException {
-    Bundle mockBundle = this.mockBundles[2];
+    Bundle mockBundle = this.mockBundleWithRequireJson;
     when( mockBundle.getState() ).thenReturn( Bundle.STOPPING );
 
     this.requireJsConfigManager.bundleChanged( mockBundle );
@@ -291,7 +303,7 @@ public class RequireJsConfigManagerTest {
 
   @Test
   public void testBundleChangedExistingExternalResourcesBundle() throws IOException, ParseException {
-    Bundle mockBundle = this.mockBundles[3];
+    Bundle mockBundle = this.mockBundleWithExternalResources;
     when( mockBundle.getState() ).thenReturn( Bundle.STOPPING );
 
     this.requireJsConfigManager.bundleChanged( mockBundle );
@@ -307,7 +319,7 @@ public class RequireJsConfigManagerTest {
 
   @Test
   public void testBundleChangedExistingExternalStaticResourcesBundle() throws IOException, ParseException {
-    Bundle mockBundle = this.mockBundles[4];
+    Bundle mockBundle = this.mockBundleWithExternalAndStaticResources;
     when( mockBundle.getState() ).thenReturn( Bundle.STOPPING );
 
     this.requireJsConfigManager.bundleChanged( mockBundle );
@@ -324,7 +336,7 @@ public class RequireJsConfigManagerTest {
 
   @Test
   public void testBundleChangedExistingWebPackageBundle() throws IOException, ParseException {
-    Bundle mockBundle = this.mockBundles[5];
+    Bundle mockBundle = this.mockBundleWebPackage;
     when( mockBundle.getState() ).thenReturn( Bundle.STOPPING );
 
     this.requireJsConfigManager.bundleChanged( mockBundle );
