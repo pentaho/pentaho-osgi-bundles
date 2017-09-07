@@ -1,0 +1,9 @@
+{
+  "name": "my-simple-module",
+  "version": "1.4.0",
+  "config": {
+    "pentaho/service": {
+      "my-simple-module_is": "a_thing"
+    }
+  }
+}
