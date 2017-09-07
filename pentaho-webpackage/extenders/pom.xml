@@ -16,6 +16,6 @@
   <packaging>pom</packaging>
 
   <modules>
-    <module>http-whiteboard-extender</module>
+    <module>http-extender</module>
   </modules>
 </project>

@@ -16,7 +16,7 @@
   <packaging>pom</packaging>
 
   <modules>
-    <module>pentaho-webpackage-archive-file-deployer</module>
+    <module>pentaho-webpackage-archive-deployer</module>
     <module>pentaho-webpackage</module>
   </modules>
 </project>

@@ -16,6 +16,6 @@
   <packaging>pom</packaging>
 
   <modules>
-    <module>archive-file-deployer</module>
+    <module>archive-deployer</module>
   </modules>
 </project>
