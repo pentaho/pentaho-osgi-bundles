@@ -47,6 +47,14 @@ public class PentahoWebPackageImpl extends PentahoWebPackageAbstract {
 
   @Override
   public void destroy() {
-    this.serviceReference.unregister();
+    if ( this.serviceReference != null ) {
+      try {
+        this.serviceReference.unregister();
+      } catch ( RuntimeException ignored ) {
+        // service might be already unregistered automatically by the bundle lifecycle manager
+      }
+
+      this.serviceReference = null;
+    }
   }
 }

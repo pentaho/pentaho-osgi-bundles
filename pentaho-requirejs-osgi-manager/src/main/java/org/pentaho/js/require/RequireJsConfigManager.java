@@ -259,9 +259,9 @@ public class RequireJsConfigManager {
         for ( BundleCapability bundleCapability : capabilities ) {
           Map<String, Object> attributes = bundleCapability.getAttributes();
 
-          String root = (String) attributes.get( "root" );
-          if ( root == null || "".equals( root ) ) {
-            root = "";
+          String root = (String) attributes.getOrDefault( "root", "" );
+          while ( root.endsWith( "/" ) ) {
+            root = root.substring( 0, root.length() - 1 );
           }
 
           try {

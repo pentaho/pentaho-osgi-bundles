@@ -87,7 +87,7 @@ public class RequireJsConfigManagerTest {
 
     List<BundleCapability> capabilities = new ArrayList<>();
     capabilities.add( createMockWebPackageCapability( "/pentaho-webpackage-1a" ) );
-    capabilities.add( createMockWebPackageCapability( "/pentaho-webpackage-1b" ) );
+    capabilities.add( createMockWebPackageCapability( "/pentaho-webpackage-1b/" ) );
     capabilities.add( createMockWebPackageCapability( "/pentaho-webpackage-1c" ) );
     this.mockBundleWebPackage = this.createMockWebPackageBundle( capabilities, "pentaho-webpackage-1", "1.0", Bundle.ACTIVE );
 
@@ -475,7 +475,10 @@ public class RequireJsConfigManagerTest {
     capabilities.forEach( bundleCapability -> {
       bundleCapabilities.add( bundleCapability );
 
-      final String root = bundleCapability.getAttributes().get( "root" ).toString();
+      String root = bundleCapability.getAttributes().get( "root" ).toString();
+      while ( root.endsWith( "/" ) ) {
+        root = root.substring( 0, root.length() - 1 );
+      }
       when( mockBundle.getResource( root + "/package.json" ) ).thenReturn( this.getClass().getClassLoader().getResource( "org/pentaho/js/require/" + root + "-package.json" ) );
     } );
 

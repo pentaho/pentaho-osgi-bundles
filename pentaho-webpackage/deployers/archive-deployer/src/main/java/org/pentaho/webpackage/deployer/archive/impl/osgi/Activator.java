@@ -51,13 +51,23 @@ public class Activator implements BundleActivator {
 
   public void stop( BundleContext bundleContext ) {
     if ( this.urlTransformerRegistration != null ) {
-      this.urlTransformerRegistration.unregister();
+      try {
+        this.urlTransformerRegistration.unregister();
+      } catch ( RuntimeException ignored ) {
+        // service might be already unregistered automatically by the bundle lifecycle manager
+      }
+
       this.urlTransformerRegistration = null;
       this.urlTransformer = null;
     }
 
     if ( this.urlHandlerRegistration != null ) {
-      this.urlHandlerRegistration.unregister();
+      try {
+        this.urlHandlerRegistration.unregister();
+      } catch ( RuntimeException ignored ) {
+        // service might be already unregistered automatically by the bundle lifecycle manager
+      }
+
       this.urlHandlerRegistration = null;
       this.urlHandler = null;
     }

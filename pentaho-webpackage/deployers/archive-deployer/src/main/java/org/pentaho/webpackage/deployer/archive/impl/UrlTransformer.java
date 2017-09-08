@@ -29,7 +29,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URL;
+import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+import java.util.zip.ZipInputStream;
 
 public class UrlTransformer implements ArtifactUrlTransformer {
   private Logger logger = LoggerFactory.getLogger( UrlTransformer.class );
@@ -60,9 +62,36 @@ public class UrlTransformer implements ArtifactUrlTransformer {
     try {
       zipFile = new ZipFile( file );
 
-      return zipFile.getEntry( "package.json" ) != null && zipFile.getEntry( "META-INF/MANIFEST.MF" ) == null;
-    } catch ( IOException e ) {
-      this.logger.error( e.getMessage(), e );
+      // exclude real jar files
+      // (we only accept the jar extension because of exploded bundles (jardir))
+      if ( zipFile.getEntry( "META-INF/MANIFEST.MF" ) != null ) {
+        return false;
+      }
+
+      ZipInputStream zipInputStream = null;
+
+      try {
+        zipInputStream = new ZipInputStream( new FileInputStream( file ) );
+
+        ZipEntry entry;
+        while ( ( entry = zipInputStream.getNextEntry() ) != null ) {
+          if ( entry.getName().endsWith( WebPackageURLConnection.PACKAGE_JSON ) ) {
+            return true;
+          }
+        }
+      } catch ( IOException ignored ) {
+        // Ignore
+      } finally {
+        try {
+          if ( zipInputStream != null ) {
+            zipInputStream.close();
+          }
+        } catch ( IOException ignored ) {
+          // Ignore
+        }
+      }
+    } catch ( IOException ignored ) {
+      // Ignore
     } finally {
       if ( zipFile != null ) {
         try {
@@ -82,14 +111,14 @@ public class UrlTransformer implements ArtifactUrlTransformer {
       tarInput = new TarArchiveInputStream( new GzipCompressorInputStream( new FileInputStream( file ) ) );
       TarArchiveEntry currentEntry = tarInput.getNextTarEntry();
       while ( currentEntry != null ) {
-        if ( currentEntry.getName().endsWith( "package.json" ) ) {
+        if ( currentEntry.getName().endsWith( WebPackageURLConnection.PACKAGE_JSON ) ) {
           return true;
         }
 
         currentEntry = tarInput.getNextTarEntry();
       }
-    } catch ( IOException e ) {
-      e.printStackTrace();
+    } catch ( IOException ignored ) {
+      // Ignore
     } finally {
       if ( tarInput != null ) {
         try {

@@ -53,7 +53,11 @@ public class Activator implements BundleActivator {
     if ( this.pentahoWebPackageService != null ) {
       bundleContext.removeBundleListener( this.pentahoWebPackageService );
 
-      this.serviceReference.unregister();
+      try {
+        this.serviceReference.unregister();
+      } catch ( RuntimeException ignored ) {
+        // service might be already unregistered automatically by the bundle lifecycle manager
+      }
 
       this.pentahoWebPackageService = null;
     }
