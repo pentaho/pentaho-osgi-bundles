@@ -45,7 +45,7 @@ public class UrlTransformerTest {
 
   @Test
   public void canHandleJarFileWithPackageJsonButNoManifest() throws Exception {
-    assertTrue( this.transformer.canHandle( getResourceFile( "/my-simple-module-1.4.0.zip" ) ) );
+    assertTrue( this.transformer.canHandle( getResourceFile( "/my-simple-module-1.4.0.jar" ) ) );
   }
 
   @Test
@@ -60,7 +60,7 @@ public class UrlTransformerTest {
 
   @Test
   public void cannotHandleJarFileWithNoPackageJson() throws Exception {
-    assertFalse( this.transformer.canHandle( getResourceFile( "/no-package-json.zip" ) ) );
+    assertFalse( this.transformer.canHandle( getResourceFile( "/no-package-json.jar" ) ) );
   }
 
   @Test

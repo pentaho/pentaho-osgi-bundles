@@ -65,6 +65,7 @@ import java.util.zip.ZipInputStream;
 
 public class WebPackageURLConnection extends java.net.URLConnection {
   public static final String URL_PROTOCOL = "pentaho-webpackage";
+  public static final String PACKAGE_JSON = "package.json";
 
   private static final ExecutorService EXECUTOR = Executors.newFixedThreadPool( 5, r -> {
     Thread thread = Executors.defaultThreadFactory().newThread( r );
@@ -111,8 +112,6 @@ public class WebPackageURLConnection extends java.net.URLConnection {
   private static class WebPackageTransformer implements Callable<Void> {
     private static final String DEBUG_MESSAGE_FAILED_WRITING =
         "Problem transferring Jar content, probably JarOutputStream was already closed.";
-
-    private static final String PACKAGE_JSON = "package.json";
 
     private static final int BYTES_BUFFER_SIZE = 4096;
 
@@ -163,15 +162,16 @@ public class WebPackageURLConnection extends java.net.URLConnection {
       init();
 
       try {
-        Manifest manifest = createManifest();
         List<String> capabilities = new ArrayList<>();
         List<String> requirements = null; // new ArrayList<>();
 
         if ( this.url.getProtocol().equals( "jardir" ) || this.url.getProtocol().equals( "file" ) && this.url.getPath().endsWith( ".zip" ) ) {
-          processZipArchive( manifest, capabilities, requirements );
+          processZipArchive( capabilities, requirements );
         } else {
-          processTgzArchive( manifest, capabilities, requirements );
+          processTgzArchive( capabilities, requirements );
         }
+
+        Manifest manifest = createManifest();
 
         if ( !capabilities.isEmpty() ) {
           manifest.getMainAttributes()
@@ -217,7 +217,7 @@ public class WebPackageURLConnection extends java.net.URLConnection {
       }
     }
 
-    private void processZipArchive( Manifest manifest, List<String> capabilities, List<String> requirements ) throws IOException {
+    private void processZipArchive( List<String> capabilities, List<String> requirements ) throws IOException {
       ZipInputStream zipInputStream = null;
 
       try {
@@ -244,7 +244,7 @@ public class WebPackageURLConnection extends java.net.URLConnection {
       }
     }
 
-    private void processTgzArchive( Manifest manifest, List<String> capabilities, List<String> requirements ) throws IOException {
+    private void processTgzArchive( List<String> capabilities, List<String> requirements ) throws IOException {
       TarArchiveInputStream tarGzInputStream = null;
 
       try {
@@ -283,7 +283,7 @@ public class WebPackageURLConnection extends java.net.URLConnection {
 
       temporarySourceFileOutputStream.close();
 
-      if ( name.endsWith( PACKAGE_JSON ) ) {
+      if ( name.endsWith( WebPackageURLConnection.PACKAGE_JSON ) ) {
         processPackageJson( temporarySourceFile, name, capabilities, requirements );
       }
     }
@@ -293,7 +293,7 @@ public class WebPackageURLConnection extends java.net.URLConnection {
 
       String moduleName = (String) packageJson.get( "name" );
       String moduleVersion = VersionParser.parseVersion( (String) packageJson.get( "version" ) ).toString();
-      String root = name.replace( PACKAGE_JSON, "" );
+      String root = name.replace( WebPackageURLConnection.PACKAGE_JSON, "" );
       if ( root.endsWith( "/" ) ) {
         root = root.substring( 0, root.length() - 1 );
       }
