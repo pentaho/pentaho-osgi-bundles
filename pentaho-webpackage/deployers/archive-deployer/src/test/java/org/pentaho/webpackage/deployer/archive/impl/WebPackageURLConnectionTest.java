@@ -48,7 +48,7 @@ public class WebPackageURLConnectionTest {
 
     Manifest manifest = jarFile.getManifest();
 
-    verifyManifest( manifest );
+    verifyManifest( manifest, "my-simple-module", "1.4.0" );
   }
 
   @Test
@@ -57,7 +57,16 @@ public class WebPackageURLConnectionTest {
 
     Manifest manifest = jarFile.getManifest();
 
-    verifyManifest( manifest );
+    verifyManifest( manifest, "my-simple-module", "1.4.0" );
+  }
+
+  @Test
+  public void testZipFileWithMacOsMetadata() throws Exception {
+    JarFile jarFile = getDeployedJar( getResourceUrl( "/macos.zip" ) );
+
+    Manifest manifest = jarFile.getManifest();
+
+    verifyManifest( manifest, "my-module", "1.4.2" );
   }
 
   @Test
@@ -85,9 +94,9 @@ public class WebPackageURLConnectionTest {
     connection.getInputStream();
   }
 
-  private void verifyManifest( Manifest manifest ) {
+  private void verifyManifest( Manifest manifest, String moduleName, String moduleVersion ) {
     assertTrue( manifest.getMainAttributes().getValue( Constants.BUNDLE_SYMBOLICNAME ).startsWith( "pentaho-webpackage-" ) );
-    assertTrue( manifest.getMainAttributes().getValue( Constants.PROVIDE_CAPABILITY ).startsWith( PentahoWebPackageService.CAPABILITY_NAMESPACE + ";name=\"my-simple-module\";version:Version=\"1.4.0\";root=\"/pwp-" ) );
+    assertTrue( manifest.getMainAttributes().getValue( Constants.PROVIDE_CAPABILITY ).startsWith( PentahoWebPackageService.CAPABILITY_NAMESPACE + ";name=\"" + moduleName + "\";version:Version=\"" + moduleVersion + "\";root=\"/pwp-" ) );
   }
 
   private JarFile getDeployedJar( URL url ) throws IOException {
