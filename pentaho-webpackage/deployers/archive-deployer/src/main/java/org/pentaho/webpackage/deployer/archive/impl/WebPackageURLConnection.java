@@ -227,7 +227,8 @@ public class WebPackageURLConnection extends java.net.URLConnection {
         while ( ( entry = zipInputStream.getNextEntry() ) != null ) {
           String name = entry.getName();
 
-          if ( !entry.isDirectory() ) {
+          // filter out macOS zip metadata files
+          if ( !entry.isDirectory() && !name.startsWith( "__MACOSX/" ) ) {
             processArchiveEntry( zipInputStream, name, capabilities, requirements );
           }
 
@@ -283,7 +284,7 @@ public class WebPackageURLConnection extends java.net.URLConnection {
 
       temporarySourceFileOutputStream.close();
 
-      if ( name.endsWith( WebPackageURLConnection.PACKAGE_JSON ) ) {
+      if ( FilenameUtils.getName( name ).equals( WebPackageURLConnection.PACKAGE_JSON ) ) {
         processPackageJson( temporarySourceFile, name, capabilities, requirements );
       }
     }

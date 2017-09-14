@@ -21,6 +21,7 @@ package org.pentaho.webpackage.deployer.archive.impl;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.felix.fileinstall.ArtifactUrlTransformer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -75,7 +76,8 @@ public class UrlTransformer implements ArtifactUrlTransformer {
 
         ZipEntry entry;
         while ( ( entry = zipInputStream.getNextEntry() ) != null ) {
-          if ( entry.getName().endsWith( WebPackageURLConnection.PACKAGE_JSON ) ) {
+          final String name = FilenameUtils.getName( entry.getName() );
+          if ( name.equals( WebPackageURLConnection.PACKAGE_JSON ) ) {
             return true;
           }
         }
