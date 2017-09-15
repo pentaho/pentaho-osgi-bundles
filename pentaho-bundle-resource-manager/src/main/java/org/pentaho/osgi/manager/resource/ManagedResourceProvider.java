@@ -21,12 +21,13 @@
  ******************************************************************************/
 package org.pentaho.osgi.manager.resource;
 
+import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
+import java.io.File;
+import java.nio.file.Paths;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.pentaho.osgi.manager.resource.api.ResourceProvider;
-
-import java.io.File;
-import java.nio.file.Paths;
 
 /**
  * Created by krivera on 6/21/17.
@@ -35,7 +36,6 @@ public class ManagedResourceProvider implements ResourceProvider {
   private BundleContext bundleContext;
   private File managedResourcesFolder;
 
-  private static String ROOT_SYSTEM_DIR = File.separator + "system";
   public static String MANAGED_RESOURCES_DIR = File.separator + "managed-resources";
 
   public void setBundleContext( BundleContext bundleContext ) {
@@ -43,7 +43,7 @@ public class ManagedResourceProvider implements ResourceProvider {
   }
 
   public void init() {
-    managedResourcesFolder = findManagedResourcesFolder( bundleContext.getBundle() );
+    managedResourcesFolder = findManagedResourcesFolder();
   }
 
   @Override public File getManagedResourceFolder() {
@@ -91,16 +91,14 @@ public class ManagedResourceProvider implements ResourceProvider {
   }
 
   /**
-   * Iterates through parent folders until the root 'system' folder is reached
+   * Constructs path to managed resources' root folder relative to karaf's home
    *
-   * @param blueprintBundle - The current blue print bundle
    * @return A {@link File} that is the root of /managed-resources folder
    */
-  protected File findManagedResourcesFolder( Bundle blueprintBundle ) {
-    File root = blueprintBundle.getDataFile( "" ); // Path to root of bundle
-    while ( root != null && !root.getAbsolutePath().endsWith( ROOT_SYSTEM_DIR ) ) {
-      root = root.getParentFile();
-    }
+  protected File findManagedResourcesFolder( ) {
+    Preconditions.checkState( !Strings.isNullOrEmpty( System.getProperty( "karaf.home" ) ),
+        "karaf.home system property is not set" );
+    File root = new File( System.getProperty( "karaf.home" ) );
 
     return Paths.get( root.getAbsolutePath(), MANAGED_RESOURCES_DIR ).toFile();
   }

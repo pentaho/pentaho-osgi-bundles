@@ -22,6 +22,9 @@
 
 package org.pentaho.osgi.manager.resource;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Paths;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Before;
@@ -33,12 +36,9 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Paths;
-
-import static org.junit.Assert.*;
-import static org.mockito.Matchers.anyString;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 
@@ -50,25 +50,20 @@ public class ManagedResourceProviderTest {
 
   @Spy ManagedResourceProvider resourceProvider;
   @Mock Bundle bundle;
-  String systemPath = Paths.get( ".", "path", "to", "system" ).toString();
-  String bundlePath = Paths.get( systemPath, "bundle" ).toString();
-  File bundleLocationFile;
+  String karafPath = Paths.get( ".", "path", "to", "karaf" ).toString();
   @Mock BundleContext bundleContext;
   String bundleName = "test-bundle-name";
   String relativePath = Paths.get( "path", "to", "file" ).toString();
   String expectedRelativePath =
-    Paths.get( systemPath + ManagedResourceProvider.MANAGED_RESOURCES_DIR + File.separator + bundleName ).toString();
+    Paths.get( karafPath + ManagedResourceProvider.MANAGED_RESOURCES_DIR + File.separator + bundleName ).toString();
   String fileName = Paths.get( "test.csv" ).toString();
 
   @Before public void setup() throws IOException {
-    bundleLocationFile = new File( bundlePath );
-    bundleLocationFile.mkdirs();
-
+    System.setProperty( "karaf.home", karafPath );
 
     ( Paths.get( expectedRelativePath, relativePath ).toFile() ).mkdirs();
     ( Paths.get( expectedRelativePath, relativePath, fileName ).toFile() ).createNewFile();
 
-    doReturn( bundleLocationFile ).when( bundle ).getDataFile( anyString() );
     doReturn( bundleName ).when( bundle ).getSymbolicName();
     doReturn( bundle ).when( bundleContext ).getBundle();
 
@@ -77,14 +72,14 @@ public class ManagedResourceProviderTest {
   }
 
   @After public void teardown() throws IOException {
-    File toDelete = new File( "./" + bundlePath.substring( 2 ).split( "/" )[ 0 ] );
+    File toDelete = new File( "./path" );
     FileUtils.deleteDirectory( toDelete );
   }
 
   @Test public void findManagedResourcesFolderTest() {
-    File managedResourceFolder = resourceProvider.findManagedResourcesFolder( bundle );
+    File managedResourceFolder = resourceProvider.findManagedResourcesFolder();
     assertTrue(
-      managedResourceFolder.getAbsolutePath().contains( systemPath + ManagedResourceProvider.MANAGED_RESOURCES_DIR ) );
+      managedResourceFolder.getAbsolutePath().contains( karafPath + ManagedResourceProvider.MANAGED_RESOURCES_DIR ) );
   }
 
   @Test public void getAbsoluteFileTest() {
