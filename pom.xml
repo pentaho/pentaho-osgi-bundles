@@ -211,7 +211,7 @@
       <id>aggregate-reporting</id>
       <activation>
         <property>
-          <name>aggregate-reporting</name>
+          <name>!skipTests</name>
         </property>
       </activation>
       <reporting>
@@ -227,9 +227,6 @@
                 <inherited>false</inherited>
               </reportSet>
             </reportSets>
-            <configuration>
-              <linkJavadoc>true</linkJavadoc>
-            </configuration>
           </plugin>
           <plugin>
             <artifactId>maven-javadoc-plugin</artifactId>
@@ -242,9 +239,6 @@
                 <inherited>false</inherited>
               </reportSet>
             </reportSets>
-            <configuration>
-              <failOnError>false</failOnError>
-            </configuration>
           </plugin>
           <plugin>
             <artifactId>maven-checkstyle-plugin</artifactId>
@@ -257,12 +251,6 @@
                 <inherited>false</inherited>
               </reportSet>
             </reportSets>
-            <configuration>
-              <configLocation>${checkstyle-config-url}</configLocation>
-              <propertiesLocation>${checkstyle-properties-url}</propertiesLocation>
-              <linkXRef>true</linkXRef>
-              <cacheFile />
-            </configuration>
           </plugin>
         </plugins>
       </reporting>
