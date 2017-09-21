@@ -125,6 +125,7 @@
         <module>pentaho-pdi-platform</module>
         <module>pentaho-object-tunnel</module>
         <module>pentaho-zookeeper-fragment</module>
+        <module>pentaho-camel-guava-eventbus</module>
       </modules>
       <distributionManagement>
         <site>
@@ -194,6 +195,7 @@
         <module>pentaho-kettle-repository-locator</module>
         <module>pentaho-metastore-locator</module>
         <module>pentaho-pdi-platform</module>
+        <module>pentaho-camel-guava-eventbus</module>
       </modules>
       <distributionManagement>
         <site>
