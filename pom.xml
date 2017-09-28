@@ -65,6 +65,7 @@
     <commons-lang.version>2.6</commons-lang.version>
     <dependency.pentaho-platform.revision>8.0-SNAPSHOT</dependency.pentaho-platform.revision>
     <karaf.version>3.0.3</karaf.version>
+    <karaf.features.overriden.version>3.0.3-pentaho</karaf.features.overriden.version>
   </properties>
   <build>
     <finalName>${project.artifactId}</finalName>
