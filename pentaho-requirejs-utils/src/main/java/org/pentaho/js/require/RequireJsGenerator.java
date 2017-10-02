@@ -362,38 +362,38 @@ public class RequireJsGenerator {
   }
 
   private Object processAlternateMainField( Map<String, Object> paths, Map<String, Object> map, Object pck, Object value ) {
-      if ( value instanceof String ) {
-        // alternate main - basic
-        pck = packageFromFilename( (String) value );
-      } else if ( value instanceof Map ) {
-        // replace specific files - advanced
-        Map<String, ?> overridePaths = (Map<String, ?>) value;
+    if ( value instanceof String ) {
+      // alternate main - basic
+      pck = packageFromFilename( (String) value );
+    } else if ( value instanceof Map ) {
+      // replace specific files - advanced
+      Map<String, ?> overridePaths = (Map<String, ?>) value;
 
-        for ( String overridePath : overridePaths.keySet() ) {
-          Object replaceRawValue = overridePaths.get( overridePath );
+      for ( String overridePath : overridePaths.keySet() ) {
+        Object replaceRawValue = overridePaths.get( overridePath );
 
-          String replaceValue;
-          if ( replaceRawValue instanceof String ) {
-            replaceValue = (String) replaceRawValue;
+        String replaceValue;
+        if ( replaceRawValue instanceof String ) {
+          replaceValue = (String) replaceRawValue;
 
-            if ( replaceValue.startsWith( "./" ) ) {
-              replaceValue = replaceValue.substring( 2 );
-            }
-
-            replaceValue = FilenameUtils.removeExtension( replaceValue );
-          } else {
-            // ignore a module
-            // TODO: Should redirect to an empty module
-            replaceValue = "no-where-to-be-found";
+          if ( replaceValue.startsWith( "./" ) ) {
+            replaceValue = replaceValue.substring( 2 );
           }
 
-          if ( overridePath.startsWith( "./" ) ) {
-            paths.put( FilenameUtils.removeExtension( overridePath ), replaceValue );
-          } else {
-            map.put( FilenameUtils.removeExtension( overridePath ), replaceValue );
-          }
+          replaceValue = FilenameUtils.removeExtension( replaceValue );
+        } else {
+          // ignore a module
+          // TODO: Should redirect to an empty module
+          replaceValue = "no-where-to-be-found";
+        }
+
+        if ( overridePath.startsWith( "./" ) ) {
+          paths.put( FilenameUtils.removeExtension( overridePath ), replaceValue );
+        } else {
+          map.put( FilenameUtils.removeExtension( overridePath ), replaceValue );
         }
       }
+    }
 
     return pck;
   }
@@ -537,11 +537,46 @@ public class RequireJsGenerator {
       requirejs.put( "map", convertSubConfig( keyMap, map ) );
     }
 
-    if ( requireConfig.containsKey( "config" ) ) {
-      requirejs.put( "config", requireConfig.get( "config" ) );
+    final HashMap<String, ?> config = (HashMap<String, ?>) requireConfig.get( "config" );
+    if ( config != null ) {
+      requirejs.put( "config", convertTypeAndInstanceConfigurations( config ) );
     }
 
     return requirejs;
+  }
+
+  private HashMap<String, ?> convertTypeAndInstanceConfigurations( HashMap<String, ?> config ) {
+    HashMap<String, Object> convertedConfig = new HashMap<>();
+
+    if ( config != null ) {
+      for ( String key : config.keySet() ) {
+        if ( key.equals( "pentaho/typeInfo" ) || key.equals( "pentaho/instanceInfo" ) || key.equals( "pentaho/service" ) ) {
+          final HashMap<String, ?> serviceConfig = (HashMap<String, ?>) config.get( key );
+
+          if ( serviceConfig != null ) {
+            HashMap<String, Object> convertedServiceConfig = new HashMap<>();
+
+            for ( String serviceKey : serviceConfig.keySet() ) {
+              String convertedServiceKey = serviceKey;
+
+              if ( !serviceKey.startsWith( moduleInfo.getVersionedName() ) && serviceKey.startsWith( moduleInfo.getName() ) ) {
+                convertedServiceKey = StringUtils.replaceOnce( serviceKey, moduleInfo.getName(), moduleInfo.getVersionedName() );
+              } else if ( serviceKey.startsWith( "./" ) ) {
+                convertedServiceKey = moduleInfo.getVersionedName() + serviceKey.substring( 1 );
+              }
+
+              convertedServiceConfig.put( convertedServiceKey, serviceConfig.get( serviceKey ) );
+            }
+
+            convertedConfig.put( key, convertedServiceConfig );
+          }
+        } else {
+          convertedConfig.put( key, config.get( key ) );
+        }
+      }
+    }
+
+    return convertedConfig;
   }
 
   private HashMap<String, ?> convertSubConfig( HashMap<String, String> keyMap,
