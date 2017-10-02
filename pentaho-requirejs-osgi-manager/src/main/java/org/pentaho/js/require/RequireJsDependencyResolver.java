@@ -271,9 +271,11 @@ public class RequireJsDependencyResolver {
           }
 
           for ( String simblingModuleId : moduleIds ) {
-            String simblingVersion = modules.get( moduleId );
+            String simblingVersion = modules.get( simblingModuleId );
 
-            moduleMap.put( simblingModuleId, simblingModuleId + "_" + simblingVersion );
+            if ( !moduleMap.containsKey( simblingModuleId ) ) {
+              moduleMap.put( simblingModuleId, simblingModuleId + "_" + simblingVersion );
+            }
           }
         }
       }
