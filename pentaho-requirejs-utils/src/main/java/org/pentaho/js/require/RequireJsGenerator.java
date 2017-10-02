@@ -342,10 +342,26 @@ public class RequireJsGenerator {
       }
     }
 
-    if ( json.containsKey( "browser" ) ) {
-      // "browser" field for package.json: https://gist.github.com/defunctzombie/4339901
-      Object value = json.get( "browser" );
+    // all these alternate main file fields are due to D3 (see https://github.com/d3/d3/issues/3138)
+    // and possibly other libraries
+    // "module" (https://github.com/rollup/rollup/wiki/pkg.module) and
+    // "jsnext:main" (https://github.com/jsforum/jsforum/issues/5)
+    // are only for ES2015 modules, unsupported for now
+    if ( json.containsKey( "unpkg" ) ) {
+      // "unpkg" field for package.json: https://github.com/unpkg/unpkg-website/issues/63
+      pck = processAlternateMainField( paths, map, pck, json.get( "unpkg" ) );
+    } else if ( json.containsKey( "jsdelivr" ) ) {
+      // "jsdelivr" field for package.json: https://github.com/jsdelivr/jsdelivr#configuring-a-default-file-in-packagejson
+      pck = processAlternateMainField( paths, map, pck, json.get( "jsdelivr" ) );
+    } else if ( json.containsKey( "browser" ) ) {
+      // "browser" field for package.json: https://github.com/defunctzombie/package-browser-field-spec
+      pck = processAlternateMainField( paths, map, pck, json.get( "browser" ) );
+    }
 
+    return pck;
+  }
+
+  private Object processAlternateMainField( Map<String, Object> paths, Map<String, Object> map, Object pck, Object value ) {
       if ( value instanceof String ) {
         // alternate main - basic
         pck = packageFromFilename( (String) value );
@@ -378,7 +394,6 @@ public class RequireJsGenerator {
           }
         }
       }
-    }
 
     return pck;
   }
