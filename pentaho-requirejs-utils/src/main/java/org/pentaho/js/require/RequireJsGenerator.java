@@ -342,40 +342,55 @@ public class RequireJsGenerator {
       }
     }
 
-    if ( json.containsKey( "browser" ) ) {
-      // "browser" field for package.json: https://gist.github.com/defunctzombie/4339901
-      Object value = json.get( "browser" );
+    // all these alternate main file fields are due to D3 (see https://github.com/d3/d3/issues/3138)
+    // and possibly other libraries
+    // "module" (https://github.com/rollup/rollup/wiki/pkg.module) and
+    // "jsnext:main" (https://github.com/jsforum/jsforum/issues/5)
+    // are only for ES2015 modules, unsupported for now
+    if ( json.containsKey( "unpkg" ) ) {
+      // "unpkg" field for package.json: https://github.com/unpkg/unpkg-website/issues/63
+      pck = processAlternateMainField( paths, map, pck, json.get( "unpkg" ) );
+    } else if ( json.containsKey( "jsdelivr" ) ) {
+      // "jsdelivr" field for package.json: https://github.com/jsdelivr/jsdelivr#configuring-a-default-file-in-packagejson
+      pck = processAlternateMainField( paths, map, pck, json.get( "jsdelivr" ) );
+    } else if ( json.containsKey( "browser" ) ) {
+      // "browser" field for package.json: https://github.com/defunctzombie/package-browser-field-spec
+      pck = processAlternateMainField( paths, map, pck, json.get( "browser" ) );
+    }
 
-      if ( value instanceof String ) {
-        // alternate main - basic
-        pck = packageFromFilename( (String) value );
-      } else if ( value instanceof Map ) {
-        // replace specific files - advanced
-        Map<String, ?> overridePaths = (Map<String, ?>) value;
+    return pck;
+  }
 
-        for ( String overridePath : overridePaths.keySet() ) {
-          Object replaceRawValue = overridePaths.get( overridePath );
+  private Object processAlternateMainField( Map<String, Object> paths, Map<String, Object> map, Object pck, Object value ) {
+    if ( value instanceof String ) {
+      // alternate main - basic
+      pck = packageFromFilename( (String) value );
+    } else if ( value instanceof Map ) {
+      // replace specific files - advanced
+      Map<String, ?> overridePaths = (Map<String, ?>) value;
 
-          String replaceValue;
-          if ( replaceRawValue instanceof String ) {
-            replaceValue = (String) replaceRawValue;
+      for ( String overridePath : overridePaths.keySet() ) {
+        Object replaceRawValue = overridePaths.get( overridePath );
 
-            if ( replaceValue.startsWith( "./" ) ) {
-              replaceValue = replaceValue.substring( 2 );
-            }
+        String replaceValue;
+        if ( replaceRawValue instanceof String ) {
+          replaceValue = (String) replaceRawValue;
 
-            replaceValue = FilenameUtils.removeExtension( replaceValue );
-          } else {
-            // ignore a module
-            // TODO: Should redirect to an empty module
-            replaceValue = "no-where-to-be-found";
+          if ( replaceValue.startsWith( "./" ) ) {
+            replaceValue = replaceValue.substring( 2 );
           }
 
-          if ( overridePath.startsWith( "./" ) ) {
-            paths.put( FilenameUtils.removeExtension( overridePath ), replaceValue );
-          } else {
-            map.put( FilenameUtils.removeExtension( overridePath ), replaceValue );
-          }
+          replaceValue = FilenameUtils.removeExtension( replaceValue );
+        } else {
+          // ignore a module
+          // TODO: Should redirect to an empty module
+          replaceValue = "no-where-to-be-found";
+        }
+
+        if ( overridePath.startsWith( "./" ) ) {
+          paths.put( FilenameUtils.removeExtension( overridePath ), replaceValue );
+        } else {
+          map.put( FilenameUtils.removeExtension( overridePath ), replaceValue );
         }
       }
     }
@@ -522,11 +537,46 @@ public class RequireJsGenerator {
       requirejs.put( "map", convertSubConfig( keyMap, map ) );
     }
 
-    if ( requireConfig.containsKey( "config" ) ) {
-      requirejs.put( "config", requireConfig.get( "config" ) );
+    final HashMap<String, ?> config = (HashMap<String, ?>) requireConfig.get( "config" );
+    if ( config != null ) {
+      requirejs.put( "config", convertTypeAndInstanceConfigurations( config ) );
     }
 
     return requirejs;
+  }
+
+  private HashMap<String, ?> convertTypeAndInstanceConfigurations( HashMap<String, ?> config ) {
+    HashMap<String, Object> convertedConfig = new HashMap<>();
+
+    if ( config != null ) {
+      for ( String key : config.keySet() ) {
+        if ( key.equals( "pentaho/typeInfo" ) || key.equals( "pentaho/instanceInfo" ) || key.equals( "pentaho/service" ) ) {
+          final HashMap<String, ?> serviceConfig = (HashMap<String, ?>) config.get( key );
+
+          if ( serviceConfig != null ) {
+            HashMap<String, Object> convertedServiceConfig = new HashMap<>();
+
+            for ( String serviceKey : serviceConfig.keySet() ) {
+              String convertedServiceKey = serviceKey;
+
+              if ( !serviceKey.startsWith( moduleInfo.getVersionedName() ) && serviceKey.startsWith( moduleInfo.getName() ) ) {
+                convertedServiceKey = StringUtils.replaceOnce( serviceKey, moduleInfo.getName(), moduleInfo.getVersionedName() );
+              } else if ( serviceKey.startsWith( "./" ) ) {
+                convertedServiceKey = moduleInfo.getVersionedName() + serviceKey.substring( 1 );
+              }
+
+              convertedServiceConfig.put( convertedServiceKey, serviceConfig.get( serviceKey ) );
+            }
+
+            convertedConfig.put( key, convertedServiceConfig );
+          }
+        } else {
+          convertedConfig.put( key, config.get( key ) );
+        }
+      }
+    }
+
+    return convertedConfig;
   }
 
   private HashMap<String, ?> convertSubConfig( HashMap<String, String> keyMap,
