@@ -107,10 +107,10 @@ public class WebContextServlet extends HttpServlet {
         writeWebContextVar( printWriter, "requireCfg", getRequireCfg(), false, false );
         writeEnvironmentModuleConfig( printWriter, httpRequest );
 
+        writeDocumentWriteResource( printWriter, REQUIREJS_INIT_LOCATION );
+
         writeJsWebResources( printWriter, httpRequest );
         writeCssWebResources( printWriter, httpRequest );
-
-        writeDocumentWriteResource( printWriter, REQUIREJS_INIT_LOCATION );
       }
     } else {
       httpResponse.sendError( 404 );
