@@ -20,9 +20,6 @@ package org.pentaho.osgi.i18n.webservice;
 import javax.xml.bind.annotation.XmlRootElement;
 import java.util.List;
 
-/**
- * Created by bryan on 12/8/14.
- */
 @XmlRootElement
 public class ResourceBundleRequest {
   private List<ResourceBundleWildcard> wildcards;

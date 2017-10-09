@@ -35,20 +35,23 @@ import java.util.Locale;
 import java.util.ResourceBundle;
 import java.util.regex.Pattern;
 
-/**
- * Created by bryan on 9/5/14.
- */
 @Produces( { MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML } )
 @Consumes( { MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML } )
 @WebService
 public class LocalizationWebservice implements LocalizationService {
+
+  private static int LANGUAGE_ONLY_BUNDLE = 1;
+  private static int LANGUAGE_COUNTRY_BUNDLE = 2;
+
   private LocalizationService localizationService;
 
-  @Override public ResourceBundle getResourceBundle( String name, Locale locale ) {
+  @Override
+  public ResourceBundle getResourceBundle( String name, Locale locale ) {
     return localizationService.getResourceBundle( name, locale );
   }
 
-  @Override public List<ResourceBundle> getResourceBundles( Pattern keyRegex, Locale locale ) {
+  @Override
+  public List<ResourceBundle> getResourceBundles( Pattern keyRegex, Locale locale ) {
     return localizationService.getResourceBundles( keyRegex, locale );
   }
 
@@ -64,39 +67,48 @@ public class LocalizationWebservice implements LocalizationService {
   }
 
   private static Locale getLocale( String localeString ) {
-    String[] splitLocale;
-    if ( localeString == null || localeString.trim().length() == 0 ) {
-      splitLocale = new String[] { };
-    } else {
-      splitLocale = localeString.split( "_" );
+    boolean isValidLocale = localeString != null && !localeString.matches( "^\\s*$" );
+
+    if ( !isValidLocale ) {
+      return Locale.getDefault();
     }
-    Locale locale;
-    if ( splitLocale.length == 1 ) {
-      locale = new Locale( splitLocale[ 0 ] );
-    } else if ( splitLocale.length >= 2 ) {
-      locale = new Locale( splitLocale[ 0 ], splitLocale[ 1 ] );
-    } else {
-      locale = Locale.getDefault();
-    }
-    return locale;
+
+    String[] localeParams = localeString.split( "_" );
+
+    int localeType = localeParams.length;
+    boolean hasLanguageAndCountry = localeType >= LANGUAGE_COUNTRY_BUNDLE;
+    boolean hasLanguage = hasLanguageAndCountry || localeType == LANGUAGE_ONLY_BUNDLE;
+
+    String language = hasLanguage ? localeParams[ 0 ] : "";
+    String country = hasLanguageAndCountry ? localeParams[ 1 ] : "";
+
+    return new Locale( language, country );
   }
 
   @POST
   @Path( "/wildcard" )
   public ResourceBundle getResourceBundle( ResourceBundleRequest resourceBundleRequest ) {
-    final List<ResourceBundle> resourceBundles = new ArrayList<ResourceBundle>(  );
+    final List<ResourceBundle> resourceBundles = new ArrayList<>();
+
     for ( ResourceBundleWildcard resourceBundleWildcard : resourceBundleRequest.getWildcards() ) {
       Pattern keyPattern = Pattern.compile( resourceBundleWildcard.getKeyRegex() );
-      resourceBundles.addAll( getResourceBundles( keyPattern, getLocale( resourceBundleRequest.getLocale() ) ) );
+      Locale locale = getLocale( resourceBundleRequest.getLocale() );
+
+      List<ResourceBundle> resourceBundleList = getResourceBundles( keyPattern, locale );
+      resourceBundles.addAll( resourceBundleList );
     }
+
     return new ListResourceBundle() {
       @Override protected Object[][] getContents() {
-        List<Object[]> entries = new ArrayList<Object[]>();
+        List<Object[]> entries = new ArrayList<>();
+
         for ( ResourceBundle resourceBundle : resourceBundles ) {
           for ( String key : Collections.list( resourceBundle.getKeys() ) ) {
-            entries.add( new Object[] { key, resourceBundle.getString( key ) } );
+            String entry = resourceBundle.getString( key );
+            entries.add( new Object[] { key, entry } );
           }
         }
+
         return entries.toArray( new Object[ entries.size() ][] );
       }
     };

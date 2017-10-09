@@ -17,21 +17,33 @@
  /**
  * RequireJS loader plugin for loading localized messages via the OSGI i18n web service.
  */
- define(["pentaho/i18n/MessageBundle", "dojo/request"],
-  function (MessageBundle, request) {
+define([
+  "pentaho/i18n/MessageBundle",
+  "pentaho/environment",
+  "dojo/request"
+], function (MessageBundle, environment, request) {
   "use strict";
 
   return {
 
-    load: function(bundlePath, require, onLoad, config) {
+    load: function(bundlePath, localRequire, onLoad, config) {
       if(config.isBuild) {
         // Indicate that the optimizer should not wait for this resource and complete optimization.
         // This resource will be resolved dynamically during run time in the web browser.
         onLoad();
       } else {
-        var baseUrl = CONTEXT_PATH && CONTEXT_PATH == '/' ? CONTEXT_PATH : CONTEXT_PATH + "osgi/";
-        var locale = typeof SESSION_LOCALE !== "undefined" ? SESSION_LOCALE : "en";
-        var url = baseUrl + "cxf/i18n/" + bundlePath + "/" + locale;
+        var baseUrl = environment.server.services;
+        var locale = environment.locale;
+
+        // TODO prevent access outside bundle context?
+        // TODO use localRequire to get module.id
+        // Use solution above and avoid localRequire.toUrl
+        // var fullUrl = localRequire.toUrl(bundlePath);
+
+        var resourceKey = bundlePath; /* moduleID.version || moduleID - version -> promote it out of key */
+        var resourceLocale = locale !== null ? locale : "en";
+
+        var url = baseUrl + "i18n/" + resourceKey + "/" + resourceLocale;
         var options = {
           "headers": {
             "Accept": "application/JSON"
@@ -45,7 +57,7 @@
           } else {
             onLoad();
           }
-        }, function (err) {
+        }, function (/* error */) {
           throw new Error("Error accessing i18n OSGI web service with bundlePath: " + bundlePath + "'.");
         });
       }

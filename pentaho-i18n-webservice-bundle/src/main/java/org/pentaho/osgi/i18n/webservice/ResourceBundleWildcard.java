@@ -17,9 +17,6 @@
 
 package org.pentaho.osgi.i18n.webservice;
 
-/**
- * Created by bryan on 12/8/14.
- */
 public class ResourceBundleWildcard {
   private String keyRegex;
 

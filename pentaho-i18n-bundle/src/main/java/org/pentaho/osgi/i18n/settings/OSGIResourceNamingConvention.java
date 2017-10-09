@@ -24,58 +24,64 @@ import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/**
- * Created by Viktoryia_Klimenka on 5/30/2016.
- */
 public class OSGIResourceNamingConvention {
+
   public static final String RESOURCES_ROOT_FOLDER = "i18n";
   public static final String RESOURCES_DEFAULT_EXTENSION = ".properties";
 
-  public static final Pattern RESOURCE_NAME_PATTERN =
-    Pattern.compile( "(.*/[^_]+)(.*).properties(\\.\\d+)?" );
+  public static final Pattern RESOURCE_NAME_PATTERN = Pattern.compile( "(.*/[^_]+)(.*).properties(\\.\\d+)?" );
 
   public static Matcher getResourceNameMatcher( String path ) {
     Matcher matcher = RESOURCE_NAME_PATTERN.matcher( path );
+
     boolean matches = matcher.matches();
     if ( matches ) {
       return matcher;
-    } else {
-      throw new IllegalArgumentException(
-        "Path must be of the form prefix/filename[_internationalization].properties[.priority]" );
     }
+
+    String message = "Path must be of the form prefix/filename[_internationalization].properties[.priority]";
+    throw new IllegalArgumentException( message );
   }
 
   /**
    * Returns property priority propertyName must have message-name.properties.5 format (priority = 5)
    *
    * @param propertyName i18n resource name
+   *
    * @return propertyPriority, default priority = 0
    */
   public static int getPropertyPriority( String propertyName ) {
     int priority = 0;
     Matcher matcher = getResourceNameMatcher( propertyName );
-    String groop = matcher.group( matcher.groupCount() );
-    if ( groop != null ) {
-      priority = Integer.parseInt( groop.substring( 1 ) );
+
+    String group = matcher.group( matcher.groupCount() );
+    if ( group != null ) {
+      priority = Integer.parseInt( group.substring( 1 ) );
     }
+
     return priority;
   }
 
   public static List<String> getCandidateNames( String name, Locale locale ) {
-    List<String> result = new ArrayList<String>();
-    String current = name;
-    result.add( current );
+    List<String> result = new ArrayList<>();
+    result.add( name );
+
     String language = locale.getLanguage();
-    if ( language.length() > 0 ) {
-      current += "_" + language;
-      result.add( current );
+    if ( !isStringEmpty( language ) ) {
+      result.add( name + "_" + language  );
+
       String country = locale.getCountry();
-      if ( country.length() > 0 ) {
-        current += "_" + country;
-        result.add( current );
+      if ( !isStringEmpty( country ) ) {
+        result.add( name + "_" + language + "_" + country );
       }
     }
+
     Collections.reverse( result );
     return result;
   }
+
+  private static boolean isStringEmpty( String value ) {
+    return value == null || value.isEmpty();
+  }
+
 }

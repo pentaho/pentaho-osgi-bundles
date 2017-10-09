@@ -22,9 +22,6 @@ import java.net.URL;
 import java.util.PropertyResourceBundle;
 import java.util.ResourceBundle;
 
-/**
- * Created by bryan on 9/4/14.
- */
 public class OSGIResourceBundle extends PropertyResourceBundle {
   private final String defaultName;
 
@@ -34,10 +31,13 @@ public class OSGIResourceBundle extends PropertyResourceBundle {
 
   public OSGIResourceBundle( String defaultName, ResourceBundle parent, URL propertyFileUrl ) throws IOException {
     super( propertyFileUrl.openStream() );
+
     this.defaultName = defaultName;
+
     if ( parent != null ) {
       setParent( parent );
     }
+
   }
 
   public String getDefaultName() {

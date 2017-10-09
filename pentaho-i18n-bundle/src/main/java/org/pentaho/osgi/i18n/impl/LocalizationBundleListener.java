@@ -29,9 +29,6 @@ import org.osgi.framework.BundleListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * Created by bryan on 9/4/14.
- */
 public class LocalizationBundleListener implements BundleListener {
   private static Logger log = LoggerFactory.getLogger( LocalizationBundleListener.class );
   private LocalizationManager localizationManager;
@@ -55,7 +52,8 @@ public class LocalizationBundleListener implements BundleListener {
     return log;
   }
 
-  @Override public void bundleChanged( BundleEvent event ) {
+  @Override
+  public void bundleChanged( BundleEvent event ) {
     switch ( event.getType() ) {
       case BundleEvent.STARTED:
       case BundleEvent.STOPPED:
@@ -70,10 +68,12 @@ public class LocalizationBundleListener implements BundleListener {
 
   public void init() throws Exception {
     bundleContext.addBundleListener( this );
+
     for ( Bundle bundle : bundleContext.getBundles() ) {
       if ( bundle.getState() == Bundle.ACTIVE ) {
         bundleChanged( new BundleEvent( BundleEvent.STARTED, bundle ) );
       }
     }
   }
+
 }

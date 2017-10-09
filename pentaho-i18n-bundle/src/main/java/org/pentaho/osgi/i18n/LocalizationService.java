@@ -22,10 +22,7 @@ import java.util.Locale;
 import java.util.ResourceBundle;
 import java.util.regex.Pattern;
 
-/**
- * Created by bryan on 9/5/14.
- */
 public interface LocalizationService {
-  public ResourceBundle getResourceBundle( String name, Locale locale );
-  public List<ResourceBundle> getResourceBundles( Pattern keyRegex, Locale locale );
+  ResourceBundle getResourceBundle( String name, Locale locale );
+  List<ResourceBundle> getResourceBundles( Pattern keyRegex, Locale locale );
 }

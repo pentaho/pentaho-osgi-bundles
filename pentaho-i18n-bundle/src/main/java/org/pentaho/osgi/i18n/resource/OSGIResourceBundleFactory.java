@@ -21,9 +21,6 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 
-/**
- * Created by bryan on 9/5/14.
- */
 public class OSGIResourceBundleFactory {
   private final int priority;
   private final String defaultName;
@@ -44,6 +41,7 @@ public class OSGIResourceBundleFactory {
       previousParent = parent;
       previousResult = new OSGIResourceBundle( defaultName, parent, propertyFileUrl );
     }
+
     return previousResult;
   }
 

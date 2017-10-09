@@ -37,9 +37,6 @@ import java.util.concurrent.Callable;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
 
-/**
- * Created by bryan on 9/5/14.
- */
 public class OSGIResourceBundleCacheCallable implements Callable<Map<String, OSGIResourceBundle>> {
   private final Map<Long, Map<String, OSGIResourceBundleFactory>> configMap;
 
@@ -47,9 +44,10 @@ public class OSGIResourceBundleCacheCallable implements Callable<Map<String, OSG
     this.configMap = configMap;
   }
 
-  @Override public Map<String, OSGIResourceBundle> call() throws Exception {
-    Map<String, OSGIResourceBundleFactory> factoryMap =
-      new TreeMap<>( new OSGIResourceNameComparator() );
+  @Override
+  public Map<String, OSGIResourceBundle> call() throws Exception {
+    Map<String, OSGIResourceBundleFactory> factoryMap = new TreeMap<>( new OSGIResourceNameComparator() );
+
     // Select only bundles with highest priority
     for ( Map<String, OSGIResourceBundleFactory> bundleMap : configMap.values() ) {
       for ( Map.Entry<String, OSGIResourceBundleFactory> entry : bundleMap.entrySet() ) {
@@ -60,42 +58,49 @@ public class OSGIResourceBundleCacheCallable implements Callable<Map<String, OSG
     }
 
     // Create bundles from factories
-    Map<String, OSGIResourceBundle> result = new HashMap<String, OSGIResourceBundle>();
+    Map<String, OSGIResourceBundle> result = new HashMap<>();
     Set<String> keys = factoryMap.keySet();
-    SortedMap<String, OSGIResourceBundleFactory> factoryMapCopy =
-      new TreeMap<>( new OSGIResourceNameComparator() );
+
+    SortedMap<String, OSGIResourceBundleFactory> factoryMapCopy = new TreeMap<>( new OSGIResourceNameComparator() );
     factoryMapCopy.putAll( factoryMap );
+
     for ( String key : keys ) {
       OSGIResourceBundleFactory nameToFactoryEntry = factoryMap.get( key );
       String name = nameToFactoryEntry.getPropertyFilePath();
+
       Matcher defaultMatcher = OSGIResourceNamingConvention.getResourceNameMatcher( name );
       String defaultName = defaultMatcher.group( 1 );
       String locale = defaultMatcher.group( 2 );
       if ( locale.length() > 1 ) {
         locale = locale.substring( 1 ).replace( '_', '-' );
       }
+
       OSGIResourceBundleFactory defaultFactory = null;
       List<String> candidates =
         OSGIResourceNamingConvention.getCandidateNames( defaultName, Locale.forLanguageTag( locale ) );
+
       // first try to get closest parent from properties with same locale and then in properties with "lower" locale
       for ( int i = 0; i < candidates.size(); i++ ) {
-        Optional<String> firstKeyInHierarhy = getFirstKeyInHierarhy( factoryMapCopy, candidates.get( i )
+        Optional<String> firstKeyInHierarchy = getFirstKeyInHierarchy( factoryMapCopy, candidates.get( i )
           + OSGIResourceNamingConvention.RESOURCES_DEFAULT_EXTENSION );
+
         //checks that we've found not the same properties as original
-        if ( firstKeyInHierarhy.isPresent()
-          && factoryMapCopy.get( firstKeyInHierarhy.get() ) != nameToFactoryEntry ) {
+        if ( firstKeyInHierarchy.isPresent()
+          && factoryMapCopy.get( firstKeyInHierarchy.get() ) != nameToFactoryEntry ) {
           if ( i != candidates.size() - 1 ) {
-            defaultFactory = factoryMapCopy.remove( firstKeyInHierarhy.get() );
+            defaultFactory = factoryMapCopy.remove( firstKeyInHierarchy.get() );
           } else {
-            defaultFactory = factoryMapCopy.get( firstKeyInHierarhy.get() );
+            defaultFactory = factoryMapCopy.get( firstKeyInHierarchy.get() );
           }
           break;
         }
       }
+
       OSGIResourceBundle parentBundle = null;
       if ( defaultFactory != null ) {
         parentBundle = result.get( defaultFactory.getBundle( null ).getDefaultName() );
       }
+
       OSGIResourceBundle resultKeyBundles = nameToFactoryEntry.getBundle( parentBundle );
       result.put( resultKeyBundles.getDefaultName(), resultKeyBundles );
     }
@@ -107,10 +112,11 @@ public class OSGIResourceBundleCacheCallable implements Callable<Map<String, OSG
    *
    * @param factoryMapWithoutCurrent map to search from
    * @param name                     starting string
+   *
    * @return key
    */
-  private Optional<String> getFirstKeyInHierarhy( SortedMap<String, OSGIResourceBundleFactory> factoryMapWithoutCurrent,
-                                                  String name ) {
+  private Optional<String> getFirstKeyInHierarchy( SortedMap<String, OSGIResourceBundleFactory> factoryMapWithoutCurrent,
+                                                   String name ) {
     return factoryMapWithoutCurrent.keySet().stream()
       .filter( new Predicate<String>() {
         @Override public boolean test( String s ) {

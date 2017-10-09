@@ -19,8 +19,6 @@ package org.pentaho.osgi.i18n.webservice;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 import org.pentaho.osgi.i18n.LocalizationService;
 
 import java.util.Arrays;
@@ -36,9 +34,6 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-/**
- * Created by bryan on 9/6/14.
- */
 public class LocalizationWebserviceTest {
   private LocalizationService localizationService;
   private LocalizationWebservice localizationWebservice;
@@ -101,21 +96,12 @@ public class LocalizationWebserviceTest {
   public void testWebserviceWildcard() {
     final String propKey1 = "prop-1";
     final String propValue1 = "value-1";
-    final String propKey2 = "prop-2";
-    final String propValue2 = "value-2";
     final String keyRegex1 = "testKey1";
     String localeString = "en_US";
     final ResourceBundle resourceBundle1 = new ListResourceBundle() {
       @Override protected Object[][] getContents() {
         return new Object[][]{
           { propKey1, propValue1 }
-        };
-      }
-    };
-    final ResourceBundle resourceBundle2 = new ListResourceBundle() {
-      @Override protected Object[][] getContents() {
-        return new Object[][]{
-          { propKey2, propValue2 }
         };
       }
     };
@@ -126,15 +112,13 @@ public class LocalizationWebserviceTest {
     resourceBundleWildcard1.setKeyRegex( keyRegex1 );
     resourceBundleRequest.setWildcards( Arrays.asList(resourceBundleWildcard1) );
     when( localizationService.getResourceBundles( any( Pattern.class ), any( Locale.class ) ) ).thenAnswer(
-              new Answer<Object>() {
-        @Override public Object answer( InvocationOnMock invocation ) throws Throwable {
+        invocation -> {
           Pattern keyPattern = (Pattern) invocation.getArguments()[0];
           assertTrue( keyPattern.matcher( keyRegex1 ).matches() );
           Locale locale = (Locale) invocation.getArguments()[1];
           assertEquals( "en_US", locale.toString() );
           return Arrays.asList( resourceBundle1 );
-        }
-      } );
+        } );
     ResourceBundle resourceBundle = localizationWebservice.getResourceBundle( resourceBundleRequest );
     assertEquals( propValue1, resourceBundle.getString( propKey1 ) );
   }

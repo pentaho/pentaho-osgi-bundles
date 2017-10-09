@@ -17,7 +17,6 @@
 
 package org.pentaho.osgi.i18n.impl;
 
-import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.osgi.framework.Bundle;
 import org.pentaho.osgi.i18n.LocalizationService;
@@ -45,14 +44,9 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
 import java.util.regex.Pattern;
 
-/**
- * Created by bryan on 9/4/14.
- */
 public class LocalizationManager implements LocalizationService {
   private static Logger log = LoggerFactory.getLogger( LocalizationManager.class );
-  private final Map<Long, Map<String, OSGIResourceBundleFactory>> configMap =
-    new HashMap<Long, Map<String, OSGIResourceBundleFactory>>();
-  private final JSONParser parser = new JSONParser();
+  private final Map<Long, Map<String, OSGIResourceBundleFactory>> configMap = new HashMap<>();
   private ExecutorService executorService;
   private volatile Future<Map<String, OSGIResourceBundle>> cache;
 
@@ -77,7 +71,7 @@ public class LocalizationManager implements LocalizationService {
     }
 
     if ( bundle.getState() == Bundle.ACTIVE ) {
-      Map<String, OSGIResourceBundleFactory> configEntry = new HashMap<String, OSGIResourceBundleFactory>();
+      Map<String, OSGIResourceBundleFactory> configEntry = new HashMap<>();
       OSGIResourceBundleFactory bundleFactory;
       Enumeration<URL> urlEnumeration =
         bundle.findEntries( OSGIResourceNamingConvention.RESOURCES_ROOT_FOLDER,
@@ -87,11 +81,10 @@ public class LocalizationManager implements LocalizationService {
           URL url = urlEnumeration.nextElement();
           if ( url != null ) {
             String fileName = url.getFile();
-            String relativeName = fileName;
             String name = getPropertyName( fileName );
             int priority = OSGIResourceNamingConvention.getPropertyPriority( fileName );
-            bundleFactory = new OSGIResourceBundleFactory( name, relativeName, url, priority );
-            configEntry.put( relativeName, bundleFactory );
+            bundleFactory = new OSGIResourceBundleFactory( name, fileName, url, priority );
+            configEntry.put( fileName, bundleFactory );
             rebuildCache = true;
           }
         }
@@ -117,8 +110,7 @@ public class LocalizationManager implements LocalizationService {
             }
           } );
         }
-        cache = executorService.submit( new OSGIResourceBundleCacheCallable(
-          new HashMap<Long, Map<String, OSGIResourceBundleFactory>>( configMap ) ) );
+        cache = executorService.submit( new OSGIResourceBundleCacheCallable( new HashMap<>( configMap ) ) );
       }
     }
   }
@@ -127,6 +119,7 @@ public class LocalizationManager implements LocalizationService {
    * Returns property file name without extension
    *
    * @param fileName
+   *
    * @return property file name without extension
    */
   private String getPropertyName( String fileName ) {
@@ -158,12 +151,12 @@ public class LocalizationManager implements LocalizationService {
 
   @Override
   public List<ResourceBundle> getResourceBundles( Pattern keyRegex, Locale locale ) {
-    List<ResourceBundle> result = new ArrayList<ResourceBundle>();
+    List<ResourceBundle> result = new ArrayList<>();
     Map<String, OSGIResourceBundle> localCache = getCache();
 
     if ( localCache != null ) {
-      Set<String> defaultNames = new HashSet<String>();
-      Map<String, OSGIResourceBundle> matchingMap = new HashMap<String, OSGIResourceBundle>();
+      Set<String> defaultNames = new HashSet<>();
+      Map<String, OSGIResourceBundle> matchingMap = new HashMap<>();
       for ( Map.Entry<String, OSGIResourceBundle> factoryEntry : localCache.entrySet() ) {
         OSGIResourceBundle factoryEntryValue = factoryEntry.getValue();
         String defaultName = factoryEntryValue.getDefaultName();
@@ -172,6 +165,7 @@ public class LocalizationManager implements LocalizationService {
           matchingMap.put( factoryEntry.getKey(), factoryEntryValue );
         }
       }
+
       for ( String defaultName : defaultNames ) {
         for ( String candidate : OSGIResourceNamingConvention.getCandidateNames( defaultName, locale ) ) {
           OSGIResourceBundle bundle = localCache.get( candidate );
@@ -184,6 +178,7 @@ public class LocalizationManager implements LocalizationService {
     } else {
       result = null;
     }
+
     return result;
   }
 
@@ -196,6 +191,7 @@ public class LocalizationManager implements LocalizationService {
         log.error( e.getMessage(), e );
       }
     }
+
     return result;
   }
 }
