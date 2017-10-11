@@ -13,7 +13,7 @@
  * See the GNU Lesser General Public License for more details.
  *
  *
- * Copyright 2017 Pentaho Corporation. All rights reserved.
+ * Copyright 2017 Hitachi Vantara. All rights reserved.
  */
 package org.pentaho.webpackage.deployer.archive.impl.osgi;
 

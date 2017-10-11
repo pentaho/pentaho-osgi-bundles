@@ -1,7 +1,7 @@
 /*
  * ******************************************************************************
  *
- * Copyright (C) 2002 - 2017 by Pentaho : http://www.pentaho.com
+ * Copyright (C) 2002 - 2017 by Hitachi Vantara : http://www.pentaho.com
  *
  * ******************************************************************************
  *
@@ -261,7 +261,7 @@ public class WebContextServlet extends HttpServlet {
   }
 
   /**
-   * Gets Pentaho context name from the http request.
+   * Gets Hitachi Vantara context name from the http request.
    *
    * @param request - The http request.
    *
