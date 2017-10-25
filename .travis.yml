@@ -1,0 +1,36 @@
+branches:
+  only:
+    - /^webspoon-.*$/
+language: java
+jdk: openjdk8
+cache:
+  directories:
+  - "$HOME/.m2"
+install: true
+script:
+  - wget https://raw.githubusercontent.com/pentaho/maven-parent-poms/master/maven-support-files/settings.xml
+  - mvn -s settings.xml clean source:jar install -pl pentaho-i18n-webservice-bundle,pentaho-kettle-repository-locator/impl/spoon,pentaho-pdi-platform
+before_deploy:
+  - git config --local user.name "Hiromu Hota"
+  - git config --local user.email "hiromu.hota@hal.hitachi.com"
+  - export TRAVIS_TAG=webspoon/nightly
+  - git tag $TRAVIS_TAG --force
+  - git push -f https://${GITHUB_TOKEN}@github.com/${TRAVIS_REPO_SLUG}.git $TRAVIS_TAG
+  - export dist=`mvn -q -Dexec.executable="echo" -Dexec.args='${project.version}' --non-recursive exec:exec`
+deploy:
+  provider: releases
+  api_key: $GITHUB_TOKEN
+  file_glob: true
+  file:
+    - $HOME/.m2/repository/pentaho/pentaho-i18n-webservice-bundle/$dist/pentaho-i18n-webservice-bundle-$dist*.jar
+    - $HOME/.m2/repository/pentaho/pentaho-kettle-repository-locator-impl-spoon/$dist/pentaho-kettle-repository-locator-impl-spoon-$dist*.jar
+    - $HOME/.m2/repository/pentaho/pentaho-pdi-platform/$dist/pentaho-pdi-platform-$dist*.jar
+  skip_cleanup: true
+  on:
+    branch: webspoon-9.0
+  name: webSpoon/nightly
+  body: Auto-build of $TRAVIS_BRANCH ($TRAVIS_COMMIT) by Travis CI on $(date +'%F %T %Z').
+  prerelease: true
+  overwrite: true
+  tag_name: $TRAVIS_TAG
+  target_commitish: $TRAVIS_COMMIT
