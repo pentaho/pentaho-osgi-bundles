@@ -63,6 +63,11 @@ public class LocalizationWebservice implements LocalizationService {
   @Path( "/{key}/{language}" )
   public ResourceBundle getResourceBundleService( @PathParam( "key" ) String key,
                                                   @PathParam( "language" ) String localeString ) {
+    // key: det-impl-webclient_8.0-SNAPSHOT:path.to.bundle* (e.g. "_en.properties")
+    // language: en
+
+    // TODO change mapping on pentaho-i18n-bundle to contain {package_version} and the relative path to the bundle
+    // TODO change scope from only looking into i18n folder and instead search from the root.
     return getResourceBundle( key, getLocale( localeString ) );
   }
 

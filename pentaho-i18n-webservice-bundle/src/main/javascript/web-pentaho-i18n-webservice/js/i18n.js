@@ -35,12 +35,8 @@ define([
         var baseUrl = environment.server.services;
         var locale = environment.locale;
 
-        // TODO prevent access outside bundle context?
-        // TODO use localRequire to get module.id
-        // Use solution above and avoid localRequire.toUrl
-        // var fullUrl = localRequire.toUrl(bundlePath);
-
-        var resourceKey = bundlePath; /* moduleID.version || moduleID - version -> promote it out of key */
+        // TODO check if the config object as any useful info to use in the resource key
+        var resourceKey = _resourceKey(localRequire, bundlePath);
         var resourceLocale = locale !== null ? locale : "en";
 
         var url = baseUrl + "i18n/" + resourceKey + "/" + resourceLocale;
@@ -75,5 +71,33 @@ define([
       }
     }
   };
+
+  function _resourceKey(localRequire, bundlePath) {
+    var isGlobalRequire = localRequire.undef !== undefined;
+
+    // TODO how to make sure that bundle path is correct when we can't use 'require("module")'?
+    var module = !isGlobalRequire ? localRequire("module") : null;
+    if (module === null) return bundlePath;
+
+    var moduleIdSplit = module.id.split("/"); /* example: det_8.1-SNAPSHOT/path/to/module */
+
+    var moduleAndVersion = moduleIdSplit.shift(); /* example: det_8.1-SNAPSHOT */
+    var moduleName = moduleIdSplit.pop();         /* example: module */
+    var pathToBundle = moduleIdSplit.join( "." ); /* example: path.to */
+
+    // TODO prevent access outside bundle context?
+    // TODO use localRequire to get module.id
+    // Use solution above and avoid localRequire.toUrl
+    // var fullUrl = localRequire.toUrl(bundlePath);
+
+    // var resourceKey = bundlePath; /* moduleID.version || moduleID - version -> promote it out of key */
+    // TODO I think something as to be done in order to merge pathToBundle with bundlePath
+    var resourceKey = moduleAndVersion + "." + pathToBundle + "." + bundlePath;
+
+    console.log("Module ID: " + module.id);
+    console.log("Resource Key: " + resourceKey);
+
+    return resourceKey;
+  }
 
 });

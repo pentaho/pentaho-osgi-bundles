@@ -19,6 +19,7 @@ package org.pentaho.osgi.i18n.impl;
 
 import org.json.simple.parser.ParseException;
 import org.osgi.framework.Bundle;
+import org.pentaho.js.require.RequireJsGenerator;
 import org.pentaho.osgi.i18n.LocalizationService;
 import org.pentaho.osgi.i18n.resource.OSGIResourceBundle;
 import org.pentaho.osgi.i18n.resource.OSGIResourceBundleCacheCallable;
@@ -29,6 +30,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -49,6 +51,9 @@ public class LocalizationManager implements LocalizationService {
   private final Map<Long, Map<String, OSGIResourceBundleFactory>> configMap = new HashMap<>();
   private ExecutorService executorService;
   private volatile Future<Map<String, OSGIResourceBundle>> cache;
+
+
+  private static final String PACKAGE_JSON_PATH = "META-INF/js/package.json";
 
   // For unit tests only
   static Logger getLog() {
@@ -81,10 +86,13 @@ public class LocalizationManager implements LocalizationService {
           URL url = urlEnumeration.nextElement();
           if ( url != null ) {
             String fileName = url.getFile();
-            String name = getPropertyName( fileName );
+            String relativeName = fileName;
+            String versionedName = getVersionedPath( bundle );
+            String name = /* versionedName + "/" + */ getPropertyName( fileName );
+
             int priority = OSGIResourceNamingConvention.getPropertyPriority( fileName );
-            bundleFactory = new OSGIResourceBundleFactory( name, fileName, url, priority );
-            configEntry.put( fileName, bundleFactory );
+            bundleFactory = new OSGIResourceBundleFactory( name, relativeName, url, priority );
+            configEntry.put( relativeName, bundleFactory );
             rebuildCache = true;
           }
         }
@@ -180,6 +188,28 @@ public class LocalizationManager implements LocalizationService {
     }
 
     return result;
+  }
+
+  private String getVersionedPath( Bundle bundle ) {
+    URL packageJsonUrl = bundle.getResource( PACKAGE_JSON_PATH );
+
+    try {
+      URLConnection urlConnection = packageJsonUrl.openConnection();
+      RequireJsGenerator gen = RequireJsGenerator.parseJsonPackage( urlConnection.getInputStream() );
+
+      if ( gen != null ) {
+        RequireJsGenerator.ArtifactInfo artifactInfo =
+            new RequireJsGenerator.ArtifactInfo( "osgi-bundles", bundle.getSymbolicName(),
+                bundle.getVersion().toString() );
+        final RequireJsGenerator.ModuleInfo moduleInfo = gen.getConvertedConfig( artifactInfo );
+
+        return moduleInfo.getVersionedName();
+      }
+    } catch ( Exception ignored ) {
+      // ignored
+    }
+
+    return "";
   }
 
   private Map<String, OSGIResourceBundle> getCache() {
