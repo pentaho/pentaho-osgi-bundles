@@ -1,4 +1,4 @@
-# Pentaho Object Tunnel
+# Hitachi Vantara Object Tunnel
 The module supplies classes to support custom de/serialization on top of raw Object Streams.
 
 # TunnelOutput
