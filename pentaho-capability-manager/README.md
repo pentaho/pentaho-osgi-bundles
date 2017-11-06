@@ -1,4 +1,4 @@
-## Pentaho Capability Manager
+## Hitachi Vantara Capability Manager
 The Capability Manager is an abstraction over the various plugin systems available throughout Pentaho. The intention is not to try to provide a new way of interactive with these systems directly, but rather provide a very 
 high-level abstraction above these systems for listing capabilities which are installed, available and providing a simple way to install and uninstall at runtime.
 
