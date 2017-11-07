@@ -29,6 +29,7 @@ import org.osgi.framework.ServiceRegistration;
 import org.osgi.framework.Version;
 import org.osgi.framework.wiring.BundleCapability;
 import org.osgi.framework.wiring.BundleWiring;
+import org.pentaho.webpackage.core.PentahoWebPackage;
 import org.pentaho.webpackage.core.PentahoWebPackageService;
 
 import java.util.ArrayList;
@@ -38,6 +39,10 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 
+import static junit.framework.TestCase.assertNull;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
@@ -145,6 +150,39 @@ public class PentahoWebPackageServiceImplTest {
     assertResourceMappingExists( capturedResourceMappings, "/pentaho-webpackage-1a", "/package-name-1a/1.0" );
     assertResourceMappingExists( capturedResourceMappings, "/pentaho-webpackage-1b", "/package-name-1b/1.1" );
     assertResourceMappingExists( capturedResourceMappings, "/pentaho-webpackage-1c", "/package-name-1c/1.2" );
+  }
+
+  @Test
+  public void findExistingWebPackage() {
+    List<BundleCapability> capabilities = new ArrayList<>();
+    capabilities.add( createMockWebPackageCapability( "/pentaho-webpackage-1a" ) );
+    capabilities.add( createMockWebPackageCapability( "/pentaho-webpackage-1b" ) );
+    capabilities.add( createMockWebPackageCapability( "/pentaho-webpackage-1c" ) );
+    Bundle bundle = this.createMockWebPackageBundle( capabilities, "pentaho-webpackage-1", "1.0", Bundle.ACTIVE );
+
+    this.service.addBundle( bundle );
+
+    PentahoWebPackage found = this.service.findWebPackage( "package-name-1b", "1.1" );
+
+    assertNotNull( found );
+    assertEquals( "package-name-1b", found.getName() );
+    assertEquals( "1.1", found.getVersion() );
+    assertSame( bundle, found.getBundle() );
+  }
+
+  @Test
+  public void dontFindNonExistingWebPackage() {
+    List<BundleCapability> capabilities = new ArrayList<>();
+    capabilities.add( createMockWebPackageCapability( "/pentaho-webpackage-1a" ) );
+    capabilities.add( createMockWebPackageCapability( "/pentaho-webpackage-1b" ) );
+    capabilities.add( createMockWebPackageCapability( "/pentaho-webpackage-1c" ) );
+    Bundle bundle = this.createMockWebPackageBundle( capabilities, "pentaho-webpackage-1", "1.0", Bundle.ACTIVE );
+
+    this.service.addBundle( bundle );
+
+    PentahoWebPackage found = this.service.findWebPackage( "package-name-1b", "1.0" );
+
+    assertNull( found );
   }
 
   @Test

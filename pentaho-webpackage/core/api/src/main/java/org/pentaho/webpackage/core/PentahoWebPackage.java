@@ -18,13 +18,13 @@
 
 package org.pentaho.webpackage.core;
 
+import org.osgi.framework.Bundle;
+
 public interface PentahoWebPackage {
   String getName();
   String getVersion();
 
   String getResourceRootPath();
 
-  void init();
-
-  void destroy();
+  Bundle getBundle();
 }

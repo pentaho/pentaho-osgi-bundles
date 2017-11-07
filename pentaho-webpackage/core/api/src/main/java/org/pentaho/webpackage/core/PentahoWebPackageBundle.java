@@ -18,8 +18,8 @@
 
 package org.pentaho.webpackage.core;
 
-public interface PentahoWebPackageBundle {
-  void init();
+import org.osgi.framework.Bundle;
 
-  void destroy();
+public interface PentahoWebPackageBundle {
+  Bundle getBundle();
 }

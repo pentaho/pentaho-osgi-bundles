@@ -20,9 +20,11 @@ package org.pentaho.webpackage.extender.http.impl;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleEvent;
 import org.osgi.framework.BundleListener;
+import org.pentaho.webpackage.core.PentahoWebPackage;
 import org.pentaho.webpackage.core.PentahoWebPackageBundle;
 import org.pentaho.webpackage.core.PentahoWebPackageService;
 
+import java.util.Collection;
 import java.util.Dictionary;
 import java.util.HashMap;
 import java.util.Map;
@@ -31,7 +33,7 @@ import java.util.Map;
  * Implementation of the WebContainer service.
  */
 public class PentahoWebPackageServiceImpl implements PentahoWebPackageService, BundleListener {
-  private final Map<Long, PentahoWebPackageBundle> pentahoWebPackageBundles = new HashMap<>();
+  private final Map<Long, PentahoWebPackageBundleImpl> pentahoWebPackageBundles = new HashMap<>();
 
   @Override
   public void bundleChanged( BundleEvent bundleEvent ) {
@@ -49,7 +51,7 @@ public class PentahoWebPackageServiceImpl implements PentahoWebPackageService, B
 
   @Override
   public void addBundle( Bundle bundle ) {
-    PentahoWebPackageBundle extendedBundle = extendBundle( bundle );
+    PentahoWebPackageBundleImpl extendedBundle = extendBundle( bundle );
 
     if ( extendedBundle != null ) {
       synchronized ( this.pentahoWebPackageBundles ) {
@@ -68,10 +70,24 @@ public class PentahoWebPackageServiceImpl implements PentahoWebPackageService, B
       return;
     }
 
-    PentahoWebPackageBundle pwpc = this.pentahoWebPackageBundles.remove( bundle.getBundleId() );
+    PentahoWebPackageBundleImpl pwpc = this.pentahoWebPackageBundles.remove( bundle.getBundleId() );
     if ( pwpc != null ) {
       pwpc.destroy();
     }
+  }
+
+  public PentahoWebPackage findWebPackage( String name, String version ) {
+    synchronized ( this.pentahoWebPackageBundles ) {
+      Collection<PentahoWebPackageBundleImpl> bundles = this.pentahoWebPackageBundles.values();
+      for ( PentahoWebPackageBundleImpl bundle : bundles ) {
+        PentahoWebPackage webPackage = bundle.findWebPackage( name, version );
+        if ( webPackage != null ) {
+          return webPackage;
+        }
+      }
+    }
+
+    return null;
   }
 
   private PentahoWebPackageBundleImpl extendBundle( final Bundle bundle ) {
