@@ -17,7 +17,10 @@
 
 package org.pentaho.osgi.i18n.webservice;
 
+import org.osgi.framework.Bundle;
 import org.pentaho.osgi.i18n.LocalizationService;
+import org.pentaho.webpackage.core.PentahoWebPackage;
+import org.pentaho.webpackage.core.PentahoWebPackageService;
 
 import javax.jws.WebService;
 import javax.ws.rs.Consumes;
@@ -45,6 +48,8 @@ public class LocalizationWebservice implements LocalizationService {
 
   private LocalizationService localizationService;
 
+  private PentahoWebPackageService webPackageService;
+
   @Override
   public ResourceBundle getResourceBundle( String name, Locale locale ) {
     return localizationService.getResourceBundle( name, locale );
@@ -59,6 +64,10 @@ public class LocalizationWebservice implements LocalizationService {
     this.localizationService = localizationService;
   }
 
+  public void setWebPackageService( PentahoWebPackageService webPackageService ) {
+    this.webPackageService = webPackageService;
+  }
+
   @GET
   @Path( "/{key}/{language}" )
   public ResourceBundle getResourceBundleService( @PathParam( "key" ) String key,
@@ -68,6 +77,11 @@ public class LocalizationWebservice implements LocalizationService {
 
     // TODO change mapping on pentaho-i18n-bundle to contain {package_version} and the relative path to the bundle
     // TODO change scope from only looking into i18n folder and instead search from the root.
+
+//    PentahoWebPackage webPackage = this.webPackageService.findWebPackage( contextPackageName, contextPackageVersion );
+//    Bundle bundle = webPackage.getBundle();
+//    String absoluteKey = webPackage.getResourceRootPath() + key;
+
     return getResourceBundle( key, getLocale( localeString ) );
   }
 
