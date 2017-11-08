@@ -24,32 +24,32 @@ import java.util.ResourceBundle;
 public class OSGIResourceBundleFactory {
   private final int priority;
   private final String defaultName;
-  private final String relativeName;
+  private final String resourceKey;
   private final URL propertyFileUrl;
   private ResourceBundle previousParent = null;
   private OSGIResourceBundle previousResult = null;
 
-  public OSGIResourceBundleFactory( String defaultName, String relativeName, URL propertyFileUrl, int priority ) {
+  public OSGIResourceBundleFactory( String defaultName, String resourceKey, URL propertyFileUrl, int priority ) {
     this.defaultName = defaultName;
-    this.priority = priority;
-    this.relativeName = relativeName;
+    this.priority = priority; // never used
+    this.resourceKey = resourceKey;
     this.propertyFileUrl = propertyFileUrl;
   }
 
   public synchronized OSGIResourceBundle getBundle( ResourceBundle parent ) throws IOException {
-    if ( previousResult == null || previousParent != parent ) {
-      previousParent = parent;
-      previousResult = new OSGIResourceBundle( defaultName, parent, propertyFileUrl );
+    if ( this.previousResult == null || this.previousParent != parent ) {
+      this.previousParent = parent;
+      this.previousResult = new OSGIResourceBundle( this.defaultName, parent, this.propertyFileUrl );
     }
 
-    return previousResult;
+    return this.previousResult;
   }
 
   public int getPriority() {
-    return priority;
+    return this.priority;
   }
 
   public String getPropertyFilePath() {
-    return relativeName;
+    return this.resourceKey;
   }
 }

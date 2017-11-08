@@ -52,12 +52,12 @@ public class LocalizationWebservice implements LocalizationService {
 
   @Override
   public ResourceBundle getResourceBundle( String name, Locale locale ) {
-    return localizationService.getResourceBundle( name, locale );
+    return this.localizationService.getResourceBundle( name, locale );
   }
 
   @Override
   public List<ResourceBundle> getResourceBundles( Pattern keyRegex, Locale locale ) {
-    return localizationService.getResourceBundles( keyRegex, locale );
+    return this.localizationService.getResourceBundles( keyRegex, locale );
   }
 
   public void setLocalizationService( LocalizationService localizationService ) {
@@ -69,20 +69,23 @@ public class LocalizationWebservice implements LocalizationService {
   }
 
   @GET
-  @Path( "/{key}/{language}" )
-  public ResourceBundle getResourceBundleService( @PathParam( "key" ) String key,
+  @Path( "/{context}/{key}/{language}" )
+  public ResourceBundle getResourceBundleService( @PathParam( "context" ) String context,
+                                                  @PathParam( "key" ) String key,
                                                   @PathParam( "language" ) String localeString ) {
-    // key: det-impl-webclient_8.0-SNAPSHOT:path.to.bundle* (e.g. "_en.properties")
+    // context: det-impl-webclient_8.1-SNAPSHOT
+    // key:path.to.bundle* (e.g. "_en.properties")
     // language: en
 
     // TODO change mapping on pentaho-i18n-bundle to contain {package_version} and the relative path to the bundle
-    // TODO change scope from only looking into i18n folder and instead search from the root.
+    PentahoWebPackage webPackage = findWebPackage( context );
 
-//    PentahoWebPackage webPackage = this.webPackageService.findWebPackage( contextPackageName, contextPackageVersion );
-//    Bundle bundle = webPackage.getBundle();
-//    String absoluteKey = webPackage.getResourceRootPath() + key;
+    // Bundle bundle = webPackage.getBundle();
+    String absoluteKey = webPackage.getResourceRootPath() + key;
+    Locale locale = getLocale( localeString );
 
-    return getResourceBundle( key, getLocale( localeString ) );
+    return getResourceBundle( /*bundle, */absoluteKey, locale );
+
   }
 
   private static Locale getLocale( String localeString ) {
@@ -102,6 +105,14 @@ public class LocalizationWebservice implements LocalizationService {
     String country = hasLanguageAndCountry ? localeParams[ 1 ] : "";
 
     return new Locale( language, country );
+  }
+
+  private PentahoWebPackage findWebPackage( String context ) {
+    String[] contextInfo = context.split( "_" );
+    String contextPackageName = contextInfo[0];
+    String contextPackageVersion = contextInfo[1];
+
+    return this.webPackageService.findWebPackage( contextPackageName, contextPackageVersion );
   }
 
   @POST
@@ -132,4 +143,5 @@ public class LocalizationWebservice implements LocalizationService {
       }
     };
   }
+
 }

@@ -19,7 +19,8 @@ package org.pentaho.osgi.i18n.impl;
 
 import org.json.simple.parser.ParseException;
 import org.osgi.framework.Bundle;
-import org.pentaho.js.require.RequireJsGenerator;
+import org.osgi.framework.wiring.BundleCapability;
+import org.osgi.framework.wiring.BundleWiring;
 import org.pentaho.osgi.i18n.LocalizationService;
 import org.pentaho.osgi.i18n.resource.OSGIResourceBundle;
 import org.pentaho.osgi.i18n.resource.OSGIResourceBundleCacheCallable;
@@ -30,7 +31,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.URL;
-import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -48,12 +48,13 @@ import java.util.regex.Pattern;
 
 public class LocalizationManager implements LocalizationService {
   private static Logger log = LoggerFactory.getLogger( LocalizationManager.class );
+
+  private String CAPABILITY_NAMESPACE = "org.pentaho.webpackage";
+  private String I18N_RESOURCE_PATTERN = "*" + OSGIResourceNamingConvention.RESOURCES_DEFAULT_EXTENSION + "*";
+
   private final Map<Long, Map<String, OSGIResourceBundleFactory>> configMap = new HashMap<>();
   private ExecutorService executorService;
   private volatile Future<Map<String, OSGIResourceBundle>> cache;
-
-
-  private static final String PACKAGE_JSON_PATH = "META-INF/js/package.json";
 
   // For unit tests only
   static Logger getLog() {
@@ -71,44 +72,23 @@ public class LocalizationManager implements LocalizationService {
 
   public void bundleChanged( Bundle bundle ) throws IOException, ParseException {
     boolean rebuildCache;
-    synchronized ( configMap ) {
-      rebuildCache = configMap.remove( bundle.getBundleId() ) != null;
+    synchronized ( this.configMap ) {
+      rebuildCache = this.configMap.remove( bundle.getBundleId() ) != null;
     }
 
     if ( bundle.getState() == Bundle.ACTIVE ) {
-      Map<String, OSGIResourceBundleFactory> configEntry = new HashMap<>();
-      OSGIResourceBundleFactory bundleFactory;
-      Enumeration<URL> urlEnumeration =
-        bundle.findEntries( OSGIResourceNamingConvention.RESOURCES_ROOT_FOLDER,
-          "*" + OSGIResourceNamingConvention.RESOURCES_DEFAULT_EXTENSION + "*", true );
-      if ( urlEnumeration != null ) {
-        while ( urlEnumeration.hasMoreElements() ) {
-          URL url = urlEnumeration.nextElement();
-          if ( url != null ) {
-            String fileName = url.getFile();
-            String relativeName = fileName;
-            String versionedName = getVersionedPath( bundle );
-            String name = /* versionedName + "/" + */ getPropertyName( fileName );
-
-            int priority = OSGIResourceNamingConvention.getPropertyPriority( fileName );
-            bundleFactory = new OSGIResourceBundleFactory( name, relativeName, url, priority );
-            configEntry.put( relativeName, bundleFactory );
-            rebuildCache = true;
-          }
+      List<String> webPackageRoots = getBundleRoots( bundle );
+      for ( String root : webPackageRoots ) {
+        if ( addBundleResources( bundle, root ) ) {
+          rebuildCache = true;
         }
-      }
-
-      if ( !configEntry.isEmpty() ) {
-        synchronized ( configMap ) {
-          configMap.put( bundle.getBundleId(), configEntry );
-        }
-        rebuildCache = true;
       }
     }
+
     if ( rebuildCache ) {
-      synchronized ( configMap ) {
-        if ( executorService == null ) {
-          executorService = Executors.newSingleThreadExecutor( new ThreadFactory() {
+      synchronized ( this.configMap ) {
+        if ( this.executorService == null ) {
+          this.executorService = Executors.newSingleThreadExecutor( new ThreadFactory() {
             @Override
             public Thread newThread( Runnable r ) {
               Thread thread = Executors.defaultThreadFactory().newThread( r );
@@ -118,23 +98,11 @@ public class LocalizationManager implements LocalizationService {
             }
           } );
         }
-        cache = executorService.submit( new OSGIResourceBundleCacheCallable( new HashMap<>( configMap ) ) );
+
+        this.cache = this.executorService
+            .submit( new OSGIResourceBundleCacheCallable( new HashMap<>( this.configMap ) ) );
       }
     }
-  }
-
-  /**
-   * Returns property file name without extension
-   *
-   * @param fileName
-   *
-   * @return property file name without extension
-   */
-  private String getPropertyName( String fileName ) {
-    int index = fileName.lastIndexOf( OSGIResourceNamingConvention.RESOURCES_ROOT_FOLDER )
-      + OSGIResourceNamingConvention.RESOURCES_ROOT_FOLDER.length();
-    return fileName.substring( index + 1,
-      fileName.lastIndexOf( OSGIResourceNamingConvention.RESOURCES_DEFAULT_EXTENSION ) );
   }
 
   @Override
@@ -154,6 +122,7 @@ public class LocalizationManager implements LocalizationService {
         }
       }
     }
+
     return result;
   }
 
@@ -190,38 +159,76 @@ public class LocalizationManager implements LocalizationService {
     return result;
   }
 
-  private String getVersionedPath( Bundle bundle ) {
-    URL packageJsonUrl = bundle.getResource( PACKAGE_JSON_PATH );
-
-    try {
-      URLConnection urlConnection = packageJsonUrl.openConnection();
-      RequireJsGenerator gen = RequireJsGenerator.parseJsonPackage( urlConnection.getInputStream() );
-
-      if ( gen != null ) {
-        RequireJsGenerator.ArtifactInfo artifactInfo =
-            new RequireJsGenerator.ArtifactInfo( "osgi-bundles", bundle.getSymbolicName(),
-                bundle.getVersion().toString() );
-        final RequireJsGenerator.ModuleInfo moduleInfo = gen.getConvertedConfig( artifactInfo );
-
-        return moduleInfo.getVersionedName();
-      }
-    } catch ( Exception ignored ) {
-      // ignored
-    }
-
-    return "";
-  }
-
   private Map<String, OSGIResourceBundle> getCache() {
     Map<String, OSGIResourceBundle> result = null;
-    if ( cache != null ) {
+    if ( this.cache != null ) {
       try {
-        result = cache.get();
+        result = this.cache.get();
       } catch ( Exception e ) {
-        log.error( e.getMessage(), e );
+        getLog().error( e.getMessage(), e );
       }
     }
 
     return result;
   }
+
+  /**
+   * Returns property file name without extension
+   *
+   * @param fileName
+   *
+   * @return property file name without extension
+   */
+  private String getPropertyName( String filename ) {
+    return filename.replaceAll( "\\.properties.*\\$", "" );
+  }
+
+  private List<String> getBundleRoots( Bundle bundle ) {
+    List<String> webPackageRoots = new ArrayList<>();
+    webPackageRoots.add( OSGIResourceNamingConvention.RESOURCES_I18N_FOLDER );
+
+    BundleWiring wiring = bundle.adapt( BundleWiring.class );
+    if ( wiring != null ) {
+      List<BundleCapability> capabilities = wiring.getCapabilities( CAPABILITY_NAMESPACE );
+      for ( BundleCapability bundleCapability : capabilities ) {
+        Map<String, Object> attributes = bundleCapability.getAttributes();
+
+        webPackageRoots.add( (String) attributes.getOrDefault( "root", "" ) );
+      }
+    }
+
+    return webPackageRoots;
+  }
+
+  private boolean addBundleResources( Bundle bundle, String root ) {
+
+    Map<String, OSGIResourceBundleFactory> configEntry = new HashMap<>();
+    OSGIResourceBundleFactory bundleFactory;
+
+    Enumeration<URL> urlEnumeration = bundle.findEntries( root, I18N_RESOURCE_PATTERN, true );
+    if ( urlEnumeration != null ) {
+      while ( urlEnumeration.hasMoreElements() ) {
+        URL url = urlEnumeration.nextElement();
+        if ( url != null ) {
+          String filename = url.getFile();
+          String packageAndVersion = "";
+          String resourceKey = packageAndVersion +  getPropertyName( filename );
+
+          int priority = OSGIResourceNamingConvention.getPropertyPriority( filename );
+          bundleFactory = new OSGIResourceBundleFactory( filename, resourceKey, url, priority );
+          configEntry.put( resourceKey, bundleFactory );
+        }
+      }
+    }
+
+    boolean isConfigEmpty = configEntry.isEmpty();
+    if ( !isConfigEmpty ) {
+      synchronized ( this.configMap ) {
+        this.configMap.put( bundle.getBundleId(), configEntry );
+      }
+    }
+
+    return !isConfigEmpty;
+  }
+
 }

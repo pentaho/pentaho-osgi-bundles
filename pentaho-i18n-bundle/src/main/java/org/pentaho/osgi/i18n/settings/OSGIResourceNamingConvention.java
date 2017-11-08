@@ -26,7 +26,7 @@ import java.util.regex.Pattern;
 
 public class OSGIResourceNamingConvention {
 
-  public static final String RESOURCES_ROOT_FOLDER = "i18n";
+  public static final String RESOURCES_I18N_FOLDER = "i18n";
   public static final String RESOURCES_DEFAULT_EXTENSION = ".properties";
 
   public static final Pattern RESOURCE_NAME_PATTERN = Pattern.compile( "(.*/[^_]+)(.*).properties(\\.\\d+)?" );

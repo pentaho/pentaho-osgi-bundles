@@ -31,73 +31,68 @@ define([
         // Indicate that the optimizer should not wait for this resource and complete optimization.
         // This resource will be resolved dynamically during run time in the web browser.
         onLoad();
-      } else {
-        var baseUrl = environment.server.services;
-        var locale = environment.locale;
-
-        // TODO check if the config object as any useful info to use in the resource key
-        var resourceKey = _resourceKey(localRequire, bundlePath);
-        var resourceLocale = locale !== null ? locale : "en";
-
-        var url = baseUrl + "i18n/" + resourceKey + "/" + resourceLocale;
-        var options = {
-          method: "GET",
-          headers: {
-            "Accept": "application/json"
-          }
-        };
-
-        var request = new Request(url, options);
-
-        fetch(request)
-          .then(function(res) {
-            if (res.status === 200) {
-              return res.text();
-            }
-
-            throw new Error("Error accessing i18n OSGI web service with bundlePath: " + bundlePath + "'.");
-          })
-          .then(function(data) {
-            if (data) {
-              var bundle = new MessageBundle(JSON.parse(data));
-              onLoad(bundle);
-            } else {
-              onLoad();
-            }
-          })
-          .catch(function(/* error */) {
-            throw new Error("Error accessing i18n OSGI web service with bundlePath: " + bundlePath + "'.");
-          });
+        return;
       }
+
+      var baseUrl = environment.server.services;
+      var locale = environment.locale;
+
+      // TODO check if the config object as any useful info to use in the resource key
+      var resourceKey = _resourceKey(localRequire, bundlePath);
+      var resourceLocale = locale !== null ? locale : "en";
+
+      var url = baseUrl + "i18n/" + resourceKey + "/" + resourceLocale;
+      console.log("Url: " + url);
+
+      var options = {
+        method: "GET",
+        headers: {
+          "Accept": "application/json"
+        }
+      };
+
+      var request = new Request(url, options);
+
+      fetch(request)
+        .then(function(res) {
+          if (res.status === 200) {
+            return res.text();
+          }
+
+          throw new Error("Error accessing i18n OSGI web service with bundlePath: " + resourceKey + "'.");
+        })
+        .then(function(data) {
+          if (data) {
+            var bundle = new MessageBundle(JSON.parse(data));
+            onLoad(bundle);
+          } else {
+            onLoad();
+          }
+        })
+        .catch(function(/* error */) {
+          throw new Error("Error accessing i18n OSGI web service with bundlePath: " + resourceKey + "'.");
+        });
     }
   };
 
   function _resourceKey(localRequire, bundlePath) {
-    var isGlobalRequire = localRequire.undef !== undefined;
+    console.log( "Bundle Path: " + bundlePath);
 
+    var isGlobalRequire = localRequire.undef !== undefined;
     // TODO how to make sure that bundle path is correct when we can't use 'require("module")'?
     var module = !isGlobalRequire ? localRequire("module") : null;
     if (module === null) return bundlePath;
+    console.log("Module ID: " + module.id);
 
     var moduleIdSplit = module.id.split("/"); /* example: det_8.1-SNAPSHOT/path/to/module */
 
     var moduleAndVersion = moduleIdSplit.shift(); /* example: det_8.1-SNAPSHOT */
-    var moduleName = moduleIdSplit.pop();         /* example: module */
+    var moduleName = moduleIdSplit.pop();         /* example: amd module */
     var pathToBundle = moduleIdSplit.join( "." ); /* example: path.to */
-
-    // TODO prevent access outside bundle context?
-    // TODO use localRequire to get module.id
-    // Use solution above and avoid localRequire.toUrl
-    // var fullUrl = localRequire.toUrl(bundlePath);
 
     // var resourceKey = bundlePath; /* moduleID.version || moduleID - version -> promote it out of key */
     // TODO I think something as to be done in order to merge pathToBundle with bundlePath
-    var resourceKey = moduleAndVersion + "." + pathToBundle + "." + bundlePath;
-
-    console.log("Module ID: " + module.id);
-    console.log("Resource Key: " + resourceKey);
-
-    return resourceKey;
+    return moduleAndVersion + "/" + pathToBundle + "." + bundlePath;
   }
 
 });
