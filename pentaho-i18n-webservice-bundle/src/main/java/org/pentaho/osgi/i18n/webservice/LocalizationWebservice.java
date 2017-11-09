@@ -51,8 +51,18 @@ public class LocalizationWebservice implements LocalizationService {
   private PentahoWebPackageService webPackageService;
 
   @Override
-  public ResourceBundle getResourceBundle( String name, Locale locale ) {
-    return this.localizationService.getResourceBundle( name, locale );
+  public ResourceBundle getResourceBundle( Class clazz, String key, Locale locale ) {
+    return this.localizationService.getResourceBundle( /*clazz, */key, locale );
+  }
+
+  @Override
+  public ResourceBundle getResourceBundle( Bundle bundle, String key, Locale locale ) {
+    return this.localizationService.getResourceBundle( /*bundle, */key, locale );
+  }
+
+  @Override
+  public ResourceBundle getResourceBundle( String key, Locale locale ) {
+    return this.localizationService.getResourceBundle( key, locale );
   }
 
   @Override
@@ -71,48 +81,21 @@ public class LocalizationWebservice implements LocalizationService {
   @GET
   @Path( "/{context}/{key}/{language}" )
   public ResourceBundle getResourceBundleService( @PathParam( "context" ) String context,
-                                                  @PathParam( "key" ) String key,
+                                                  @PathParam( "key" ) String relativeKey,
                                                   @PathParam( "language" ) String localeString ) {
     // context: det-impl-webclient_8.1-SNAPSHOT
     // key:path.to.bundle* (e.g. "_en.properties")
     // language: en
 
-    // TODO change mapping on pentaho-i18n-bundle to contain {package_version} and the relative path to the bundle
     PentahoWebPackage webPackage = findWebPackage( context );
 
-    // Bundle bundle = webPackage.getBundle();
-    String absoluteKey = webPackage.getResourceRootPath() + key;
+    Bundle bundle = webPackage != null ? webPackage.getBundle() : null;
+    String absoluteKey = ( webPackage != null ? webPackage.getResourceRootPath() : "/i18n/" )
+        + relativeKey.replaceAll( "\\.", "/" );
+
     Locale locale = getLocale( localeString );
 
-    return getResourceBundle( /*bundle, */absoluteKey, locale );
-
-  }
-
-  private static Locale getLocale( String localeString ) {
-    boolean isValidLocale = localeString != null && !localeString.matches( "^\\s*$" );
-
-    if ( !isValidLocale ) {
-      return Locale.getDefault();
-    }
-
-    String[] localeParams = localeString.split( "_" );
-
-    int localeType = localeParams.length;
-    boolean hasLanguageAndCountry = localeType >= LANGUAGE_COUNTRY_BUNDLE;
-    boolean hasLanguage = hasLanguageAndCountry || localeType == LANGUAGE_ONLY_BUNDLE;
-
-    String language = hasLanguage ? localeParams[ 0 ] : "";
-    String country = hasLanguageAndCountry ? localeParams[ 1 ] : "";
-
-    return new Locale( language, country );
-  }
-
-  private PentahoWebPackage findWebPackage( String context ) {
-    String[] contextInfo = context.split( "_" );
-    String contextPackageName = contextInfo[0];
-    String contextPackageVersion = contextInfo[1];
-
-    return this.webPackageService.findWebPackage( contextPackageName, contextPackageVersion );
+    return getResourceBundle( bundle, absoluteKey, locale );
   }
 
   @POST
@@ -144,4 +127,30 @@ public class LocalizationWebservice implements LocalizationService {
     };
   }
 
+  private static Locale getLocale( String localeString ) {
+    boolean isValidLocale = localeString != null && !localeString.matches( "^\\s*$" );
+
+    if ( !isValidLocale ) {
+      return Locale.getDefault();
+    }
+
+    String[] localeParams = localeString.split( "_" );
+
+    int localeType = localeParams.length;
+    boolean hasLanguageAndCountry = localeType >= LANGUAGE_COUNTRY_BUNDLE;
+    boolean hasLanguage = hasLanguageAndCountry || localeType == LANGUAGE_ONLY_BUNDLE;
+
+    String language = hasLanguage ? localeParams[ 0 ] : "";
+    String country = hasLanguageAndCountry ? localeParams[ 1 ] : "";
+
+    return new Locale( language, country );
+  }
+
+  private PentahoWebPackage findWebPackage( String context ) {
+    String[] contextInfo = context.split( "_" );
+    String contextPackageName = contextInfo[0];
+    String contextPackageVersion = contextInfo[1];
+
+    return this.webPackageService.findWebPackage( contextPackageName, contextPackageVersion );
+  }
 }

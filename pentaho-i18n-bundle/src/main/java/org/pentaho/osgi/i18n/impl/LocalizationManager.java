@@ -49,9 +49,6 @@ import java.util.regex.Pattern;
 public class LocalizationManager implements LocalizationService {
   private static Logger log = LoggerFactory.getLogger( LocalizationManager.class );
 
-  private String CAPABILITY_NAMESPACE = "org.pentaho.webpackage";
-  private String I18N_RESOURCE_PATTERN = "*" + OSGIResourceNamingConvention.RESOURCES_DEFAULT_EXTENSION + "*";
-
   private final Map<Long, Map<String, OSGIResourceBundleFactory>> configMap = new HashMap<>();
   private ExecutorService executorService;
   private volatile Future<Map<String, OSGIResourceBundle>> cache;
@@ -106,17 +103,31 @@ public class LocalizationManager implements LocalizationService {
   }
 
   @Override
-  public ResourceBundle getResourceBundle( String name, Locale locale ) {
+  public ResourceBundle getResourceBundle( Class clazz, String key, Locale locale ) {
+    String absoluteKey = "/i18n/" + key.replaceAll( "\\.", "/" );
+
+    return this.getResourceBundle( absoluteKey, locale );
+  }
+
+  @Override
+  public ResourceBundle getResourceBundle( Bundle bundle, String key, Locale locale ) {
+    return this.getResourceBundle( key, locale );
+  }
+
+  @Override
+  public ResourceBundle getResourceBundle( String key, Locale locale ) {
     ResourceBundle result = null;
+
+    // Temporary, so that server side code doesn't break
+    String absoluteKey = key.startsWith( "/" ) ? key : "/i18n/" + key.replaceAll( "\\.", "/" );
     Map<String, OSGIResourceBundle> localCache = getCache();
 
     if ( localCache != null ) {
-      if ( name != null ) {
-        name = name.replaceAll( "\\.", "/" );
-        for ( String candidate : OSGIResourceNamingConvention.getCandidateNames( name, locale ) ) {
-          OSGIResourceBundle bundle = localCache.get( candidate );
-          if ( bundle != null ) {
-            result = bundle;
+      if ( absoluteKey != null ) {
+        for ( String candidate : OSGIResourceNamingConvention.getCandidateNames( absoluteKey, locale ) ) {
+          OSGIResourceBundle osgiResourceBundle = localCache.get( candidate );
+          if ( osgiResourceBundle != null ) {
+            result = osgiResourceBundle;
             break;
           }
         }
@@ -180,7 +191,7 @@ public class LocalizationManager implements LocalizationService {
    * @return property file name without extension
    */
   private String getPropertyName( String filename ) {
-    return filename.replaceAll( "\\.properties.*\\$", "" );
+    return filename.replaceAll( "\\.properties.*$", "" );
   }
 
   private List<String> getBundleRoots( Bundle bundle ) {
@@ -205,17 +216,17 @@ public class LocalizationManager implements LocalizationService {
     Map<String, OSGIResourceBundleFactory> configEntry = new HashMap<>();
     OSGIResourceBundleFactory bundleFactory;
 
-    Enumeration<URL> urlEnumeration = bundle.findEntries( root, I18N_RESOURCE_PATTERN, true );
+    final String i18nResourcePattern = "*" + OSGIResourceNamingConvention.RESOURCES_DEFAULT_EXTENSION + "*";
+    Enumeration<URL> urlEnumeration = bundle.findEntries( root, i18nResourcePattern, true );
     if ( urlEnumeration != null ) {
       while ( urlEnumeration.hasMoreElements() ) {
         URL url = urlEnumeration.nextElement();
         if ( url != null ) {
           String filename = url.getFile();
-          String packageAndVersion = "";
-          String resourceKey = packageAndVersion +  getPropertyName( filename );
+          String resourceKey = getPropertyName( filename );
 
           int priority = OSGIResourceNamingConvention.getPropertyPriority( filename );
-          bundleFactory = new OSGIResourceBundleFactory( filename, resourceKey, url, priority );
+          bundleFactory = new OSGIResourceBundleFactory( resourceKey, filename, url, priority );
           configEntry.put( resourceKey, bundleFactory );
         }
       }

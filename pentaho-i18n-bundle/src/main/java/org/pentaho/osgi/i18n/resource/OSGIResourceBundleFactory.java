@@ -23,23 +23,23 @@ import java.util.ResourceBundle;
 
 public class OSGIResourceBundleFactory {
   private final int priority;
-  private final String defaultName;
+  private final String resourcePath;
   private final String resourceKey;
   private final URL propertyFileUrl;
   private ResourceBundle previousParent = null;
   private OSGIResourceBundle previousResult = null;
 
-  public OSGIResourceBundleFactory( String defaultName, String resourceKey, URL propertyFileUrl, int priority ) {
-    this.defaultName = defaultName;
-    this.priority = priority; // never used
+  public OSGIResourceBundleFactory( String resourceKey, String resourcePath, URL propertyFileUrl, int priority ) {
     this.resourceKey = resourceKey;
+    this.resourcePath = resourcePath;
     this.propertyFileUrl = propertyFileUrl;
+    this.priority = priority; // never used
   }
 
   public synchronized OSGIResourceBundle getBundle( ResourceBundle parent ) throws IOException {
     if ( this.previousResult == null || this.previousParent != parent ) {
       this.previousParent = parent;
-      this.previousResult = new OSGIResourceBundle( this.defaultName, parent, this.propertyFileUrl );
+      this.previousResult = new OSGIResourceBundle( this.resourceKey, parent, this.propertyFileUrl );
     }
 
     return this.previousResult;
@@ -50,6 +50,6 @@ public class OSGIResourceBundleFactory {
   }
 
   public String getPropertyFilePath() {
-    return this.resourceKey;
+    return this.resourcePath;
   }
 }

@@ -49,9 +49,6 @@ import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-/**
- * Created by bryan on 9/5/14.
- */
 public class LocalizationManagerTest {
   private Logger log;
   private Logger cachedLogger;
@@ -184,80 +181,53 @@ public class LocalizationManagerTest {
   private ExecutorService mockExecutorServiceWithCacheTrowingError() throws ExecutionException, InterruptedException {
     Future<Map<String, OSGIResourceBundle>> mockF = mock( Future.class );
     when( mockF.get() ).thenThrow( InterruptedException.class );
+
     ExecutorService service = mock( ExecutorService.class );
     when( service.submit( Matchers.any( Callable.class ) ) ).thenReturn( mockF );
+
     return service;
   }
 
   private void assertBundleKeyEquals( String expected, String key, String valueKey,
                                       String... localeStrings ) {
-    Locale locale = null;
-    if ( localeStrings.length == 1 ) {
-      locale = new Locale( localeStrings[ 0 ] );
-    } else if ( localeStrings.length == 2 ) {
-      locale = new Locale( localeStrings[ 0 ], localeStrings[ 1 ] );
-    } else {
-      throw new RuntimeException( "Expected either 1 or 2 locale strings" );
-    }
+    Locale locale = getLocale( localeStrings );
+
     assertEquals( expected, localizationManager.getResourceBundle( key, locale ).getString( valueKey ) );
   }
 
   private void assertBundlePatternKeyEquals( String expected, Pattern keyRegex, String valueKey,
                                              String... localeStrings ) {
-    Locale locale = null;
-    if ( localeStrings.length == 1 ) {
-      locale = new Locale( localeStrings[ 0 ] );
-    } else if ( localeStrings.length == 2 ) {
-      locale = new Locale( localeStrings[ 0 ], localeStrings[ 1 ] );
-    } else {
-      throw new RuntimeException( "Expected either 1 or 2 locale strings" );
-    }
+    Locale locale = getLocale( localeStrings );
+
     assertEquals( expected,
       localizationManager.getResourceBundles( keyRegex, locale ).get( 0 ).getString( valueKey ) );
   }
 
   private void assertBundleNullCacheNull( String key, String... localeStrings ) {
-    Locale locale = null;
+    Locale locale = getLocale( localeStrings );
 
-    if ( localeStrings != null ) {
-      if ( localeStrings.length == 1 ) {
-        locale = new Locale( localeStrings[ 0 ] );
-      } else if ( localeStrings.length == 2 ) {
-        locale = new Locale( localeStrings[ 0 ], localeStrings[ 1 ] );
-      } else {
-        throw new RuntimeException( "Expected either 1 or 2 locale strings" );
-      }
-    }
     assertNull( localizationManager.getResourceBundle( key, locale ) );
-
   }
 
   private void assertBundleNullCacheNullRegexp( Pattern keyRegex, String... localeStrings ) {
-    Locale locale = null;
+    Locale locale = getLocale( localeStrings );
 
-    if ( localeStrings != null ) {
-      if ( localeStrings.length == 1 ) {
-        locale = new Locale( localeStrings[ 0 ] );
-      } else if ( localeStrings.length == 2 ) {
-        locale = new Locale( localeStrings[ 0 ], localeStrings[ 1 ] );
-      } else {
-        throw new RuntimeException( "Expected either 1 or 2 locale strings" );
-      }
-    }
     assertNull( localizationManager.getResourceBundles( keyRegex, locale ) );
-
   }
 
   private Bundle makeMockBundle( Long bundleId, int bundleStatus, String... propertiesPaths ) {
     Bundle bundle = mock( Bundle.class );
     when( bundle.getState() ).thenReturn( bundleStatus );
     when( bundle.getBundleId() ).thenReturn( bundleId );
-    List<URL> propertiesFiles = new ArrayList<URL>();
+
+    List<URL> propertiesFiles = new ArrayList<>();
     for ( String path : propertiesPaths ) {
       propertiesFiles.add( getClass().getClassLoader().getResource( path ) );
     }
+
     when( bundle.findEntries( "i18n", "*.properties*", true ) )
-      .thenReturn( new Vector<URL>( propertiesFiles ).elements() );
+      .thenReturn( new Vector<>( propertiesFiles ).elements() );
+
     return bundle;
   }
 
@@ -267,5 +237,19 @@ public class LocalizationManagerTest {
     when( bundle.getBundleId() ).thenReturn( bundleId );
     when( bundle.findEntries( "i18n", "*.properties*", true ) ).thenReturn( null );
     return bundle;
+  }
+
+  private Locale getLocale( String[] localeStrings ) {
+    if ( localeStrings != null ) {
+      if ( localeStrings.length == 1 ) {
+        return new Locale( localeStrings[ 0 ] );
+      } else if ( localeStrings.length == 2 ) {
+        return new Locale( localeStrings[ 0 ], localeStrings[ 1 ] );
+      } else {
+        throw new RuntimeException( "Expected either 1 or 2 locale strings" );
+      }
+    }
+
+    return null;
   }
 }

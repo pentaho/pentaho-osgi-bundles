@@ -37,11 +37,20 @@ define([
       var baseUrl = environment.server.services;
       var locale = environment.locale;
 
-      // TODO check if the config object as any useful info to use in the resource key
-      var resourceKey = _resourceKey(localRequire, bundlePath);
-      var resourceLocale = locale !== null ? locale : "en";
+      var moduleInfo = getModuleInfo(localRequire, bundlePath);
 
-      var url = baseUrl + "i18n/" + resourceKey + "/" + resourceLocale;
+      var contextAndResourceKey;
+      if (moduleInfo !== null) {
+        contextAndResourceKey = moduleInfo.context + "/" + moduleInfo.resourceKey;
+      } else {
+        contextAndResourceKey = bundlePath;
+      }
+
+      console.log(contextAndResourceKey);
+
+      var resourceLocale = locale !== null ? locale : "en";
+      var url = baseUrl + "i18n/" + contextAndResourceKey + "/" + resourceLocale;
+
       console.log("Url: " + url);
 
       var options = {
@@ -59,7 +68,7 @@ define([
             return res.text();
           }
 
-          throw new Error("Error accessing i18n OSGI web service with bundlePath: " + resourceKey + "'.");
+          throw new Error("Error accessing i18n OSGI web service with bundlePath: " + contextAndResourceKey + "'.");
         })
         .then(function(data) {
           if (data) {
@@ -70,29 +79,54 @@ define([
           }
         })
         .catch(function(/* error */) {
-          throw new Error("Error accessing i18n OSGI web service with bundlePath: " + resourceKey + "'.");
+          throw new Error("Error accessing i18n OSGI web service with bundlePath: " + contextAndResourceKey + "'.");
         });
     }
   };
 
-  function _resourceKey(localRequire, bundlePath) {
-    console.log( "Bundle Path: " + bundlePath);
-
+  function getModuleInfo(localRequire, bundlePath) {
     var isGlobalRequire = localRequire.undef !== undefined;
-    // TODO how to make sure that bundle path is correct when we can't use 'require("module")'?
+
     var module = !isGlobalRequire ? localRequire("module") : null;
-    if (module === null) return bundlePath;
-    console.log("Module ID: " + module.id);
+    if (module === null) return null;
 
-    var moduleIdSplit = module.id.split("/"); /* example: det_8.1-SNAPSHOT/path/to/module */
+    var moduleIdTokens = module.id
+      .replace( "pentaho/geo/visual", "pentaho-geo-visual") // Hack for geo
+      .split("/"); /* example: det_8.1-SNAPSHOT/path/to/module */
 
-    var moduleAndVersion = moduleIdSplit.shift(); /* example: det_8.1-SNAPSHOT */
-    var moduleName = moduleIdSplit.pop();         /* example: amd module */
-    var pathToBundle = moduleIdSplit.join( "." ); /* example: path.to */
+    var context = moduleIdTokens.shift();      /* example: det_8.1-SNAPSHOT */
+    var name = moduleIdTokens.pop();           /* example: amd module */
 
-    // var resourceKey = bundlePath; /* moduleID.version || moduleID - version -> promote it out of key */
-    // TODO I think something as to be done in order to merge pathToBundle with bundlePath
-    return moduleAndVersion + "/" + pathToBundle + "." + bundlePath;
+    return {
+      context: context,
+      name: name,
+      resourceKey: getResourceKey(moduleIdTokens, bundlePath)
+    };
+
+
   }
 
+  function getResourceKey(basePathTokens, bundlePath) {
+    var isAbsoluteBundlePath =  !bundlePath.indexOf("/");
+
+    // 'path', ./path' or '../path' are relative
+    // '/path' is absolute
+    var extractPathReg = /^(\.?\/|(?:\.{2}\/)*)(.+)$/;
+
+    var match = extractPathReg.exec(bundlePath);
+    var trail = match[1] || "";
+    var path = match[2];
+
+    if (!isAbsoluteBundlePath) {
+      trail.split("/").map(function(elem) {
+        if (elem === "..") basePathTokens.pop();
+      });
+    }
+
+    if (isAbsoluteBundlePath || !basePathTokens.length || trail === "") {
+      return path;
+    }
+
+    return basePathTokens.join(".") + "." + path;
+  }
 });
