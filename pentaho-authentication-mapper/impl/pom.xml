@@ -10,6 +10,11 @@
   <artifactId>pentaho-authentication-mapper-impl</artifactId>
   <version>8.1-SNAPSHOT</version>
   <packaging>bundle</packaging>
+  <properties>
+    <!-- jackson-databind depends on jackson-core and jackson-annotations
+    so that this artifacts have the same version to prevent compile errors -->
+    <fasterxml.jackson.core.version>2.9.2</fasterxml.jackson.core.version>
+  </properties>
   <dependencies>
     <dependency>
       <groupId>pentaho</groupId>
@@ -18,8 +23,36 @@
     </dependency>
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-core</artifactId>
+      <version>${fasterxml.jackson.core.version}</version>
+      <exclusions>
+        <exclusion>
+          <artifactId>*</artifactId>
+          <groupId>*</groupId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-annotations</artifactId>
+      <version>${fasterxml.jackson.core.version}</version>
+      <exclusions>
+        <exclusion>
+          <artifactId>*</artifactId>
+          <groupId>*</groupId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
-      <version>2.3.3</version>
+      <version>${fasterxml.jackson.core.version}</version>
+      <exclusions>
+        <exclusion>
+          <artifactId>*</artifactId>
+          <groupId>*</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
