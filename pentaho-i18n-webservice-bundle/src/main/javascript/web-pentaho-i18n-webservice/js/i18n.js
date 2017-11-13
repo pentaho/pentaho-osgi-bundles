@@ -20,8 +20,10 @@
 define([
   "pentaho/i18n/MessageBundle",
   "pentaho/environment",
+  "pentaho/util/module",
   "whatwg-fetch"
-], function (MessageBundle, environment) {
+], function (MessageBundle, environment, moduleUtil) {
+
   "use strict";
 
   return {
@@ -37,21 +39,10 @@ define([
       var baseUrl = environment.server.services;
       var locale = environment.locale;
 
-      var moduleInfo = getModuleInfo(localRequire, bundlePath);
+      var resourceModuleId = getResourceModuleId(localRequire, bundlePath);
 
-      var contextAndResourceKey;
-      if (moduleInfo !== null) {
-        contextAndResourceKey = moduleInfo.context + "/" + moduleInfo.resourceKey;
-      } else {
-        contextAndResourceKey = bundlePath;
-      }
-
-      console.log(contextAndResourceKey);
-
-      var resourceLocale = locale !== null ? locale : "en";
-      var url = baseUrl + "i18n/" + contextAndResourceKey + "/" + resourceLocale;
-
-      console.log("Url: " + url);
+      var resourceLocale = locale !== null ? ("?locale=" + locale) : "";
+      var url = baseUrl + "i18n/" + resourceModuleId + resourceLocale;
 
       var options = {
         method: "GET",
@@ -68,7 +59,7 @@ define([
             return res.text();
           }
 
-          throw new Error("Error accessing i18n OSGI web service with bundlePath: " + contextAndResourceKey + "'.");
+          throw new Error("Error accessing i18n OSGI web service with bundlePath: " + resourceModuleId + "'.");
         })
         .then(function(data) {
           if (data) {
@@ -79,54 +70,21 @@ define([
           }
         })
         .catch(function(/* error */) {
-          throw new Error("Error accessing i18n OSGI web service with bundlePath: " + contextAndResourceKey + "'.");
+          throw new Error("Error accessing i18n OSGI web service with bundlePath: " + resourceModuleId + "'.");
         });
     }
   };
 
-  function getModuleInfo(localRequire, bundlePath) {
-    var isGlobalRequire = localRequire.undef !== undefined;
+  function getResourceModuleId(localRequire, bundlePath) {
 
-    var module = !isGlobalRequire ? localRequire("module") : null;
-    if (module === null) return null;
+    var callerModuleId = moduleUtil.getId(localRequire);
 
-    var moduleIdTokens = module.id
-      .replace( "pentaho/geo/visual", "pentaho-geo-visual") // Hack for geo
-      .split("/"); /* example: det_8.1-SNAPSHOT/path/to/module */
+    /*
+    TODO: Check if really needed / how to fix.
+    // Hack for geo
+    moduleId = moduleId && moduleId.replace("pentaho/geo/visual", "pentaho-geo-visual");
+    */
 
-    var context = moduleIdTokens.shift();      /* example: det_8.1-SNAPSHOT */
-    var name = moduleIdTokens.pop();           /* example: amd module */
-
-    return {
-      context: context,
-      name: name,
-      resourceKey: getResourceKey(moduleIdTokens, bundlePath)
-    };
-
-
-  }
-
-  function getResourceKey(basePathTokens, bundlePath) {
-    var isAbsoluteBundlePath =  !bundlePath.indexOf("/");
-
-    // 'path', ./path' or '../path' are relative
-    // '/path' is absolute
-    var extractPathReg = /^(\.?\/|(?:\.{2}\/)*)(.+)$/;
-
-    var match = extractPathReg.exec(bundlePath);
-    var trail = match[1] || "";
-    var path = match[2];
-
-    if (!isAbsoluteBundlePath) {
-      trail.split("/").map(function(elem) {
-        if (elem === "..") basePathTokens.pop();
-      });
-    }
-
-    if (isAbsoluteBundlePath || !basePathTokens.length || trail === "") {
-      return path;
-    }
-
-    return basePathTokens.join(".") + "." + path;
+    return moduleUtil.absolutizeIdRelativeToSibling(bundlePath, callerModuleId);
   }
 });
