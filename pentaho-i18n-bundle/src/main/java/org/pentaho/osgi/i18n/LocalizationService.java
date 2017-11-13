@@ -27,8 +27,11 @@ import java.util.regex.Pattern;
 public interface LocalizationService {
   String CAPABILITY_NAMESPACE = "org.pentaho.webpackage";
 
-  ResourceBundle getResourceBundle( String key, Locale locale );
   ResourceBundle getResourceBundle( Bundle bundle, String key, Locale locale );
+
+  ResourceBundle getResourceBundle( Class clazz, Locale locale );
   ResourceBundle getResourceBundle( Class clazz, String key, Locale locale );
+
+  ResourceBundle getResourceBundle( String key, Locale locale );
   List<ResourceBundle> getResourceBundles( Pattern keyRegex, Locale locale );
 }

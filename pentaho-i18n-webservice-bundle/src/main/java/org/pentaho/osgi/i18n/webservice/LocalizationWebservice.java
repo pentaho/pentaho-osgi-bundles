@@ -51,13 +51,18 @@ public class LocalizationWebservice implements LocalizationService {
   private PentahoWebPackageService webPackageService;
 
   @Override
+  public ResourceBundle getResourceBundle( Class clazz, Locale locale ) {
+    return this.localizationService.getResourceBundle( clazz, locale );
+  }
+
+  @Override
   public ResourceBundle getResourceBundle( Class clazz, String key, Locale locale ) {
-    return this.localizationService.getResourceBundle( /*clazz, */key, locale );
+    return this.localizationService.getResourceBundle( clazz, key, locale );
   }
 
   @Override
   public ResourceBundle getResourceBundle( Bundle bundle, String key, Locale locale ) {
-    return this.localizationService.getResourceBundle( /*bundle, */key, locale );
+    return this.localizationService.getResourceBundle( bundle, key, locale );
   }
 
   @Override
@@ -83,15 +88,11 @@ public class LocalizationWebservice implements LocalizationService {
   public ResourceBundle getResourceBundleService( @PathParam( "context" ) String context,
                                                   @PathParam( "key" ) String relativeKey,
                                                   @PathParam( "language" ) String localeString ) {
-    // context: det-impl-webclient_8.1-SNAPSHOT
-    // key:path.to.bundle* (e.g. "_en.properties")
-    // language: en
-
     PentahoWebPackage webPackage = findWebPackage( context );
 
     Bundle bundle = webPackage != null ? webPackage.getBundle() : null;
-    String absoluteKey = ( webPackage != null ? webPackage.getResourceRootPath() : "/i18n/" )
-        + relativeKey.replaceAll( "\\.", "/" );
+    String absoluteKey = ( webPackage != null ? webPackage.getResourceRootPath() : "/i18n" )
+        + "/" + relativeKey.replaceAll( "\\.", "/" );
 
     Locale locale = getLocale( localeString );
 

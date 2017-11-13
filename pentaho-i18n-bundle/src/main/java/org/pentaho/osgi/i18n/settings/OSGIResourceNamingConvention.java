@@ -76,8 +76,22 @@ public class OSGIResourceNamingConvention {
       }
     }
 
-    Collections.reverse( result );
     return result;
+  }
+
+  public static Locale getPropertyLocale( String propertyName ) {
+    Matcher defaultMatcher = getResourceNameMatcher( propertyName );
+    String locale = defaultMatcher.group( 2 );
+    if ( locale.length() > 1 ) {
+      locale = locale.substring( 1 ).replace( '_', '-' );
+    }
+
+    return Locale.forLanguageTag( locale );
+  }
+
+  public static String getPropertyDefaultName( String propertyName ) {
+    Matcher defaultMatcher = getResourceNameMatcher( propertyName );
+    return defaultMatcher.group( 1 );
   }
 
   private static boolean isStringEmpty( String value ) {

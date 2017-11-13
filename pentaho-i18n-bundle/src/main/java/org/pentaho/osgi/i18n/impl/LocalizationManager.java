@@ -34,12 +34,10 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.ResourceBundle;
-import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -49,9 +47,10 @@ import java.util.regex.Pattern;
 public class LocalizationManager implements LocalizationService {
   private static Logger log = LoggerFactory.getLogger( LocalizationManager.class );
 
-  private final Map<Long, Map<String, OSGIResourceBundleFactory>> configMap = new HashMap<>();
-  private ExecutorService executorService;
-  private volatile Future<Map<String, OSGIResourceBundle>> cache;
+//  private final Map<Long, Map<String, OSGIResourceBundleFactory>> configMap = new HashMap<>();
+  private final Map<Long, Map<String, OSGIResourceBundle>> configMap = new HashMap<>();
+//  private ExecutorService executorService;
+//  private volatile Future<Map<String, OSGIResourceBundle>> cache;
 
   // For unit tests only
   static Logger getLog() {
@@ -64,134 +63,83 @@ public class LocalizationManager implements LocalizationService {
   }
 
   public void setExecutorService( ExecutorService executorService ) {
-    this.executorService = executorService;
+//    this.executorService = executorService;
   }
 
   public void bundleChanged( Bundle bundle ) throws IOException, ParseException {
-    boolean rebuildCache;
     synchronized ( this.configMap ) {
-      rebuildCache = this.configMap.remove( bundle.getBundleId() ) != null;
+      this.configMap.remove( bundle.getBundleId() );
     }
 
     if ( bundle.getState() == Bundle.ACTIVE ) {
       List<String> webPackageRoots = getBundleRoots( bundle );
       for ( String root : webPackageRoots ) {
-        if ( addBundleResources( bundle, root ) ) {
-          rebuildCache = true;
-        }
+        addBundleResources( bundle, root );
       }
     }
+  }
 
-    if ( rebuildCache ) {
-      synchronized ( this.configMap ) {
-        if ( this.executorService == null ) {
-          this.executorService = Executors.newSingleThreadExecutor( new ThreadFactory() {
-            @Override
-            public Thread newThread( Runnable r ) {
-              Thread thread = Executors.defaultThreadFactory().newThread( r );
-              thread.setDaemon( true );
-              thread.setName( "Localization pool" );
-              return thread;
-            }
-          } );
-        }
-
-        this.cache = this.executorService
-            .submit( new OSGIResourceBundleCacheCallable( new HashMap<>( this.configMap ) ) );
-      }
-    }
+  @Override
+  public ResourceBundle getResourceBundle( Class clazz, Locale locale ) {
+    String key = clazz.getPackage().getName() + ".messages";
+    return this.getResourceBundle( clazz, key, locale );
   }
 
   @Override
   public ResourceBundle getResourceBundle( Class clazz, String key, Locale locale ) {
-    String absoluteKey = "/i18n/" + key.replaceAll( "\\.", "/" );
+    key = "/i18n/" + key.replaceAll( "\\.", "/" );
 
-    return this.getResourceBundle( absoluteKey, locale );
+    if ( clazz == null ) return this.getResourceBundle( key, locale );
+
+    List<URL> resourceUrls = getResourceUrls( clazz, key, locale );
+    return getOSGIResourceBundle( key, resourceUrls );
   }
 
   @Override
   public ResourceBundle getResourceBundle( Bundle bundle, String key, Locale locale ) {
-    return this.getResourceBundle( key, locale );
+    key = key.replaceAll( "\\.", "/" );
+
+    if ( bundle == null ) return this.getResourceBundle( key, locale );
+
+    List<URL> resourceUrls = getResourceUrls( bundle, key, locale );
+    return getOSGIResourceBundle( key, resourceUrls );
   }
 
   @Override
-  public ResourceBundle getResourceBundle( String key, Locale locale ) {
-    ResourceBundle result = null;
+  public ResourceBundle getResourceBundle( String name, Locale locale ) {
+    String root = name.startsWith( "/" ) || name.startsWith( "i18n/" ) ? "" : "/i18n/";
 
-    // Temporary, so that server side code doesn't break
-    String absoluteKey = key.startsWith( "/" ) ? key : "/i18n/" + key.replaceAll( "\\.", "/" );
-    Map<String, OSGIResourceBundle> localCache = getCache();
+    for ( Map<String, OSGIResourceBundle> bundleFactoryMap : this.configMap.values() ) {
+      for ( OSGIResourceBundle resourceBundle : bundleFactoryMap.values() ) {
+        String defaultName = resourceBundle.getDefaultName();
 
-    if ( localCache != null ) {
-      if ( absoluteKey != null ) {
-        for ( String candidate : OSGIResourceNamingConvention.getCandidateNames( absoluteKey, locale ) ) {
-          OSGIResourceBundle osgiResourceBundle = localCache.get( candidate );
-          if ( osgiResourceBundle != null ) {
-            result = osgiResourceBundle;
-            break;
+        for ( String candidate : OSGIResourceNamingConvention.getCandidateNames( root + name, locale ) ) {
+          if ( candidate.equals( defaultName ) ) {
+            return resourceBundle;
           }
         }
       }
     }
 
-    return result;
+    return null;
   }
 
   @Override
   public List<ResourceBundle> getResourceBundles( Pattern keyRegex, Locale locale ) {
     List<ResourceBundle> result = new ArrayList<>();
-    Map<String, OSGIResourceBundle> localCache = getCache();
 
-    if ( localCache != null ) {
-      Set<String> defaultNames = new HashSet<>();
-      Map<String, OSGIResourceBundle> matchingMap = new HashMap<>();
-      for ( Map.Entry<String, OSGIResourceBundle> factoryEntry : localCache.entrySet() ) {
-        OSGIResourceBundle factoryEntryValue = factoryEntry.getValue();
-        String defaultName = factoryEntryValue.getDefaultName();
-        if ( keyRegex.matcher( defaultName ).matches() ) {
-          defaultNames.add( defaultName );
-          matchingMap.put( factoryEntry.getKey(), factoryEntryValue );
+    for ( Map<String, OSGIResourceBundle> bundleFactoryMap : this.configMap.values() ) {
+      for ( OSGIResourceBundle resourceBundle : bundleFactoryMap.values() ) {
+        String defaultName = resourceBundle.getDefaultName();
+
+        boolean matchesRegex = keyRegex.matcher( defaultName ).matches();
+        if ( matchesRegex ) {
+          result.add( resourceBundle );
         }
-      }
-
-      for ( String defaultName : defaultNames ) {
-        for ( String candidate : OSGIResourceNamingConvention.getCandidateNames( defaultName, locale ) ) {
-          OSGIResourceBundle bundle = localCache.get( candidate );
-          if ( bundle != null ) {
-            result.add( bundle );
-            continue;
-          }
-        }
-      }
-    } else {
-      result = null;
-    }
-
-    return result;
-  }
-
-  private Map<String, OSGIResourceBundle> getCache() {
-    Map<String, OSGIResourceBundle> result = null;
-    if ( this.cache != null ) {
-      try {
-        result = this.cache.get();
-      } catch ( Exception e ) {
-        getLog().error( e.getMessage(), e );
       }
     }
 
-    return result;
-  }
-
-  /**
-   * Returns property file name without extension
-   *
-   * @param fileName
-   *
-   * @return property file name without extension
-   */
-  private String getPropertyName( String filename ) {
-    return filename.replaceAll( "\\.properties.*$", "" );
+    return !result.isEmpty() ? result : null;
   }
 
   private List<String> getBundleRoots( Bundle bundle ) {
@@ -211,10 +159,8 @@ public class LocalizationManager implements LocalizationService {
     return webPackageRoots;
   }
 
-  private boolean addBundleResources( Bundle bundle, String root ) {
-
-    Map<String, OSGIResourceBundleFactory> configEntry = new HashMap<>();
-    OSGIResourceBundleFactory bundleFactory;
+  private void addBundleResources( Bundle bundle, String root ) {
+    Map<String, OSGIResourceBundle> newConfigEntry = new HashMap<>();
 
     final String i18nResourcePattern = "*" + OSGIResourceNamingConvention.RESOURCES_DEFAULT_EXTENSION + "*";
     Enumeration<URL> urlEnumeration = bundle.findEntries( root, i18nResourcePattern, true );
@@ -223,23 +169,85 @@ public class LocalizationManager implements LocalizationService {
         URL url = urlEnumeration.nextElement();
         if ( url != null ) {
           String filename = url.getFile();
-          String resourceKey = getPropertyName( filename );
+          String key = getResourceKey( filename );
 
-          int priority = OSGIResourceNamingConvention.getPropertyPriority( filename );
-          bundleFactory = new OSGIResourceBundleFactory( resourceKey, filename, url, priority );
-          configEntry.put( resourceKey, bundleFactory );
+          // TODO what do we do about priority http://jira.pentaho.com/browse/BACKLOG-8306
+          // int priority = OSGIResourceNamingConvention.getPropertyPriority( filename );
+          String defaultName = getResourceDefaultName( filename );
+          Locale locale = getResourceLocale( filename );
+          newConfigEntry.put( key, getOSGIResourceBundle( key, getResourceUrls( bundle, defaultName, locale ) ) );
         }
       }
     }
 
-    boolean isConfigEmpty = configEntry.isEmpty();
-    if ( !isConfigEmpty ) {
+    if ( !newConfigEntry.isEmpty() ) {
       synchronized ( this.configMap ) {
-        this.configMap.put( bundle.getBundleId(), configEntry );
+        this.configMap.put( bundle.getBundleId(), newConfigEntry );
+      }
+    }
+  }
+
+  private OSGIResourceBundle getOSGIResourceBundle( String resourceName, List<URL> resourceUrls ) {
+    OSGIResourceBundle resource = null;
+
+    // load default resource, then go for locale specific
+    for ( URL resourceUrl : resourceUrls ) {
+      try {
+        resource = new OSGIResourceBundle( resourceName, resource, resourceUrl );
+      } catch ( IOException e ) {
+        // ...
       }
     }
 
-    return !isConfigEmpty;
+    return resource;
+  }
+
+  private List<URL> getResourceUrls( Class clazz, String resourceName, Locale locale ) {
+    List<URL> resourceUrls = new ArrayList<>();
+
+    // load default resource, then go for locale specific
+    for ( String candidate : OSGIResourceNamingConvention.getCandidateNames( resourceName, locale ) ) {
+      URL url = clazz.getResource( candidate + ".properties" );
+      if ( url != null ) {
+        resourceUrls.add( url );
+      }
+    }
+
+    return resourceUrls;
+  }
+
+  private List<URL> getResourceUrls( Bundle bundle, String resourceName, Locale locale ) {
+    List<URL> resourceUrls = new ArrayList<>();
+
+    // load default resource, then go for locale specific
+    for ( String candidate : OSGIResourceNamingConvention.getCandidateNames( resourceName, locale ) ) {
+      URL url = bundle.getResource( candidate + ".properties" );
+      if ( url != null ) {
+        resourceUrls.add( url );
+      }
+    }
+
+    return resourceUrls;
+  }
+
+  /**
+   * Returns property file name without extension
+   *
+   * @param filename
+   *
+   * @return property file name without extension
+   */
+  private String getResourceKey( String filename ) {
+    return filename.replaceAll( "\\.properties.*$", "" );
+  }
+
+
+  private String getResourceDefaultName( String filename ) {
+    return OSGIResourceNamingConvention.getPropertyDefaultName( filename );
+  }
+
+  private Locale getResourceLocale( String filename ) {
+    return OSGIResourceNamingConvention.getPropertyLocale( filename );
   }
 
 }

@@ -25,6 +25,7 @@ package org.pentaho.osgi.i18n.resource;
 import org.pentaho.osgi.i18n.settings.OSGIResourceNameComparator;
 import org.pentaho.osgi.i18n.settings.OSGIResourceNamingConvention;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -49,61 +50,41 @@ public class OSGIResourceBundleCacheCallable implements Callable<Map<String, OSG
     Map<String, OSGIResourceBundleFactory> factoryMap = new TreeMap<>( new OSGIResourceNameComparator() );
 
     // Select only bundles with highest priority
-    for ( Map<String, OSGIResourceBundleFactory> bundleMap : configMap.values() ) {
+    for ( Map<String, OSGIResourceBundleFactory> bundleMap : this.configMap.values() ) {
       for ( Map.Entry<String, OSGIResourceBundleFactory> entry : bundleMap.entrySet() ) {
         OSGIResourceBundleFactory pathToFactoryMap = entry.getValue();
-        String key = entry.getValue().getPropertyFilePath();
-        factoryMap.put( key, pathToFactoryMap );
+        String propertyFilePath = entry.getValue().getPropertyFilePath();
+        factoryMap.put( propertyFilePath, pathToFactoryMap );
       }
     }
 
     // Create bundles from factories
     Map<String, OSGIResourceBundle> result = new HashMap<>();
-    Set<String> keys = factoryMap.keySet();
+    Set<String> propertyPaths = factoryMap.keySet();
 
     SortedMap<String, OSGIResourceBundleFactory> factoryMapCopy = new TreeMap<>( new OSGIResourceNameComparator() );
     factoryMapCopy.putAll( factoryMap );
 
-    for ( String key : keys ) {
-      OSGIResourceBundleFactory nameToFactoryEntry = factoryMap.get( key );
-      String name = nameToFactoryEntry.getPropertyFilePath();
+    for ( String propertyFilepath : propertyPaths ) {
+      OSGIResourceBundleFactory resourceBundleFactory = factoryMap.get( propertyFilepath );
 
-      Matcher defaultMatcher = OSGIResourceNamingConvention.getResourceNameMatcher( name );
-      String defaultName = defaultMatcher.group( 1 );
-      String locale = defaultMatcher.group( 2 );
-      if ( locale.length() > 1 ) {
-        locale = locale.substring( 1 ).replace( '_', '-' );
+      String resourceKey = resourceBundleFactory.getResourceKey();
+      Locale resourceLocale = getLocale( propertyFilepath );
+
+      List<String> candidates = OSGIResourceNamingConvention.getCandidateNames( resourceKey, resourceLocale );
+      Collections.reverse( candidates );
+      OSGIResourceBundleFactory defaultResourceFactory = getDefaultResourceFactory( candidates, factoryMapCopy, resourceBundleFactory );
+
+      OSGIResourceBundle parentResourceBundle = null;
+      if ( defaultResourceFactory != null ) {
+        String defaultResourceName = defaultResourceFactory.getResourceBundle( null ).getDefaultName();
+        parentResourceBundle = result.get( defaultResourceName );
       }
 
-      OSGIResourceBundleFactory defaultFactory = null;
-      List<String> candidates =
-        OSGIResourceNamingConvention.getCandidateNames( defaultName, Locale.forLanguageTag( locale ) );
-
-      // first try to get closest parent from properties with same locale and then in properties with "lower" locale
-      for ( int i = 0; i < candidates.size(); i++ ) {
-        Optional<String> firstKeyInHierarchy = getFirstKeyInHierarchy( factoryMapCopy, candidates.get( i )
-          + OSGIResourceNamingConvention.RESOURCES_DEFAULT_EXTENSION );
-
-        //checks that we've found not the same properties as original
-        if ( firstKeyInHierarchy.isPresent()
-          && factoryMapCopy.get( firstKeyInHierarchy.get() ) != nameToFactoryEntry ) {
-          if ( i != candidates.size() - 1 ) {
-            defaultFactory = factoryMapCopy.remove( firstKeyInHierarchy.get() );
-          } else {
-            defaultFactory = factoryMapCopy.get( firstKeyInHierarchy.get() );
-          }
-          break;
-        }
-      }
-
-      OSGIResourceBundle parentBundle = null;
-      if ( defaultFactory != null ) {
-        parentBundle = result.get( defaultFactory.getBundle( null ).getDefaultName() );
-      }
-
-      OSGIResourceBundle resultKeyBundles = nameToFactoryEntry.getBundle( parentBundle );
-      result.put( resultKeyBundles.getDefaultName(), resultKeyBundles );
+      OSGIResourceBundle resultResourceBundle = resourceBundleFactory.getResourceBundle( parentResourceBundle );
+      result.put( resultResourceBundle.getDefaultName(), resultResourceBundle );
     }
+
     return result;
   }
 
@@ -116,13 +97,49 @@ public class OSGIResourceBundleCacheCallable implements Callable<Map<String, OSG
    * @return key
    */
   private Optional<String> getFirstKeyInHierarchy( SortedMap<String, OSGIResourceBundleFactory> factoryMapWithoutCurrent,
-                                                   String name ) {
+                                                   String resourceName ) {
     return factoryMapWithoutCurrent.keySet().stream()
       .filter( new Predicate<String>() {
-        @Override public boolean test( String s ) {
-          return s.startsWith( name );
+        @Override
+        public boolean test( String s ) {
+          return s.startsWith( resourceName );
         }
       } )
       .findFirst();
+  }
+
+  private Locale getLocale( String propertyFilePath ) {
+    Matcher defaultMatcher = OSGIResourceNamingConvention.getResourceNameMatcher( propertyFilePath );
+    String locale = defaultMatcher.group( 2 );
+    if ( locale.length() > 1 ) {
+      locale = locale.substring( 1 ).replace( '_', '-' );
+    }
+
+    return Locale.forLanguageTag( locale );
+  }
+
+  private OSGIResourceBundleFactory getDefaultResourceFactory( List<String> candidates,
+                                                               SortedMap<String, OSGIResourceBundleFactory> factoryMapCopy,
+                                                               OSGIResourceBundleFactory resourceBundleFactory ) {
+    OSGIResourceBundleFactory defaultFactory = null;
+
+    // first try to get closest parent from properties with same locale and then in properties with "lower" locale
+    for ( int i = 0; i < candidates.size(); i++ ) {
+      Optional<String> firstKeyInHierarchy = getFirstKeyInHierarchy( factoryMapCopy, candidates.get( i )
+          + OSGIResourceNamingConvention.RESOURCES_DEFAULT_EXTENSION );
+
+      //checks that we've found not the same properties as original
+      if ( firstKeyInHierarchy.isPresent()
+          && factoryMapCopy.get( firstKeyInHierarchy.get() ) != resourceBundleFactory ) {
+        if ( i != candidates.size() - 1 ) {
+          defaultFactory = factoryMapCopy.remove( firstKeyInHierarchy.get() );
+        } else {
+          defaultFactory = factoryMapCopy.get( firstKeyInHierarchy.get() );
+        }
+        break;
+      }
+    }
+
+    return defaultFactory;
   }
 }

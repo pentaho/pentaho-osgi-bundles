@@ -58,7 +58,7 @@ public class LocalizationBundleListener implements BundleListener {
       case BundleEvent.STARTED:
       case BundleEvent.STOPPED:
         try {
-          localizationManager.bundleChanged( event.getBundle() );
+          this.localizationManager.bundleChanged( event.getBundle() );
         } catch ( Exception e ) {
           log.error( e.getMessage(), e );
         }

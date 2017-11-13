@@ -36,7 +36,7 @@ public class OSGIResourceBundleFactory {
     this.priority = priority; // never used
   }
 
-  public synchronized OSGIResourceBundle getBundle( ResourceBundle parent ) throws IOException {
+  public synchronized OSGIResourceBundle getResourceBundle( ResourceBundle parent ) throws IOException {
     if ( this.previousResult == null || this.previousParent != parent ) {
       this.previousParent = parent;
       this.previousResult = new OSGIResourceBundle( this.resourceKey, parent, this.propertyFileUrl );
@@ -47,6 +47,10 @@ public class OSGIResourceBundleFactory {
 
   public int getPriority() {
     return this.priority;
+  }
+
+  public String getResourceKey() {
+    return this.resourceKey;
   }
 
   public String getPropertyFilePath() {
