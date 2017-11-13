@@ -22,9 +22,6 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-/**
- * Created by Viktoryia_Klimenka on 5/30/2016.
- */
 public class OSGIResourceNamingConventionTest {
 
   @Test( expected = NullPointerException.class )
@@ -36,7 +33,7 @@ public class OSGIResourceNamingConventionTest {
   @Test( expected = IllegalArgumentException.class )
   public void testEmptyName() {
     String name = "";
-    new OSGIResourceNamingConvention().getResourceNameMatcher( name );
+    OSGIResourceNamingConvention.getResourceNameMatcher( name );
   }
 
   @Test
