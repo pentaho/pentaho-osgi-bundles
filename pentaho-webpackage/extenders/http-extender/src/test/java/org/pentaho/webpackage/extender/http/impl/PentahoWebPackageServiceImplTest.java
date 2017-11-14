@@ -188,7 +188,7 @@ public class PentahoWebPackageServiceImplTest {
   }
 
   @Test
-  public void resolveExistingModuleIdIgnoreStartingSlash() {
+  public void resolveFailWithStartingSlash() {
     List<BundleCapability> capabilities = new ArrayList<>();
     capabilities.add( createMockWebPackageCapability( "/pentaho-webpackage-1a" ) );
     capabilities.add( createMockWebPackageCapability( "/pentaho-webpackage-1b" ) );
@@ -199,26 +199,7 @@ public class PentahoWebPackageServiceImplTest {
 
     PentahoWebPackageResource resource = this.service.resolve( "/package-name-1b_1.1/some/resource" );
 
-    assertNotNull( resource );
-    assertEquals( "/pentaho-webpackage-1b/some/resource", resource.getResourcePath() );
-    assertSame( bundle.adapt( BundleWiring.class ).getClassLoader(), resource.getClassLoader() );
-  }
-
-  @Test
-  public void resolveExistingScopedModuleIdIgnoreStartingSlash() {
-    List<BundleCapability> capabilities = new ArrayList<>();
-    capabilities.add( createMockWebPackageCapability( "/pentaho-webpackage-1a" ) );
-    capabilities.add( createMockWebPackageCapability( "/pentaho-webpackage-1b" ) );
-    capabilities.add( createMockWebPackageCapability( "/pentaho-webpackage-1c" ) );
-    Bundle bundle = this.createMockWebPackageBundle( capabilities, "pentaho-webpackage-1", "1.0", Bundle.ACTIVE );
-
-    this.service.addBundle( bundle );
-
-    PentahoWebPackageResource resource = this.service.resolve( "/@organization/package-name-1c_1.2/some/resource" );
-
-    assertNotNull( resource );
-    assertEquals( "/pentaho-webpackage-1c/some/resource", resource.getResourcePath() );
-    assertSame( bundle.adapt( BundleWiring.class ).getClassLoader(), resource.getClassLoader() );
+    assertNull( resource );
   }
 
   @Test

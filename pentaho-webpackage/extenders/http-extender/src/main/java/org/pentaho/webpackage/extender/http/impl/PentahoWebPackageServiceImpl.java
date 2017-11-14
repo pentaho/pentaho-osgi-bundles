@@ -82,19 +82,14 @@ public class PentahoWebPackageServiceImpl implements PentahoWebPackageService, B
   public PentahoWebPackageResource resolve( String moduleId ) {
     int index = 0;
 
-    boolean moduleIdStartsWithSlash = moduleId.indexOf( '/' ) == 0;
-    if ( moduleIdStartsWithSlash ) {
-      ++index;
-    }
-
-    boolean moduleIdIncludesOrganization = moduleId.indexOf( '@', index ) - index == 0;
+    boolean moduleIdIncludesOrganization = moduleId.indexOf( '@' ) == 0;
     if ( moduleIdIncludesOrganization ) {
-      index = moduleId.indexOf( '/', index ) + 1;
+      index = moduleId.indexOf( '/', 1 ) + 1;
     }
 
     index = moduleId.indexOf( '/', index );
 
-    String baseModuleId = moduleId.substring( moduleIdStartsWithSlash ? 1 : 0, index );
+    String baseModuleId = moduleId.substring( 0, index );
 
     int versionSeparatorIndex = baseModuleId.lastIndexOf( '_' );
 
