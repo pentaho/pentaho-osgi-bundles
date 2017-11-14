@@ -36,13 +36,13 @@ define([
         return;
       }
 
-      var baseUrl = environment.server.services;
+      var baseUrl = environment.server.services + "i18n";
       var locale = environment.locale;
 
-      var resourceModuleId = getResourceModuleId(localRequire, bundlePath);
+      var resourceModuleId = "moduleID=" + getResourceModuleId(localRequire, bundlePath);
 
-      var resourceLocale = locale !== null ? ("?locale=" + locale) : "";
-      var url = baseUrl + "i18n/" + resourceModuleId + resourceLocale;
+      var resourceLocale = locale !== null ? ("locale=" + locale) : "";
+      var url = baseUrl + "?" + resourceModuleId + "&" + resourceLocale;
 
       var options = {
         method: "GET",

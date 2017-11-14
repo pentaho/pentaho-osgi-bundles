@@ -14,20 +14,20 @@
                            update-strategy="reload">
   </cm:property-placeholder>
 
-  <cxf:bus id="i18nWebServiceBus">
-  </cxf:bus>
+  <cxf:bus id="i18nWebServiceBus"/>
 
   <jaxrs:server address="/i18n" id="localizationService">
     <jaxrs:serviceBeans>
       <ref component-id="localizationServiceImpl"/>
     </jaxrs:serviceBeans>
+
     <jaxrs:providers>
       <bean id="resourceBundleMessageBodyWriter"
-            class="org.pentaho.osgi.i18n.webservice.ResourceBundleMessageBodyWriter"/>
+            class="org.pentaho.osgi.i18n.webservice.impl.ResourceBundleMessageBodyWriter"/>
     </jaxrs:providers>
   </jaxrs:server>
 
-  <bean id="localizationServiceImpl" class="org.pentaho.osgi.i18n.webservice.LocalizationWebservice">
+  <bean id="localizationServiceImpl" class="org.pentaho.osgi.i18n.webservice.impl.LocalizationWebservice">
     <property name="localizationService" ref="delegateRef"/>
     <property name="webPackageService" ref="pentahoWebPackageService"/>
   </bean>

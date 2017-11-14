@@ -17,14 +17,10 @@
 
 package org.pentaho.osgi.i18n;
 
-import org.osgi.framework.Bundle;
-
 import java.util.Locale;
 import java.util.ResourceBundle;
 
 public interface LocalizationService {
-  String CAPABILITY_NAMESPACE = "org.pentaho.webpackage";
-
-  ResourceBundle getResourceBundle( Bundle bundle, String key, Locale locale );
+  ResourceBundle getResourceBundle( ClassLoader loader, String key, Locale locale );
   ResourceBundle getResourceBundle( Class clazz, String key, Locale locale );
 }

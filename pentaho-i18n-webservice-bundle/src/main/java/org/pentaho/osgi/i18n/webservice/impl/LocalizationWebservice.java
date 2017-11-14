@@ -15,9 +15,9 @@
  * Copyright 2016 - 2017 Hitachi Vantara. All rights reserved.
  */
 
-package org.pentaho.osgi.i18n.webservice;
+package org.pentaho.osgi.i18n.webservice.impl;
 
-import org.osgi.framework.Bundle;
+import org.pentaho.osgi.i18n.webservice.ILocalizationWebservice;
 import org.pentaho.osgi.i18n.LocalizationService;
 import org.pentaho.webpackage.core.PentahoWebPackageResource;
 import org.pentaho.webpackage.core.PentahoWebPackageService;
@@ -26,7 +26,6 @@ import javax.jws.WebService;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
@@ -36,11 +35,8 @@ import java.util.ResourceBundle;
 @Produces( { MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML } )
 @Consumes( { MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML } )
 @WebService
-public class LocalizationWebservice implements LocalizationService {
-
-
+public class LocalizationWebservice implements ILocalizationWebservice {
   private LocalizationService localizationService;
-
   private PentahoWebPackageService webPackageService;
 
   public void setLocalizationService( LocalizationService localizationService ) {
@@ -51,27 +47,20 @@ public class LocalizationWebservice implements LocalizationService {
     this.webPackageService = webPackageService;
   }
 
-  @Override
-  public ResourceBundle getResourceBundle( Class clazz, String key, Locale locale ) {
-    // Assuming that Java resources are always inside the folder 'i18n'
-    String absoluteKey = "/i18n/" + key.replaceAll( "\\.", "/" );
-
-    return ResourceBundle.getBundle( absoluteKey, locale, clazz.getClassLoader() );
-  }
-
-  @Override
-  public ResourceBundle getResourceBundle( Bundle bundle, String key, Locale locale ) {
-    return this.localizationService.getResourceBundle( bundle, key, locale );
-  }
-
   @GET
-  @Path( "/{moduleID}" )
-  public ResourceBundle getResourceBundleService( @PathParam( "moduleID" ) String moduleID,
-                                                  @QueryParam( "locale" ) String localeString ) {
-//    PentahoWebPackageResource resource = this.webPackageService.resolve( moduleID );
-//
-//    return this.localizationService.getResourceBundle( resource.getClassLoader(), resource.getResourcePath(), localeString );
-    return null;
+  @Path( "/" )
+  @Override
+  public ResourceBundle getResourceBundle( @QueryParam( "moduleID" ) String moduleID,
+                                           @QueryParam( "locale" ) String localeString ) {
+    PentahoWebPackageResource resource = this.webPackageService.resolve( moduleID );
+    Locale locale = getLocale( localeString );
+
+    return this.localizationService.getResourceBundle( resource.getClassLoader(), resource.getResourcePath(), locale );
   }
 
+  private Locale getLocale( String localeString ) {
+    String languageTag = localeString != null ? localeString.replace( "_", "-" ) : "";
+
+    return Locale.forLanguageTag( languageTag );
+  }
 }

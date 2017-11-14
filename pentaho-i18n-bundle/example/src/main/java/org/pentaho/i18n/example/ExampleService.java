@@ -51,7 +51,7 @@ public class ExampleService {
   @Path( "/" )
   public String getTranslation( @QueryParam( "key" ) String key, @QueryParam( "locale" ) String locale,
                                 @QueryParam( "name" ) String name, @Context HttpServletRequest request ) {
-    ResourceBundle resourceBundle = localizationService.getResourceBundle( key, new Locale( locale ) );
+    ResourceBundle resourceBundle = localizationService.getResourceBundle( getClass(), key, new Locale( locale ) );
 
     if ( resourceBundle == null ) {
       return "Bundle not found";

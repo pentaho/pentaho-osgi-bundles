@@ -20,12 +20,11 @@
  *
  ******************************************************************************/
 
-package org.pentaho.osgi.i18n.webservice;
+package org.pentaho.osgi.i18n.webservice.impl;
 
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 import org.junit.Test;
-import org.pentaho.osgi.i18n.resource.OSGIResourceBundle;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -61,16 +60,16 @@ public class ResourceBundleMessageBodyWriterTest {
     ResourceBundleMessageBodyWriter resourceBundleMessageBodyWriter = new ResourceBundleMessageBodyWriter();
 
     assertTrue( resourceBundleMessageBodyWriter
-        .isWriteable( OSGIResourceBundle.class, genericType, annotations, xmlType ) );
+        .isWriteable( ResourceBundle.class, genericType, annotations, xmlType ) );
 
     assertTrue( resourceBundleMessageBodyWriter
-      .isWriteable( OSGIResourceBundle.class, genericType, annotations, jsonType ) );
+      .isWriteable( ResourceBundle.class, genericType, annotations, jsonType ) );
 
     assertFalse( resourceBundleMessageBodyWriter
         .isWriteable( Object.class, genericType, annotations, xmlType ) );
 
     assertFalse( resourceBundleMessageBodyWriter
-        .isWriteable( OSGIResourceBundle.class, genericType, annotations, wildcardType ) );
+        .isWriteable( ResourceBundle.class, genericType, annotations, wildcardType ) );
   }
 
   @Test

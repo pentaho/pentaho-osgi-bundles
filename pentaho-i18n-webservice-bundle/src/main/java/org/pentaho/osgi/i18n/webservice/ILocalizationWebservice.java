@@ -12,22 +12,13 @@
  * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  * See the GNU Lesser General Public License for more details.
  *
- * Copyright 2016 - 2017 Hitachi Vantara. All rights reserved.
+ * Copyright 2017 Hitachi Vantara. All rights reserved.
  */
 
 package org.pentaho.osgi.i18n.webservice;
 
-import org.junit.Test;
+import java.util.ResourceBundle;
 
-import static org.junit.Assert.*;
-
-public class ResourceBundleWildcardTest {
-
-  @Test
-  public void testSetKeyRegex() throws Exception {
-    ResourceBundleWildcard resourceBundleWildcard = new ResourceBundleWildcard();
-    String regex = "test-regex";
-    resourceBundleWildcard.setKeyRegex( regex );
-    assertEquals( regex, resourceBundleWildcard.getKeyRegex() );
-  }
+public interface ILocalizationWebservice {
+  ResourceBundle getResourceBundle( String moduleID, String locale );
 }
