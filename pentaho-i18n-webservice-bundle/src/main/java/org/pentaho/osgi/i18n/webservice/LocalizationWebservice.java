@@ -15,12 +15,9 @@
  * Copyright 2016 - 2017 Hitachi Vantara. All rights reserved.
  */
 
-package org.pentaho.osgi.i18n.webservice.impl;
+package org.pentaho.osgi.i18n.webservice;
 
-import org.pentaho.osgi.i18n.webservice.ILocalizationWebservice;
-import org.pentaho.osgi.i18n.LocalizationService;
-import org.pentaho.webpackage.core.PentahoWebPackageResource;
-import org.pentaho.webpackage.core.PentahoWebPackageService;
+import org.pentaho.osgi.i18n.IPentahoWebPackageLocalizationService;
 
 import javax.jws.WebService;
 import javax.ws.rs.Consumes;
@@ -29,38 +26,22 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
-import java.util.Locale;
 import java.util.ResourceBundle;
 
 @Produces( { MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML } )
 @Consumes( { MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML } )
 @WebService
-public class LocalizationWebservice implements ILocalizationWebservice {
-  private LocalizationService localizationService;
-  private PentahoWebPackageService webPackageService;
+public class LocalizationWebservice {
+  private IPentahoWebPackageLocalizationService localizationService;
 
-  public void setLocalizationService( LocalizationService localizationService ) {
+  public void setLocalizationService( IPentahoWebPackageLocalizationService localizationService ) {
     this.localizationService = localizationService;
-  }
-
-  public void setWebPackageService( PentahoWebPackageService webPackageService ) {
-    this.webPackageService = webPackageService;
   }
 
   @GET
   @Path( "/" )
-  @Override
   public ResourceBundle getResourceBundle( @QueryParam( "moduleID" ) String moduleID,
                                            @QueryParam( "locale" ) String localeString ) {
-    PentahoWebPackageResource resource = this.webPackageService.resolve( moduleID );
-    Locale locale = getLocale( localeString );
-
-    return this.localizationService.getResourceBundle( resource.getClassLoader(), resource.getResourcePath(), locale );
-  }
-
-  private Locale getLocale( String localeString ) {
-    String languageTag = localeString != null ? localeString.replace( "_", "-" ) : "";
-
-    return Locale.forLanguageTag( languageTag );
+    return this.localizationService.getResourceBundle( moduleID, localeString );
   }
 }

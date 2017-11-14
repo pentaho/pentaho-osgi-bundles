@@ -23,18 +23,15 @@
 
     <jaxrs:providers>
       <bean id="resourceBundleMessageBodyWriter"
-            class="org.pentaho.osgi.i18n.webservice.impl.ResourceBundleMessageBodyWriter"/>
+            class="org.pentaho.osgi.i18n.webservice.ResourceBundleMessageBodyWriter"/>
     </jaxrs:providers>
   </jaxrs:server>
 
-  <bean id="localizationServiceImpl" class="org.pentaho.osgi.i18n.webservice.impl.LocalizationWebservice">
+  <bean id="localizationServiceImpl" class="org.pentaho.osgi.i18n.webservice.LocalizationWebservice">
     <property name="localizationService" ref="delegateRef"/>
-    <property name="webPackageService" ref="pentahoWebPackageService"/>
   </bean>
 
-  <reference id="delegateRef" interface="org.pentaho.osgi.i18n.LocalizationService"/>
-
-  <reference id="pentahoWebPackageService" interface="org.pentaho.webpackage.core.PentahoWebPackageService"/>
+  <reference id="delegateRef" interface="org.pentaho.osgi.i18n.IPentahoWebPackageLocalizationService"/>
 
   <service id="PentahoI18n"
            interface="org.ops4j.pax.web.extender.whiteboard.ResourceMapping">

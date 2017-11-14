@@ -15,10 +15,12 @@
  * Copyright 2017 Hitachi Vantara. All rights reserved.
  */
 
-package org.pentaho.osgi.i18n.webservice;
+package org.pentaho.osgi.i18n;
 
 import java.util.ResourceBundle;
 
-public interface ILocalizationWebservice {
+public interface IPentahoWebPackageLocalizationService {
+
   ResourceBundle getResourceBundle( String moduleID, String locale );
+
 }

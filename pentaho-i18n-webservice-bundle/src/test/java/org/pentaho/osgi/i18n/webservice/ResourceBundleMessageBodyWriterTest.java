@@ -20,7 +20,7 @@
  *
  ******************************************************************************/
 
-package org.pentaho.osgi.i18n.webservice.impl;
+package org.pentaho.osgi.i18n.webservice;
 
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;

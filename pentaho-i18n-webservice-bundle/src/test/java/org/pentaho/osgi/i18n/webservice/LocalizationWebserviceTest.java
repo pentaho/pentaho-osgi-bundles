@@ -15,10 +15,11 @@
  * Copyright 2016 - 2017 Hitachi Vantara. All rights reserved.
  */
 
-package org.pentaho.osgi.i18n.webservice.impl;
+package org.pentaho.osgi.i18n.webservice;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.pentaho.osgi.i18n.IPentahoWebPackageLocalizationService;
 import org.pentaho.osgi.i18n.LocalizationService;
 
 import java.util.Locale;
@@ -31,12 +32,12 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class LocalizationWebserviceTest {
-  private LocalizationService localizationService;
+  private IPentahoWebPackageLocalizationService localizationService;
   private LocalizationWebservice localizationWebservice;
 
   @Before
   public void setup() {
-    localizationService = mock( LocalizationService.class );
+    localizationService = mock( IPentahoWebPackageLocalizationService.class );
     localizationWebservice = new LocalizationWebservice();
     localizationWebservice.setLocalizationService( localizationService );
   }
@@ -65,20 +66,11 @@ public class LocalizationWebserviceTest {
     String browserKey = "test.name";
     String serviceKey = "test.name";
 
-    Locale locale = getLocale( localeString );
-
     ResourceBundle resourceBundle = mock( ResourceBundle.class );
     when( localizationService
-        .getResourceBundle( any( Class.class ), eq( serviceKey ), eq( locale ) ) )
+        .getResourceBundle( eq( serviceKey ), eq( localeString ) ) )
         .thenReturn( resourceBundle );
     assertEquals( resourceBundle, localizationWebservice.getResourceBundle( browserKey, localeString ) );
   }
 
-  private Locale getLocale( String languageTag ) {
-    boolean isLanguageTagValid = languageTag != null && !languageTag.isEmpty();
-
-    languageTag = isLanguageTagValid ? languageTag.replace( "_", "-" ) : "";
-
-    return Locale.forLanguageTag( languageTag );
-  }
 }
