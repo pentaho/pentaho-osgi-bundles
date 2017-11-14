@@ -19,6 +19,7 @@ package org.pentaho.osgi.i18n.webservice;
 
 import org.osgi.framework.Bundle;
 import org.pentaho.osgi.i18n.LocalizationService;
+import org.pentaho.webpackage.core.PentahoWebPackageResource;
 import org.pentaho.webpackage.core.PentahoWebPackageService;
 
 import javax.jws.WebService;
@@ -67,7 +68,10 @@ public class LocalizationWebservice implements LocalizationService {
   @Path( "/{moduleID}" )
   public ResourceBundle getResourceBundleService( @PathParam( "moduleID" ) String moduleID,
                                                   @QueryParam( "locale" ) String localeString ) {
-    return null; // this.pentahoWebPackageLocalizationService.getResource( moduleID, locale );
+//    PentahoWebPackageResource resource = this.webPackageService.resolve( moduleID );
+//
+//    return this.localizationService.getResourceBundle( resource.getClassLoader(), resource.getResourcePath(), localeString );
+    return null;
   }
 
 }

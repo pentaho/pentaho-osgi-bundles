@@ -20,8 +20,10 @@ package org.pentaho.webpackage.extender.http.impl;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleEvent;
 import org.osgi.framework.BundleListener;
+import org.osgi.framework.wiring.BundleWiring;
 import org.pentaho.webpackage.core.PentahoWebPackage;
 import org.pentaho.webpackage.core.PentahoWebPackageBundle;
+import org.pentaho.webpackage.core.PentahoWebPackageResource;
 import org.pentaho.webpackage.core.PentahoWebPackageService;
 
 import java.util.Collection;
@@ -76,7 +78,45 @@ public class PentahoWebPackageServiceImpl implements PentahoWebPackageService, B
     }
   }
 
-  public PentahoWebPackage findWebPackage( String name, String version ) {
+  @Override
+  public PentahoWebPackageResource resolve( String moduleId ) {
+    int index = 0;
+
+    boolean moduleIdStartsWithSlash = moduleId.indexOf( '/' ) == 0;
+    if ( moduleIdStartsWithSlash ) {
+      ++index;
+    }
+
+    boolean moduleIdIncludesOrganization = moduleId.indexOf( '@', index ) - index == 0;
+    if ( moduleIdIncludesOrganization ) {
+      index = moduleId.indexOf( '/', index ) + 1;
+    }
+
+    index = moduleId.indexOf( '/', index );
+
+    String baseModuleId = moduleId.substring( moduleIdStartsWithSlash ? 1 : 0, index );
+
+    int versionSeparatorIndex = baseModuleId.lastIndexOf( '_' );
+
+    if ( versionSeparatorIndex == -1 ) {
+      return null;
+    }
+
+    String packageName = baseModuleId.substring( 0, versionSeparatorIndex );
+    String packageVersion = baseModuleId.substring( versionSeparatorIndex + 1 );
+
+    PentahoWebPackage webPackage = findWebPackage( packageName, packageVersion );
+    if ( webPackage == null ) {
+      return null;
+    }
+
+    String resourcePath = webPackage.getResourceRootPath() + "/" + moduleId.substring( index + 1 );
+    ClassLoader classLoader = webPackage.getBundle().adapt( BundleWiring.class ).getClassLoader();
+
+    return new PentahoWebPackageResourceImpl( resourcePath, classLoader );
+  }
+
+  PentahoWebPackage findWebPackage( String name, String version ) {
     synchronized ( this.pentahoWebPackageBundles ) {
       Collection<PentahoWebPackageBundleImpl> bundles = this.pentahoWebPackageBundles.values();
       for ( PentahoWebPackageBundleImpl bundle : bundles ) {

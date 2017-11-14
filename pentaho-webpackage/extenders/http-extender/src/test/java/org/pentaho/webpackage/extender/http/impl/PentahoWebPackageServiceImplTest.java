@@ -30,6 +30,7 @@ import org.osgi.framework.Version;
 import org.osgi.framework.wiring.BundleCapability;
 import org.osgi.framework.wiring.BundleWiring;
 import org.pentaho.webpackage.core.PentahoWebPackage;
+import org.pentaho.webpackage.core.PentahoWebPackageResource;
 import org.pentaho.webpackage.core.PentahoWebPackageService;
 
 import java.util.ArrayList;
@@ -149,7 +150,105 @@ public class PentahoWebPackageServiceImplTest {
 
     assertResourceMappingExists( capturedResourceMappings, "/pentaho-webpackage-1a", "/package-name-1a/1.0" );
     assertResourceMappingExists( capturedResourceMappings, "/pentaho-webpackage-1b", "/package-name-1b/1.1" );
-    assertResourceMappingExists( capturedResourceMappings, "/pentaho-webpackage-1c", "/package-name-1c/1.2" );
+    assertResourceMappingExists( capturedResourceMappings, "/pentaho-webpackage-1c", "/@organization/package-name-1c/1.2" );
+  }
+
+  @Test
+  public void resolveExistingModuleId() {
+    List<BundleCapability> capabilities = new ArrayList<>();
+    capabilities.add( createMockWebPackageCapability( "/pentaho-webpackage-1a" ) );
+    capabilities.add( createMockWebPackageCapability( "/pentaho-webpackage-1b" ) );
+    capabilities.add( createMockWebPackageCapability( "/pentaho-webpackage-1c" ) );
+    Bundle bundle = this.createMockWebPackageBundle( capabilities, "pentaho-webpackage-1", "1.0", Bundle.ACTIVE );
+
+    this.service.addBundle( bundle );
+
+    PentahoWebPackageResource resource = this.service.resolve( "package-name-1b_1.1/some/resource" );
+
+    assertNotNull( resource );
+    assertEquals( "/pentaho-webpackage-1b/some/resource", resource.getResourcePath() );
+    assertSame( bundle.adapt( BundleWiring.class ).getClassLoader(), resource.getClassLoader() );
+  }
+
+  @Test
+  public void resolveExistingScopedModuleId() {
+    List<BundleCapability> capabilities = new ArrayList<>();
+    capabilities.add( createMockWebPackageCapability( "/pentaho-webpackage-1a" ) );
+    capabilities.add( createMockWebPackageCapability( "/pentaho-webpackage-1b" ) );
+    capabilities.add( createMockWebPackageCapability( "/pentaho-webpackage-1c" ) );
+    Bundle bundle = this.createMockWebPackageBundle( capabilities, "pentaho-webpackage-1", "1.0", Bundle.ACTIVE );
+
+    this.service.addBundle( bundle );
+
+    PentahoWebPackageResource resource = this.service.resolve( "@organization/package-name-1c_1.2/some/resource" );
+
+    assertNotNull( resource );
+    assertEquals( "/pentaho-webpackage-1c/some/resource", resource.getResourcePath() );
+    assertSame( bundle.adapt( BundleWiring.class ).getClassLoader(), resource.getClassLoader() );
+  }
+
+  @Test
+  public void resolveExistingModuleIdIgnoreStartingSlash() {
+    List<BundleCapability> capabilities = new ArrayList<>();
+    capabilities.add( createMockWebPackageCapability( "/pentaho-webpackage-1a" ) );
+    capabilities.add( createMockWebPackageCapability( "/pentaho-webpackage-1b" ) );
+    capabilities.add( createMockWebPackageCapability( "/pentaho-webpackage-1c" ) );
+    Bundle bundle = this.createMockWebPackageBundle( capabilities, "pentaho-webpackage-1", "1.0", Bundle.ACTIVE );
+
+    this.service.addBundle( bundle );
+
+    PentahoWebPackageResource resource = this.service.resolve( "/package-name-1b_1.1/some/resource" );
+
+    assertNotNull( resource );
+    assertEquals( "/pentaho-webpackage-1b/some/resource", resource.getResourcePath() );
+    assertSame( bundle.adapt( BundleWiring.class ).getClassLoader(), resource.getClassLoader() );
+  }
+
+  @Test
+  public void resolveExistingScopedModuleIdIgnoreStartingSlash() {
+    List<BundleCapability> capabilities = new ArrayList<>();
+    capabilities.add( createMockWebPackageCapability( "/pentaho-webpackage-1a" ) );
+    capabilities.add( createMockWebPackageCapability( "/pentaho-webpackage-1b" ) );
+    capabilities.add( createMockWebPackageCapability( "/pentaho-webpackage-1c" ) );
+    Bundle bundle = this.createMockWebPackageBundle( capabilities, "pentaho-webpackage-1", "1.0", Bundle.ACTIVE );
+
+    this.service.addBundle( bundle );
+
+    PentahoWebPackageResource resource = this.service.resolve( "/@organization/package-name-1c_1.2/some/resource" );
+
+    assertNotNull( resource );
+    assertEquals( "/pentaho-webpackage-1c/some/resource", resource.getResourcePath() );
+    assertSame( bundle.adapt( BundleWiring.class ).getClassLoader(), resource.getClassLoader() );
+  }
+
+  @Test
+  public void resolveNonExistingModuleId() {
+    List<BundleCapability> capabilities = new ArrayList<>();
+    capabilities.add( createMockWebPackageCapability( "/pentaho-webpackage-1a" ) );
+    capabilities.add( createMockWebPackageCapability( "/pentaho-webpackage-1b" ) );
+    capabilities.add( createMockWebPackageCapability( "/pentaho-webpackage-1c" ) );
+    Bundle bundle = this.createMockWebPackageBundle( capabilities, "pentaho-webpackage-1", "1.0", Bundle.ACTIVE );
+
+    this.service.addBundle( bundle );
+
+    PentahoWebPackageResource resource = this.service.resolve( "other-package-name_2.2/some/resource" );
+
+    assertNull( resource );
+  }
+
+  @Test
+  public void resolveInvalidModuleId() {
+    List<BundleCapability> capabilities = new ArrayList<>();
+    capabilities.add( createMockWebPackageCapability( "/pentaho-webpackage-1a" ) );
+    capabilities.add( createMockWebPackageCapability( "/pentaho-webpackage-1b" ) );
+    capabilities.add( createMockWebPackageCapability( "/pentaho-webpackage-1c" ) );
+    Bundle bundle = this.createMockWebPackageBundle( capabilities, "pentaho-webpackage-1", "1.0", Bundle.ACTIVE );
+
+    this.service.addBundle( bundle );
+
+    PentahoWebPackageResource resource = this.service.resolve( "package-name-1b/1.1/some/resource" );
+
+    assertNull( resource );
   }
 
   @Test
@@ -388,6 +487,8 @@ public class PentahoWebPackageServiceImplTest {
     when( wiring.getCapabilities( PentahoWebPackageService.CAPABILITY_NAMESPACE ) ).thenReturn( bundleCapabilities );
 
     headers.put( "Provide-Capability", String.join( ",", capabilitiesHeader ) );
+
+    when( wiring.getClassLoader() ).thenReturn( mock( ClassLoader.class ) );
 
     when( mockBundle.adapt( BundleWiring.class ) ).thenReturn( wiring );
 

@@ -26,5 +26,5 @@ public interface PentahoWebPackageService {
 
   void removeBundle( Bundle bundle );
 
-  PentahoWebPackage findWebPackage( String name, String version );
+  PentahoWebPackageResource resolve( String moduleId );
 }
