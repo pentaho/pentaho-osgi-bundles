@@ -22,9 +22,9 @@
 
 package org.pentaho.osgi.notification.webservice;
 
-import org.codehaus.jackson.JsonFactory;
-import org.codehaus.jackson.JsonGenerator;
-import org.codehaus.jackson.map.ObjectMapper;
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.pentaho.osgi.notification.api.NotificationAggregator;
 import org.pentaho.osgi.notification.api.NotificationListener;
 import org.pentaho.osgi.notification.api.NotificationObject;
@@ -46,7 +46,11 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
-import java.util.concurrent.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -61,15 +65,15 @@ public class NotificationService {
     new ConcurrentHashMap<String, NotificationTypeObjectMapper>();
   private NotificationAggregator notificationAggregator;
   private boolean isLocalExecutor = true;
-  private static ExecutorService executorService = Executors.newSingleThreadExecutor(new ThreadFactory() {
+  private static ExecutorService executorService = Executors.newSingleThreadExecutor( new ThreadFactory() {
     @Override
-    public Thread newThread(Runnable r) {
-      Thread thread = Executors.defaultThreadFactory().newThread(r);
-      thread.setDaemon(true);
-      thread.setName("NotificationService pool");
+    public Thread newThread( Runnable r ) {
+      Thread thread = Executors.defaultThreadFactory().newThread( r );
+      thread.setDaemon( true );
+      thread.setName( "NotificationService pool" );
       return thread;
     }
-  });
+  } );
 
   public void setNotificationAggregator( NotificationAggregator notificationAggregator ) {
     this.notificationAggregator = notificationAggregator;
