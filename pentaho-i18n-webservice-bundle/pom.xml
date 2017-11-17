@@ -19,6 +19,7 @@
 
   <properties>
     <whatwg-fetch.version>2.0.1</whatwg-fetch.version>
+    <project.amd-versioned-url>${project.artifactId}/${project.version}</project.amd-versioned-url>
   </properties>
 
   <dependencies>
@@ -34,54 +35,21 @@
       <artifactId>pentaho-i18n-bundle</artifactId>
       <version>${project.version}</version>
     </dependency>
-    <dependency>
-      <groupId>org.apache.felix</groupId>
-      <artifactId>org.apache.felix.framework</artifactId>
-      <version>${felix.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.googlecode.json-simple</groupId>
-      <artifactId>json-simple</artifactId>
-      <version>${json-simple.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.cxf</groupId>
-      <artifactId>cxf-rt-frontend-jaxrs</artifactId>
-      <version>${cxf.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.cxf</groupId>
-      <artifactId>cxf-rt-frontend-jaxws</artifactId>
-      <version>${cxf.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.cxf</groupId>
-      <artifactId>cxf-rt-transports-http</artifactId>
-      <version>${cxf.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.cxf</groupId>
-      <artifactId>cxf-rt-transports-http-jetty</artifactId>
-      <version>${cxf.version}</version>
-    </dependency>
+
     <dependency>
       <groupId>org.ops4j.pax.web</groupId>
       <artifactId>pax-web-extender-whiteboard</artifactId>
       <version>${pax-web-extender-whiteboard.version}</version>
       <scope>runtime</scope>
     </dependency>
-    <dependency>
-      <groupId>org.apache.felix</groupId>
-      <artifactId>org.apache.felix.http.api</artifactId>
-      <version>${org.apache.felix.http.api.version}</version>
-      <scope>runtime</scope>
-    </dependency>
+
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <version>${junit.version}</version>
       <scope>test</scope>
     </dependency>
+
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-all</artifactId>

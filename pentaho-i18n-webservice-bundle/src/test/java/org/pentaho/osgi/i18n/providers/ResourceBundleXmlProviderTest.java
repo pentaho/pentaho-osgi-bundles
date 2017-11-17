@@ -2,7 +2,7 @@
  *
  * Pentaho Data Integration
  *
- * Copyright (C) 2002-2017 by Hitachi Vantara : http://www.pentaho.com
+ * Copyright (C) 2017 by Hitachi Vantara : http://www.pentaho.com
  *
  *******************************************************************************
  *
@@ -20,10 +20,9 @@
  *
  ******************************************************************************/
 
-package org.pentaho.osgi.i18n.webservice;
+package org.pentaho.osgi.i18n.providers;
 
-import org.json.simple.JSONObject;
-import org.json.simple.JSONValue;
+import org.junit.Before;
 import org.junit.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -36,8 +35,6 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.ListResourceBundle;
 import java.util.Map;
@@ -46,54 +43,32 @@ import java.util.ResourceBundle;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
 
-public class ResourceBundleMessageBodyWriterTest {
+public class ResourceBundleXmlProviderTest {
+  private ResourceBundleXmlProvider xmlProvider;
+
+  @Before
+  public void setup() {
+    this.xmlProvider = mock( ResourceBundleXmlProvider.class );
+  }
+
   @Test
   public void testIsWritable() {
     MediaType xmlType = MediaType.APPLICATION_XML_TYPE;
-    MediaType jsonType = MediaType.APPLICATION_JSON_TYPE;
     MediaType wildcardType = MediaType.WILDCARD_TYPE;
 
-    Type genericType = null;
-    Annotation[] annotations = null;
-
-    ResourceBundleMessageBodyWriter resourceBundleMessageBodyWriter = new ResourceBundleMessageBodyWriter();
-
-    assertTrue( resourceBundleMessageBodyWriter
-        .isWriteable( ResourceBundle.class, genericType, annotations, xmlType ) );
-
-    assertTrue( resourceBundleMessageBodyWriter
-      .isWriteable( ResourceBundle.class, genericType, annotations, jsonType ) );
-
-    assertFalse( resourceBundleMessageBodyWriter
-        .isWriteable( Object.class, genericType, annotations, xmlType ) );
-
-    assertFalse( resourceBundleMessageBodyWriter
-        .isWriteable( ResourceBundle.class, genericType, annotations, wildcardType ) );
+    assertTrue( this.xmlProvider.isWriteable( ResourceBundle.class, null, null, xmlType ) );
+    assertFalse( this.xmlProvider.isWriteable( Object.class, null, null, xmlType ) );
+    assertFalse( this.xmlProvider.isWriteable( ResourceBundle.class, null, null, wildcardType ) );
   }
 
   @Test
   public void testGetSize() {
     long expectedSize = -1;
 
-    long size = ( new ResourceBundleMessageBodyWriter() ).getSize( null, null, null, null, null );
-
+    long size = this.xmlProvider.getSize( null, null, null, null, null );
     assertEquals( expectedSize, size );
-  }
-
-  @Test
-  public void testJsonWrite() throws IOException {
-    Map<String, String> props = new HashMap<>();
-    props.put( "key1", "value1" );
-    props.put( "key2", "value2" );
-    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-    new ResourceBundleMessageBodyWriter()
-      .writeTo( makeResourceBundle( props ), ResourceBundle.class, null, null, MediaType.APPLICATION_JSON_TYPE, null,
-        byteArrayOutputStream );
-    JSONObject result = (JSONObject) JSONValue.parse( byteArrayOutputStream.toString() );
-    assertEquals( 2, result.size() );
-    assertEquals( "value1", result.get( "key1" ) );
-    assertEquals( "value2", result.get( "key2" ) );
   }
 
   @Test
@@ -101,19 +76,23 @@ public class ResourceBundleMessageBodyWriterTest {
     Map<String, String> props = new HashMap<>();
     props.put( "key1", "value1" );
     props.put( "key2", "value2" );
+
     ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-    ( new ResourceBundleMessageBodyWriter() ).writeTo(
-        makeResourceBundle( props ), ResourceBundle.class, null, null,
-        MediaType.APPLICATION_XML_TYPE, null, byteArrayOutputStream );
-    Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder()
-      .parse( new ByteArrayInputStream( byteArrayOutputStream.toByteArray() ) );
-    Map<String, String> result = documentToPropMap( doc );
-    assertEquals( 2, result.size() );
-    assertEquals( "value1", result.get( "key1" ) );
-    assertEquals( "value2", result.get( "key2" ) );
+    ResourceBundle resourceBundle = makeResourceBundle( props );
+    MediaType xmlType = MediaType.APPLICATION_XML_TYPE;
+
+    this.xmlProvider.writeTo( resourceBundle, ResourceBundle.class, null, null, xmlType,
+        null, byteArrayOutputStream );
+
+    Map<String, String> result = getWriteToResult( byteArrayOutputStream );
+    int expectedSize = props.size();
+
+    assertEquals( expectedSize, result.size() );
+    assertEquals( props.get( "key1" ), result.get( "key1" ) );
+    assertEquals( props.get( "key2" ), result.get( "key2" ) );
   }
 
-  public ResourceBundle makeResourceBundle( final Map<String, String> map ) {
+  private ResourceBundle makeResourceBundle( final Map<String, String> map ) {
     return new ListResourceBundle() {
       @Override
       protected Object[][] getContents() {
@@ -130,7 +109,7 @@ public class ResourceBundleMessageBodyWriterTest {
     };
   }
 
-  public Map<String, String> documentToPropMap( Document document ) {
+  private Map<String, String> documentToPropMap( Document document ) {
     Map<String, String> result = new HashMap<>();
     NodeList propertiesNodes = document.getElementsByTagName( "property" );
     for ( int i = 0; i < propertiesNodes.getLength(); i++ ) {
@@ -149,5 +128,12 @@ public class ResourceBundleMessageBodyWriterTest {
     }
 
     return result;
+  }
+
+  private Map<String, String> getWriteToResult( ByteArrayOutputStream out ) throws ParserConfigurationException, IOException, SAXException {
+    Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder()
+        .parse( new ByteArrayInputStream( out.toByteArray() ) );
+
+    return documentToPropMap( doc );
   }
 }

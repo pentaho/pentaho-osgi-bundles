@@ -37,13 +37,13 @@ define([
         return;
       }
 
-      var baseUrl = environment.server.services + "i18n";
+      var baseUrl = environment.server.services;
       var locale = environment.locale;
 
-      var resourceModuleId = "moduleID=" + getResourceModuleId(localRequire, bundlePath);
+      var resourceModuleId = getResourceModuleId(localRequire, bundlePath);
 
-      var resourceLocale = locale !== null ? ("locale=" + locale) : "";
-      var url = baseUrl + "?" + resourceModuleId + "&" + resourceLocale;
+      var resourceLocale = locale !== null ? ("?locale=" + locale) : "";
+      var url = baseUrl + "i18n/" + resourceModuleId + resourceLocale;
 
       var options = {
         method: "GET",
@@ -77,14 +77,7 @@ define([
   };
 
   function getResourceModuleId(localRequire, bundlePath) {
-
     var callerModuleId = moduleUtil.getId(localRequire);
-
-    /*
-    TODO: Check if really needed / how to fix.
-    // Hack for geo
-    moduleId = moduleId && moduleId.replace("pentaho/geo/visual", "pentaho-geo-visual");
-    */
 
     return moduleUtil.absolutizeIdRelativeToSibling(bundlePath, callerModuleId);
   }

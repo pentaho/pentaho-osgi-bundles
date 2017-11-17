@@ -22,15 +22,11 @@
 
 package org.pentaho.osgi.i18n.impl;
 
-import org.junit.After;
 import org.junit.Before;
 
 public class LocalizationManagerTest {
 
   @Before
   public void setup() {}
-
-  @After
-  public void teardown() {}
 
 }

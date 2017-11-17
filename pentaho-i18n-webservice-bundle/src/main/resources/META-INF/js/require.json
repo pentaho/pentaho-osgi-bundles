@@ -1,6 +1,6 @@
 {
   "paths": {
-    "pentaho/i18n-osgi": "/${project.artifactId}/${project.version}/js/i18n"
+    "pentaho/i18n-osgi": "/${project.amd-versioned-url}/js/i18n"
   },
   "map": {
     "pentaho/i18n-osgi": {

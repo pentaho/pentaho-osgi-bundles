@@ -25,17 +25,6 @@ import java.util.Locale;
 import java.util.ResourceBundle;
 
 public class LocalizationManager implements LocalizationService {
-  private static Logger log = LoggerFactory.getLogger( LocalizationManager.class );
-
-  // For unit tests only
-  static Logger getLog() {
-    return log;
-  }
-
-  // For unit tests only
-  static void setLog( Logger log ) {
-    LocalizationManager.log = log;
-  }
 
   @Override
   public ResourceBundle getResourceBundle( ClassLoader classLoader, String name, Locale locale ) {

@@ -10,33 +10,34 @@
   http://cxf.apache.org/blueprint/core http://cxf.apache.org/schemas/blueprint/core.xsd
 
   http://aries.apache.org/blueprint/xmlns/blueprint-cm/v1.1.0 http://aries.apache.org/schemas/blueprint-cm/blueprint-cm-1.1.0.xsd">
-  <cm:property-placeholder persistent-id="org.pentaho.osgi.i18n.webservice"
+  <cm:property-placeholder persistent-id="org.pentaho.osgi.i18n.endpoints"
                            update-strategy="reload">
   </cm:property-placeholder>
 
   <cxf:bus id="i18nWebServiceBus"/>
 
-  <jaxrs:server address="/i18n" id="localizationService">
+  <jaxrs:server address="/i18n" id="localizationWebService">
     <jaxrs:serviceBeans>
-      <ref component-id="localizationServiceImpl"/>
+      <ref component-id="getResourceBundleEndpoint"/>
     </jaxrs:serviceBeans>
 
     <jaxrs:providers>
-      <bean id="resourceBundleMessageBodyWriter"
-            class="org.pentaho.osgi.i18n.webservice.ResourceBundleMessageBodyWriter"/>
+      <bean class="org.pentaho.osgi.i18n.providers.ResourceBundleJsonProvider"/>
+      <bean class="org.pentaho.osgi.i18n.providers.ResourceBundleXmlProvider"/>
     </jaxrs:providers>
   </jaxrs:server>
 
-  <bean id="localizationServiceImpl" class="org.pentaho.osgi.i18n.webservice.LocalizationWebservice">
-    <property name="localizationService" ref="delegateRef"/>
+  <bean id="getResourceBundleEndpoint" class="org.pentaho.osgi.i18n.endpoints.ResourceBundleEndpoint">
+    <property name="localizationService" ref="webPackageLocalizationService"/>
   </bean>
 
-  <reference id="delegateRef" interface="org.pentaho.osgi.i18n.IPentahoWebPackageLocalizationService"/>
+  <reference id="webPackageLocalizationService"
+             interface="org.pentaho.osgi.i18n.IPentahoWebPackageLocalizationService"/>
 
-  <service id="PentahoI18n"
+  <service id="I18nResourceMapping"
            interface="org.ops4j.pax.web.extender.whiteboard.ResourceMapping">
     <bean class="org.ops4j.pax.web.extender.whiteboard.runtime.DefaultResourceMapping">
-      <property name="alias" value="/${project.artifactId}/${project.version}"/>
+      <property name="alias" value="/${project.amd-versioned-url}"/>
       <property name="path" value="/web-pentaho-i18n-webservice"/>
     </bean>
   </service>

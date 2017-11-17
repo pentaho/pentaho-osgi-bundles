@@ -15,23 +15,23 @@
  * Copyright 2016 - 2017 Hitachi Vantara. All rights reserved.
  */
 
-package org.pentaho.osgi.i18n.webservice;
+package org.pentaho.osgi.i18n.endpoints;
 
 import org.pentaho.osgi.i18n.IPentahoWebPackageLocalizationService;
 
-import javax.jws.WebService;
-import javax.ws.rs.Consumes;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import java.util.ResourceBundle;
 
-@Produces( { MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML } )
-@Consumes( { MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML } )
-@WebService
-public class LocalizationWebservice {
+
+@Path( "{moduleID: .+}" )
+public class ResourceBundleEndpoint {
   private IPentahoWebPackageLocalizationService localizationService;
 
   public void setLocalizationService( IPentahoWebPackageLocalizationService localizationService ) {
@@ -39,9 +39,14 @@ public class LocalizationWebservice {
   }
 
   @GET
-  @Path( "/" )
-  public ResourceBundle getResourceBundle( @QueryParam( "moduleID" ) String moduleID,
-                                           @QueryParam( "locale" ) String localeString ) {
-    return this.localizationService.getResourceBundle( moduleID, localeString );
+  @Produces( { MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML } )
+  public Response getResourceBundle( @PathParam( "moduleID" ) String moduleID,
+                                     @QueryParam( "locale" ) @DefaultValue( "" ) String localeString ) {
+    ResourceBundle resource = this.localizationService.getResourceBundle( moduleID, localeString );
+    if ( resource == null ) {
+      return Response.status( Response.Status.NOT_FOUND ).build();
+    }
+
+    return Response.ok( resource ).build();
   }
 }
