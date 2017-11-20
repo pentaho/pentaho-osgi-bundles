@@ -21,7 +21,8 @@ define([
   "pentaho/i18n/MessageBundle",
   "pentaho/environment",
   "pentaho/util/module",
-  "whatwg-fetch"
+  "whatwg-fetch",
+  "pentaho/shim/es6-promise"
 ], function (MessageBundle, environment, moduleUtil) {
 
   "use strict";
