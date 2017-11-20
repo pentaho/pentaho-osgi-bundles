@@ -23,10 +23,75 @@
 package org.pentaho.osgi.i18n.impl;
 
 import org.junit.Before;
+import org.junit.Test;
+import org.pentaho.osgi.i18n.LocalizationService;
+
+import java.util.Locale;
+import java.util.MissingResourceException;
+import java.util.ResourceBundle;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 public class LocalizationManagerTest {
+  private static final String RESOURCE_PATH = "org/pentaho/osgi/i18n/impl/messages";
+  private LocalizationService localizationService;
 
   @Before
-  public void setup() {}
+  public void setup() {
+    this.localizationService = new LocalizationManager();
+  }
 
+  @Test( expected = NullPointerException.class )
+  public void testGetResourceBundleNullLocale() {
+    this.localizationService.getResourceBundle( getClass(), RESOURCE_PATH, null );
+  }
+
+  @Test
+  public void testGetResourceBundleDefault() {
+    Locale locale = Locale.forLanguageTag( "" );
+
+    ResourceBundle bundle = this.localizationService.getResourceBundle( getClass(), RESOURCE_PATH, locale );
+    assertEquals( "messages.properties", bundle.getString( "key" ) );
+
+    try {
+      bundle.getString( "key.de" );
+      bundle.getString( "key.de.DE" );
+
+      fail( "Should have thrown a MissingResourceException" );
+    } catch( MissingResourceException mre ) {
+      // ...
+    }
+
+  }
+
+  @Test
+  public void testGetResourceBundleLanguage() {
+    Locale locale = Locale.forLanguageTag( "de" );
+
+    ResourceBundle bundle = this.localizationService.getResourceBundle( getClass(), RESOURCE_PATH, locale );
+
+    assertEquals( "messages_de.properties", bundle.getString( "key" ) );
+
+    assertEquals( "de key", bundle.getString( "key.de" ) );
+    try {
+      bundle.getString( "key.de.DE" );
+
+      fail( "Should have thrown a MissingResourceException" );
+    } catch( MissingResourceException mre ) {
+      // ...
+    }
+
+  }
+
+  @Test
+  public void testGetResourceBundleLanguageAndCountry() {
+    Locale locale = Locale.forLanguageTag( "de-DE" );
+
+    ResourceBundle bundle = this.localizationService.getResourceBundle( getClass(), RESOURCE_PATH, locale );
+    assertEquals( "messages_de_DE.properties", bundle.getString( "key" ) );
+
+    assertEquals( "de key", bundle.getString( "key.de" ) );
+    assertEquals( "de_DE key", bundle.getString( "key.de.DE" ) );
+  }
 }

@@ -65,21 +65,8 @@ public class ResourceBundleEndpointTest {
   }
 
   @Test
-  public void testGetResourceBundleNullLocale() {
-    String moduleID = "foobar_2";
-    String locale = null;
-
-    registerResourceBundle( moduleID, locale );
-    Response response = this.endpoint.getResourceBundle( moduleID, locale );
-    ResourceBundle actualResource = (ResourceBundle) response.getEntity();
-
-    assertEquals( getExpectedLocale( locale ), actualResource.getLocale() );
-    assertEquals( moduleID, actualResource.getBaseBundleName() );
-  }
-
-  @Test
   public void testGetResourceBundleLanguageOnlyLocale() {
-    String moduleID = "foobar_3";
+    String moduleID = "foobar_2";
     String locale   = "en";
 
     registerResourceBundle( moduleID, locale );
@@ -92,7 +79,7 @@ public class ResourceBundleEndpointTest {
 
   @Test
   public void testGetResourceBundleLanguageAndCountryLocale() {
-    String moduleID = "foobar_4";
+    String moduleID = "foobar_3";
     String locale   = "en-US";
 
     registerResourceBundle( moduleID, locale );

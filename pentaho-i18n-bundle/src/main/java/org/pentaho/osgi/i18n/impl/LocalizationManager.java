@@ -18,8 +18,6 @@
 package org.pentaho.osgi.i18n.impl;
 
 import org.pentaho.osgi.i18n.LocalizationService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.Locale;
 import java.util.ResourceBundle;
@@ -33,7 +31,7 @@ public class LocalizationManager implements LocalizationService {
 
   @Override
   public ResourceBundle getResourceBundle( Class clazz, String name, Locale locale ) {
-    return getResourceBundle( clazz.getClassLoader(), name, locale );
+    return ResourceBundle.getBundle( name, locale, clazz.getClassLoader() );
   }
 
 }

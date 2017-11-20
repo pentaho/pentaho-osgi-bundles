@@ -22,6 +22,7 @@
     <jaxrs:serviceBeans>
       <ref component-id="i18nServiceImpl"/>
     </jaxrs:serviceBeans>
+
     <jaxrs:providers>
       <bean class="org.codehaus.jackson.jaxrs.JacksonJaxbJsonProvider"/>
     </jaxrs:providers>
@@ -43,6 +44,7 @@
     <property name="alias" value="/i18n"/>
     <property name="path" value="/web"/>
   </bean>
+
   <!-- Register Wen Resources -->
   <service id="resources" ref="resourceMapping" interface="org.ops4j.pax.web.extender.whiteboard.ResourceMapping"/>
 

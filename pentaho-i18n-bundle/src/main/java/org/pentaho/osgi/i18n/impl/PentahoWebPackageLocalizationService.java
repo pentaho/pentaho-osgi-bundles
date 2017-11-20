@@ -40,13 +40,16 @@ public class PentahoWebPackageLocalizationService implements IPentahoWebPackageL
   @Override
   public ResourceBundle getResourceBundle( String moduleID, String localeString ) {
     PentahoWebPackageResource resource = this.webPackageService.resolve( moduleID );
-    Locale locale = getLocale( localeString );
+    if ( resource == null ) {
+      return null;
+    }
 
+    Locale locale = getLocale( localeString );
     return this.localizationService.getResourceBundle( resource.getClassLoader(), resource.getResourcePath(), locale );
   }
 
   private Locale getLocale( String localeString ) {
-    String languageTag = localeString != null ? localeString.replace( "_", "-" ) : "";
+    String languageTag = localeString != null ? localeString : "";
 
     return Locale.forLanguageTag( languageTag );
   }

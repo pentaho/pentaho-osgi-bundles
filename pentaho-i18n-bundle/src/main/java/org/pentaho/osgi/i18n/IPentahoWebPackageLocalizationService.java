@@ -20,7 +20,5 @@ package org.pentaho.osgi.i18n;
 import java.util.ResourceBundle;
 
 public interface IPentahoWebPackageLocalizationService {
-
   ResourceBundle getResourceBundle( String moduleID, String locale );
-
 }

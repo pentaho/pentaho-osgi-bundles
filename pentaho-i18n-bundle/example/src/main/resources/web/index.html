@@ -8,39 +8,40 @@
 
   <script type="text/javascript">
     require(["dojo/request", "dojo/dom", "dojo/on", "dojo/domReady!"], function (request, dom, on) {
-
       var region = dom.byId("region");
       var bundle = dom.byId("bundle");
       var key = dom.byId("key");
       var val = dom.byId("val");
       var bundleDiv = dom.byId("bundleDiv");
 
-      on(dom.byId("fetch"), "click", function () {
-        var q = {
+      on(dom.byId("fetch"), "click", function() {
+        var query = {
           "region": region.value,
           "bundle": bundle.value,
-          "key": key.value,
-        }
+          "key": key.value
+        };
 
         // Call our custom REST service
-        request("/cxf/localize", {query: q}).then(function (data) {
+        request("/cxf/localize", { query: query }).then(function( data ) {
           val.innerHTML = key.value + " : " + data;
-        }, function (err) {
+        }, function( err ) {
           val.innerHTML = "Error: <br/>" + err;
-        }, function (evt) {
+        }, function( evt ) {
+          // ...
         });
 
-
-        // Call the standard webservice provifed by pentaho-i18n-webservice-bundle
-        request("/cxf/i18n/" + region.value + "/" + bundle.value.replace("\/", ".") + "/en").then(function (data) {
-          bundleDiv.innerHTML = data;
-        }, function (err) {
-          bundleDiv.innerHTML = "Error: <br/>" + err;
-        }, function (evt) {
-        });
-
-
+        // Call the standard endpoints provifed by pentaho-i18n-endpoints-bundle
+        var webResourcesRoot = "web/";
+        request("/cxf/i18n/" + webResourcesRoot + region.value + "/" + bundle.value + "?locale=en")
+          .then(function (data) {
+            bundleDiv.innerHTML = data;
+          }, function( err ) {
+            bundleDiv.innerHTML = "Error: <br/>" + err;
+          }, function( evt ) {
+            // ...
+          });
       });
+
     })
   </script>
 </head>

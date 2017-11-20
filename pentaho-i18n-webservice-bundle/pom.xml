@@ -37,6 +37,25 @@
     </dependency>
 
     <dependency>
+      <groupId>javax.ws.rs</groupId>
+      <artifactId>javax.ws.rs-api</artifactId>
+      <version>${javax.ws.rs-api.version}</version>
+      <scope>provided</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>*</artifactId>
+          <groupId>*</groupId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+    <dependency>
+      <groupId>com.googlecode.json-simple</groupId>
+      <artifactId>json-simple</artifactId>
+      <version>${json-simple.version}</version>
+    </dependency>
+
+    <dependency>
       <groupId>org.ops4j.pax.web</groupId>
       <artifactId>pax-web-extender-whiteboard</artifactId>
       <version>${pax-web-extender-whiteboard.version}</version>

@@ -300,7 +300,6 @@ public class RequireJsConfigManager {
                 bundle.getVersion().toString() );
         final RequireJsGenerator.ModuleInfo moduleInfo = gen.getConvertedConfig( artifactInfo );
         Map<String, Object> requireJsonObject = moduleInfo.getRequireJs();
-        requireJsonObject.put( "versionedPath", moduleInfo.getVersionedPath() );
 
         this.putInConfigMap( bundle.getBundleId(), requireJsonObject );
 
