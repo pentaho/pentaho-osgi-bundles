@@ -23,10 +23,11 @@ import org.pentaho.osgi.i18n.IPentahoWebPackageLocalizationService;
 
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
-import java.util.Locale;
 import java.util.ResourceBundle;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -44,65 +45,28 @@ public class ResourceBundleEndpointTest {
   }
 
   @Test
-  public void testGetResourceBundleNullResource() {
-    String moduleID = "foobar";
+  public void testGetResourceBundleNotFound() {
+    when( this.localizationService.getResourceBundle( anyString(), anyString() ) ).thenReturn( null );
 
-    Response actual   = this.endpoint.getResourceBundle( moduleID, null );
-    assertEquals( Status.fromStatusCode( actual.getStatus() ), Status.NOT_FOUND );
+    Response response = this.endpoint.getResourceBundle( "", "" );
+    assertNotNull( response );
+
+    Status actualStatus = Status.fromStatusCode( response.getStatus() );
+    assertEquals( Status.NOT_FOUND, actualStatus );
   }
 
   @Test
-  public void testGetResourceBundleNoLocale() {
+  public void testGetResourceBundleOK() {
     String moduleID = "foobar_1";
-    String locale = "";
-
-    registerResourceBundle( moduleID, locale );
-    Response response = this.endpoint.getResourceBundle( moduleID, locale );
-    ResourceBundle actualResource = (ResourceBundle) response.getEntity();
-
-    assertEquals( getExpectedLocale( locale ), actualResource.getLocale() );
-    assertEquals( moduleID, actualResource.getBaseBundleName() );
-  }
-
-  @Test
-  public void testGetResourceBundleLanguageOnlyLocale() {
-    String moduleID = "foobar_2";
-    String locale   = "en";
-
-    registerResourceBundle( moduleID, locale );
-    Response response = this.endpoint.getResourceBundle( moduleID, locale );
-    ResourceBundle actualResource = (ResourceBundle) response.getEntity();
-
-    assertEquals( getExpectedLocale( locale ), actualResource.getLocale() );
-    assertEquals( moduleID, actualResource.getBaseBundleName() );
-  }
-
-  @Test
-  public void testGetResourceBundleLanguageAndCountryLocale() {
-    String moduleID = "foobar_3";
-    String locale   = "en-US";
-
-    registerResourceBundle( moduleID, locale );
-    Response response = this.endpoint.getResourceBundle( moduleID, locale );
-    ResourceBundle actualResource = (ResourceBundle) response.getEntity();
-
-    assertEquals( getExpectedLocale( locale ), actualResource.getLocale() );
-    assertEquals( moduleID, actualResource.getBaseBundleName() );
-  }
-
-  private void registerResourceBundle( String moduleID, String locale ) {
-    String localeString = locale != null ? locale : "";
-
+    String locale = "en";
     ResourceBundle resourceBundle = mock( ResourceBundle.class );
-    when( resourceBundle.getLocale() ).thenReturn( Locale.forLanguageTag( localeString ) );
-    when( resourceBundle.getBaseBundleName() ).thenReturn( moduleID );
 
-    when( this.localizationService.getResourceBundle( eq( moduleID ), eq( locale ) ) )
-        .thenReturn( resourceBundle );
-  }
+    when( this.localizationService.getResourceBundle( eq( moduleID ), eq( locale ) ) ).thenReturn( resourceBundle );
+    Response response = this.endpoint.getResourceBundle( moduleID, locale );
+    assertNotNull( response );
 
-  private Locale getExpectedLocale( String locale ) {
-    return Locale.forLanguageTag( locale != null ? locale : "" );
+    Status actualStatus = Status.fromStatusCode( response.getStatus() );
+    assertEquals( Status.OK, actualStatus );
   }
 
 }

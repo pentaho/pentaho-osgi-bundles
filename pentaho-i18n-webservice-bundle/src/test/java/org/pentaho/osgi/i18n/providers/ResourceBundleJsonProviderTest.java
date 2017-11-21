@@ -45,7 +45,7 @@ public class ResourceBundleJsonProviderTest {
 
   @Before
   public void setup() {
-    this.jsonProvider = mock( ResourceBundleJsonProvider.class );
+    this.jsonProvider = new ResourceBundleJsonProvider();
   }
 
   @Test

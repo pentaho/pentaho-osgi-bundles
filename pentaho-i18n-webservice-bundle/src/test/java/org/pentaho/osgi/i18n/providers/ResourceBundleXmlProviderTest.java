@@ -50,7 +50,7 @@ public class ResourceBundleXmlProviderTest {
 
   @Before
   public void setup() {
-    this.xmlProvider = mock( ResourceBundleXmlProvider.class );
+    this.xmlProvider = new ResourceBundleXmlProvider();
   }
 
   @Test

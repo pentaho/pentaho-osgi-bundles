@@ -110,11 +110,13 @@ public class PentahoWebPackageServiceImpl implements PentahoWebPackageService, B
   }
 
   PentahoWebPackage findWebPackage( String name, String version ) {
-    Collection<PentahoWebPackageBundleImpl> bundles = this.pentahoWebPackageBundles.values();
-    for ( PentahoWebPackageBundleImpl bundle : bundles ) {
-      PentahoWebPackage webPackage = bundle.findWebPackage( name, version );
-      if ( webPackage != null ) {
-        return webPackage;
+    synchronized ( this.pentahoWebPackageBundles ) {
+      Collection<PentahoWebPackageBundleImpl> bundles = this.pentahoWebPackageBundles.values();
+      for ( PentahoWebPackageBundleImpl bundle : bundles ) {
+        PentahoWebPackage webPackage = bundle.findWebPackage( name, version );
+        if ( webPackage != null ) {
+          return webPackage;
+        }
       }
     }
 

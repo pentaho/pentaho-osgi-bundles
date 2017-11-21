@@ -19,6 +19,7 @@
 
   <properties>
     <whatwg-fetch.version>2.0.1</whatwg-fetch.version>
+    <jersey-common.version>2.5.1</jersey-common.version>
     <project.amd-versioned-url>${project.artifactId}/${project.version}</project.amd-versioned-url>
   </properties>
 
@@ -60,6 +61,20 @@
       <artifactId>pax-web-extender-whiteboard</artifactId>
       <version>${pax-web-extender-whiteboard.version}</version>
       <scope>runtime</scope>
+    </dependency>
+
+    <!-- Needed by endpoints' tests -->
+    <dependency>
+      <groupId>org.glassfish.jersey.core</groupId>
+      <artifactId>jersey-common</artifactId>
+      <version>${jersey-common.version}</version>
+      <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>*</artifactId>
+          <groupId>javax.ws.rs</groupId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <dependency>
