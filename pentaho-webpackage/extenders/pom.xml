@@ -11,7 +11,6 @@
   </parent>
 
   <artifactId>extenders-modules</artifactId>
-  <version>8.1-SNAPSHOT</version>
 
   <packaging>pom</packaging>
 

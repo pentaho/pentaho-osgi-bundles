@@ -10,7 +10,6 @@
   </parent>
 
   <artifactId>pentaho-i18n-webservice-bundle</artifactId>
-  <version>8.1-SNAPSHOT</version>
   <packaging>bundle</packaging>
 
   <name>Pentaho Community Edition Project: ${project.artifactId}</name>
@@ -35,6 +34,12 @@
       <groupId>pentaho</groupId>
       <artifactId>pentaho-i18n-bundle</artifactId>
       <version>${project.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>*</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <dependency>
@@ -54,6 +59,12 @@
       <groupId>com.googlecode.json-simple</groupId>
       <artifactId>json-simple</artifactId>
       <version>${json-simple.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>*</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <dependency>
@@ -92,46 +103,4 @@
     </dependency>
   </dependencies>
 
-  <build>
-    <finalName>${project.artifactId}</finalName>
-
-    <resources>
-      <resource>
-        <filtering>false</filtering>
-        <directory>src/main/resources</directory>
-        <includes>
-          <include>**/*</include>
-        </includes>
-        <excludes>
-          <exclude>META-INF/**/*</exclude>
-          <exclude>OSGI-INF/blueprint/*</exclude>
-        </excludes>
-      </resource>
-
-      <resource>
-        <filtering>true</filtering>
-        <directory>src/main/resources</directory>
-        <includes>
-          <include>META-INF/**/*</include>
-          <include>OSGI-INF/blueprint/*</include>
-        </includes>
-      </resource>
-    </resources>
-
-    <plugins>
-      <plugin>
-        <groupId>org.apache.felix</groupId>
-        <artifactId>maven-bundle-plugin</artifactId>
-        <version>${maven-bundle-plugin.version}</version>
-        <extensions>true</extensions>
-        <configuration>
-          <instructions>
-            <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
-            <Bundle-Version>${project.version}</Bundle-Version>
-            <Import-Package>org.apache.felix.http.api,*</Import-Package>
-          </instructions>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
 </project>
