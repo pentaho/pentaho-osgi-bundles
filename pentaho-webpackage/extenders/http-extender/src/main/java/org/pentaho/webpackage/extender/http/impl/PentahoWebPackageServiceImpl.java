@@ -26,16 +26,22 @@ import org.pentaho.webpackage.core.PentahoWebPackageResource;
 import org.pentaho.webpackage.core.PentahoWebPackageService;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Dictionary;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * Implementation of the WebContainer service.
  */
 public class PentahoWebPackageServiceImpl implements PentahoWebPackageService, BundleListener {
-  private final Map<Long, PentahoWebPackageBundleImpl> pentahoWebPackageBundles = Collections.synchronizedMap( new HashMap<>() );
+  private final ReadWriteLock readWriteLock = new ReentrantReadWriteLock();
+  private final Lock writeLock = readWriteLock.writeLock();
+  private final Lock readLock = readWriteLock.readLock();
+
+  private final Map<Long, PentahoWebPackageBundleImpl> pentahoWebPackageBundles = new HashMap<>();
 
   @Override
   public void bundleChanged( BundleEvent bundleEvent ) {
@@ -56,8 +62,13 @@ public class PentahoWebPackageServiceImpl implements PentahoWebPackageService, B
     PentahoWebPackageBundleImpl extendedBundle = extendBundle( bundle );
 
     if ( extendedBundle != null ) {
-      if ( this.pentahoWebPackageBundles.putIfAbsent( bundle.getBundleId(), extendedBundle ) != null ) {
-        return;
+      this.writeLock.lock();
+      try {
+        if ( this.pentahoWebPackageBundles.putIfAbsent( bundle.getBundleId(), extendedBundle ) != null ) {
+          return;
+        }
+      } finally {
+        this.writeLock.unlock();
       }
 
       extendedBundle.init();
@@ -70,10 +81,17 @@ public class PentahoWebPackageServiceImpl implements PentahoWebPackageService, B
       return;
     }
 
-    PentahoWebPackageBundleImpl pwpc = this.pentahoWebPackageBundles.remove( bundle.getBundleId() );
-    if ( pwpc != null ) {
-      pwpc.destroy();
+    this.writeLock.lock();
+    try {
+      PentahoWebPackageBundleImpl pwpc = this.pentahoWebPackageBundles.remove( bundle.getBundleId() );
+
+      if ( pwpc != null ) {
+        pwpc.destroy();
+      }
+    } finally {
+      this.writeLock.unlock();
     }
+
   }
 
   @Override
@@ -110,7 +128,9 @@ public class PentahoWebPackageServiceImpl implements PentahoWebPackageService, B
   }
 
   PentahoWebPackage findWebPackage( String name, String version ) {
-    synchronized ( this.pentahoWebPackageBundles ) {
+    try {
+      this.readLock.lock();
+
       Collection<PentahoWebPackageBundleImpl> bundles = this.pentahoWebPackageBundles.values();
       for ( PentahoWebPackageBundleImpl bundle : bundles ) {
         PentahoWebPackage webPackage = bundle.findWebPackage( name, version );
@@ -118,6 +138,8 @@ public class PentahoWebPackageServiceImpl implements PentahoWebPackageService, B
           return webPackage;
         }
       }
+    } finally {
+      this.readLock.unlock();
     }
 
     return null;
