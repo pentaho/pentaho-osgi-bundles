@@ -26,7 +26,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.pentaho.osgi.i18n.LocalizationService;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
@@ -48,50 +52,49 @@ public class LocalizationManagerTest {
   }
 
   @Test
-  public void testGetResourceBundleDefault() {
+  public void testGetResourceBundleOnlyDefaultProperties() {
     Locale locale = Locale.forLanguageTag( "" );
 
-    ResourceBundle bundle = this.localizationService.getResourceBundle( getClass(), RESOURCE_PATH, locale );
-    assertEquals( "messages.properties", bundle.getString( "key" ) );
+    Map<String, String> expectedResult = new HashMap<>( 2 );
+    expectedResult.put( "default.key", "default-value" );
+    expectedResult.put( "shared.key", "shared-value" );
 
-    try {
-      bundle.getString( "key.de" );
-      bundle.getString( "key.de.DE" );
-
-      fail( "Should have thrown a MissingResourceException" );
-    } catch( MissingResourceException mre ) {
-      // ...
-    }
-
+    assertResourceBundleMessages( locale, expectedResult );
   }
 
   @Test
-  public void testGetResourceBundleLanguage() {
+  public void testGetResourceBundleDefaultMergedWithLanguageProperties() {
     Locale locale = Locale.forLanguageTag( "de" );
 
-    ResourceBundle bundle = this.localizationService.getResourceBundle( getClass(), RESOURCE_PATH, locale );
+    Map<String, String> expectedResult = new HashMap<>( 3 );
+    expectedResult.put( "default.key", "default-value" );
+    expectedResult.put( "default.de.key", "default-de-value" );
+    expectedResult.put( "shared.key", "de-shared-value" );
 
-    assertEquals( "messages_de.properties", bundle.getString( "key" ) );
-
-    assertEquals( "de key", bundle.getString( "key.de" ) );
-    try {
-      bundle.getString( "key.de.DE" );
-
-      fail( "Should have thrown a MissingResourceException" );
-    } catch( MissingResourceException mre ) {
-      // ...
-    }
-
+    assertResourceBundleMessages( locale, expectedResult );
   }
 
   @Test
-  public void testGetResourceBundleLanguageAndCountry() {
+  public void testGetResourceBundleDefaultMergedWithLanguageAndCountryProperties() {
     Locale locale = Locale.forLanguageTag( "de-DE" );
 
-    ResourceBundle bundle = this.localizationService.getResourceBundle( getClass(), RESOURCE_PATH, locale );
-    assertEquals( "messages_de_DE.properties", bundle.getString( "key" ) );
+    Map<String, String> expectedResult = new HashMap<>( 4 );
+    expectedResult.put( "default.key", "default-value" );
+    expectedResult.put( "default.de.key", "default-de-value" );
+    expectedResult.put( "default.de.DE.key", "default-de-DE-value" );
+    expectedResult.put( "shared.key", "de-DE-shared-value" );
 
-    assertEquals( "de key", bundle.getString( "key.de" ) );
-    assertEquals( "de_DE key", bundle.getString( "key.de.DE" ) );
+    assertResourceBundleMessages( locale, expectedResult );
+  }
+
+  private void assertResourceBundleMessages( Locale locale, Map<String, String> expectedResult ) {
+    ResourceBundle bundle = this.localizationService.getResourceBundle( getClass(), RESOURCE_PATH, locale );
+    List<String> keys = Collections.list( bundle.getKeys() );
+
+    assertEquals( expectedResult.size(), keys.size() );
+    for ( String messageKey : keys ) {
+      assertEquals( expectedResult.get( messageKey ), bundle.getString( messageKey ) );
+    }
+
   }
 }

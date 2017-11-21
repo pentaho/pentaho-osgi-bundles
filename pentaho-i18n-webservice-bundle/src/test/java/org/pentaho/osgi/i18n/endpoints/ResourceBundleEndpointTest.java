@@ -26,7 +26,6 @@ import javax.ws.rs.core.Response.Status;
 import java.util.ResourceBundle;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
@@ -49,9 +48,8 @@ public class ResourceBundleEndpointTest {
     when( this.localizationService.getResourceBundle( anyString(), anyString() ) ).thenReturn( null );
 
     Response response = this.endpoint.getResourceBundle( "", "" );
-    assertNotNull( response );
-
     Status actualStatus = Status.fromStatusCode( response.getStatus() );
+
     assertEquals( Status.NOT_FOUND, actualStatus );
   }
 
@@ -59,13 +57,13 @@ public class ResourceBundleEndpointTest {
   public void testGetResourceBundleOK() {
     String moduleID = "foobar_1";
     String locale = "en";
+
     ResourceBundle resourceBundle = mock( ResourceBundle.class );
-
     when( this.localizationService.getResourceBundle( eq( moduleID ), eq( locale ) ) ).thenReturn( resourceBundle );
-    Response response = this.endpoint.getResourceBundle( moduleID, locale );
-    assertNotNull( response );
 
+    Response response = this.endpoint.getResourceBundle( moduleID, locale );
     Status actualStatus = Status.fromStatusCode( response.getStatus() );
+
     assertEquals( Status.OK, actualStatus );
   }
 

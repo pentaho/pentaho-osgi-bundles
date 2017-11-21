@@ -59,7 +59,7 @@ public class PentahoWebPackageLocalizationServiceTest {
   @Test
   public void testGetResourceBundleNoResourceBundle() {
     String resourcePath = "/path/to/resource";
-    Locale locale = Locale.getDefault();
+    Locale locale = Locale.ENGLISH;
 
     setupGetResourceBundleTest( resourcePath, locale );
 
