@@ -22,11 +22,11 @@ import org.osgi.framework.BundleEvent;
 import org.osgi.framework.BundleListener;
 import org.osgi.framework.wiring.BundleWiring;
 import org.pentaho.webpackage.core.PentahoWebPackage;
-import org.pentaho.webpackage.core.PentahoWebPackageBundle;
 import org.pentaho.webpackage.core.PentahoWebPackageResource;
 import org.pentaho.webpackage.core.PentahoWebPackageService;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Dictionary;
 import java.util.HashMap;
 import java.util.Map;
@@ -35,7 +35,7 @@ import java.util.Map;
  * Implementation of the WebContainer service.
  */
 public class PentahoWebPackageServiceImpl implements PentahoWebPackageService, BundleListener {
-  private final Map<Long, PentahoWebPackageBundleImpl> pentahoWebPackageBundles = new HashMap<>();
+  private final Map<Long, PentahoWebPackageBundleImpl> pentahoWebPackageBundles = Collections.synchronizedMap( new HashMap<>() );
 
   @Override
   public void bundleChanged( BundleEvent bundleEvent ) {
@@ -56,10 +56,8 @@ public class PentahoWebPackageServiceImpl implements PentahoWebPackageService, B
     PentahoWebPackageBundleImpl extendedBundle = extendBundle( bundle );
 
     if ( extendedBundle != null ) {
-      synchronized ( this.pentahoWebPackageBundles ) {
-        if ( this.pentahoWebPackageBundles.putIfAbsent( bundle.getBundleId(), extendedBundle ) != null ) {
-          return;
-        }
+      if ( this.pentahoWebPackageBundles.putIfAbsent( bundle.getBundleId(), extendedBundle ) != null ) {
+        return;
       }
 
       extendedBundle.init();
@@ -112,13 +110,11 @@ public class PentahoWebPackageServiceImpl implements PentahoWebPackageService, B
   }
 
   PentahoWebPackage findWebPackage( String name, String version ) {
-    synchronized ( this.pentahoWebPackageBundles ) {
-      Collection<PentahoWebPackageBundleImpl> bundles = this.pentahoWebPackageBundles.values();
-      for ( PentahoWebPackageBundleImpl bundle : bundles ) {
-        PentahoWebPackage webPackage = bundle.findWebPackage( name, version );
-        if ( webPackage != null ) {
-          return webPackage;
-        }
+    Collection<PentahoWebPackageBundleImpl> bundles = this.pentahoWebPackageBundles.values();
+    for ( PentahoWebPackageBundleImpl bundle : bundles ) {
+      PentahoWebPackage webPackage = bundle.findWebPackage( name, version );
+      if ( webPackage != null ) {
+        return webPackage;
       }
     }
 
