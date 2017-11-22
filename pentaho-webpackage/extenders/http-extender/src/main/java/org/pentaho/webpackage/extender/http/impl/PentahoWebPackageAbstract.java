@@ -18,14 +18,20 @@
 
 package org.pentaho.webpackage.extender.http.impl;
 
+import org.osgi.framework.Bundle;
 import org.pentaho.webpackage.core.PentahoWebPackage;
+import org.pentaho.webpackage.core.PentahoWebPackageBundle;
 
-public abstract class PentahoWebPackageAbstract implements PentahoWebPackage {
+abstract class PentahoWebPackageAbstract implements PentahoWebPackage {
   private final String name;
   private final String version;
   private final String resourceRootPath;
 
-  PentahoWebPackageAbstract( String name, String version, String resourceRootPath ) {
+  private final PentahoWebPackageBundle webPackageBundle;
+
+  PentahoWebPackageAbstract( PentahoWebPackageBundle webPackageBundle, String name, String version, String resourceRootPath ) {
+    this.webPackageBundle = webPackageBundle;
+
     this.name = name;
     this.version = version;
     this.resourceRootPath = resourceRootPath;
@@ -41,5 +47,9 @@ public abstract class PentahoWebPackageAbstract implements PentahoWebPackage {
 
   public String getResourceRootPath() {
     return this.resourceRootPath;
+  }
+
+  public Bundle getBundle() {
+    return this.webPackageBundle.getBundle();
   }
 }

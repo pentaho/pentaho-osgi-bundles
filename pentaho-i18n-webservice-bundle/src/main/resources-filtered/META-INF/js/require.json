@@ -1,0 +1,10 @@
+{
+  "paths": {
+    "pentaho/i18n-osgi": "/${project.amd-versioned-url}/js/i18n"
+  },
+  "map": {
+    "pentaho/i18n-osgi": {
+      "whatwg-fetch": "whatwg-fetch_${whatwg-fetch.version}"
+    }
+  }
+}

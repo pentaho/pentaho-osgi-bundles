@@ -10,7 +10,6 @@
   </parent>
 
   <artifactId>archive-deployer-impl</artifactId>
-  <version>8.1-SNAPSHOT</version>
 
   <packaging>bundle</packaging>
 

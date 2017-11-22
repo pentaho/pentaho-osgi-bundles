@@ -39,19 +39,24 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class PentahoWebPackageBundleImpl implements PentahoWebPackageBundle {
+class PentahoWebPackageBundleImpl implements PentahoWebPackageBundle {
   private static Logger logger = LoggerFactory.getLogger( PentahoWebPackageBundleImpl.class );
 
   private static final JSONParser parser = new JSONParser();
 
   private final Bundle bundle;
 
-  private ArrayList<PentahoWebPackage> pentahoWebPackages;
+  private ArrayList<PentahoWebPackageImpl> pentahoWebPackages;
 
   PentahoWebPackageBundleImpl( Bundle bundle ) {
     this.bundle = bundle;
 
     this.pentahoWebPackages = new ArrayList<>();
+  }
+
+  @Override
+  public Bundle getBundle() {
+    return this.bundle;
   }
 
   private static Map<String, Object> parsePackageJson( URL resourceUrl ) throws IOException, ParseException {
@@ -64,8 +69,7 @@ public class PentahoWebPackageBundleImpl implements PentahoWebPackageBundle {
     return (Map<String, Object>) parser.parse( bufferedReader );
   }
 
-  @Override
-  public void init() {
+  void init() {
     BundleWiring wiring = this.bundle.adapt( BundleWiring.class );
 
     if ( wiring != null ) {
@@ -90,7 +94,7 @@ public class PentahoWebPackageBundleImpl implements PentahoWebPackageBundle {
             String version = (String) packageJson.get( "version" );
 
             if ( name != null && version != null ) {
-              this.pentahoWebPackages.add( new PentahoWebPackageImpl( this.bundle, name, version, ( root.isEmpty() ? "/" : root ) ) );
+              this.pentahoWebPackages.add( new PentahoWebPackageImpl( this, name, version, ( root.isEmpty() ? "/" : root ) ) );
             }
           } else {
             logger.warn( this.bundle.getSymbolicName() + " [" + this.bundle.getBundleId() + "]: " + root + "/package.json not found." );
@@ -108,13 +112,21 @@ public class PentahoWebPackageBundleImpl implements PentahoWebPackageBundle {
         }
       } );
 
-      this.pentahoWebPackages.forEach( PentahoWebPackage::init );
+      this.pentahoWebPackages.forEach( PentahoWebPackageImpl::init );
     }
   }
 
-  @Override
-  public void destroy() {
-    this.pentahoWebPackages.forEach( PentahoWebPackage::destroy );
+  void destroy() {
+    this.pentahoWebPackages.forEach( PentahoWebPackageImpl::destroy );
   }
 
+  PentahoWebPackage findWebPackage( String name, String version ) {
+    for ( PentahoWebPackageImpl webPackage : this.pentahoWebPackages ) {
+      if ( webPackage.getName().equals( name ) && webPackage.getVersion().equals( version ) ) {
+        return webPackage;
+      }
+    }
+
+    return null;
+  }
 }

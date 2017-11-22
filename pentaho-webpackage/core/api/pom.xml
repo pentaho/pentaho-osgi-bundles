@@ -10,7 +10,6 @@
   </parent>
 
   <artifactId>core-api</artifactId>
-  <version>8.1-SNAPSHOT</version>
 
   <packaging>bundle</packaging>
 

@@ -12,14 +12,13 @@
  * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  * See the GNU Lesser General Public License for more details.
  *
- *
  * Copyright 2017 Hitachi Vantara. All rights reserved.
  */
 
-package org.pentaho.webpackage.core;
+package org.pentaho.osgi.i18n;
 
-import org.osgi.framework.Bundle;
+import java.util.ResourceBundle;
 
-public interface PentahoWebPackageBundle {
-  Bundle getBundle();
+public interface IPentahoWebPackageLocalizationService {
+  ResourceBundle getResourceBundle( String moduleID, String locale );
 }

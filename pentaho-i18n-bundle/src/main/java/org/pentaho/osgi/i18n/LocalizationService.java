@@ -17,15 +17,10 @@
 
 package org.pentaho.osgi.i18n;
 
-import java.util.List;
 import java.util.Locale;
 import java.util.ResourceBundle;
-import java.util.regex.Pattern;
 
-/**
- * Created by bryan on 9/5/14.
- */
 public interface LocalizationService {
-  public ResourceBundle getResourceBundle( String name, Locale locale );
-  public List<ResourceBundle> getResourceBundles( Pattern keyRegex, Locale locale );
+  ResourceBundle getResourceBundle( ClassLoader loader, String key, Locale locale );
+  ResourceBundle getResourceBundle( Class clazz, String key, Locale locale );
 }

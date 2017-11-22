@@ -20,18 +20,28 @@ package org.pentaho.webpackage.extender.http.impl;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleEvent;
 import org.osgi.framework.BundleListener;
-import org.pentaho.webpackage.core.PentahoWebPackageBundle;
+import org.osgi.framework.wiring.BundleWiring;
+import org.pentaho.webpackage.core.PentahoWebPackage;
+import org.pentaho.webpackage.core.PentahoWebPackageResource;
 import org.pentaho.webpackage.core.PentahoWebPackageService;
 
+import java.util.Collection;
 import java.util.Dictionary;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * Implementation of the WebContainer service.
  */
 public class PentahoWebPackageServiceImpl implements PentahoWebPackageService, BundleListener {
-  private final Map<Long, PentahoWebPackageBundle> pentahoWebPackageBundles = new HashMap<>();
+  private final ReadWriteLock readWriteLock = new ReentrantReadWriteLock();
+  private final Lock writeLock = readWriteLock.writeLock();
+  private final Lock readLock = readWriteLock.readLock();
+
+  private final Map<Long, PentahoWebPackageBundleImpl> pentahoWebPackageBundles = new HashMap<>();
 
   @Override
   public void bundleChanged( BundleEvent bundleEvent ) {
@@ -49,17 +59,23 @@ public class PentahoWebPackageServiceImpl implements PentahoWebPackageService, B
 
   @Override
   public void addBundle( Bundle bundle ) {
-    PentahoWebPackageBundle extendedBundle = extendBundle( bundle );
+    PentahoWebPackageBundleImpl extendedBundle = extendBundle( bundle );
 
     if ( extendedBundle != null ) {
-      synchronized ( this.pentahoWebPackageBundles ) {
+      this.writeLock.lock();
+
+      try {
         if ( this.pentahoWebPackageBundles.putIfAbsent( bundle.getBundleId(), extendedBundle ) != null ) {
           return;
         }
+
+      } finally {
+        this.writeLock.unlock();
       }
 
       extendedBundle.init();
     }
+
   }
 
   @Override
@@ -68,10 +84,71 @@ public class PentahoWebPackageServiceImpl implements PentahoWebPackageService, B
       return;
     }
 
-    PentahoWebPackageBundle pwpc = this.pentahoWebPackageBundles.remove( bundle.getBundleId() );
-    if ( pwpc != null ) {
-      pwpc.destroy();
+    this.writeLock.lock();
+
+    try {
+      PentahoWebPackageBundleImpl pwpc = this.pentahoWebPackageBundles.remove( bundle.getBundleId() );
+
+      if ( pwpc != null ) {
+        pwpc.destroy();
+      }
+
+    } finally {
+      this.writeLock.unlock();
     }
+
+  }
+
+  @Override
+  public PentahoWebPackageResource resolve( String moduleId ) {
+    int index = 0;
+
+    boolean moduleIdIncludesOrganization = moduleId.indexOf( '@' ) == 0;
+    if ( moduleIdIncludesOrganization ) {
+      index = moduleId.indexOf( '/', 1 ) + 1;
+    }
+
+    index = moduleId.indexOf( '/', index );
+
+    String baseModuleId = moduleId.substring( 0, index );
+
+    int versionSeparatorIndex = baseModuleId.lastIndexOf( '_' );
+
+    if ( versionSeparatorIndex == -1 ) {
+      return null;
+    }
+
+    String packageName = baseModuleId.substring( 0, versionSeparatorIndex );
+    String packageVersion = baseModuleId.substring( versionSeparatorIndex + 1 );
+
+    PentahoWebPackage webPackage = findWebPackage( packageName, packageVersion );
+    if ( webPackage == null ) {
+      return null;
+    }
+
+    String resourcePath = webPackage.getResourceRootPath() + "/" + moduleId.substring( index + 1 );
+    ClassLoader classLoader = webPackage.getBundle().adapt( BundleWiring.class ).getClassLoader();
+
+    return new PentahoWebPackageResourceImpl( resourcePath, classLoader );
+  }
+
+  PentahoWebPackage findWebPackage( String name, String version ) {
+    this.readLock.lock();
+
+    try {
+      Collection<PentahoWebPackageBundleImpl> bundles = this.pentahoWebPackageBundles.values();
+      for ( PentahoWebPackageBundleImpl bundle : bundles ) {
+        PentahoWebPackage webPackage = bundle.findWebPackage( name, version );
+        if ( webPackage != null ) {
+          return webPackage;
+        }
+      }
+
+    } finally {
+      this.readLock.unlock();
+    }
+
+    return null;
   }
 
   private PentahoWebPackageBundleImpl extendBundle( final Bundle bundle ) {

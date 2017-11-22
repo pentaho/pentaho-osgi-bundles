@@ -20,33 +20,26 @@ package org.pentaho.webpackage.extender.http.impl;
 
 import org.ops4j.pax.web.extender.whiteboard.ResourceMapping;
 import org.ops4j.pax.web.extender.whiteboard.runtime.DefaultResourceMapping;
-import org.osgi.framework.Bundle;
-import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
+import org.pentaho.webpackage.core.PentahoWebPackageBundle;
 
-public class PentahoWebPackageImpl extends PentahoWebPackageAbstract {
-  private final BundleContext bundleContext;
-
+class PentahoWebPackageImpl extends PentahoWebPackageAbstract {
   private ServiceRegistration<?> serviceReference;
 
-  PentahoWebPackageImpl( Bundle bundle, String name, String version, String resourceRootPath ) {
-    super( name, version, resourceRootPath );
-
-    this.bundleContext = bundle.getBundleContext();
+  PentahoWebPackageImpl( PentahoWebPackageBundle bundle, String name, String version, String resourceRootPath ) {
+    super( bundle, name, version, resourceRootPath );
   }
 
-  @Override
-  public void init() {
+  void init() {
     // Register resource mapping in httpService whiteboard
     DefaultResourceMapping resourceMapping = new DefaultResourceMapping();
     resourceMapping.setAlias( "/" + this.getName() + "/" + this.getVersion() );
     resourceMapping.setPath( this.getResourceRootPath() );
 
-    this.serviceReference = this.bundleContext.registerService( ResourceMapping.class.getName(), resourceMapping, null );
+    this.serviceReference = this.getBundle().getBundleContext().registerService( ResourceMapping.class.getName(), resourceMapping, null );
   }
 
-  @Override
-  public void destroy() {
+  void destroy() {
     if ( this.serviceReference != null ) {
       try {
         this.serviceReference.unregister();

@@ -12,7 +12,6 @@
 
   <groupId>org.pentaho.webpackage</groupId>
   <artifactId>pentaho-webpackage-modules</artifactId>
-  <version>8.1-SNAPSHOT</version>
 
   <packaging>pom</packaging>
 
