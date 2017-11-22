@@ -63,16 +63,19 @@ public class PentahoWebPackageServiceImpl implements PentahoWebPackageService, B
 
     if ( extendedBundle != null ) {
       this.writeLock.lock();
+
       try {
         if ( this.pentahoWebPackageBundles.putIfAbsent( bundle.getBundleId(), extendedBundle ) != null ) {
           return;
         }
+
       } finally {
         this.writeLock.unlock();
       }
 
       extendedBundle.init();
     }
+
   }
 
   @Override
@@ -82,12 +85,14 @@ public class PentahoWebPackageServiceImpl implements PentahoWebPackageService, B
     }
 
     this.writeLock.lock();
+
     try {
       PentahoWebPackageBundleImpl pwpc = this.pentahoWebPackageBundles.remove( bundle.getBundleId() );
 
       if ( pwpc != null ) {
         pwpc.destroy();
       }
+
     } finally {
       this.writeLock.unlock();
     }
@@ -128,9 +133,9 @@ public class PentahoWebPackageServiceImpl implements PentahoWebPackageService, B
   }
 
   PentahoWebPackage findWebPackage( String name, String version ) {
-    try {
-      this.readLock.lock();
+    this.readLock.lock();
 
+    try {
       Collection<PentahoWebPackageBundleImpl> bundles = this.pentahoWebPackageBundles.values();
       for ( PentahoWebPackageBundleImpl bundle : bundles ) {
         PentahoWebPackage webPackage = bundle.findWebPackage( name, version );
@@ -138,6 +143,7 @@ public class PentahoWebPackageServiceImpl implements PentahoWebPackageService, B
           return webPackage;
         }
       }
+
     } finally {
       this.readLock.unlock();
     }
