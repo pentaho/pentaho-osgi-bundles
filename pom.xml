@@ -56,7 +56,7 @@
     <pax-web-extender-whiteboard.version>3.1.4</pax-web-extender-whiteboard.version>
     <junit.version>4.11</junit.version>
     <felix-fileinstall.version>3.4.2</felix-fileinstall.version>
-    <cxf.version>3.0.6</cxf.version>
+    <cxf.version>3.0.13</cxf.version>
     <requirejs.version>2.1.19</requirejs.version>
     <felix.version>4.2.1</felix.version>
     <guava.version>17.0</guava.version>
