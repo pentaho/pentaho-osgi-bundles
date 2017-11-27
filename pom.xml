@@ -56,7 +56,7 @@
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <karaf.version>3.0.3</karaf.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <cxf.version>3.0.6</cxf.version>
+    <cxf.version>3.0.13</cxf.version>
     <felix-fileinstall.version>3.4.2</felix-fileinstall.version>
     <org.apache.felix.http.api.version>2.3.2</org.apache.felix.http.api.version>
     <pax-web-extender-whiteboard.version>3.1.4</pax-web-extender-whiteboard.version>
