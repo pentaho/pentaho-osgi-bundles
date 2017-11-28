@@ -5,7 +5,9 @@
   <title>Test i18n</title>
 
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
-  <script src="/requirejs-manager/js/require-init.js"></script>
+  <!-- Requesting webcontext.js one level above to workaround the filter on PDI issue (BACKLOG-17885) -->
+  <!-- Remove '../' when not needed -->
+  <script type="text/javascript" src="../webcontext.js?requireJsOnly=true"></script>
 
   <script type="text/javascript">
     require(["dojo/request", "dojo/query", "dojo/domReady!"], function( request, query ){
