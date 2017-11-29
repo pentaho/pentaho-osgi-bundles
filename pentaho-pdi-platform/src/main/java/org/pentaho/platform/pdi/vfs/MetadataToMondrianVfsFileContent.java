@@ -35,13 +35,19 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
+import java.nio.charset.Charset;
 import java.security.cert.Certificate;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
 public class MetadataToMondrianVfsFileContent implements FileContent {
 
   private MetadataToMondrianVfsFileObject fileObject;
+
+  private static final String ENCODING = "encoding";
+
+  private HashMap<String, Object> attributeMap;
 
   private InputStream inputStream = null;
 
@@ -50,6 +56,7 @@ public class MetadataToMondrianVfsFileContent implements FileContent {
   public MetadataToMondrianVfsFileContent( final MetadataToMondrianVfsFileObject fileObject ) {
     super();
     this.fileObject = fileObject;
+    attributeMap = new HashMap<>();
   }
 
   public FileObject getFile() {
@@ -72,30 +79,27 @@ public class MetadataToMondrianVfsFileContent implements FileContent {
   }
 
   public boolean hasAttribute( final String attrName ) {
-    return false;
+    return attributeMap.containsKey( attrName );
   }
 
   public void removeAttribute( final String attrName ) {
+    attributeMap.remove( attrName );
   }
 
   public Map getAttributes() throws FileSystemException {
-    // not needed for our usage
-    return null;
+    return attributeMap;
   }
 
   public String[] getAttributeNames() throws FileSystemException {
-    // not needed for our usage
-    return null;
+    return (String[]) attributeMap.keySet().toArray();
   }
 
-  public Object getAttribute( final String arg0 ) throws FileSystemException {
-    // not needed for our usage
-    return null;
+  public Object getAttribute( final String attr ) throws FileSystemException {
+    return attributeMap.get( attr );
   }
 
-  public void setAttribute( final String arg0, final Object arg1 ) throws FileSystemException {
-    // not needed for our usage
-
+  public void setAttribute( final String attrKey, final Object attrVal ) throws FileSystemException {
+    attributeMap.put( attrKey, attrVal );
   }
 
   public Certificate[] getCertificates() throws FileSystemException {
@@ -132,7 +136,12 @@ public class MetadataToMondrianVfsFileContent implements FileContent {
       MondrianModelExporter exporter = new MondrianModelExporter( lModel, locale );
       String mondrianSchema = exporter.createMondrianModelXML();
 
-      inputStream = new ByteArrayInputStream( mondrianSchema.getBytes() );
+      String encoding = (String) getAttribute( ENCODING );
+
+      if ( encoding == null ) {
+        encoding = Charset.defaultCharset().name();
+      }
+      inputStream = new ByteArrayInputStream( mondrianSchema.getBytes( encoding ) );
     } catch ( Exception e ) {
       throw new FileSystemException( e.getLocalizedMessage(), e );
     }
