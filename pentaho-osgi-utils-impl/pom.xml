@@ -95,19 +95,19 @@
     <dependency>
       <groupId>pentaho</groupId>
       <artifactId>pentaho-platform-api</artifactId>
-      <version>${dependency.pentaho-platform.revision}</version>
+      <version>${platform.version}</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>pentaho</groupId>
       <artifactId>pentaho-platform-core</artifactId>
-      <version>${dependency.pentaho-platform.revision}</version>
+      <version>${platform.version}</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>pentaho</groupId>
       <artifactId>pentaho-service-coordinator</artifactId>
-      <version>${dependency.pentaho-platform.revision}</version>
+      <version>${platform.version}</version>
       <scope>compile</scope>
     </dependency>
   </dependencies>
