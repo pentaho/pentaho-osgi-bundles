@@ -65,6 +65,16 @@ public class DefaultCapabilityManager implements ICapabilityManager {
     return null;
   }
 
+  @Override public boolean capabilityExist( String id ) {
+    for ( ICapabilityProvider iCapabilityProvider : providers.values() ) {
+      ICapability capabilityById = iCapabilityProvider.getCapabilityById( id );
+      if( capabilityById != null ) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   @Override public Set<ICapability> getAllCapabilities() {
     Set<ICapability> capabilities = new HashSet<ICapability>();
     for ( ICapabilityProvider iCapabilityProvider : providers.values() ) {

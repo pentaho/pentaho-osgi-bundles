@@ -80,8 +80,22 @@ public class DefaultCapabilityManagerTest {
 
     ICapability foo = manager.getCapabilityById( "foo" );
     assertSame( capability, foo );
+  }
 
+  @Test
+  public void testCapabilityExist() throws Exception {
 
+    ICapabilityProvider iCapabilityProvider = mock( ICapabilityProvider.class );
+    when(iCapabilityProvider.getId()).thenReturn( "test" );
+    ICapability capability = mock( ICapability.class );
+    when(iCapabilityProvider.getCapabilityById( "foo" )).thenReturn( capability );
+    manager.registerCapabilityProvider( iCapabilityProvider );
+
+    boolean exists = manager.capabilityExist( "foo" );
+    assertSame( true, exists );
+
+    boolean doesNotExist = manager.capabilityExist( "bad" );
+    assertSame( false, doesNotExist );
   }
 
   @Test

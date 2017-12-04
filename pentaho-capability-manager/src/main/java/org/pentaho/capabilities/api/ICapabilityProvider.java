@@ -32,6 +32,15 @@ public interface ICapabilityProvider {
    */
   ICapability getCapabilityById( String id );
 
+
+  /**
+   * Returns true if capability exists, if not return false
+   *
+   * @param id
+   * @return
+   */
+  boolean capabilityExist(String id);
+
   /**
    * Get a set containing all ICapabilities
    *
