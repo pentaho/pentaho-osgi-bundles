@@ -67,7 +67,6 @@
     <karaf.version>3.0.3</karaf.version>
   </properties>
   <build>
-    <finalName>${project.artifactId}</finalName>
     <plugins>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
@@ -120,6 +119,7 @@
         <module>pentaho-object-tunnel</module>
         <module>pentaho-zookeeper-fragment</module>
         <module>pentaho-bundle-resource-manager</module>
+        <module>pentaho-metastore-locator-api</module>
       </modules>
     </profile>
     <profile>
@@ -135,7 +135,7 @@
         <module>pentaho-proxy-factory</module>
         <module>pentaho-proxy-spring4</module>
         <module>pentaho-kettle-repository-locator</module>
-        <module>pentaho-metastore-locator</module>
+        <module>pentaho-metastore-locator-impl</module>
         <module>pentaho-pdi-platform</module>
         <module>pentaho-camel-guava-eventbus</module>
       </modules>
