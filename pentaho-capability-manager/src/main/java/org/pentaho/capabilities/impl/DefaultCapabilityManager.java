@@ -87,8 +87,7 @@ public class DefaultCapabilityManager implements ICapabilityManager {
 
   @Override public boolean capabilityExist( String id ) {
     for ( ICapabilityProvider iCapabilityProvider : providers.values() ) {
-      ICapability capabilityById = iCapabilityProvider.getCapabilityById( id );
-      if ( capabilityById != null ) {
+      if ( iCapabilityProvider.capabilityExist( id ) ) {
         return true;
       }
     }

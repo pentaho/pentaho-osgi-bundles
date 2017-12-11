@@ -107,9 +107,7 @@ public class DefaultCapabilityManagerTest {
   public void testCapabilityExist() throws Exception {
 
     ICapabilityProvider iCapabilityProvider = mock( ICapabilityProvider.class );
-    when(iCapabilityProvider.getId()).thenReturn( "test" );
-    ICapability capability = mock( ICapability.class );
-    when(iCapabilityProvider.getCapabilityById( "foo" )).thenReturn( capability );
+    when(iCapabilityProvider.capabilityExist("foo")).thenReturn( true);
     manager.registerCapabilityProvider( iCapabilityProvider );
 
     boolean exists = manager.capabilityExist( "foo" );
