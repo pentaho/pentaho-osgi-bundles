@@ -1,16 +1,11 @@
-/*! ******************************************************************************
- *
- * Pentaho Data Integration
- *
- * Copyright (C) 2002-2017 by Hitachi Vantara : http://www.pentaho.com
- *
- *******************************************************************************
+/*!
+ * Copyright 2010 - 2018 Hitachi Vantara.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with
- * the License. You may obtain a copy of the License at
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -18,8 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- ******************************************************************************/
-
+ */
 package org.pentaho.caching.spi;
 
 import com.google.common.base.Enums;
@@ -34,7 +28,10 @@ import javax.cache.configuration.CompleteConfiguration;
 import javax.cache.configuration.MutableConfiguration;
 import java.util.Map;
 
-import static org.pentaho.caching.api.Constants.*;
+import static org.pentaho.caching.api.Constants.CONFIG_STORE_BY_VALUE;
+import static org.pentaho.caching.api.Constants.CONFIG_TTL;
+import static org.pentaho.caching.api.Constants.CONFIG_TTL_RESET;
+import static org.pentaho.caching.api.Constants.CONFIG_TTL_RESET_DEFAULT;
 
 /**
  * @author nhudak

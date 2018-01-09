@@ -1,16 +1,11 @@
-/*! ******************************************************************************
- *
- * Pentaho Data Integration
- *
- * Copyright (C) 2002-2017 by Hitachi Vantara : http://www.pentaho.com
- *
- *******************************************************************************
+/*!
+ * Copyright 2010 - 2018 Hitachi Vantara.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with
- * the License. You may obtain a copy of the License at
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -18,8 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- ******************************************************************************/
-
+ */
 package org.pentaho.authentication.mapper.impl;
 
 import java.io.IOException;
@@ -36,8 +30,6 @@ import org.pentaho.authentication.mapper.api.MappingException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Multimaps;
 import com.google.common.collect.SortedSetMultimap;
 
@@ -45,11 +37,8 @@ import com.google.common.collect.SortedSetMultimap;
  * @author bryan
  */
 public class AuthenticationMappingManagerImpl implements AuthenticationMappingManager {
-  private static final TypeReference<Map<String, Object>> CONFIG_TYPE = new TypeReference<Map<String, Object>>() {
-  };
 
   private Logger LOGGER = LoggerFactory.getLogger( AuthenticationMappingManagerImpl.class );
-  private final ObjectMapper objectMapper = new ObjectMapper();
   private final SortedSetMultimap<TypePair, RankedAuthService> serviceMap = Multimaps.synchronizedSortedSetMultimap(
       Multimaps.newSortedSetMultimap( new HashMap<>(), TreeSet::new )
   );

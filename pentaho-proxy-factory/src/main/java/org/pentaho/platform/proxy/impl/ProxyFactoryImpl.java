@@ -1,7 +1,20 @@
-package org.pentaho.platform.proxy.impl;
+/*!
+ * Copyright 2010 - 2018 Hitachi Vantara.  All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */package org.pentaho.platform.proxy.impl;
 
-import org.osgi.framework.BundleContext;
-import org.osgi.util.tracker.ServiceTracker;
 import org.pentaho.osgi.api.ProxyUnwrapper;
 import org.pentaho.platform.api.engine.IPentahoObjectReference;
 import org.pentaho.platform.api.engine.IPentahoObjectRegistration;
@@ -32,7 +45,7 @@ public class ProxyFactoryImpl implements IProxyFactory {
   @Override public <T, K> K createProxy( T target ) throws ProxyException {
     Class<T> targetClass = (Class<T>) target.getClass();
 
-    if( proxyUnwrapper != null ){
+    if ( proxyUnwrapper != null ) {
       // make sure we're dealing with the real target, not a proxy from OSGI
       target = (T) proxyUnwrapper.unwrap( target );
       targetClass = (Class<T>) target.getClass();
@@ -48,11 +61,11 @@ public class ProxyFactoryImpl implements IProxyFactory {
 
     outer:
     while ( parentClass != null ) {
-      for ( IProxyCreator<?> creator : creators) {
+      for ( IProxyCreator<?> creator : creators ) {
         if ( creator.supports( parentClass ) ) {
           logger.debug( "Proxy creator found for : " + targetClass + " : " + creator.getClass() );
           proxyWrapper = (K) creator.create( target );
-          if( proxyWrapper != null ) {
+          if ( proxyWrapper != null ) {
             break outer;
           }
         }
@@ -73,7 +86,7 @@ public class ProxyFactoryImpl implements IProxyFactory {
             if ( creator.supports( anInterface ) ) {
               logger.debug( "Proxy creator found for : " + targetClass + " : " + creator.getClass() );
               proxyWrapper = (K) creator.create( target );
-              if( proxyWrapper != null ) {
+              if ( proxyWrapper != null ) {
                 break outer;
               }
             }
@@ -102,7 +115,7 @@ public class ProxyFactoryImpl implements IProxyFactory {
 
     Class<K> proxyWrapperClass = (Class<K>) proxyWrapper.getClass();
     Class parent = proxyWrapperClass;
-    while( parent != null ){
+    while ( parent != null ) {
       publishedClasses.add( parent );
       parent = parent.getSuperclass();
     }

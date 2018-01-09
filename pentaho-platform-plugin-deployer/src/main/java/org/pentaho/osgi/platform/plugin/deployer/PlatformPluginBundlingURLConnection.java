@@ -1,16 +1,11 @@
-/*! ******************************************************************************
- *
- * Pentaho Data Integration
- *
- * Copyright (C) 2002-2017 by Hitachi Vantara : http://www.pentaho.com
- *
- *******************************************************************************
+/*!
+ * Copyright 2010 - 2018 Hitachi Vantara.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with
- * the License. You may obtain a copy of the License at
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -18,8 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- ******************************************************************************/
-
+ */
 package org.pentaho.osgi.platform.plugin.deployer;
 
 import org.apache.karaf.util.DeployerUtils;
@@ -125,15 +119,15 @@ public class PlatformPluginBundlingURLConnection extends URLConnection {
       new PluginZipFileProcessor( pluginFileHandlers, isPluginProcessedBefore, nameVersion[ 0 ],
         nameVersion[ 0 ], nameVersion[ 1 ] );
     pluginZipFileProcessor.processBackground( executorService, () -> {
-        try {
-          URLConnection connection = getURL().openConnection();
-          InputStream connectionInputStream = connection.getInputStream();
-          ZipInputStream zipInputStream = new ZipInputStream( connectionInputStream );
-          return zipInputStream;
-        } catch ( IOException ioe ) {
-          throw new RuntimeException( ioe );
-        }
-      }, zipOutputStream,
+      try {
+        URLConnection connection = getURL().openConnection();
+        InputStream connectionInputStream = connection.getInputStream();
+        ZipInputStream zipInputStream = new ZipInputStream( connectionInputStream );
+        return zipInputStream;
+      } catch ( IOException ioe ) {
+        throw new RuntimeException( ioe );
+      }
+    }, zipOutputStream,
       pipedInputStream );
     return pipedInputStream;
 
