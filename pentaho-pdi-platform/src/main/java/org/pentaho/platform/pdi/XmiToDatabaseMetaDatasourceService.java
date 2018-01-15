@@ -1,20 +1,19 @@
 /*!
-* This program is free software; you can redistribute it and/or modify it under the
-* terms of the GNU Lesser General Public License, version 2.1 as published by the Free Software
-* Foundation.
-*
-* You should have received a copy of the GNU Lesser General Public License along with this
-* program; if not, you can obtain a copy at http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html
-* or from the Free Software Foundation, Inc.,
-* 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-*
-* This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
-* without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-* See the GNU Lesser General Public License for more details.
-*
-* Copyright (c) 2002-2017 Hitachi Vantara..  All rights reserved.
-*/
-
+ * Copyright 2010 - 2018 Hitachi Vantara.  All rights reserved.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
+ */
 package org.pentaho.platform.pdi;
 
 import java.io.File;
@@ -48,19 +47,19 @@ public class XmiToDatabaseMetaDatasourceService implements IDBDatasourceService 
     // TODO impl cache
   }
 
-  public void clearDataSource(String dsName) {
+  public void clearDataSource( String dsName ) {
     // TODO impl cache
   }
 
-  public String getDSBoundName(String dsName) throws DBDatasourceServiceException {
+  public String getDSBoundName( String dsName ) throws DBDatasourceServiceException {
     return dsName;
   }
 
-  public String getDSUnboundName(String dsName) {
+  public String getDSUnboundName( String dsName ) {
     return dsName;
   }
 
-  public DataSource getDataSource(String dsName) throws DBDatasourceServiceException {
+  public DataSource getDataSource( String dsName ) throws DBDatasourceServiceException {
     Domain domain = null;
     try {
       InputStream inStream;
@@ -71,43 +70,43 @@ public class XmiToDatabaseMetaDatasourceService implements IDBDatasourceService 
       } else {
         inStream = new URL( dsName ).openStream();
       }
-      domain = parser.parseXmi(inStream);
-    } catch (Exception e) {
-      throw new DBDatasourceServiceException(e);
+      domain = parser.parseXmi( inStream );
+    } catch ( Exception e ) {
+      throw new DBDatasourceServiceException( e );
     }
 
-    if (domain.getPhysicalModels().size() == 0 || 
-        !(domain.getPhysicalModels().get(0) instanceof SqlPhysicalModel)) {
-      throw new DBDatasourceServiceException("No SQL Physical Model Available");
-      
+    if ( domain.getPhysicalModels().size() == 0 || !( domain.getPhysicalModels().get(
+        0 ) instanceof SqlPhysicalModel ) ) {
+      throw new DBDatasourceServiceException( "No SQL Physical Model Available" );
+
     }
-    
-    SqlPhysicalModel model = (SqlPhysicalModel)domain.getPhysicalModels().get(0);
-    
-    DatabaseMeta databaseMeta = ThinModelConverter.convertToLegacy(model.getId(), model.getDatasource());
-    return new DatabaseMetaDataSource(databaseMeta);
+
+    SqlPhysicalModel model = (SqlPhysicalModel) domain.getPhysicalModels().get( 0 );
+
+    DatabaseMeta databaseMeta = ThinModelConverter.convertToLegacy( model.getId(), model.getDatasource() );
+    return new DatabaseMetaDataSource( databaseMeta );
   }
 
   class DatabaseMetaDataSource implements DataSource {
 
     DatabaseMeta databaseMeta;
-    
-    public DatabaseMetaDataSource(DatabaseMeta databaseMeta) {
+
+    public DatabaseMetaDataSource( DatabaseMeta databaseMeta ) {
       this.databaseMeta = databaseMeta;
     }
-    
+
     public Connection getConnection() throws SQLException {
-      Database database = new Database(databaseMeta);
+      Database database = new Database( databaseMeta );
       try {
         database.connect();
-      } catch (KettleException e) {
+      } catch ( KettleException e ) {
         e.printStackTrace();
-        throw new SQLException(e.getMessage());
+        throw new SQLException( e.getMessage() );
       }
       return database.getConnection();
     }
 
-    public Connection getConnection(String username, String password) throws SQLException {
+    public Connection getConnection( String username, String password ) throws SQLException {
       return null;
     }
 
@@ -119,24 +118,24 @@ public class XmiToDatabaseMetaDatasourceService implements IDBDatasourceService 
       return 0;
     }
 
-    public void setLogWriter(PrintWriter out) throws SQLException {
+    public void setLogWriter( PrintWriter out ) throws SQLException {
     }
 
-    public void setLoginTimeout(int seconds) throws SQLException {
+    public void setLoginTimeout( int seconds ) throws SQLException {
     }
-   
-    public boolean  isWrapperFor(Class<?> iface) {
+
+    public boolean isWrapperFor( Class<?> iface ) {
       return false;
     }
-    
-    public <T> T unwrap(Class<T> iface) {
+
+    public <T> T unwrap( Class<T> iface ) {
       return null;
-    } 
+    }
 
     public Logger getParentLogger() {
       return null;
     }
-    
+
   }
-  
+
 }

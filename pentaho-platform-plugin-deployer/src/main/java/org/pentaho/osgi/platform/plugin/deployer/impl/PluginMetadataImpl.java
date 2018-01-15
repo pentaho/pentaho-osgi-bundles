@@ -1,16 +1,11 @@
-/*! ******************************************************************************
- *
- * Pentaho Data Integration
- *
- * Copyright (C) 2002-2017 by Hitachi Vantara : http://www.pentaho.com
- *
- *******************************************************************************
+/*!
+ * Copyright 2010 - 2018 Hitachi Vantara.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with
- * the License. You may obtain a copy of the License at
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -18,8 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- ******************************************************************************/
-
+ */
 package org.pentaho.osgi.platform.plugin.deployer.impl;
 
 import org.pentaho.osgi.platform.plugin.deployer.api.ManifestUpdater;
@@ -80,7 +74,7 @@ public class PluginMetadataImpl implements PluginMetadata {
   @Override public void setBlueprint( Document blueprint ) {
     NodeList childNodes = blueprint.getDocumentElement().getChildNodes();
     for ( int i = 0; i < childNodes.getLength(); i++ ) {
-      Node node = this.blueprint.importNode(childNodes.item( i ), true);
+      Node node = this.blueprint.importNode( childNodes.item( i ), true );
       this.blueprint.getDocumentElement().appendChild( node );
     }
   }
@@ -88,16 +82,15 @@ public class PluginMetadataImpl implements PluginMetadata {
   @Override public void writeBlueprint( String name, OutputStream outputStream ) throws IOException {
 
     // Run any deferred tasks
-    if( runAtEndables.size() > 0 ) {
+    if ( runAtEndables.size() > 0 ) {
       ExecutorService executorService = Executors.newSingleThreadExecutor();
       runAtEndables.forEach( executorService::submit );
     }
 
     Result output = new StreamResult( outputStream );
     Document blueprint = getBlueprint();
-    Element bean = blueprint.createElementNS( BLUEPRINT_BEAN_NS,
-        "bean" );
-    bean.setAttribute( "class", "org.pentaho.platform.pdi.BundleClassloader");
+    Element bean = blueprint.createElementNS( BLUEPRINT_BEAN_NS, "bean" );
+    bean.setAttribute( "class", "org.pentaho.platform.pdi.BundleClassloader" );
     bean.setAttribute( "id", "classLoader" );
     Element argument = blueprint.createElementNS( BLUEPRINT_BEAN_NS,
         "argument" );

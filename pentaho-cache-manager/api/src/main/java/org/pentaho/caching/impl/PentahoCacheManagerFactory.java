@@ -1,16 +1,11 @@
-/*! ******************************************************************************
- *
- * Pentaho Data Integration
- *
- * Copyright (C) 2002-2017 by Hitachi Vantara : http://www.pentaho.com
- *
- *******************************************************************************
+/*!
+ * Copyright 2010 - 2018 Hitachi Vantara.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with
- * the License. You may obtain a copy of the License at
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -18,8 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- ******************************************************************************/
-
+ */
 package org.pentaho.caching.impl;
 
 import com.google.common.collect.LinkedListMultimap;
@@ -78,8 +72,8 @@ public class PentahoCacheManagerFactory implements ManagedServiceFactory {
     String filter = MessageFormat.format( "(&({0}={1})({2}=*))",
       OBJECTCLASS, PentahoCacheProvidingService.class.getName(),
       PENTAHO_CACHE_PROVIDER );
-    for ( ServiceReference<PentahoCacheProvidingService> reference :
-      bundleContext.getServiceReferences( PentahoCacheProvidingService.class, filter ) ) {
+    for ( ServiceReference<PentahoCacheProvidingService> reference
+        : bundleContext.getServiceReferences( PentahoCacheProvidingService.class, filter ) ) {
       String providerId = String.valueOf( reference.getProperty( PENTAHO_CACHE_PROVIDER ) );
       PentahoCacheProvidingService service = bundleContext.getService( reference );
       registerProvider( providerId, service );
@@ -89,10 +83,10 @@ public class PentahoCacheManagerFactory implements ManagedServiceFactory {
         String providerId = String.valueOf( event.getServiceReference().getProperty( PENTAHO_CACHE_PROVIDER ) );
         PentahoCacheProvidingService service;
         service = (PentahoCacheProvidingService) bundleContext.getService( event.getServiceReference() );
-        if( ( event.getType() & ServiceEvent.UNREGISTERING ) > 0) {
+        if ( ( event.getType() & ServiceEvent.UNREGISTERING ) > 0 ) {
           unregisterProvider( providerId, service );
         }
-        if( ( event.getType() & ServiceEvent.REGISTERED ) > 0) {
+        if ( ( event.getType() & ServiceEvent.REGISTERED ) > 0 ) {
           registerProvider( providerId, service );
         }
       }

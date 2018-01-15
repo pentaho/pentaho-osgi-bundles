@@ -1,16 +1,11 @@
-/*! ******************************************************************************
- *
- * Pentaho Data Integration
- *
- * Copyright (C) 2002-2017 by Hitachi Vantara : http://www.pentaho.com
- *
- *******************************************************************************
+/*!
+ * Copyright 2010 - 2018 Hitachi Vantara.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with
- * the License. You may obtain a copy of the License at
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -18,8 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- ******************************************************************************/
-
+ */
 package org.pentaho.osgi.platform.plugin.deployer.impl.handlers.pluginxml;
 
 import org.junit.Before;
@@ -39,7 +33,6 @@ import org.w3c.dom.NodeList;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
-import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -109,7 +102,6 @@ public class PluginXmlStaticPathsHandlerTest {
     NodeList nodeList = document.getElementsByTagNameNS( PluginXmlStaticPathsHandler.BLUEPRINT_BEAN_NS, "bean" );
     assertEquals( 1, nodeList.getLength() );
     Node node = nodeList.item( 0 );
-    NamedNodeMap namedNodeMap = node.getAttributes();
     NodeList propertyNodes = node.getChildNodes();
     assertEquals( 2, propertyNodes.getLength() );
     Node aliasNode = propertyNodes.item( 0 );
