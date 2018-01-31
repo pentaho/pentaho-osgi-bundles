@@ -35,9 +35,9 @@
       <version>1.0.13</version>
     </dependency>
     <dependency>
-      <groupId>org.apache.felix</groupId>
-      <artifactId>org.apache.felix.framework</artifactId>
-      <version>${felix.version}</version>
+      <groupId>org.osgi</groupId>
+      <artifactId>org.osgi.core</artifactId>
+      <version>${org.osgi.core.version}</version>
     </dependency>
     <dependency>
       <groupId>com.googlecode.json-simple</groupId>
