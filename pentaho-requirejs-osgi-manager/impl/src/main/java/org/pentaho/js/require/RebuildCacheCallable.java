@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.Callable;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 public class RebuildCacheCallable implements Callable<String> {
@@ -158,6 +159,12 @@ public class RebuildCacheCallable implements Callable<String> {
       sb.append( bundleName );
       sb.append( "*/\n" );
     }
+
+    this.configMap.forEach( packageConfig -> {
+      if ( packageConfig.containsKey( "scripts" ) ) {
+
+      }
+    } );
 
     return sb.toString();
   }

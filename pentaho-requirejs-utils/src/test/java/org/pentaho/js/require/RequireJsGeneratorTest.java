@@ -54,7 +54,7 @@ public class RequireJsGeneratorTest {
   }
 
   @Test
-  public void testEmptyGenerator() throws IOException, ParseException {
+  public void testEmptyGenerator() {
     RequireJsGenerator emptyGenerator = RequireJsGenerator.emptyGenerator( "angular-ui-router.stateHelper", "1.3.1" );
 
     assertEquals( "angular-ui-router.stateHelper" , emptyGenerator.getModuleInfo().getName() );
@@ -63,8 +63,7 @@ public class RequireJsGeneratorTest {
 
 
   @Test
-  public void testConfigFromPom()
-      throws ParserConfigurationException, IOException, SAXException, XPathExpressionException, ParseException {
+  public void testConfigFromPom() throws Exception {
     RequireJsGenerator moduleInfo = RequireJsGenerator.parsePom( this.getClass().getClassLoader().getResourceAsStream(
         "pom.require.xml" ) );
 
@@ -78,8 +77,7 @@ public class RequireJsGeneratorTest {
   }
 
   @Test
-  public void testConfigFromJsScript()
-      throws IOException, NoSuchMethodException, ScriptException, ParseException {
+  public void testConfigFromJsScript() throws Exception {
     RequireJsGenerator moduleInfo = RequireJsGenerator.processJsScript( "angularjs", "1.3.0-rc.0", this.getClass().getClassLoader().getResourceAsStream(
         "webjars-requirejs.js" ) );
 
@@ -143,7 +141,7 @@ public class RequireJsGeneratorTest {
   }
 
   @Test
-  public void testModuleInfoSetName() throws IOException, ParseException {
+  public void testModuleInfoSetName() {
       RequireJsGenerator moduleInfo = RequireJsGenerator.parseJsonPackage( this.getClass().getClassLoader().getResourceAsStream(
               "bower.json" ) );
 
@@ -154,7 +152,7 @@ public class RequireJsGeneratorTest {
   }
 
   @Test
-  public void testModuleInfoSetPath() throws IOException, ParseException {
+  public void testModuleInfoSetPath() {
     RequireJsGenerator moduleInfo = RequireJsGenerator.parseJsonPackage( this.getClass().getClassLoader().getResourceAsStream(
             "bower.json" ) );
 
@@ -199,8 +197,7 @@ public class RequireJsGeneratorTest {
   }
 
   @Test
-  public void testArtifactInfoURL()
-          throws ParserConfigurationException, IOException, SAXException, XPathExpressionException, ParseException {
+  public void testArtifactInfoURL() throws Exception {
     RequireJsGenerator moduleInfo = RequireJsGenerator.parsePom( this.getClass().getClassLoader().getResourceAsStream(
             "pom.require.xml" ) );
 
@@ -216,8 +213,7 @@ public class RequireJsGeneratorTest {
   }
 
   @Test
-  public void testWebjarVersionFromPom()
-          throws ParserConfigurationException, IOException, SAXException, XPathExpressionException, ParseException {
+  public void testWebjarVersionFromPom() throws Exception {
     String version = RequireJsGenerator.getWebjarVersionFromPom( this.getClass().getClassLoader().getResourceAsStream(
             "pom.webjar.xml" ) );
 

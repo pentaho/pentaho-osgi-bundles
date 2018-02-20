@@ -69,25 +69,31 @@ public class RequireJsGenerator {
 
   private static final JSONParser parser = new JSONParser();
 
-  public static RequireJsGenerator parsePom( InputStream inputStream )
-      throws IOException, ParserConfigurationException, SAXException, XPathExpressionException, ParseException {
-    byte[] bytes = IOUtils.toByteArray( inputStream );
+  public static RequireJsGenerator parsePom( InputStream inputStream ) throws Exception {
+    try {
+      byte[] bytes = IOUtils.toByteArray( inputStream );
 
-    DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
-    documentBuilderFactory.setFeature( XMLConstants.FEATURE_SECURE_PROCESSING, true );
-    documentBuilderFactory.setFeature( "http://apache.org/xml/features/disallow-doctype-decl", true );
-    Document pom = documentBuilderFactory.newDocumentBuilder().parse( new ByteArrayInputStream( bytes ) );
-    return new RequireJsGenerator( pom );
+      DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+      documentBuilderFactory.setFeature( XMLConstants.FEATURE_SECURE_PROCESSING, true );
+      documentBuilderFactory.setFeature( "http://apache.org/xml/features/disallow-doctype-decl", true );
+      Document pom = documentBuilderFactory.newDocumentBuilder().parse( new ByteArrayInputStream( bytes ) );
+      return new RequireJsGenerator( pom );
+    } catch ( Exception e ) {
+      throw new Exception( "Error reading POM", e );
+    }
   }
 
-  public static RequireJsGenerator processJsScript( String moduleName, String moduleVersion, InputStream inputStream )
-      throws IOException, NoSuchMethodException, ScriptException, ParseException {
-    byte[] bytes = IOUtils.toByteArray( inputStream );
+  public static RequireJsGenerator processJsScript( String moduleName, String moduleVersion, InputStream inputStream ) throws Exception {
+    try {
+      byte[] bytes = IOUtils.toByteArray( inputStream );
 
-    return new RequireJsGenerator( moduleName, moduleVersion, new String( bytes, "UTF-8" ) );
+      return new RequireJsGenerator( moduleName, moduleVersion, new String( bytes, "UTF-8" ) );
+    } catch ( Exception e ) {
+      throw new Exception( "Error reading JS script", e );
+    }
   }
 
-  public static RequireJsGenerator parseJsonPackage( InputStream inputStream ) throws IOException, ParseException {
+  public static RequireJsGenerator parseJsonPackage( InputStream inputStream ) {
     InputStreamReader inputStreamReader = null;
     BufferedReader bufferedReader = null;
 
@@ -108,16 +114,19 @@ public class RequireJsGenerator {
     return new RequireJsGenerator( physicalPathNamePart, physicalPathVersionPart );
   }
 
-  public static String getWebjarVersionFromPom( InputStream inputStream )
-          throws IOException, ParserConfigurationException, SAXException, XPathExpressionException, ParseException {
-    byte[] bytes = IOUtils.toByteArray( inputStream );
-    Document pom = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse( new ByteArrayInputStream( bytes ) );
+  public static String getWebjarVersionFromPom( InputStream inputStream ) throws Exception {
+    try {
+      byte[] bytes = IOUtils.toByteArray( inputStream );
+      Document pom = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse( new ByteArrayInputStream( bytes ) );
 
-    XPath xPath = XPathFactory.newInstance().newXPath();
+      XPath xPath = XPathFactory.newInstance().newXPath();
 
-    final Element document = pom.getDocumentElement();
+      final Element document = pom.getDocumentElement();
 
-    return (String) xPath.evaluate( "/project/version", document, XPathConstants.STRING );
+      return (String) xPath.evaluate( "/project/version", document, XPathConstants.STRING );
+    } catch ( Exception e ) {
+      throw new Exception( "Error reading JS script", e );
+    }
   }
 
   private RequireJsGenerator( Document pom ) throws XPathExpressionException, ParseException {
@@ -147,12 +156,11 @@ public class RequireJsGenerator {
     return this.moduleInfo;
   }
 
-  public ModuleInfo getConvertedConfig( ArtifactInfo artifactInfo ) throws ParseException {
+  public ModuleInfo getConvertedConfig( ArtifactInfo artifactInfo ) {
     return this.getConvertedConfig( artifactInfo, true, null );
   }
 
-  public ModuleInfo getConvertedConfig( ArtifactInfo artifactInfo, boolean isAmdPackage, String exports )
-      throws ParseException {
+  public ModuleInfo getConvertedConfig( ArtifactInfo artifactInfo, boolean isAmdPackage, String exports ) {
     moduleInfo.setAmdPackage( isAmdPackage );
     moduleInfo.setExports( exports );
 
@@ -424,7 +432,7 @@ public class RequireJsGenerator {
     return null;
   }
 
-  private Map<String, Object> modifyConfigPaths( HashMap<String, String> artifactModules ) throws ParseException {
+  private Map<String, Object> modifyConfigPaths( HashMap<String, String> artifactModules ) {
     Map<String, Object> requirejs = new HashMap<>();
 
     HashMap<String, String> keyMap = new HashMap<>();

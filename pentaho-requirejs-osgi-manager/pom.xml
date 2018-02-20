@@ -1,133 +1,77 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <modelVersion>4.0.0</modelVersion>
+
   <parent>
     <groupId>pentaho</groupId>
     <artifactId>pentaho-osgi-bundles</artifactId>
     <version>8.2.0.0-SNAPSHOT</version>
   </parent>
-  <artifactId>pentaho-requirejs-osgi-manager</artifactId>
+
+  <groupId>org.pentaho</groupId>
+  <artifactId>requirejs-manager-modules</artifactId>
   <version>8.2.0.0-SNAPSHOT</version>
-  <packaging>bundle</packaging>
-  <name>Pentaho Community Edition Project: ${project.artifactId}</name>
-  <description>a Pentaho open source project</description>
-  <url>http://www.pentaho.com</url>
+
+  <packaging>pom</packaging>
+
+  <description>Manages the RequireJS configuration.</description>
+
+  <modules>
+    <module>impl</module>
+    <module>assemblies</module>
+  </modules>
+
   <properties>
-    <java-semver.version>0.9.0</java-semver.version>
+    <karaf-maven-plugin.version>3.0.8</karaf-maven-plugin.version>
+    <karaf-maven-plugin.aggregateFeatures>false</karaf-maven-plugin.aggregateFeatures>
   </properties>
-  <dependencies>
-    <dependency>
-      <groupId>pentaho</groupId>
-      <artifactId>pentaho-requirejs-utils</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.googlecode.json-simple</groupId>
-      <artifactId>json-simple</artifactId>
-      <version>${json-simple.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.github.zafarkhaja</groupId>
-      <artifactId>java-semver</artifactId>
-      <version>${java-semver.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.cxf</groupId>
-      <artifactId>cxf-rt-frontend-jaxrs</artifactId>
-      <version>${cxf.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.cxf</groupId>
-      <artifactId>cxf-rt-frontend-jaxws</artifactId>
-      <version>${cxf.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.cxf</groupId>
-      <artifactId>cxf-rt-transports-http</artifactId>
-      <version>${cxf.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.cxf</groupId>
-      <artifactId>cxf-rt-transports-http-jetty</artifactId>
-      <version>${cxf.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>${junit.version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.mockito</groupId>
-      <artifactId>mockito-all</artifactId>
-      <version>${mockito.version}</version>
-      <scope>test</scope>
-    </dependency>
-  </dependencies>
+
+  <profiles>
+    <profile>
+      <!-- This profile generates a feature file to deploy in karaf. -->
+      <id>feature-generation</id>
+      <activation>
+        <file>
+          <exists>${basedir}/src/main/feature</exists>
+        </file>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.karaf.tooling</groupId>
+            <artifactId>karaf-maven-plugin</artifactId>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
+
   <build>
-    <finalName>${project.artifactId}</finalName>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.felix</groupId>
-        <artifactId>maven-bundle-plugin</artifactId>
-        <extensions>true</extensions>
-        <configuration>
-          <instructions>
-            <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
-            <Bundle-Version>${project.version}</Bundle-Version>
-            <Import-Package>javax.servlet.*;version="[2.5, 3.0]",*</Import-Package>
-          </instructions>
-        </configuration>
-      </plugin>
-      <plugin>
-        <artifactId>maven-dependency-plugin</artifactId>
-        <version>2.10</version>
-        <executions>
-          <execution>
-            <id>unpack2</id>
-            <phase>process-sources</phase>
-            <goals>
-              <goal>unpack</goal>
-            </goals>
-            <configuration>
-              <artifactItems>
-                <artifactItem>
-                  <groupId>org.webjars</groupId>
-                  <artifactId>requirejs</artifactId>
-                  <version>${requirejs.version}</version>
-                  <outputDirectory>target/dependency</outputDirectory>
-                </artifactItem>
-              </artifactItems>
-            </configuration>
-          </execution>
-        </executions>
-        <inherited>false</inherited>
-      </plugin>
-      <plugin>
-        <artifactId>maven-resources-plugin</artifactId>
-        <version>2.7</version>
-        <executions>
-          <execution>
-            <id>copy-resources</id>
-            <phase>process-sources</phase>
-            <goals>
-              <goal>copy-resources</goal>
-            </goals>
-            <configuration>
-              <outputDirectory>src/main/resources/js</outputDirectory>
-              <resources>
-                <resource>
-                  <directory>target/dependency/META-INF/resources/webjars/requirejs/${requirejs.version}</directory>
-                  <includes>
-                    <include>require.js</include>
-                  </includes>
-                </resource>
-              </resources>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-    </plugins>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.felix</groupId>
+          <artifactId>maven-bundle-plugin</artifactId>
+          <version>${maven-bundle-plugin.version}</version>
+          <extensions>true</extensions>
+          <configuration>
+            <instructions>
+              <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
+              <Bundle-Version>${project.version}</Bundle-Version>
+            </instructions>
+          </configuration>
+        </plugin>
+        <plugin>
+          <groupId>org.apache.karaf.tooling</groupId>
+          <artifactId>karaf-maven-plugin</artifactId>
+          <version>${karaf-maven-plugin.version}</version>
+          <extensions>true</extensions>
+          <configuration>
+            <aggregateFeatures>${karaf-maven-plugin.aggregateFeatures}</aggregateFeatures>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
   </build>
 </project>

@@ -81,32 +81,8 @@ public class RequireJsDependencyResolver {
           for ( String dependencyId : dependencies.keySet() ) {
             String versionRequirement = dependencies.get( dependencyId );
 
-            if ( dependencyId.startsWith( "mvn:" ) ) {
-              final String dependencyArtifact = dependencyId.substring( 4 );
-
-              if ( artifacts.containsKey( dependencyArtifact ) ) {
-                HashMap<String, HashMap<String, String>> artifactInfo = artifacts.get( dependencyArtifact );
-
-                final ArrayList<String> resolvedArtifacts = resolveVersion( versionRequirement, artifactInfo.keySet() );
-
-                for ( String artifactVersion : resolvedArtifacts ) {
-                  HashMap<String, String> dependencyModules = artifactInfo.get( artifactVersion );
-
-                  for ( String dependencyModuleId : dependencyModules.keySet() ) {
-                    String dependencyVersionRequirement = dependencyModules.get( dependencyModuleId );
-                    if ( processedDependencies.containsKey( dependencyModuleId ) ) {
-                      dependencyVersionRequirement = dependencyVersionRequirement + " | " + processedDependencies.get( dependencyModuleId );
-                    }
-
-                    processModuleRequirement( dependencyModuleId, dependencyVersionRequirement );
-                    processedDependencies.put( dependencyModuleId, dependencyVersionRequirement );
-                  }
-                }
-              }
-            } else {
-              processModuleRequirement( dependencyId, versionRequirement );
-              processedDependencies.put( dependencyId, versionRequirement );
-            }
+            processModuleRequirement( dependencyId, versionRequirement );
+            processedDependencies.put( dependencyId, versionRequirement );
           }
 
           versionInfo.put( "processed", processedDependencies );
