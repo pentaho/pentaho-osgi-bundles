@@ -18,7 +18,7 @@
 
   <modules>
     <module>core</module>
-    <module>extenders</module>
+    <module>listeners</module>
     <module>deployers</module>
     <module>assemblies</module>
   </modules>

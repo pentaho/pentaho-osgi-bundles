@@ -21,8 +21,4 @@ public interface PentahoWebPackage {
   String getVersion();
 
   String getResourceRootPath();
-
-  void init();
-
-  void destroy();
 }

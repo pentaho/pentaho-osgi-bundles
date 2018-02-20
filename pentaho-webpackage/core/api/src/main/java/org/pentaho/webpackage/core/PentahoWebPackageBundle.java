@@ -17,7 +17,5 @@
 package org.pentaho.webpackage.core;
 
 public interface PentahoWebPackageBundle {
-  void init();
-
-  void destroy();
+  String CAPABILITY_NAMESPACE = "org.pentaho.webpackage";
 }

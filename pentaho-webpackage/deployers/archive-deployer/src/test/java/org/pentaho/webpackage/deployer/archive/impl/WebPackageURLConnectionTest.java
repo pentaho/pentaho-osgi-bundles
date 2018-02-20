@@ -20,7 +20,7 @@ import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.osgi.framework.Constants;
-import org.pentaho.webpackage.core.PentahoWebPackageService;
+import org.pentaho.webpackage.core.PentahoWebPackageBundleListener;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -95,7 +95,7 @@ public class WebPackageURLConnectionTest {
 
   private void verifyManifest( Manifest manifest, String moduleName, String moduleVersion ) {
     assertTrue( manifest.getMainAttributes().getValue( Constants.BUNDLE_SYMBOLICNAME ).startsWith( "pentaho-webpackage-" ) );
-    assertTrue( manifest.getMainAttributes().getValue( Constants.PROVIDE_CAPABILITY ).startsWith( PentahoWebPackageService.CAPABILITY_NAMESPACE + ";name=\"" + moduleName + "\";version:Version=\"" + moduleVersion + "\";root=\"/pwp-" ) );
+    assertTrue( manifest.getMainAttributes().getValue( Constants.PROVIDE_CAPABILITY ).startsWith( PentahoWebPackageBundleListener.CAPABILITY_NAMESPACE + ";name=\"" + moduleName + "\";version:Version=\"" + moduleVersion + "\";root=\"/pwp-" ) );
   }
 
   private JarFile getDeployedJar( URL url ) throws IOException {

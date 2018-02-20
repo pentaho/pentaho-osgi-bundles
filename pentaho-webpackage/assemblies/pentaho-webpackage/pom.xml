@@ -16,7 +16,12 @@
   <dependencies>
     <dependency>
       <groupId>org.pentaho.webpackage</groupId>
-      <artifactId>http-extender-impl</artifactId>
+      <artifactId>core-impl</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.pentaho.webpackage</groupId>
+      <artifactId>http-listener-impl</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>

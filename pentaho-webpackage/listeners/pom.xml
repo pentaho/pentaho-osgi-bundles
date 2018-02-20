@@ -10,13 +10,12 @@
     <version>8.2.0.0-SNAPSHOT</version>
   </parent>
 
-  <artifactId>core-modules</artifactId>
+  <artifactId>listeners-modules</artifactId>
   <version>8.2.0.0-SNAPSHOT</version>
 
   <packaging>pom</packaging>
 
   <modules>
-    <module>api</module>
-    <module>impl</module>
+    <module>http-listener</module>
   </modules>
 </project>
