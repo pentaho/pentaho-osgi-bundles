@@ -18,7 +18,7 @@
   <description>Manages the RequireJS configuration.</description>
 
   <modules>
-    <module>impl</module>
+    <module>core</module>
     <module>assemblies</module>
   </modules>
 

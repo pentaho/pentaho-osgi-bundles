@@ -21,6 +21,8 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
 import org.pentaho.webpackage.core.PentahoWebPackage;
 
+import java.net.URL;
+
 public class PentahoWebPackageImpl implements PentahoWebPackage {
   private final String name;
   private final String version;
@@ -48,6 +50,19 @@ public class PentahoWebPackageImpl implements PentahoWebPackage {
 
   public String getResourceRootPath() {
     return this.resourceRootPath;
+  }
+
+  @Override
+  public String getWebRootPath() {
+    return "/" + this.getName() + "/" + this.getVersion();
+  }
+
+  @Override
+  public URL getPackageJsonResource() {
+    Bundle bundle = this.bundleContext.getBundle();
+    String scriptPath = this.getResourceRootPath() + "/package.json";
+
+    return bundle.getResource( scriptPath );
   }
 
   public void init() {

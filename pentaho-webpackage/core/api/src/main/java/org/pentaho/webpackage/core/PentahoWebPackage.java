@@ -16,9 +16,16 @@
  */
 package org.pentaho.webpackage.core;
 
+import java.net.URL;
+
 public interface PentahoWebPackage {
   String getName();
+
   String getVersion();
 
   String getResourceRootPath();
+
+  String getWebRootPath();
+
+  URL getPackageJsonResource();
 }
