@@ -85,7 +85,7 @@ public class PentahoWebPackageBundleImpl implements PentahoWebPackageBundle {
             String version = (String) packageJson.get( "version" );
 
             if ( name != null && version != null ) {
-              this.pentahoWebPackages.add( new PentahoWebPackageImpl( this.bundle, name, version, ( root.isEmpty() ? "/" : root ) ) );
+              this.pentahoWebPackages.add( new PentahoWebPackageImpl( this.bundle.getBundleContext(), name, version, ( root.isEmpty() ? "/" : root ) ) );
             }
           } else {
             logger.warn( this.bundle.getSymbolicName() + " [" + this.bundle.getBundleId() + "]: " + root + "/package.json not found." );

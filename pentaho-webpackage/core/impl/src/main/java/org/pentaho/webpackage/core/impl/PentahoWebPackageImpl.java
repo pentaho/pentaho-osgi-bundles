@@ -16,12 +16,20 @@
  */
 package org.pentaho.webpackage.core.impl;
 
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
 import org.pentaho.webpackage.core.PentahoWebPackage;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URL;
+import java.net.URLConnection;
+import java.util.Map;
 
 public class PentahoWebPackageImpl implements PentahoWebPackage {
   private final String name;
@@ -32,8 +40,8 @@ public class PentahoWebPackageImpl implements PentahoWebPackage {
 
   private ServiceRegistration<?> serviceReference;
 
-  PentahoWebPackageImpl( Bundle bundle, String name, String version, String resourceRootPath ) {
-    this.bundleContext = bundle.getBundleContext();
+  PentahoWebPackageImpl( BundleContext bundleContext, String name, String version, String resourceRootPath ) {
+    this.bundleContext = bundleContext;
 
     this.name = name;
     this.version = version;
@@ -58,11 +66,24 @@ public class PentahoWebPackageImpl implements PentahoWebPackage {
   }
 
   @Override
-  public URL getPackageJsonResource() {
-    Bundle bundle = this.bundleContext.getBundle();
-    String scriptPath = this.getResourceRootPath() + "/package.json";
+  public Map<String, Object> getPackageJson() {
+    try {
+      Bundle bundle = this.bundleContext.getBundle();
+      String scriptPath = this.getResourceRootPath() + "/package.json";
 
-    return bundle.getResource( scriptPath );
+      URL resourceUrl = bundle.getResource( scriptPath );
+      URLConnection urlConnection = resourceUrl.openConnection();
+      InputStream inputStream = urlConnection.getInputStream();
+
+      InputStreamReader inputStreamReader = new InputStreamReader( inputStream );
+      BufferedReader bufferedReader = new BufferedReader( inputStreamReader );
+
+      JSONParser parser = new JSONParser();
+      return (Map<String, Object>) parser.parse( bufferedReader );
+    } catch ( IOException | ParseException ignored ) {
+    }
+
+    return null;
   }
 
   public void init() {

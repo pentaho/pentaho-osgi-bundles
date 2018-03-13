@@ -16,7 +16,7 @@
  */
 package org.pentaho.webpackage.core;
 
-import java.net.URL;
+import java.util.Map;
 
 public interface PentahoWebPackage {
   String getName();
@@ -27,5 +27,5 @@ public interface PentahoWebPackage {
 
   String getWebRootPath();
 
-  URL getPackageJsonResource();
+  Map<String, Object> getPackageJson();
 }

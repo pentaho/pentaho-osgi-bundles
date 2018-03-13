@@ -16,14 +16,11 @@
  */
 package org.pentaho.webpackage.extender.http.impl;
 
-import org.json.simple.parser.ParseException;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 import org.osgi.util.tracker.ServiceTrackerCustomizer;
 import org.pentaho.webpackage.core.PentahoWebPackage;
-
-import java.io.IOException;
 
 /**
  * Tracks registered {@link PentahoWebPackage} services and in turn registers {@link org.pentaho.requirejs.RequireJsPackage} service.
@@ -40,14 +37,10 @@ public class PentahoWebPackageServiceTracker implements ServiceTrackerCustomizer
     Bundle bundle = reference.getBundle();
     // if null then the service is unregistered
     if ( bundle != null ) {
-      try {
-        RequireJsPackageImpl requireJsPackage = new RequireJsPackageImpl( bundle.getBundleContext(), this.context.getService( reference ) );
-        requireJsPackage.register();
+      RequireJsPackageImpl requireJsPackage = new RequireJsPackageImpl( bundle.getBundleContext(), this.context.getService( reference ) );
+      requireJsPackage.register();
 
-        return requireJsPackage;
-      } catch ( IOException | ParseException ignored ) {
-        // ignored exception
-      }
+      return requireJsPackage;
     }
 
     return null;

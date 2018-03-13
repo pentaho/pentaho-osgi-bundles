@@ -42,11 +42,11 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Listens to and processes bundles that include some sort of RequireJS configuration information.
- *
+ * <p>
  * For bundles with META-INF/js/package.json or META-INF/js/require.json files, parses the json file
  * and registers a corresponding {@link RequireJsPackage} service implementation, to be dealt by {@link RequireJsPackageServiceTracker}.
  * The service reference is maintained so it can be unregistered when the bundle stops.
- *
+ * <p>
  * For bundles with META-INF/js/externalResources.json file (and optionally an accompanying META-INF/js/staticResources.json file),
  * a {@link RequireJsConfiguration} instance is created, to be returned by {@link #getExternalResourcesRequireJsScripts()} until the
  * corresponding bundle is stopped.
@@ -108,6 +108,10 @@ public class RequireJsBundleListener implements BundleListener {
   }
 
   public boolean addBundle( Bundle bundle ) {
+    if ( bundle.getState() != Bundle.ACTIVE ) {
+      return false;
+    }
+
     // clear any previous configurations (for bundle updates)
     boolean shouldInvalidate = removeBundle( bundle );
 
