@@ -40,7 +40,7 @@ public class PentahoWebPackageImpl implements PentahoWebPackage {
 
   private ServiceRegistration<?> serviceReference;
 
-  PentahoWebPackageImpl( BundleContext bundleContext, String name, String version, String resourceRootPath ) {
+  public PentahoWebPackageImpl(BundleContext bundleContext, String name, String version, String resourceRootPath) {
     this.bundleContext = bundleContext;
 
     this.name = name;
