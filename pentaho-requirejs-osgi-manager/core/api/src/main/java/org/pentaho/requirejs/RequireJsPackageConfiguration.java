@@ -19,8 +19,6 @@ public interface RequireJsPackageConfiguration {
   String getName();
   String getVersion();
 
-  String getVersionedName();
-
   String getWebRootPath();
 
   Map<String, String> getDependencies();

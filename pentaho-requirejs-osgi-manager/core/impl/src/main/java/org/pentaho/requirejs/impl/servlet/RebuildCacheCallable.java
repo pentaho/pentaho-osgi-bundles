@@ -113,7 +113,6 @@ public class RebuildCacheCallable implements Callable<String> {
             Map<String, Object> packageInfo = new HashMap<>();
             packageInfo.put( "name", requireJsPackage.getName() );
             packageInfo.put( "version", requireJsPackage.getVersion() );
-            packageInfo.put( "versionedName", requireJsPackage.getVersionedName() );
             packageInfo.put( "webRootPath", baseUrl + requireJsPackage.getWebRootPath() );
 
             sb.append( "\n\n(function(requireCfg, packageInfo, getVersionedModuleId) {\n" );

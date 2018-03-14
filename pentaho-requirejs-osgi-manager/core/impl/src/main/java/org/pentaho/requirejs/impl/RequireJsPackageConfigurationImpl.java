@@ -34,6 +34,10 @@ public class RequireJsPackageConfigurationImpl implements RequireJsPackageConfig
   private Map<String, RequireJsPackageConfiguration> dependencyCache;
 
   public RequireJsPackageConfigurationImpl( RequireJsPackage requireJsPackage ) {
+    if ( requireJsPackage == null ) {
+      throw new IllegalArgumentException( "requireJsPackage is mandatory" );
+    }
+
     this.requireJsPackage = requireJsPackage;
 
     this.processRequireJsPackage();
@@ -57,6 +61,7 @@ public class RequireJsPackageConfigurationImpl implements RequireJsPackageConfig
       this.simplePackageOrganization = name.substring( 1, slashIndex );
       this.simplePackageName = name.substring( slashIndex + 1 );
     } else {
+      this.simplePackageOrganization = null;
       this.simplePackageName = name;
     }
 
@@ -89,8 +94,9 @@ public class RequireJsPackageConfigurationImpl implements RequireJsPackageConfig
       } );
     }
 
-    // I'm guessing it only makes sense to configure shims for modules included in the package
-    // move the moduleId versioning to bellow if that happens to not be the case
+    // I'm guessing it only makes sense to configure shims for modules included in the package,
+    // so the dependencies moduleId mapping isn't needed.
+    // Move the moduleId versioning to bellow if that happens to not be the case.
     Map<String, Map<String, ?>> shim = this.requireJsPackage.getShim();
     if ( shim != null ) {
       shim.forEach( ( moduleId, configuration ) -> this.shim.put( getVersionedModuleId( moduleId, this.baseModuleIdsMappings ), merger.clone( configuration ) ) );
@@ -128,6 +134,8 @@ public class RequireJsPackageConfigurationImpl implements RequireJsPackageConfig
 
     requireConfig.put( "paths", Collections.unmodifiableMap( this.paths ) );
 
+    requireConfig.put( "packages", Collections.unmodifiableList( this.packages ) );
+
     Map<String, Map<String, String>> topMap = new HashMap<>();
 
     if ( !this.baseModuleIdsMappingsWithDependencies.isEmpty() ) {
@@ -141,20 +149,21 @@ public class RequireJsPackageConfigurationImpl implements RequireJsPackageConfig
       } );
     }
 
+    // We aren't allowing to "inject" mappings into dependencies mappings.
+    // If that turns out to be something useful, we just need to change
+    // this.baseModuleIdsMappings to this.baseModuleIdsMappingsWithDependencies.
     this.requireJsPackage.getMap().forEach( ( moduleId, localMappings ) -> {
       String versionedModuleId = getVersionedModuleId( moduleId, this.baseModuleIdsMappings );
 
       Map<String, String> mappings = topMap.computeIfAbsent( versionedModuleId, m -> new HashMap<>() );
       localMappings.forEach( ( key, value ) -> {
-        String versionedValue = getVersionedModuleId( value, this.baseModuleIdsMappings );
+        String versionedValue = getVersionedModuleId( value, this.baseModuleIdsMappingsWithDependencies );
 
         mappings.put( key, versionedValue );
       } );
     } );
 
     requireConfig.put( "map", Collections.unmodifiableMap( topMap ) );
-
-    requireConfig.put( "packages", Collections.unmodifiableList( this.packages ) );
 
     Map<String, Map<String, ?>> config = new HashMap<>();
     this.requireJsPackage.getConfig().forEach( ( moduleId, configuration ) -> {
@@ -195,7 +204,7 @@ public class RequireJsPackageConfigurationImpl implements RequireJsPackageConfig
     requireConfig.put( "shim", concreteShim );
 
     if ( plugins != null ) {
-      plugins.forEach( plugin -> plugin.apply( this, this.dependencyCache::get, moduleId -> getVersionedModuleId( moduleId, this.baseModuleIdsMappingsWithDependencies ), requireConfig ) );
+      plugins.forEach( plugin -> plugin.apply( this, this.dependencyCache::get, moduleId -> getVersionedModuleId( moduleId, this.baseModuleIdsMappingsWithDependencies ), Collections.unmodifiableMap( requireConfig ) ) );
     }
 
     // lock config and shim after plugins
@@ -212,29 +221,27 @@ public class RequireJsPackageConfigurationImpl implements RequireJsPackageConfig
 
   private String initVersionedModuleId( final String moduleId ) {
     if ( !this.preferGlobal() ) {
-      String versionedName = this.getVersionedName();
+      String versionedName = this.getName() + "_" + this.getVersion();
 
-      if ( versionedName != null ) {
-        String versionedModuleId = versionedName + "_" + moduleId;
+      String versionedModuleId = versionedName + "_" + moduleId;
 
-        // trying to get a shorter (and more beautiful) moduleId
-        if ( moduleId.equals( this.simplePackageName ) || moduleId.startsWith( this.simplePackageName + "/" ) ) {
+      // trying to get a shorter (and more beautiful) moduleId
+      if ( moduleId.equals( this.simplePackageName ) || moduleId.startsWith( this.simplePackageName + "/" ) ) {
+        versionedModuleId = versionedName + moduleId.substring( this.simplePackageName.length() );
+      } else if ( moduleId.equals( this.simplePackageOrganization + "/" + this.simplePackageName ) || moduleId.startsWith( this.simplePackageOrganization + "/" + this.simplePackageName + "/" ) ) {
+        versionedModuleId = versionedName + moduleId.substring( this.simplePackageOrganization.length() + this.simplePackageName.length() + 1 );
+      } else {
+        String noSlashModuleId = moduleId.replaceAll( "/", "-" );
+        if ( this.simplePackageOrganization == null && ( noSlashModuleId.equals( this.simplePackageName ) || noSlashModuleId.startsWith( this.simplePackageName + "-" ) ) ) {
           versionedModuleId = versionedName + moduleId.substring( this.simplePackageName.length() );
-        } else if ( moduleId.equals( this.simplePackageOrganization + "/" + this.simplePackageName ) || moduleId.startsWith( this.simplePackageOrganization + "/" + this.simplePackageName + "/" ) ) {
+        } else if ( noSlashModuleId.equals( this.simplePackageOrganization + "-" + this.simplePackageName ) || noSlashModuleId.startsWith( this.simplePackageOrganization + "-" + this.simplePackageName + "-" ) ) {
           versionedModuleId = versionedName + moduleId.substring( this.simplePackageOrganization.length() + this.simplePackageName.length() + 1 );
-        } else {
-          String noSlashModuleId = moduleId.replaceAll( "/", "-" );
-          if ( noSlashModuleId.equals( this.simplePackageName ) || noSlashModuleId.startsWith( this.simplePackageName + "-" ) ) {
-            versionedModuleId = versionedName + moduleId.substring( this.simplePackageName.length() );
-          } else if ( noSlashModuleId.equals( this.simplePackageOrganization + "-" + this.simplePackageName ) || noSlashModuleId.startsWith( this.simplePackageOrganization + "-" + this.simplePackageName + "-" ) ) {
-            versionedModuleId = versionedName + moduleId.substring( this.simplePackageOrganization.length() + this.simplePackageName.length() + 1 );
-          }
         }
-
-        this.baseModuleIdsMappings.put( moduleId, versionedModuleId );
-
-        return versionedModuleId;
       }
+
+      this.baseModuleIdsMappings.put( moduleId, versionedModuleId );
+
+      return versionedModuleId;
     }
 
     return moduleId;
@@ -278,16 +285,31 @@ public class RequireJsPackageConfigurationImpl implements RequireJsPackageConfig
     return this.getWebRootPath() + path;
   }
 
+  /**
+   * The base modules IDs mapping exported by this package.
+   * This mapping is built by {@link #processRequireJsPackage()} (1st stage initialization),
+   * which is called by the constructor (so effectively it is always available).
+   */
   @Override
   public Map<String, String> getBaseModuleIdsMapping() {
     return Collections.unmodifiableMap( this.baseModuleIdsMappings );
   }
 
+  /**
+   * The package's base modules IDs mapping and of its resolved dependencies.
+   * This mapping is built by {@link #processDependencies(BiFunction)} (2st stage initialization),
+   * and throws if called before.
+   */
   @Override
   public Map<String, String> getModuleIdsMapping() {
+    if ( this.baseModuleIdsMappingsWithDependencies == null ) {
+      throw new IllegalStateException( "Configuration wasn't yet initialized with processDependencies" );
+    }
+
     return Collections.unmodifiableMap( this.baseModuleIdsMappingsWithDependencies );
   }
 
+  // region Access to the underlying RequireJsPackage
   @Override
   public RequireJsPackage getRequireJsPackage() {
     return requireJsPackage;
@@ -303,17 +325,6 @@ public class RequireJsPackageConfigurationImpl implements RequireJsPackageConfig
   public String getVersion() {
     String version = this.requireJsPackage.getVersion();
     return version != null ? version : "";
-  }
-
-  @Override
-  public String getVersionedName() {
-    String name = this.getName();
-    String version = this.getVersion();
-    if ( name.isEmpty() || version.isEmpty() ) {
-      return null;
-    }
-
-    return name + "_" + version;
   }
 
   private boolean preferGlobal() {
@@ -341,4 +352,5 @@ public class RequireJsPackageConfigurationImpl implements RequireJsPackageConfig
     String webRootPath = this.requireJsPackage.getWebRootPath();
     return webRootPath != null ? webRootPath.replaceAll( "^/+", "" ) : "";
   }
+  // endregion
 }

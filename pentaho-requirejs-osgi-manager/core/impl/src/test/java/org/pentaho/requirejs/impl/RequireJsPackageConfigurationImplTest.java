@@ -2,66 +2,92 @@ package org.pentaho.requirejs.impl;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 import org.pentaho.requirejs.RequireJsPackage;
 import org.pentaho.requirejs.RequireJsPackageConfiguration;
+import org.pentaho.requirejs.RequireJsPackageConfigurationPlugin;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.same;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 public class RequireJsPackageConfigurationImplTest {
 
+  private Map<String, String> expectedModuleIdsMapping;
+
   private Map<String, String> modules;
+  private Map<String, String> dependencies;
+  private String name;
+  private String version;
+  private String webRoot;
+  private HashMap<Object, Object> dependencyABaseModuleIdsMapping;
+  private HashMap<Object, Object> dependencyCBaseModuleIdsMapping;
 
   @Before
   public void setUp() {
+    name = "@tests/basic";
+    version = "1.0.1";
+    webRoot = "web/path";
+
     modules = new HashMap<>();
     modules.put( "some/module/A", "/some/path/to/module/A" );
     modules.put( "some/module/B", "/other/path/to/module/B" );
     modules.put( "at-root", "/the/root/one" );
+
+    dependencies = new HashMap<>();
+    dependencies.put( "@dep/A", "1.0" );
+    dependencies.put( "@dep/B", "1.5" );
+    dependencies.put( "@dep/C", "2.5" );
+
+    dependencyABaseModuleIdsMapping = new HashMap<>();
+    dependencyABaseModuleIdsMapping.put( "depA", "depA_1.0" );
+    dependencyABaseModuleIdsMapping.put( "depA/hi", "depA_1.0/hi" );
+    dependencyABaseModuleIdsMapping.put( "depA/hello", "depA_1.0/hello" );
+
+    dependencyCBaseModuleIdsMapping = new HashMap<>();
+    dependencyCBaseModuleIdsMapping.put( "depC/hi", "depC_1.5_hi" );
+    dependencyCBaseModuleIdsMapping.put( "depC/hello", "depC_1.5_hello" );
+
+    expectedModuleIdsMapping = new HashMap<>();
+    expectedModuleIdsMapping.put( "some/module/A", name + "_" + version + "_" + "some/module/A" );
+    expectedModuleIdsMapping.put( "some/module/B", name + "_" + version + "_" + "some/module/B" );
+    expectedModuleIdsMapping.put( "at-root", name + "_" + version + "_" + "at-root" );
+    expectedModuleIdsMapping.put( "depA", "depA_1.0" );
+    expectedModuleIdsMapping.put( "depA/hi", "depA_1.0/hi" );
+    expectedModuleIdsMapping.put( "depA/hello", "depA_1.0/hello" );
+    expectedModuleIdsMapping.put( "depC/hi", "depC_1.5_hi" );
+    expectedModuleIdsMapping.put( "depC/hello", "depC_1.5_hello" );
   }
 
-  @Test(expected = NullPointerException.class)
+  @Test(expected = IllegalArgumentException.class)
   public void requireJsPackageIsRequired() {
     new RequireJsPackageConfigurationImpl( null );
   }
 
   @Test
-  public void getVersionedName() {
-    String name = "@tests/basic";
-    String version = "1.0.1";
-
-    RequireJsPackageConfigurationImpl packageConfiguration = createRequireJsPackageConfiguration( name, version );
-
-    assertEquals( "Should concatenate the name and the version using an underscore character", name + "_" + version, packageConfiguration.getVersionedName() );
-
-    packageConfiguration = createRequireJsPackageConfiguration( null, version );
-    assertEquals( "Should return null if name is null", null, packageConfiguration.getVersionedName() );
-
-    packageConfiguration = createRequireJsPackageConfiguration( "", version );
-    assertEquals( "Should return null if name is empty", null, packageConfiguration.getVersionedName() );
-
-    packageConfiguration = createRequireJsPackageConfiguration( name, null );
-    assertEquals( "Should return null if version is null", null, packageConfiguration.getVersionedName() );
-
-    packageConfiguration = createRequireJsPackageConfiguration( name, "" );
-    assertEquals( "Should return null if version is empty", null, packageConfiguration.getVersionedName() );
-  }
-
-  @Test
   public void getBaseModuleIdsMappingEmpty() {
-    RequireJsPackageConfigurationImpl packageConfiguration = createRequireJsPackageConfiguration();
+    RequireJsPackage mockRequireJsPackage = getRequireJsPackageMock();
+
+    RequireJsPackageConfigurationImpl packageConfiguration = new RequireJsPackageConfigurationImpl( mockRequireJsPackage );
 
     Map<String, String> baseModuleIdsMapping = packageConfiguration.getBaseModuleIdsMapping();
     assertNotNull( "Should always return a base module IDs mapping", baseModuleIdsMapping );
@@ -70,39 +96,253 @@ public class RequireJsPackageConfigurationImplTest {
 
   @Test
   public void getBaseModuleIdsMapping() {
-    String name = "@tests/basic";
-    String version = "1.0.1";
+    RequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version );
 
-    // modules are processed at construction time, so the base modules IDs of all packages are available during dependency resolution
-    RequireJsPackageConfigurationImpl packageConfiguration = createRequireJsPackageConfiguration( name, version, null, this.modules );
+    doReturn( modules ).when( mockRequireJsPackage ).getModules();
+
+    // processRequireJsPackage is called at construction time, so the base modules IDs of all packages are available during dependency resolution
+    RequireJsPackageConfigurationImpl packageConfiguration = new RequireJsPackageConfigurationImpl( mockRequireJsPackage );
 
     Map<String, String> baseModuleIdsMapping = packageConfiguration.getBaseModuleIdsMapping();
-    assertTrue( "Maps a versioned ID to each module", baseModuleIdsMapping.containsKey( "some/module/A" ) );
-    assertTrue( "Maps a versioned ID to each module", baseModuleIdsMapping.containsKey( "some/module/B" ) );
-    assertTrue( "Maps a versioned ID to each module", baseModuleIdsMapping.containsKey( "at-root" ) );
+    assertEquals( "Only contains one mapping for each module", modules.size(), baseModuleIdsMapping.size() );
+    modules.forEach( ( moduleId, path ) -> assertTrue( "Maps a versioned ID to each module", baseModuleIdsMapping.containsKey( moduleId ) ) );
+  }
+
+  @Test
+  public void getBaseModuleIdsMappingGlobalPackage() {
+    RequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version, webRoot, modules );
+    doReturn( true ).when( mockRequireJsPackage ).preferGlobal();
+
+    RequireJsPackageConfigurationImpl packageConfiguration = new RequireJsPackageConfigurationImpl( mockRequireJsPackage );
+
+    Map<String, String> baseModuleIdsMapping = packageConfiguration.getBaseModuleIdsMapping();
+    assertEquals( "Should not contain any mappings for its module", 0, baseModuleIdsMapping.size() );
+  }
+
+  @Test
+  public void getBaseModuleIdsMappingPrettyVersionedModuleIdsNameWithOrganization() {
+    String name = "@tests/basic";
+    String version = "1.0";
+
+    Map<String, String> modules = new HashMap<>();
+    modules.put( "basic/A", "/" );
+    modules.put( "tests/basic/A", "/" );
+    modules.put( "other/A", "/" );
+    modules.put( "tests/other/A", "/" );
+
+    RequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version );
+
+    doReturn( modules ).when( mockRequireJsPackage ).getModules();
+
+    RequireJsPackageConfigurationImpl packageConfiguration = new RequireJsPackageConfigurationImpl( mockRequireJsPackage );
+
+    Map<String, String> baseModuleIdsMapping = packageConfiguration.getBaseModuleIdsMapping();
+
+    assertEquals( "@tests/basic_1.0/A", baseModuleIdsMapping.get( "basic/A" ) );
+    assertEquals( "@tests/basic_1.0_other/A", baseModuleIdsMapping.get( "other/A" ) );
+
+    assertEquals( "@tests/basic_1.0/A", baseModuleIdsMapping.get( "tests/basic/A" ) );
+    assertEquals( "@tests/basic_1.0_tests/other/A", baseModuleIdsMapping.get( "tests/other/A" ) );
+  }
+
+  @Test
+  public void getBaseModuleIdsMappingPrettyVersionedModuleIdsNameWithOrganizationAndStructure() {
+    String name = "@tests/basic-stuff";
+    String version = "1.0";
+
+    Map<String, String> modules = new HashMap<>();
+    modules.put( "tests/basic/stuff/A", "/" );
+    modules.put( "basic/stuff/A", "/" );
+
+    RequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version );
+
+    doReturn( modules ).when( mockRequireJsPackage ).getModules();
+
+    RequireJsPackageConfigurationImpl packageConfiguration = new RequireJsPackageConfigurationImpl( mockRequireJsPackage );
+
+    Map<String, String> baseModuleIdsMapping = packageConfiguration.getBaseModuleIdsMapping();
+
+    assertEquals( "@tests/basic-stuff_1.0/A", baseModuleIdsMapping.get( "tests/basic/stuff/A" ) );
+    assertEquals( "@tests/basic-stuff_1.0_basic/stuff/A", baseModuleIdsMapping.get( "basic/stuff/A" ) );
+  }
+
+  @Test
+  public void getBaseModuleIdsMappingPrettyVersionedModuleIdsNameWithoutOrganization() {
+    String name = "basic";
+    String version = "1.0";
+
+    Map<String, String> modules = new HashMap<>();
+    modules.put( "basic/A", "/" );
+    modules.put( "other/A", "/" );
+
+    RequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version );
+
+    doReturn( modules ).when( mockRequireJsPackage ).getModules();
+
+    RequireJsPackageConfigurationImpl packageConfiguration = new RequireJsPackageConfigurationImpl( mockRequireJsPackage );
+
+    Map<String, String> baseModuleIdsMapping = packageConfiguration.getBaseModuleIdsMapping();
+
+    assertEquals( "basic_1.0/A", baseModuleIdsMapping.get( "basic/A" ) );
+    assertEquals( "basic_1.0_other/A", baseModuleIdsMapping.get( "other/A" ) );
+  }
+
+  @Test
+  public void getBaseModuleIdsMappingPrettyVersionedModuleIdsNameWithoutOrganizationButStructure() {
+    String name = "tests-basic";
+    String version = "1.0";
+
+    Map<String, String> modules = new HashMap<>();
+    modules.put( "tests/basic/A", "/" );
+    modules.put( "tests/other/A", "/" );
+    modules.put( "basic/A", "/" );
+    modules.put( "other/A", "/" );
+
+    RequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version );
+
+    doReturn( modules ).when( mockRequireJsPackage ).getModules();
+
+    RequireJsPackageConfigurationImpl packageConfiguration = new RequireJsPackageConfigurationImpl( mockRequireJsPackage );
+
+    Map<String, String> baseModuleIdsMapping = packageConfiguration.getBaseModuleIdsMapping();
+
+    assertEquals( "tests-basic_1.0/A", baseModuleIdsMapping.get( "tests/basic/A" ) );
+    assertEquals( "tests-basic_1.0_tests/other/A", baseModuleIdsMapping.get( "tests/other/A" ) );
+
+    assertEquals( "tests-basic_1.0_basic/A", baseModuleIdsMapping.get( "basic/A" ) );
+    assertEquals( "tests-basic_1.0_other/A", baseModuleIdsMapping.get( "other/A" ) );
   }
 
   @Test(expected = UnsupportedOperationException.class)
   public void getBaseModuleIdsMappingReturnsUnmodifiableMap() {
-    String name = "@tests/basic";
-    String version = "1.0.1";
+    RequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version, webRoot, modules );
 
-    RequireJsPackageConfigurationImpl packageConfiguration = createRequireJsPackageConfiguration( name, version, null, this.modules );
+    RequireJsPackageConfigurationImpl packageConfiguration = new RequireJsPackageConfigurationImpl( mockRequireJsPackage );
 
     Map<String, String> baseModuleIdsMapping = packageConfiguration.getBaseModuleIdsMapping();
     baseModuleIdsMapping.put( "moduleId", "mappedId" );
   }
 
   @Test
-  public void getEmptyRequireConfig() {
-    String name = "@tests/basic";
-    String version = "1.0.1";
-    String webRoot = "/web/path";
+  public void processRequireJsPackage() {
+    RequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version, webRoot, modules );
 
-    RequireJsPackageConfigurationImpl packageConfiguration = createRequireJsPackageConfiguration( name, version, webRoot );
+    // processRequireJsPackage is called at construction time, so the base modules IDs of all packages are available during dependency resolution
+    RequireJsPackageConfigurationImpl packageConfiguration = new RequireJsPackageConfigurationImpl( mockRequireJsPackage );
+
+    Map<String, String> baseModuleIdsMapping = packageConfiguration.getBaseModuleIdsMapping();
+
+    HashMap<Object, Object> newSetOfModules = new HashMap<>();
+    newSetOfModules.put( "other/module/C", "/some/path/to/module/C" );
+    newSetOfModules.put( "other/module/D", "/other/path/to/module/D" );
+
+    doReturn( newSetOfModules ).when( mockRequireJsPackage ).getModules();
+
+    assertEquals( "baseModuleIdsMapping shouldn't change", baseModuleIdsMapping, packageConfiguration.getBaseModuleIdsMapping() );
+
+    packageConfiguration.processRequireJsPackage();
+
+    Map<String, String> otherBaseModuleIdsMapping = packageConfiguration.getBaseModuleIdsMapping();
+    assertNotEquals( "baseModuleIdsMapping should change", baseModuleIdsMapping, otherBaseModuleIdsMapping );
+    assertEquals( "Only contains one mapping for each module", newSetOfModules.size(), otherBaseModuleIdsMapping.size() );
+    newSetOfModules.forEach( ( moduleId, path ) -> assertTrue( "Maps a versioned ID to each new module", otherBaseModuleIdsMapping.containsKey( moduleId ) ) );
+
+    doReturn( true ).when( mockRequireJsPackage ).preferGlobal();
+
+    assertEquals( "baseModuleIdsMapping shouldn't change", otherBaseModuleIdsMapping, packageConfiguration.getBaseModuleIdsMapping() );
+
+    packageConfiguration.processRequireJsPackage();
+
+    Map<String, String> yetAnotherBaseModuleIdsMapping = packageConfiguration.getBaseModuleIdsMapping();
+    assertNotEquals( "baseModuleIdsMapping should change", otherBaseModuleIdsMapping, yetAnotherBaseModuleIdsMapping );
+    assertEquals( "Should not contain any mappings for its module", 0, yetAnotherBaseModuleIdsMapping.size() );
+  }
+
+  @Test
+  public void processDependencies() {
+    RequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version, webRoot, modules, dependencies );
+
+    RequireJsPackageConfigurationImpl packageConfiguration = new RequireJsPackageConfigurationImpl( mockRequireJsPackage );
 
     BiFunction<String, String, RequireJsPackageConfiguration> dependencyResolverFunction = mock( BiFunction.class );
     packageConfiguration.processDependencies( dependencyResolverFunction );
+
+    // Should call the dependencyResolverFunction for each dependency
+    verify( dependencyResolverFunction, times( dependencies.size() ) ).apply( anyString(), anyString() );
+  }
+
+  @Test(expected = IllegalStateException.class)
+  public void getModuleIdsMappingBeforeProcessDependencies() {
+    RequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version, webRoot, modules, dependencies );
+
+    RequireJsPackageConfigurationImpl packageConfiguration = new RequireJsPackageConfigurationImpl( mockRequireJsPackage );
+
+    packageConfiguration.getModuleIdsMapping();
+  }
+
+  @Test(expected = IllegalStateException.class)
+  public void processRequireJsPackageInvalidatesProcessDependencies() {
+    RequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version, webRoot, modules, dependencies );
+
+    RequireJsPackageConfigurationImpl packageConfiguration = new RequireJsPackageConfigurationImpl( mockRequireJsPackage );
+
+    BiFunction<String, String, RequireJsPackageConfiguration> dependencyResolverFunction = mock( BiFunction.class );
+
+    packageConfiguration.processDependencies( dependencyResolverFunction );
+
+    packageConfiguration.getModuleIdsMapping();
+
+    packageConfiguration.processRequireJsPackage();
+
+    packageConfiguration.getModuleIdsMapping();
+  }
+
+  @Test
+  public void getModuleIdsMapping() {
+    RequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version, webRoot, modules, dependencies );
+
+    RequireJsPackageConfigurationImpl packageConfiguration = new RequireJsPackageConfigurationImpl( mockRequireJsPackage );
+
+    packageConfiguration.processDependencies( getMockDependencyResolverFunction() );
+
+    Map<String, String> moduleIdsMapping = packageConfiguration.getModuleIdsMapping();
+
+    assertEquals( "Should return mappings with its own base moduleIds and of its resolved dependencies (all but @dep/B)", modules.size() + dependencyABaseModuleIdsMapping.size() + dependencyCBaseModuleIdsMapping.size(), moduleIdsMapping.size() );
+
+    modules.forEach( ( moduleId, path ) -> {
+      assertTrue( "Maps a versioned ID to each module", moduleIdsMapping.containsKey( moduleId ) );
+    } );
+
+    dependencyABaseModuleIdsMapping.forEach( ( moduleId, mappedModuleId ) -> {
+      assertTrue( "Maps a versioned ID to each dependency module", moduleIdsMapping.containsKey( moduleId ) );
+      assertEquals( "Maps a versioned ID to each dependency module", moduleIdsMapping.get( moduleId ), mappedModuleId );
+    } );
+
+    dependencyCBaseModuleIdsMapping.forEach( ( moduleId, mappedModuleId ) -> {
+      assertTrue( "Maps a versioned ID to each dependency module", moduleIdsMapping.containsKey( moduleId ) );
+      assertEquals( "Maps a versioned ID to each dependency module", moduleIdsMapping.get( moduleId ), mappedModuleId );
+    } );
+  }
+
+  @Test(expected = UnsupportedOperationException.class)
+  public void getModuleIdsMappingReturnsUnmodifiableMap() {
+    RequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version, webRoot, modules, dependencies );
+
+    RequireJsPackageConfigurationImpl packageConfiguration = new RequireJsPackageConfigurationImpl( mockRequireJsPackage );
+
+    packageConfiguration.processDependencies( getMockDependencyResolverFunction() );
+
+    Map<String, String> moduleIdsMapping = packageConfiguration.getModuleIdsMapping();
+    moduleIdsMapping.put( "moduleId", "mappedId" );
+  }
+
+  @Test
+  public void getEmptyRequireConfig() {
+    RequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version );
+
+    RequireJsPackageConfigurationImpl packageConfiguration = new RequireJsPackageConfigurationImpl( mockRequireJsPackage );
+
+    packageConfiguration.processDependencies( getMockDependencyResolverFunction() );
 
     Map<String, ?> requireConfig = packageConfiguration.getRequireConfig( null );
 
@@ -115,14 +355,11 @@ public class RequireJsPackageConfigurationImplTest {
 
   @Test
   public void getRequireConfigPaths() {
-    String name = "@tests/basic";
-    String version = "1.0.1";
-    String webRoot = "web/path";
+    RequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version, webRoot, modules );
 
-    RequireJsPackageConfigurationImpl packageConfiguration = createRequireJsPackageConfiguration( name, version, webRoot, modules );
+    RequireJsPackageConfigurationImpl packageConfiguration = new RequireJsPackageConfigurationImpl( mockRequireJsPackage );
 
-    BiFunction<String, String, RequireJsPackageConfiguration> dependencyResolverFunction = mock( BiFunction.class );
-    packageConfiguration.processDependencies( dependencyResolverFunction );
+    packageConfiguration.processDependencies( getMockDependencyResolverFunction() );
 
     Map<String, String> baseModuleIdsMapping = packageConfiguration.getBaseModuleIdsMapping();
 
@@ -141,43 +378,58 @@ public class RequireJsPackageConfigurationImplTest {
   }
 
   @Test
-  public void getRequireConfigMaps() {
-    String name = "@tests/basic";
-    String version = "1.0.1";
-    String webRoot = "/web/path";
+  public void getRequireConfigPathsRootPath() {
+    RequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version, webRoot );
 
-    RequireJsPackageConfigurationImpl packageConfiguration = createRequireJsPackageConfiguration( name, version, webRoot, modules );
+    Map<String, String> modules = new HashMap<>();
+    modules.put( "tests/basic/A", "/" );
 
-    BiFunction<String, String, RequireJsPackageConfiguration> dependencyResolverFunction = mock( BiFunction.class );
-    packageConfiguration.processDependencies( dependencyResolverFunction );
+    doReturn( modules ).when( mockRequireJsPackage ).getModules();
+
+    RequireJsPackageConfigurationImpl packageConfiguration = new RequireJsPackageConfigurationImpl( mockRequireJsPackage );
+
+    packageConfiguration.processDependencies( getMockDependencyResolverFunction() );
 
     Map<String, String> baseModuleIdsMapping = packageConfiguration.getBaseModuleIdsMapping();
 
     Map<String, ?> requireConfig = packageConfiguration.getRequireConfig( null );
 
-    Map<String, Map<String, String>> map = (Map<String, Map<String, String>>) requireConfig.get( "map" );
+    Map<String, String> paths = (Map<String, String>) requireConfig.get( "paths" );
 
-    modules.forEach( ( moduleId, path ) -> {
-      String versionedModuleID = baseModuleIdsMapping.get( moduleId );
+    String versionedPath = paths.get( baseModuleIdsMapping.get( "tests/basic/A" ) );
+    assertEquals( "Module ID path is the web root path", webRoot, versionedPath );
+  }
 
-      assertTrue( "Creates mappings for the versioned module ID", map.containsKey( versionedModuleID ) );
+  @Test
+  public void getRequireConfigPathsWithoutPathBeginningSlash() {
+    RequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version, webRoot );
 
-      Map<String, String> moduleMap = map.get( versionedModuleID );
+    Map<String, String> modules = new HashMap<>();
+    modules.put( "tests/basic/A", "something/without/beginning-slash" );
 
-      modules.keySet().forEach( ( internalModuleId ) -> assertTrue( "Maps the package's modules to each other", moduleMap.containsKey( internalModuleId ) ) );
-    } );
+    doReturn( modules ).when( mockRequireJsPackage ).getModules();
+
+    RequireJsPackageConfigurationImpl packageConfiguration = new RequireJsPackageConfigurationImpl( mockRequireJsPackage );
+
+    packageConfiguration.processDependencies( getMockDependencyResolverFunction() );
+
+    Map<String, String> baseModuleIdsMapping = packageConfiguration.getBaseModuleIdsMapping();
+
+    Map<String, ?> requireConfig = packageConfiguration.getRequireConfig( null );
+
+    Map<String, String> paths = (Map<String, String>) requireConfig.get( "paths" );
+
+    String versionedPath = paths.get( baseModuleIdsMapping.get( "tests/basic/A" ) );
+    assertEquals( "Module ID path is prepended with web root path and a slash", webRoot + "/something/without/beginning-slash", versionedPath );
   }
 
   @Test
   public void getRequireConfigPackages() {
-    String name = "@tests/basic";
-    String version = "1.0.1";
-    String webRoot = "/web/path";
+    RequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version, webRoot, modules );
 
-    RequireJsPackageConfigurationImpl packageConfiguration = createRequireJsPackageConfiguration( name, version, webRoot, modules );
+    RequireJsPackageConfigurationImpl packageConfiguration = new RequireJsPackageConfigurationImpl( mockRequireJsPackage );
 
-    BiFunction<String, String, RequireJsPackageConfiguration> dependencyResolverFunction = mock( BiFunction.class );
-    packageConfiguration.processDependencies( dependencyResolverFunction );
+    packageConfiguration.processDependencies( getMockDependencyResolverFunction() );
 
     Map<String, String> baseModuleIdsMapping = packageConfiguration.getBaseModuleIdsMapping();
 
@@ -196,60 +448,399 @@ public class RequireJsPackageConfigurationImplTest {
   }
 
   @Test
-  public void getRequireConfig() {
-/* TO TEST:
-2. dependency resolver is called for each dependency
-3. Plugins are called, test the two functions and that the require config changes
-4. Plugins are not allowed to change anything other than config and shim
-7. The require config structure, with mappings for each module, including dependencies, etc.
-8. getVersionedModuleId should be tested, the split by !, etc.
-*/
-    String name = "@tests/basic";
-    String version = "1.0.1";
-    String webRoot = "/web/path";
+  public void getRequireConfigMaps() {
+    RequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version, webRoot, modules );
 
-    RequireJsPackageConfigurationImpl packageConfiguration = createRequireJsPackageConfiguration( name, version, webRoot, modules );
+    RequireJsPackageConfigurationImpl packageConfiguration = new RequireJsPackageConfigurationImpl( mockRequireJsPackage );
 
-    BiFunction<String, String, RequireJsPackageConfiguration> dependencyResolverFunction = mock( BiFunction.class );
-    packageConfiguration.processDependencies( dependencyResolverFunction );
+    packageConfiguration.processDependencies( getMockDependencyResolverFunction() );
 
     Map<String, String> baseModuleIdsMapping = packageConfiguration.getBaseModuleIdsMapping();
 
     Map<String, ?> requireConfig = packageConfiguration.getRequireConfig( null );
 
     Map<String, Map<String, String>> map = (Map<String, Map<String, String>>) requireConfig.get( "map" );
-    Map<String, String> paths = (Map<String, String>) requireConfig.get( "paths" );
 
     modules.forEach( ( moduleId, path ) -> {
       String versionedModuleID = baseModuleIdsMapping.get( moduleId );
 
-      assertTrue( "Defines path for the versioned module ID", paths.containsKey( versionedModuleID ) );
       assertTrue( "Creates mappings for the versioned module ID", map.containsKey( versionedModuleID ) );
 
       Map<String, String> moduleMap = map.get( versionedModuleID );
 
       modules.keySet().forEach( ( internalModuleId ) -> assertTrue( "Maps the package's modules to each other", moduleMap.containsKey( internalModuleId ) ) );
     } );
+  }
 
-    List<?> packages = (List<?>) requireConfig.get( "packages" );
+  @Test
+  public void getRequireConfigMapsPackageMapsMerge() {
+    RequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version, webRoot, modules, dependencies );
 
-    assertTrue( "Should have package in string format for some/module/B (main)", packages.contains( baseModuleIdsMapping.get( "some/module/B" ) ) );
+    doReturn( modules ).when( mockRequireJsPackage ).getModules();
 
-    Map<String, String> packageDefinition = new HashMap<>( 2 );
-    packageDefinition.put( "name", baseModuleIdsMapping.get( "at-root" ) );
-    packageDefinition.put( "main", "special" );
-    assertTrue( "Should have package in object format for at-root (special)", packages.contains( packageDefinition ) );
+    Map<String, Map<String, String>> packageMaps = new HashMap<>();
+    Map<String, String> baseModulePackageMap = new HashMap<>();
+    baseModulePackageMap.put( "B", "some/module/B" );
+    baseModulePackageMap.put( "Hello", "depA/hello" );
+    baseModulePackageMap.put( "Hi", "depC/hi" );
+    baseModulePackageMap.put( "angular", "any-other-module-id" );
+    packageMaps.put( "some/module/A", baseModulePackageMap );
 
-    assertTrue( "Should not have any other package (some/module/A is not a package)", packages.size() == 2 );
+    Map<String, String> dependencyModulePackageMap = new HashMap<>();
+    dependencyModulePackageMap.put( "B", "some/module/B" );
+    dependencyModulePackageMap.put( "Hello", "depA/hello" );
+    dependencyModulePackageMap.put( "Hi", "depC/hi" );
+    dependencyModulePackageMap.put( "angular", "any-other-module-id" );
+    packageMaps.put( "depA/hi", dependencyModulePackageMap );
 
-    assertTrue( "Should have empty config map", ( (Map<String, ?>) requireConfig.get( "config" ) ).isEmpty() );
-    assertTrue( "Should have empty shim map", ( (Map<String, ?>) requireConfig.get( "shim" ) ).isEmpty() );
+    Map<String, String> otherModulePackageMap = new HashMap<>();
+    otherModulePackageMap.put( "B", "some/module/B" );
+    otherModulePackageMap.put( "Hello", "depA/hello" );
+    otherModulePackageMap.put( "Hi", "depC/hi" );
+    otherModulePackageMap.put( "angular", "any-other-module-id" );
+    packageMaps.put( "tests/complex/other", otherModulePackageMap );
+
+    doReturn( packageMaps ).when( mockRequireJsPackage ).getMap();
+
+    RequireJsPackageConfigurationImpl packageConfiguration = new RequireJsPackageConfigurationImpl( mockRequireJsPackage );
+
+    packageConfiguration.processDependencies( getMockDependencyResolverFunction() );
+
+    Map<String, ?> requireConfig = packageConfiguration.getRequireConfig( null );
+
+    Map<String, Map<String, String>> map = (Map<String, Map<String, String>>) requireConfig.get( "map" );
+
+    assertTrue( "Doesn't create mappings for the unversioned base module ID", !map.containsKey( "some/module/A" ) );
+    assertTrue( "Creates mappings for the versioned base module ID", map.containsKey( expectedModuleIdsMapping.get( "some/module/A" ) ) );
+
+    Map<String, String> baseModuleMap = map.get( expectedModuleIdsMapping.get( "some/module/A" ) );
+    baseModulePackageMap.keySet().forEach( ( internalModuleId ) -> assertTrue( "The package map was merged (" + internalModuleId + ")", baseModuleMap.containsKey( internalModuleId ) ) );
+    assertEquals( "Mapped base module ID is translated", baseModuleMap.get( "B" ), expectedModuleIdsMapping.get( "some/module/B" ) );
+    assertEquals( "Mapped dependency module ID is translated", baseModuleMap.get( "Hello" ), expectedModuleIdsMapping.get( "depA/hello" ) );
+    assertEquals( "Mapped dependency module ID is translated", baseModuleMap.get( "Hi" ), expectedModuleIdsMapping.get( "depC/hi" ) );
+    assertEquals( "Mapped other module ID is not translated", baseModuleMap.get( "angular" ), "any-other-module-id" );
+
+    assertTrue( "Creates create mappings for the unversioned dependency module ID", map.containsKey( "depA/hi" ) );
+    assertTrue( "Doesn't mappings for the versioned dependency module ID", !map.containsKey( expectedModuleIdsMapping.get( "depA/hi" ) ) );
+
+    Map<String, String> dependencyModuleMap = map.get( "depA/hi" );
+    dependencyModulePackageMap.keySet().forEach( ( internalModuleId ) -> assertTrue( "The package map was merged (" + internalModuleId + ")", dependencyModuleMap.containsKey( internalModuleId ) ) );
+    assertEquals( "Mapped base module ID is translated", dependencyModuleMap.get( "B" ), expectedModuleIdsMapping.get( "some/module/B" ) );
+    assertEquals( "Mapped dependency module ID is translated", dependencyModuleMap.get( "Hello" ), expectedModuleIdsMapping.get( "depA/hello" ) );
+    assertEquals( "Mapped dependency module ID is translated", dependencyModuleMap.get( "Hi" ), expectedModuleIdsMapping.get( "depC/hi" ) );
+    assertEquals( "Mapped other module ID is not translated", dependencyModuleMap.get( "angular" ), "any-other-module-id" );
+
+    assertTrue( "Creates mappings for the external module ID", map.containsKey( "tests/complex/other" ) );
+
+    Map<String, String> otherModuleMap = map.get( "tests/complex/other" );
+    otherModulePackageMap.keySet().forEach( ( internalModuleId ) -> assertTrue( "The package map was merged (" + internalModuleId + ")", otherModuleMap.containsKey( internalModuleId ) ) );
+    assertEquals( "Mapped base module ID is translated", otherModuleMap.get( "B" ), expectedModuleIdsMapping.get( "some/module/B" ) );
+    assertEquals( "Mapped dependency module ID is translated", otherModuleMap.get( "Hello" ), expectedModuleIdsMapping.get( "depA/hello" ) );
+    assertEquals( "Mapped dependency module ID is translated", otherModuleMap.get( "Hi" ), expectedModuleIdsMapping.get( "depC/hi" ) );
+    assertEquals( "Mapped other module ID is not translated", otherModuleMap.get( "angular" ), "any-other-module-id" );
+  }
+
+  @Test
+  public void getRequireConfigConfig() {
+    RequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version, webRoot, modules, dependencies );
+
+    Map<String, Map<String, String>> packageConfig = new HashMap<>();
+
+    Map<String, String> configOfPackageModule = new HashMap<>();
+    configOfPackageModule.put( "just", "1" );
+    packageConfig.put( "some/module/A", configOfPackageModule );
+
+    Map<String, String> configOfDependencyModule = new HashMap<>();
+    configOfDependencyModule.put( "just", "2" );
+    packageConfig.put( "depA/hi", configOfDependencyModule );
+
+    Map<String, String> configOfOtherModule = new HashMap<>();
+    configOfOtherModule.put( "just", "3" );
+    packageConfig.put( "tests/complex/other", configOfOtherModule );
+
+    doReturn( packageConfig ).when( mockRequireJsPackage ).getConfig();
+
+    RequireJsPackageConfigurationImpl packageConfiguration = new RequireJsPackageConfigurationImpl( mockRequireJsPackage );
+
+    packageConfiguration.processDependencies( getMockDependencyResolverFunction() );
+
+    Map<String, ?> requireConfig = packageConfiguration.getRequireConfig( null );
+
+    Map<String, Map<String, ?>> config = (Map<String, Map<String, ?>>) requireConfig.get( "config" );
+
+    assertTrue( "There isn't a config for the unversioned base module ID", !config.containsKey( "some/module/A" ) );
+    assertTrue( "There is a config for the versioned base module ID", config.containsKey( expectedModuleIdsMapping.get( "some/module/A" ) ) );
+
+    assertTrue( "There isn't a config for the unversioned dependency module ID", !config.containsKey( "depA/hi" ) );
+    assertTrue( "There is a config for the versioned dependency module ID", config.containsKey( expectedModuleIdsMapping.get( "depA/hi" ) ) );
+
+    assertTrue( "There is a config for the other module ID", config.containsKey( "tests/complex/other" ) );
+  }
+
+  @Test
+  public void getRequireConfigShim() {
+    RequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version, webRoot, modules, dependencies );
+
+    Map<String, Map<String, ?>> packageShim = new HashMap<>();
+
+    Map<String, Object> shimOfPackageModule = new HashMap<>();
+    List<String> deps = new ArrayList<>();
+    deps.add( "some/module/B" );
+    deps.add( "depA/hello" );
+    deps.add( "jquery" );
+    shimOfPackageModule.put( "deps", deps );
+    packageShim.put( "some/module/A", shimOfPackageModule );
+
+    Map<String, String> shimOfDependencyModule = new HashMap<>();
+    shimOfDependencyModule.put( "exports", "hi" );
+    packageShim.put( "depA/hi", shimOfDependencyModule );
+
+    Map<String, String> configOfOtherModule = new HashMap<>();
+    configOfOtherModule.put( "exports", "other" );
+    packageShim.put( "tests/complex/other", configOfOtherModule );
+
+    doReturn( packageShim ).when( mockRequireJsPackage ).getShim();
+
+    RequireJsPackageConfigurationImpl packageConfiguration = new RequireJsPackageConfigurationImpl( mockRequireJsPackage );
+
+    packageConfiguration.processDependencies( getMockDependencyResolverFunction() );
+
+    Map<String, ?> requireConfig = packageConfiguration.getRequireConfig( null );
+
+    Map<String, Map<String, ?>> shim = (Map<String, Map<String, ?>>) requireConfig.get( "shim" );
+
+    assertTrue( "There isn't a shim config for the unversioned base module ID", !shim.containsKey( "some/module/A" ) );
+    assertTrue( "There is a shim config for the versioned base module ID", shim.containsKey( expectedModuleIdsMapping.get( "some/module/A" ) ) );
+
+    List<String> shimADeps = (List<String>) shim.get( expectedModuleIdsMapping.get( "some/module/A" ) ).get( "deps" );
+    {
+      assertTrue( "There isn't a dep for the unversioned base module ID", !shimADeps.contains( "some/module/B" ) );
+      assertTrue( "There is a dep for the versioned base module ID", shimADeps.contains( expectedModuleIdsMapping.get( "some/module/B" ) ) );
+
+      assertTrue( "There isn't a dep for the unversioned dependency module ID", !shimADeps.contains( "depA/hello" ) );
+      assertTrue( "There is a dep for the versioned dependency module ID", shimADeps.contains( expectedModuleIdsMapping.get( "depA/hello" ) ) );
+
+      assertTrue( "There is a dep for the other module ID", shimADeps.contains( "jquery" ) );
+    }
+
+    assertTrue( "There is a shim config for the unversioned dependency module ID", shim.containsKey( "depA/hi" ) );
+
+    assertTrue( "There is a shim config for the other module ID", shim.containsKey( "tests/complex/other" ) );
+  }
+
+  @Test
+  public void getRequireConfigPluginsAreCalled() {
+    RequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version );
+
+    RequireJsPackageConfigurationImpl packageConfiguration = new RequireJsPackageConfigurationImpl( mockRequireJsPackage );
+
+    BiFunction<String, String, RequireJsPackageConfiguration> mockDependencyResolverFunction = getMockDependencyResolverFunction();
+    packageConfiguration.processDependencies( mockDependencyResolverFunction );
+
+    List<RequireJsPackageConfigurationPlugin> plugins = new ArrayList<>();
+    plugins.add( mock( RequireJsPackageConfigurationPlugin.class ) );
+    plugins.add( mock( RequireJsPackageConfigurationPlugin.class ) );
+    plugins.add( mock( RequireJsPackageConfigurationPlugin.class ) );
+
+    packageConfiguration.getRequireConfig( plugins );
+
+    plugins.forEach( plugin -> verify( plugin, times( 1 ) ).apply( same( packageConfiguration ), any(), any(), any() ) );
+  }
+
+  @Test
+  public void getRequireConfigPluginCanModifyConfigAndShim() {
+    RequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version );
+
+    RequireJsPackageConfigurationImpl packageConfiguration = new RequireJsPackageConfigurationImpl( mockRequireJsPackage );
+
+    BiFunction<String, String, RequireJsPackageConfiguration> mockDependencyResolverFunction = getMockDependencyResolverFunction();
+    packageConfiguration.processDependencies( mockDependencyResolverFunction );
+
+    RequireJsPackageConfigurationPlugin mockPlugin = mock( RequireJsPackageConfigurationPlugin.class );
+    doAnswer( invocation -> {
+      Object[] args = invocation.getArguments();
+      Map<String, ?> requireConfig = (Map<String, ?>) args[ 3 ];
+
+      Map<String, Map<String, ?>> config = (Map<String, Map<String, ?>>) requireConfig.get( "config" );
+      config.put( "my-key", new HashMap<>() );
+
+      Map<String, Map<String, ?>> shim = (Map<String, Map<String, ?>>) requireConfig.get( "shim" );
+      shim.put( "my-key", new HashMap<>() );
+
+      return null;
+    } ).when( mockPlugin ).apply( same( packageConfiguration ), any(), any(), any() );
+
+    List<RequireJsPackageConfigurationPlugin> plugins = new ArrayList<>();
+    plugins.add( mockPlugin );
+
+    Map<String, ?> requireConfig = packageConfiguration.getRequireConfig( plugins );
+
+    Map<String, Map<String, ?>> config = (Map<String, Map<String, ?>>) requireConfig.get( "config" );
+    assertTrue( "Config was modified", config.containsKey( "my-key" ) );
+
+    Map<String, Map<String, ?>> shim = (Map<String, Map<String, ?>>) requireConfig.get( "shim" );
+    assertTrue( "Shim was modified", shim.containsKey( "my-key" ) );
+  }
+
+  @Test(expected = UnsupportedOperationException.class)
+  public void getRequireConfigPluginCannotModifyTop() {
+    RequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version );
+
+    RequireJsPackageConfigurationImpl packageConfiguration = new RequireJsPackageConfigurationImpl( mockRequireJsPackage );
+
+    BiFunction<String, String, RequireJsPackageConfiguration> mockDependencyResolverFunction = getMockDependencyResolverFunction();
+    packageConfiguration.processDependencies( mockDependencyResolverFunction );
+
+    RequireJsPackageConfigurationPlugin mockPlugin = mock( RequireJsPackageConfigurationPlugin.class );
+    doAnswer( invocation -> {
+      Object[] args = invocation.getArguments();
+      Map<String, Object> requireConfig = (Map<String, Object>) args[ 3 ];
+
+      requireConfig.put( "my-key", "something" );
+
+      return null;
+    } ).when( mockPlugin ).apply( same( packageConfiguration ), any(), any(), any() );
+
+    List<RequireJsPackageConfigurationPlugin> plugins = new ArrayList<>();
+    plugins.add( mockPlugin );
+
+    packageConfiguration.getRequireConfig( plugins );
+  }
+
+  @Test(expected = UnsupportedOperationException.class)
+  public void getRequireConfigPluginCannotModifyPaths() {
+    RequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version );
+
+    RequireJsPackageConfigurationImpl packageConfiguration = new RequireJsPackageConfigurationImpl( mockRequireJsPackage );
+
+    BiFunction<String, String, RequireJsPackageConfiguration> mockDependencyResolverFunction = getMockDependencyResolverFunction();
+    packageConfiguration.processDependencies( mockDependencyResolverFunction );
+
+    RequireJsPackageConfigurationPlugin mockPlugin = mock( RequireJsPackageConfigurationPlugin.class );
+    doAnswer( invocation -> {
+      Object[] args = invocation.getArguments();
+      Map<String, ?> requireConfig = (Map<String, ?>) args[ 3 ];
+
+      Map<String, String> paths = (Map<String, String>) requireConfig.get( "paths" );
+      paths.put( "my-key", "/" );
+
+      return null;
+    } ).when( mockPlugin ).apply( same( packageConfiguration ), any(), any(), any() );
+
+    List<RequireJsPackageConfigurationPlugin> plugins = new ArrayList<>();
+    plugins.add( mockPlugin );
+
+    packageConfiguration.getRequireConfig( plugins );
+  }
+
+  @Test(expected = UnsupportedOperationException.class)
+  public void getRequireConfigPluginCannotModifyPackages() {
+    RequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version );
+
+    RequireJsPackageConfigurationImpl packageConfiguration = new RequireJsPackageConfigurationImpl( mockRequireJsPackage );
+
+    BiFunction<String, String, RequireJsPackageConfiguration> mockDependencyResolverFunction = getMockDependencyResolverFunction();
+    packageConfiguration.processDependencies( mockDependencyResolverFunction );
+
+    RequireJsPackageConfigurationPlugin mockPlugin = mock( RequireJsPackageConfigurationPlugin.class );
+    doAnswer( invocation -> {
+      Object[] args = invocation.getArguments();
+      Map<String, ?> requireConfig = (Map<String, ?>) args[ 3 ];
+
+      List<Object> packages = (List<Object>) requireConfig.get( "packages" );
+      packages.add( "my-key" );
+
+      return null;
+    } ).when( mockPlugin ).apply( same( packageConfiguration ), any(), any(), any() );
+
+    List<RequireJsPackageConfigurationPlugin> plugins = new ArrayList<>();
+    plugins.add( mockPlugin );
+
+    packageConfiguration.getRequireConfig( plugins );
+  }
+
+  @Test(expected = UnsupportedOperationException.class)
+  public void getRequireConfigPluginCannotModifyMap() {
+    RequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version );
+
+    RequireJsPackageConfigurationImpl packageConfiguration = new RequireJsPackageConfigurationImpl( mockRequireJsPackage );
+
+    BiFunction<String, String, RequireJsPackageConfiguration> mockDependencyResolverFunction = getMockDependencyResolverFunction();
+    packageConfiguration.processDependencies( mockDependencyResolverFunction );
+
+    RequireJsPackageConfigurationPlugin mockPlugin = mock( RequireJsPackageConfigurationPlugin.class );
+    doAnswer( invocation -> {
+      Object[] args = invocation.getArguments();
+      Map<String, ?> requireConfig = (Map<String, ?>) args[ 3 ];
+
+      Map<String, Map<String, String>> map = (Map<String, Map<String, String>>) requireConfig.get( "map" );
+      map.put( "my-key", new HashMap<>() );
+
+      return null;
+    } ).when( mockPlugin ).apply( same( packageConfiguration ), any(), any(), any() );
+
+    List<RequireJsPackageConfigurationPlugin> plugins = new ArrayList<>();
+    plugins.add( mockPlugin );
+
+    packageConfiguration.getRequireConfig( plugins );
+  }
+
+  @Test
+  public void testModuleIdVersioning() {
+    RequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version, webRoot, modules, dependencies );
+
+    Map<String, Map<String, String>> packageConfig = new HashMap<>();
+
+    packageConfig.put( "some/module/A", new HashMap<>() );
+    packageConfig.put( "depA/hi", new HashMap<>() );
+    packageConfig.put( "tests/complex/other", new HashMap<>() );
+
+    packageConfig.put( "some/module/B!some/module/A", new HashMap<>() );
+    packageConfig.put( "some/module/B!depA/hi", new HashMap<>() );
+    packageConfig.put( "some/module/B!tests/complex/other", new HashMap<>() );
+
+    packageConfig.put( "depA/hello!some/module/A", new HashMap<>() );
+    packageConfig.put( "depA/hello!depA/hi", new HashMap<>() );
+    packageConfig.put( "depA/hello!tests/complex/other", new HashMap<>() );
+
+    packageConfig.put( "plugin!some/module/A", new HashMap<>() );
+    packageConfig.put( "plugin!depA/hi", new HashMap<>() );
+    packageConfig.put( "plugin!tests/complex/other", new HashMap<>() );
+
+    packageConfig.put( "depA_1.0_hi", new HashMap<>() );
+
+    doReturn( packageConfig ).when( mockRequireJsPackage ).getConfig();
+
+    RequireJsPackageConfigurationImpl packageConfiguration = new RequireJsPackageConfigurationImpl( mockRequireJsPackage );
+
+    packageConfiguration.processDependencies( getMockDependencyResolverFunction() );
+
+    Map<String, ?> requireConfig = packageConfiguration.getRequireConfig( null );
+
+    Map<String, Map<String, ?>> config = (Map<String, Map<String, ?>>) requireConfig.get( "config" );
+
+    assertTrue( "Base module ID translation", config.containsKey( expectedModuleIdsMapping.get( "some/module/A" ) ) );
+    assertTrue( "Dependency module ID translation", config.containsKey( expectedModuleIdsMapping.get( "depA/hi" ) ) );
+    assertTrue( "Other module ID not translated", config.containsKey( "tests/complex/other" ) );
+
+    assertTrue( "Base module ID loader translated + Base module ID translation", config.containsKey( expectedModuleIdsMapping.get( "some/module/B" ) + "!" + expectedModuleIdsMapping.get( "some/module/A" ) ) );
+    assertTrue( "Base module ID loader translated + Dependency module ID translation", config.containsKey( expectedModuleIdsMapping.get( "some/module/B" ) + "!" + expectedModuleIdsMapping.get( "depA/hi" ) ) );
+    assertTrue( "Base module ID loader translated + Other module ID not translated", config.containsKey( expectedModuleIdsMapping.get( "some/module/B" ) + "!" + "tests/complex/other" ) );
+
+    assertTrue( "Dependency module ID loader translated + Base module ID translation", config.containsKey( expectedModuleIdsMapping.get( "depA/hello" ) + "!" + expectedModuleIdsMapping.get( "some/module/A" ) ) );
+    assertTrue( "Dependency module ID loader translated + Dependency module ID translation", config.containsKey( expectedModuleIdsMapping.get( "depA/hello" ) + "!" + expectedModuleIdsMapping.get( "depA/hi" ) ) );
+    assertTrue( "Dependency module ID loader translated + Other module ID not translated", config.containsKey( expectedModuleIdsMapping.get( "depA/hello" ) + "!" + "tests/complex/other" ) );
+
+    assertTrue( "Other module ID loader not translated + Base module ID translation", config.containsKey( "plugin!" + expectedModuleIdsMapping.get( "some/module/A" ) ) );
+    assertTrue( "Other module ID loader not translated + Dependency module ID translation", config.containsKey( "plugin!" + expectedModuleIdsMapping.get( "depA/hi" ) ) );
+    assertTrue( "Other module ID loader not translated + Other module ID not translated", config.containsKey( "plugin!tests/complex/other" ) );
   }
 
   // region Access to the underlying RequireJsPackage
   @Test
   public void getRequireJsPackage() {
-    RequireJsPackage mockRequireJsPackage = mock( RequireJsPackage.class );
+    RequireJsPackage mockRequireJsPackage = getRequireJsPackageMock();
+
     RequireJsPackageConfigurationImpl packageConfiguration = new RequireJsPackageConfigurationImpl( mockRequireJsPackage );
 
     assertSame( mockRequireJsPackage, packageConfiguration.getRequireJsPackage() );
@@ -257,9 +848,8 @@ public class RequireJsPackageConfigurationImplTest {
 
   @Test
   public void getName() {
-    String name = "@tests/basic";
+    RequireJsPackage mockRequireJsPackage = getRequireJsPackageMock();
 
-    RequireJsPackage mockRequireJsPackage = mock( RequireJsPackage.class );
     RequireJsPackageConfigurationImpl packageConfiguration = new RequireJsPackageConfigurationImpl( mockRequireJsPackage );
 
     doReturn( name ).when( mockRequireJsPackage ).getName();
@@ -271,9 +861,8 @@ public class RequireJsPackageConfigurationImplTest {
 
   @Test
   public void getVersion() {
-    String version = "1.0.1";
+    RequireJsPackage mockRequireJsPackage = getRequireJsPackageMock();
 
-    RequireJsPackage mockRequireJsPackage = mock( RequireJsPackage.class );
     RequireJsPackageConfigurationImpl packageConfiguration = new RequireJsPackageConfigurationImpl( mockRequireJsPackage );
 
     doReturn( version ).when( mockRequireJsPackage ).getVersion();
@@ -285,9 +874,8 @@ public class RequireJsPackageConfigurationImplTest {
 
   @Test
   public void getWebRootPath() {
-    String webRoot = "some/path";
+    RequireJsPackage mockRequireJsPackage = getRequireJsPackageMock();
 
-    RequireJsPackage mockRequireJsPackage = mock( RequireJsPackage.class );
     RequireJsPackageConfigurationImpl packageConfiguration = new RequireJsPackageConfigurationImpl( mockRequireJsPackage );
 
     doReturn( webRoot ).when( mockRequireJsPackage ).getWebRootPath();
@@ -305,11 +893,8 @@ public class RequireJsPackageConfigurationImplTest {
 
   @Test
   public void getDependencies() {
-    Map<String, String> dependencies = new HashMap<>();
-    dependencies.put( "moduleA", "11.0.0" );
-    dependencies.put( "moduleB", "2.5.1" );
+    RequireJsPackage mockRequireJsPackage = getRequireJsPackageMock();
 
-    RequireJsPackage mockRequireJsPackage = mock( RequireJsPackage.class );
     RequireJsPackageConfigurationImpl packageConfiguration = new RequireJsPackageConfigurationImpl( mockRequireJsPackage );
 
     doReturn( dependencies ).when( mockRequireJsPackage ).getDependencies();
@@ -325,11 +910,8 @@ public class RequireJsPackageConfigurationImplTest {
 
   @Test(expected = UnsupportedOperationException.class)
   public void getDependenciesReturnsUnmodifiableMap() {
-    Map<String, String> dependencies = new HashMap<>();
-    dependencies.put( "moduleA", "11.0.0" );
-    dependencies.put( "moduleB", "2.5.1" );
+    RequireJsPackage mockRequireJsPackage = getRequireJsPackageMock();
 
-    RequireJsPackage mockRequireJsPackage = mock( RequireJsPackage.class );
     RequireJsPackageConfigurationImpl packageConfiguration = new RequireJsPackageConfigurationImpl( mockRequireJsPackage );
 
     doReturn( dependencies ).when( mockRequireJsPackage ).getDependencies();
@@ -340,7 +922,8 @@ public class RequireJsPackageConfigurationImplTest {
 
   @Test
   public void hasScript() {
-    RequireJsPackage mockRequireJsPackage = mock( RequireJsPackage.class );
+    RequireJsPackage mockRequireJsPackage = getRequireJsPackageMock();
+
     RequireJsPackageConfigurationImpl packageConfiguration = new RequireJsPackageConfigurationImpl( mockRequireJsPackage );
 
     doReturn( false ).when( mockRequireJsPackage ).hasScript( anyString() );
@@ -352,7 +935,8 @@ public class RequireJsPackageConfigurationImplTest {
 
   @Test
   public void getScriptResource() throws MalformedURLException {
-    RequireJsPackage mockRequireJsPackage = mock( RequireJsPackage.class );
+    RequireJsPackage mockRequireJsPackage = getRequireJsPackageMock();
+
     RequireJsPackageConfigurationImpl packageConfiguration = new RequireJsPackageConfigurationImpl( mockRequireJsPackage );
 
     doReturn( null ).when( mockRequireJsPackage ).getScriptResource( anyString() );
@@ -364,24 +948,19 @@ public class RequireJsPackageConfigurationImplTest {
   }
   // endregion
 
-  private RequireJsPackageConfigurationImpl createRequireJsPackageConfiguration() {
-    return createRequireJsPackageConfiguration( null, null, null, null );
+  // region Mock factory
+  private RequireJsPackage getRequireJsPackageMock( String name, String version, String webRoot, Map<String, String> modules, Map<String, String> dependencies ) {
+    RequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version, webRoot, modules );
+
+    if ( dependencies != null ) {
+      doReturn( dependencies ).when( mockRequireJsPackage ).getDependencies();
+    }
+
+    return mockRequireJsPackage;
   }
 
-  private RequireJsPackageConfigurationImpl createRequireJsPackageConfiguration( String name, String version ) {
-    return createRequireJsPackageConfiguration( name, version, null, null );
-  }
-
-  private RequireJsPackageConfigurationImpl createRequireJsPackageConfiguration( String name, String version, String webRoot ) {
-    return createRequireJsPackageConfiguration( name, version, webRoot, null );
-  }
-
-  private RequireJsPackageConfigurationImpl createRequireJsPackageConfiguration( String name, String version, String webRoot, Map<String, String> modules ) {
-    RequireJsPackage mockRequireJsPackage = mock( RequireJsPackage.class );
-
-    doReturn( name ).when( mockRequireJsPackage ).getName();
-    doReturn( version ).when( mockRequireJsPackage ).getVersion();
-    doReturn( webRoot ).when( mockRequireJsPackage ).getWebRootPath();
+  private RequireJsPackage getRequireJsPackageMock( String name, String version, String webRoot, Map<String, String> modules ) {
+    RequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version, webRoot );
 
     if ( modules != null ) {
       doReturn( modules ).when( mockRequireJsPackage ).getModules();
@@ -390,6 +969,50 @@ public class RequireJsPackageConfigurationImplTest {
       doReturn( "special" ).when( mockRequireJsPackage ).getModuleMainFile( "at-root" );
     }
 
-    return new RequireJsPackageConfigurationImpl( mockRequireJsPackage );
+    return mockRequireJsPackage;
   }
+
+  private RequireJsPackage getRequireJsPackageMock( String name, String version, String webRoot ) {
+    RequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version );
+
+    doReturn( webRoot ).when( mockRequireJsPackage ).getWebRootPath();
+
+    return mockRequireJsPackage;
+  }
+
+  private RequireJsPackage getRequireJsPackageMock( String name, String version ) {
+    RequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name );
+
+    doReturn( version ).when( mockRequireJsPackage ).getVersion();
+
+    return mockRequireJsPackage;
+  }
+
+  private RequireJsPackage getRequireJsPackageMock( String name ) {
+    RequireJsPackage mockRequireJsPackage = getRequireJsPackageMock();
+
+    doReturn( name ).when( mockRequireJsPackage ).getName();
+
+    return mockRequireJsPackage;
+  }
+
+  private RequireJsPackage getRequireJsPackageMock() {
+    return Mockito.mock( RequireJsPackage.class );
+  }
+
+  private BiFunction<String, String, RequireJsPackageConfiguration> getMockDependencyResolverFunction() {
+    BiFunction<String, String, RequireJsPackageConfiguration> dependencyResolverFunction = mock( BiFunction.class );
+
+    RequireJsPackageConfiguration dependencyA = mock( RequireJsPackageConfiguration.class );
+    doReturn( dependencyABaseModuleIdsMapping ).when( dependencyA ).getBaseModuleIdsMapping();
+    doReturn( dependencyA ).when( dependencyResolverFunction ).apply( eq( "@dep/A" ), anyString() );
+
+    doReturn( null ).when( dependencyResolverFunction ).apply( eq( "@dep/B" ), anyString() );
+
+    RequireJsPackageConfiguration dependencyC = mock( RequireJsPackageConfiguration.class );
+    doReturn( dependencyCBaseModuleIdsMapping ).when( dependencyC ).getBaseModuleIdsMapping();
+    doReturn( dependencyC ).when( dependencyResolverFunction ).apply( eq( "@dep/C" ), anyString() );
+    return dependencyResolverFunction;
+  }
+  // endregion
 }
