@@ -107,7 +107,7 @@ public class PentahoWebPackageBundleImpl {
   List<BundleCapability> getCapabilities() {
     BundleWiring wiring = this.bundle.adapt( BundleWiring.class );
     if ( wiring != null ) {
-      return wiring.getCapabilities( PentahoWebPackageBundle.CAPABILITY_NAMESPACE );
+      return wiring.getCapabilities( CAPABILITY_NAMESPACE );
     }
     return Collections.EMPTY_LIST;
   }
