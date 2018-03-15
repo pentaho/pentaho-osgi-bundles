@@ -32,6 +32,7 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -42,7 +43,7 @@ public class PentahoWebPackageBundleImpl implements PentahoWebPackageBundle {
 
   private final Bundle bundle;
 
-  private ArrayList<PentahoWebPackageImpl> pentahoWebPackages;
+  private List<PentahoWebPackageImpl> pentahoWebPackages;
 
   PentahoWebPackageBundleImpl( Bundle bundle ) {
     this.bundle = bundle;
@@ -60,51 +61,60 @@ public class PentahoWebPackageBundleImpl implements PentahoWebPackageBundle {
     return (Map<String, Object>) parser.parse( bufferedReader );
   }
 
-  public void init() {
-    BundleWiring wiring = this.bundle.adapt( BundleWiring.class );
+  List<PentahoWebPackageImpl> getWebPackages( List<BundleCapability> capabilities ) {
+    List<PentahoWebPackageImpl> webPackages = new ArrayList<>();
+    capabilities.forEach( bundleCapability -> {
+      Map<String, Object> attributes = bundleCapability.getAttributes();
 
-    if ( wiring != null ) {
-      List<BundleCapability> capabilities = wiring.getCapabilities( PentahoWebPackageBundle.CAPABILITY_NAMESPACE );
-      capabilities.forEach( bundleCapability -> {
-        Map<String, Object> attributes = bundleCapability.getAttributes();
-
-        // for now using only the package.json information - so only the `root` attribute is mandatory
+      // for now using only the package.json information - so only the `root` attribute is mandatory
 //        String name = (String) attributes.get( "name" );
 //        Version version = (Version) attributes.get( "version" );
-        String root = (String) attributes.getOrDefault( "root", "" );
-        while ( root.endsWith( "/" ) ) {
-          root = root.substring( 0, root.length() - 1 );
-        }
+      String root = (String) attributes.getOrDefault( "root", "" );
+      while ( root.endsWith( "/" ) ) {
+        root = root.substring( 0, root.length() - 1 );
+      }
 
-        try {
-          URL capabilityPackageJsonUrl = this.bundle.getResource( root + "/package.json" );
-          if ( capabilityPackageJsonUrl != null ) {
-            Map<String, Object> packageJson = parsePackageJson( capabilityPackageJsonUrl );
+      try {
+        URL capabilityPackageJsonUrl = this.bundle.getResource( root + "/package.json" );
+        if ( capabilityPackageJsonUrl != null ) {
+          Map<String, Object> packageJson = parsePackageJson( capabilityPackageJsonUrl );
 
-            String name = (String) packageJson.get( "name" );
-            String version = (String) packageJson.get( "version" );
+          String name = (String) packageJson.get( "name" );
+          String version = (String) packageJson.get( "version" );
 
-            if ( name != null && version != null ) {
-              this.pentahoWebPackages.add( new PentahoWebPackageImpl( this.bundle.getBundleContext(), name, version, ( root.isEmpty() ? "/" : root ) ) );
-            }
-          } else {
-            logger.warn( this.bundle.getSymbolicName() + " [" + this.bundle.getBundleId() + "]: " + root + "/package.json not found." );
+          if ( name != null && version != null ) {
+            webPackages.add( new PentahoWebPackageImpl( this.bundle.getBundleContext(), name, version, ( root.isEmpty() ? "/" : root ) ) );
           }
-        } catch ( RuntimeException | ParseException | IOException ignored ) {
-          logger.error( this.bundle.getSymbolicName() + " [" + this.bundle.getBundleId() + "]: Error parsing " + root + "/package.json." );
-
-          // throwing will make everything fail
-          // what damage control should we do?
-          // **don't register this capability?** <-- this is what we're doing now
-          // ignore and use only the capability info?
-          // don't register all the bundle's capabilities?
-          // this is all post-bundle wiring phase, so only the requirejs configuration is affected
-          // the bundle is started and nothing will change that... or should we bundle.stop()?
+        } else {
+          logger.warn( this.bundle.getSymbolicName() + " [" + this.bundle.getBundleId() + "]: " + root + "/package.json not found." );
         }
-      } );
+      } catch ( RuntimeException | ParseException | IOException ignored ) {
+        logger.error( this.bundle.getSymbolicName() + " [" + this.bundle.getBundleId() + "]: Error parsing " + root + "/package.json." );
 
-      this.pentahoWebPackages.forEach( PentahoWebPackageImpl::init );
+        // throwing will make everything fail
+        // what damage control should we do?
+        // **don't register this capability?** <-- this is what we're doing now
+        // ignore and use only the capability info?
+        // don't register all the bundle's capabilities?
+        // this is all post-bundle wiring phase, so only the requirejs configuration is affected
+        // the bundle is started and nothing will change that... or should we bundle.stop()?
+      }
+    } );
+    return webPackages;
+  }
+
+  List<BundleCapability> getCapabilities() {
+    BundleWiring wiring = this.bundle.adapt( BundleWiring.class );
+    if ( wiring != null ) {
+      return wiring.getCapabilities( PentahoWebPackageBundle.CAPABILITY_NAMESPACE );
     }
+    return Collections.EMPTY_LIST;
+  }
+
+  public void init() {
+    List<BundleCapability> capabilities = getCapabilities();
+    this.pentahoWebPackages = getWebPackages( capabilities );
+    this.pentahoWebPackages.forEach( PentahoWebPackageImpl::init );
   }
 
   public void destroy() {

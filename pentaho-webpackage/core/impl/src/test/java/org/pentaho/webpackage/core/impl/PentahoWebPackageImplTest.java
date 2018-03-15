@@ -124,7 +124,7 @@ public class PentahoWebPackageImplTest {
       jsonObjectMap = (Map<String, Object>) new JSONParser().parse( mockPackageJson );
     } catch ( ParseException ignored ) {
     }
-    assertEquals( "", jsonObjectMap, jsonResponse );
+    assertEquals( "Should return valid JSON", jsonObjectMap, jsonResponse );
   }
 
   @Test
