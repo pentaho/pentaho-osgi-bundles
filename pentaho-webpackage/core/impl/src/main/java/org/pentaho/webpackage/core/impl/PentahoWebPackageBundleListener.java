@@ -19,11 +19,12 @@ package org.pentaho.webpackage.core.impl;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleEvent;
 import org.osgi.framework.BundleListener;
-import org.pentaho.webpackage.core.PentahoWebPackageBundle;
 
 import java.util.Dictionary;
 import java.util.HashMap;
 import java.util.Map;
+
+import static org.pentaho.webpackage.core.PentahoWebPackageConstants.CAPABILITY_NAMESPACE;
 
 /**
  * Implementation of the WebContainer service.
@@ -77,7 +78,7 @@ public class PentahoWebPackageBundleListener implements BundleListener {
 
     // Check that this is a web bundle
     String provideCapabilityHeader = getHeader( bundle, "Provide-Capability" );
-    if ( provideCapabilityHeader == null || !provideCapabilityHeader.contains( PentahoWebPackageBundle.CAPABILITY_NAMESPACE ) ) {
+    if ( provideCapabilityHeader == null || !provideCapabilityHeader.contains( CAPABILITY_NAMESPACE ) ) {
       return null;
     }
 

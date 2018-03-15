@@ -25,7 +25,6 @@ import org.apache.commons.io.filefilter.TrueFileFilter;
 import org.json.simple.parser.JSONParser;
 import org.osgi.framework.Constants;
 import org.osgi.framework.Version;
-import org.pentaho.webpackage.core.PentahoWebPackageBundle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -60,6 +59,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
+
+import static org.pentaho.webpackage.core.PentahoWebPackageConstants.CAPABILITY_NAMESPACE;
 
 public class WebPackageURLConnection extends java.net.URLConnection {
   public static final String URL_PROTOCOL = "pentaho-webpackage";
@@ -297,7 +298,7 @@ public class WebPackageURLConnection extends java.net.URLConnection {
         root = root.substring( 0, root.length() - 1 );
       }
 
-      capabilities.add( PentahoWebPackageBundle.CAPABILITY_NAMESPACE + ";name=\"" + moduleName + "\";version:Version=\"" + moduleVersion + "\";root=\"/" + this.resourcesFolderName + "/" + root + "\"" );
+      capabilities.add( CAPABILITY_NAMESPACE + ";name=\"" + moduleName + "\";version:Version=\"" + moduleVersion + "\";root=\"/" + this.resourcesFolderName + "/" + root + "\"" );
 
       // we can't use required capabilities until all the platform is using capability based web packages
 //      if ( packageJson.containsKey( "dependencies" ) ) {

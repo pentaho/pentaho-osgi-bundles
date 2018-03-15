@@ -21,7 +21,6 @@ import org.json.simple.parser.ParseException;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.wiring.BundleCapability;
 import org.osgi.framework.wiring.BundleWiring;
-import org.pentaho.webpackage.core.PentahoWebPackageBundle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,7 +35,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-public class PentahoWebPackageBundleImpl implements PentahoWebPackageBundle {
+import static org.pentaho.webpackage.core.PentahoWebPackageConstants.CAPABILITY_NAMESPACE;
+
+public class PentahoWebPackageBundleImpl {
   private static Logger logger = LoggerFactory.getLogger( PentahoWebPackageBundleImpl.class );
 
   private static final JSONParser parser = new JSONParser();

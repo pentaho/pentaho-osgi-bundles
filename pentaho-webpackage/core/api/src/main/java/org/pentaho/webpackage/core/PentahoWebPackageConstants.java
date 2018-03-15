@@ -16,6 +16,11 @@
  */
 package org.pentaho.webpackage.core;
 
-public interface PentahoWebPackageBundle {
-  String CAPABILITY_NAMESPACE = "org.pentaho.webpackage";
+public final class PentahoWebPackageConstants {
+
+  private PentahoWebPackageConstants() {
+    // restrict instantiation
+  }
+
+  public static final String CAPABILITY_NAMESPACE = "org.pentaho.webpackage";
 }
