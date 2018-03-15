@@ -18,9 +18,6 @@ package org.pentaho.webpackage.core.impl;
 
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
-import org.osgi.framework.Bundle;
-import org.osgi.framework.BundleContext;
-import org.osgi.framework.ServiceRegistration;
 import org.pentaho.webpackage.core.IPentahoWebPackage;
 
 import java.io.BufferedReader;
@@ -29,23 +26,21 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.Collections;
 import java.util.Map;
 
-public class PentahoWebPackageImpl implements IPentahoWebPackage {
+public final class PentahoWebPackageImpl implements IPentahoWebPackage {
   private final String name;
   private final String version;
   private final String resourceRootPath;
+  private final URL packageJsonUrl;
 
-  private final BundleContext bundleContext;
-
-  private ServiceRegistration<?> serviceReference;
-
-  public PentahoWebPackageImpl(BundleContext bundleContext, String name, String version, String resourceRootPath) {
-    this.bundleContext = bundleContext;
-
+  public PentahoWebPackageImpl(String name, String version, String resourceRootPath, URL packageJsonUrl ) {
     this.name = name;
     this.version = version;
     this.resourceRootPath = resourceRootPath;
+    this.packageJsonUrl = packageJsonUrl;
+
   }
 
   public String getName() {
@@ -68,11 +63,7 @@ public class PentahoWebPackageImpl implements IPentahoWebPackage {
   @Override
   public Map<String, Object> getPackageJson() {
     try {
-      Bundle bundle = this.bundleContext.getBundle();
-      String scriptPath = this.getResourceRootPath() + "/package.json";
-
-      URL resourceUrl = bundle.getResource( scriptPath );
-      URLConnection urlConnection = resourceUrl.openConnection();
+      URLConnection urlConnection = this.packageJsonUrl.openConnection();
       InputStream inputStream = urlConnection.getInputStream();
 
       InputStreamReader inputStreamReader = new InputStreamReader( inputStream );
@@ -83,22 +74,6 @@ public class PentahoWebPackageImpl implements IPentahoWebPackage {
     } catch ( IOException | ParseException ignored ) {
     }
 
-    return null;
-  }
-
-  public void init() {
-    this.serviceReference = this.bundleContext.registerService( IPentahoWebPackage.class.getName(), this, null );
-  }
-
-  public void destroy() {
-    if ( this.serviceReference != null ) {
-      try {
-        this.serviceReference.unregister();
-      } catch ( RuntimeException ignored ) {
-        // service might be already unregistered automatically by the bundle lifecycle manager
-      }
-
-      this.serviceReference = null;
-    }
+    return Collections.emptyMap();
   }
 }
