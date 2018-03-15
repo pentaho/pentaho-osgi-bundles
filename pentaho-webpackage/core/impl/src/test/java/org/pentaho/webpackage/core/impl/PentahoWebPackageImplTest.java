@@ -9,7 +9,7 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
 import org.osgi.framework.Version;
-import org.pentaho.webpackage.core.PentahoWebPackage;
+import org.pentaho.webpackage.core.IPentahoWebPackage;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -89,7 +89,7 @@ public class PentahoWebPackageImplTest {
     BundleContext mockBundleContext = mock( BundleContext.class );
     when( mockBundleContext.getBundle() ).thenReturn( mockBundle );
     when( mockBundle.getBundleContext() ).thenReturn( mockBundleContext );
-    when( mockBundleContext.registerService( eq( PentahoWebPackage.class.getName() ), any(), any() ) )
+    when( mockBundleContext.registerService( eq( IPentahoWebPackage.class.getName() ), any(), any() ) )
         .thenReturn( mockServiceReference );
 
     return mockBundle;
@@ -140,7 +140,7 @@ public class PentahoWebPackageImplTest {
   public void init() {
     pentahoWebPackage.init();
     verify( mockBundleContext, times( 1 ) )
-        .registerService( PentahoWebPackage.class.getName(), pentahoWebPackage, null );
+        .registerService( IPentahoWebPackage.class.getName(), pentahoWebPackage, null );
   }
 
   @Test

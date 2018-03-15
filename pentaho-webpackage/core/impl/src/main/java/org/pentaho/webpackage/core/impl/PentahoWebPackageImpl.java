@@ -21,7 +21,7 @@ import org.json.simple.parser.ParseException;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
-import org.pentaho.webpackage.core.PentahoWebPackage;
+import org.pentaho.webpackage.core.IPentahoWebPackage;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -31,7 +31,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.Map;
 
-public class PentahoWebPackageImpl implements PentahoWebPackage {
+public class PentahoWebPackageImpl implements IPentahoWebPackage {
   private final String name;
   private final String version;
   private final String resourceRootPath;
@@ -87,7 +87,7 @@ public class PentahoWebPackageImpl implements PentahoWebPackage {
   }
 
   public void init() {
-    this.serviceReference = this.bundleContext.registerService( PentahoWebPackage.class.getName(), this, null );
+    this.serviceReference = this.bundleContext.registerService( IPentahoWebPackage.class.getName(), this, null );
   }
 
   public void destroy() {

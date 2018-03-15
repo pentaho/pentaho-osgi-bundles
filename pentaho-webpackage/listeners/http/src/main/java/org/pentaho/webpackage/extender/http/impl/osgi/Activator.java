@@ -19,7 +19,7 @@ package org.pentaho.webpackage.extender.http.impl.osgi;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.util.tracker.ServiceTracker;
-import org.pentaho.webpackage.core.PentahoWebPackage;
+import org.pentaho.webpackage.core.IPentahoWebPackage;
 import org.pentaho.webpackage.extender.http.impl.PentahoWebPackageServiceTracker;
 
 public class Activator implements BundleActivator {
@@ -41,6 +41,6 @@ public class Activator implements BundleActivator {
 
   // for unit test mocking
   ServiceTracker createPentahoWebPackageServiceTracker( BundleContext bundleContext ) {
-    return new ServiceTracker<>( bundleContext, PentahoWebPackage.class, new PentahoWebPackageServiceTracker( bundleContext ) );
+    return new ServiceTracker<>( bundleContext, IPentahoWebPackage.class, new PentahoWebPackageServiceTracker( bundleContext ) );
   }
 }

@@ -20,12 +20,12 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 import org.osgi.util.tracker.ServiceTrackerCustomizer;
-import org.pentaho.webpackage.core.PentahoWebPackage;
+import org.pentaho.webpackage.core.IPentahoWebPackage;
 
 /**
- * Tracks registered {@link PentahoWebPackage} services and in turn registers {@link PentahoWebPackageResourceMapping} service.
+ * Tracks registered {@link IPentahoWebPackage} services and in turn registers {@link PentahoWebPackageResourceMapping} service.
  */
-public class PentahoWebPackageServiceTracker implements ServiceTrackerCustomizer<PentahoWebPackage, PentahoWebPackageResourceMapping> {
+public class PentahoWebPackageServiceTracker implements ServiceTrackerCustomizer<IPentahoWebPackage, PentahoWebPackageResourceMapping> {
   private final BundleContext context;
 
   public PentahoWebPackageServiceTracker( BundleContext context ) {
@@ -33,7 +33,7 @@ public class PentahoWebPackageServiceTracker implements ServiceTrackerCustomizer
   }
 
   @Override
-  public PentahoWebPackageResourceMapping addingService( ServiceReference<PentahoWebPackage> reference ) {
+  public PentahoWebPackageResourceMapping addingService( ServiceReference<IPentahoWebPackage> reference ) {
     Bundle bundle = reference.getBundle();
     // if null then the service is unregistered
     if ( bundle != null ) {
@@ -47,12 +47,12 @@ public class PentahoWebPackageServiceTracker implements ServiceTrackerCustomizer
   }
 
   @Override
-  public void modifiedService( ServiceReference<PentahoWebPackage> reference, PentahoWebPackageResourceMapping mapping ) {
+  public void modifiedService(ServiceReference<IPentahoWebPackage> reference, PentahoWebPackageResourceMapping mapping ) {
 
   }
 
   @Override
-  public void removedService( ServiceReference<PentahoWebPackage> reference, PentahoWebPackageResourceMapping mapping ) {
+  public void removedService(ServiceReference<IPentahoWebPackage> reference, PentahoWebPackageResourceMapping mapping ) {
     this.context.ungetService( reference );
 
     mapping.unregister();

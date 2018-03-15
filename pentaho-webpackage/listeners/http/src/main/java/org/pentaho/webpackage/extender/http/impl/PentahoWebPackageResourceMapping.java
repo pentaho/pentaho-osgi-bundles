@@ -17,11 +17,9 @@
 package org.pentaho.webpackage.extender.http.impl;
 
 import org.ops4j.pax.web.extender.whiteboard.ResourceMapping;
-import org.ops4j.pax.web.extender.whiteboard.runtime.DefaultResourceMapping;
-import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
-import org.pentaho.webpackage.core.PentahoWebPackage;
+import org.pentaho.webpackage.core.IPentahoWebPackage;
 
 /**
  * A webpackage targeted implementation of {@link ResourceMapping}.
@@ -31,11 +29,11 @@ import org.pentaho.webpackage.core.PentahoWebPackage;
 public class PentahoWebPackageResourceMapping implements ResourceMapping {
   private final BundleContext bundleContext;
 
-  private final PentahoWebPackage pentahoWebPackage;
+  private final IPentahoWebPackage pentahoWebPackage;
 
   private ServiceRegistration<?> serviceReference;
 
-  PentahoWebPackageResourceMapping( BundleContext bundleContext, PentahoWebPackage pentahoWebPackage ) {
+  PentahoWebPackageResourceMapping( BundleContext bundleContext, IPentahoWebPackage pentahoWebPackage ) {
     super();
 
     this.bundleContext = bundleContext;

@@ -18,7 +18,7 @@ package org.pentaho.webpackage.core;
 
 import java.util.Map;
 
-public interface PentahoWebPackage {
+public interface IPentahoWebPackage {
   String getName();
 
   String getVersion();

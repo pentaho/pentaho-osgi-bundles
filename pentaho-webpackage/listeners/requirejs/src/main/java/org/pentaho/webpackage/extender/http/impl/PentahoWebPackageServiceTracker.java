@@ -20,12 +20,12 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 import org.osgi.util.tracker.ServiceTrackerCustomizer;
-import org.pentaho.webpackage.core.PentahoWebPackage;
+import org.pentaho.webpackage.core.IPentahoWebPackage;
 
 /**
- * Tracks registered {@link PentahoWebPackage} services and in turn registers {@link org.pentaho.requirejs.RequireJsPackage} service.
+ * Tracks registered {@link IPentahoWebPackage} services and in turn registers {@link org.pentaho.requirejs.RequireJsPackage} service.
  */
-public class PentahoWebPackageServiceTracker implements ServiceTrackerCustomizer<PentahoWebPackage, RequireJsPackageImpl> {
+public class PentahoWebPackageServiceTracker implements ServiceTrackerCustomizer<IPentahoWebPackage, RequireJsPackageImpl> {
   private final BundleContext context;
 
   public PentahoWebPackageServiceTracker( BundleContext context ) {
@@ -33,7 +33,7 @@ public class PentahoWebPackageServiceTracker implements ServiceTrackerCustomizer
   }
 
   @Override
-  public RequireJsPackageImpl addingService( ServiceReference<PentahoWebPackage> reference ) {
+  public RequireJsPackageImpl addingService( ServiceReference<IPentahoWebPackage> reference ) {
     Bundle bundle = reference.getBundle();
     // if null then the service is unregistered
     if ( bundle != null ) {
@@ -47,11 +47,11 @@ public class PentahoWebPackageServiceTracker implements ServiceTrackerCustomizer
   }
 
   @Override
-  public void modifiedService( ServiceReference<PentahoWebPackage> reference, RequireJsPackageImpl mapping ) {
+  public void modifiedService(ServiceReference<IPentahoWebPackage> reference, RequireJsPackageImpl mapping ) {
   }
 
   @Override
-  public void removedService( ServiceReference<PentahoWebPackage> reference, RequireJsPackageImpl mapping ) {
+  public void removedService(ServiceReference<IPentahoWebPackage> reference, RequireJsPackageImpl mapping ) {
     this.context.ungetService( reference );
 
     mapping.unregister();

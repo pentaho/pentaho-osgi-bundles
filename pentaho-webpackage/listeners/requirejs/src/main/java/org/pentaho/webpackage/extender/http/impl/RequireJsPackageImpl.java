@@ -20,7 +20,7 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
 import org.pentaho.requirejs.RequireJsPackage;
-import org.pentaho.webpackage.core.PentahoWebPackage;
+import org.pentaho.webpackage.core.IPentahoWebPackage;
 
 import java.net.URL;
 import java.util.Collections;
@@ -35,7 +35,7 @@ import java.util.function.BiConsumer;
 public class RequireJsPackageImpl implements RequireJsPackage {
   private final BundleContext bundleContext;
 
-  private final PentahoWebPackage pentahoWebPackage;
+  private final IPentahoWebPackage pentahoWebPackage;
 
   private ServiceRegistration<?> serviceReference;
 
@@ -54,7 +54,7 @@ public class RequireJsPackageImpl implements RequireJsPackage {
 
   private boolean preferGlobal;
 
-  RequireJsPackageImpl( BundleContext bundleContext, PentahoWebPackage pentahoWebPackage ) {
+  RequireJsPackageImpl( BundleContext bundleContext, IPentahoWebPackage pentahoWebPackage ) {
     this.bundleContext = bundleContext;
 
     this.pentahoWebPackage = pentahoWebPackage;
