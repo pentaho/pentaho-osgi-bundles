@@ -44,6 +44,10 @@ public class PentahoWebPackageBundleImpl {
 
   private final Bundle bundle;
 
+  void setPentahoWebPackages( List<PentahoWebPackageImpl> pentahoWebPackages ) {
+    this.pentahoWebPackages = pentahoWebPackages;
+  }
+
   private List<PentahoWebPackageImpl> pentahoWebPackages;
 
   PentahoWebPackageBundleImpl( Bundle bundle ) {
