@@ -44,10 +44,6 @@ public class PentahoWebPackageBundleImpl {
 
   private final Bundle bundle;
 
-  void setPentahoWebPackages( List<PentahoWebPackageImpl> pentahoWebPackages ) {
-    this.pentahoWebPackages = pentahoWebPackages;
-  }
-
   private List<PentahoWebPackageImpl> pentahoWebPackages;
 
   PentahoWebPackageBundleImpl( Bundle bundle ) {
@@ -91,7 +87,7 @@ public class PentahoWebPackageBundleImpl {
             webPackages.add( new PentahoWebPackageImpl( this.bundle.getBundleContext(), name, version, ( root.isEmpty() ? "/" : root ) ) );
           }
         } else {
-          logger.warn( this.bundle.getSymbolicName() + " [" + this.bundle.getBundleId() + "]: " + root + "/package.json not found." );
+           logger.warn( this.bundle.getSymbolicName() + " [" + this.bundle.getBundleId() + "]: " + root + "/package.json not found." );
         }
       } catch ( RuntimeException | ParseException | IOException ignored ) {
         logger.error( this.bundle.getSymbolicName() + " [" + this.bundle.getBundleId() + "]: Error parsing " + root + "/package.json." );

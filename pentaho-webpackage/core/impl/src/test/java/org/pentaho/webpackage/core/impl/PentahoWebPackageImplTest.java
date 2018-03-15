@@ -2,32 +2,25 @@ package org.pentaho.webpackage.core.impl;
 
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
-import org.junit.Test;
 import org.junit.Before;
-
+import org.junit.Test;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
-import org.osgi.framework.Version;
 import org.pentaho.webpackage.core.IPentahoWebPackage;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
-import java.net.URLStreamHandler;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class PentahoWebPackageImplTest {
 
@@ -44,54 +37,21 @@ public class PentahoWebPackageImplTest {
 
   @Before
   public void setUp() {
-    createMockUrlConnection();
+    mockServiceReference = mock( ServiceRegistration.class );
+    mockUrl = TestUtils.createMockUrlConnection( mockPackageJson );
+    try {
+      mockUrlCon = mockUrl.openConnection();
+    } catch ( IOException ignored ) {
+    }
     mockBundle = this.createMockBundle( "BundleName", "1.0", Bundle.ACTIVE );
     mockBundleContext = mockBundle.getBundleContext();
     pentahoWebPackage = new PentahoWebPackageImpl( mockBundleContext, name, version, resourceRootPath );
   }
 
-  private void createMockUrlConnection() {
-    mockUrlCon = mock( URLConnection.class );
-    URLStreamHandler stubUrlHandler = null;
-    try {
-      ByteArrayInputStream is = new ByteArrayInputStream(
-          "<myList></myList>".getBytes( "UTF-8" ) );
-      doReturn( is ).when( mockUrlCon ).getInputStream();
-
-      stubUrlHandler = new URLStreamHandler() {
-        @Override
-        protected URLConnection openConnection( URL u ) throws IOException {
-          return mockUrlCon;
-        }
-      };
-
-      when( mockUrlCon.getInputStream() ).thenReturn( new ByteArrayInputStream( mockPackageJson.getBytes() ) );
-    } catch ( IOException ignored ) {
-    }
-    try {
-      mockUrl = new URL( "http", "someurl.com", 9999, "", stubUrlHandler );
-    } catch ( MalformedURLException e ) {
-      e.printStackTrace();
-    }
-  }
-
   private Bundle createMockBundle( String bundleName, String bundleVersion, int bundleState ) {
-    Bundle mockBundle = mock( Bundle.class );
-    when( mockBundle.getSymbolicName() ).thenReturn( bundleName );
-    Version version = mock( Version.class );
-    when( version.toString() ).thenReturn( bundleVersion );
-    when( mockBundle.getVersion() ).thenReturn( version );
-    when( mockBundle.getState() ).thenReturn( bundleState );
+    Bundle mockBundle = TestUtils.createBaseMockBundle( bundleName, bundleVersion, bundleState, mockServiceReference );
     when( mockBundle.getResource( eq( this.resourceRootPath + "/package.json" ) ) )
         .thenReturn( this.mockUrl );
-
-    mockServiceReference = mock( ServiceRegistration.class );
-    BundleContext mockBundleContext = mock( BundleContext.class );
-    when( mockBundleContext.getBundle() ).thenReturn( mockBundle );
-    when( mockBundle.getBundleContext() ).thenReturn( mockBundleContext );
-    when( mockBundleContext.registerService( eq( IPentahoWebPackage.class.getName() ), any(), any() ) )
-        .thenReturn( mockServiceReference );
-
     return mockBundle;
   }
 
