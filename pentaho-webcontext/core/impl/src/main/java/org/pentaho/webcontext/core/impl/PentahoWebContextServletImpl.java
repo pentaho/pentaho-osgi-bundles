@@ -128,7 +128,7 @@ public class PentahoWebContextServletImpl extends HttpServlet {
   private void writeRequireJsInitScriptTag( PrintWriter writer ) {
     String location = SERVER_ROOT + REQUIREJS_INIT_LOCATION;
 
-    writer.write( "\ndocument.write(\"<script type='text/javascript' src=" + location + "'></scr\" + \"ipt>\");\n" );
+    writer.write( "\ndocument.write(\"<script type='text/javascript' src='" + location + "'></scr\" + \"ipt>\");\n" );
   }
   // endregion
 

@@ -10,8 +10,9 @@
   </parent>
 
   <artifactId>pentaho-webcontext</artifactId>
-
   <packaging>feature</packaging>
+
+  <name>Pentaho WebContext Feature</name>
 
   <dependencies>
     <dependency>
