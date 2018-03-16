@@ -95,15 +95,6 @@ public class RequireJsPackageImpl implements RequireJsPackage {
     return this.preferGlobal;
   }
 
-  private void addModule( String moduleId, String path ) {
-    this.modules.put( moduleId, path );
-  }
-
-  private void addModule( String moduleId, String path, String main ) {
-    this.modules.put( moduleId, path );
-    this.packages.put( moduleId, main );
-  }
-
   @Override
   public Map<String, String> getModules() {
     return Collections.unmodifiableMap( this.modules );
@@ -114,17 +105,9 @@ public class RequireJsPackageImpl implements RequireJsPackage {
     return this.packages.get( moduleId );
   }
 
-  private void addDependency( String packageName, String version ) {
-    dependencies.put( packageName, version );
-  }
-
   @Override
   public Map<String, String> getDependencies() {
     return Collections.unmodifiableMap( this.dependencies );
-  }
-
-  private void addScript( String name, String file ) {
-    this.scripts.put( name, file );
   }
 
   @Override
@@ -137,14 +120,6 @@ public class RequireJsPackageImpl implements RequireJsPackage {
     String scriptPath = this.pentahoWebPackage.getResourceRootPath() + "/" + this.scripts.get( name );
 
     return bundle.getResource( scriptPath );
-  }
-
-  private void addConfig( String moduleId, Map<String, ?> configuration ) {
-    this.config.put( moduleId, configuration );
-  }
-
-  private void addShim( String moduleId, Map<String, ?> configuration ) {
-    this.shim.put( moduleId, configuration );
   }
 
   @Override
@@ -186,95 +161,41 @@ public class RequireJsPackageImpl implements RequireJsPackage {
         switch ( key ) {
           case "paths":
             Map<String, ?> paths = (Map<String, ?>) value;
-
-            paths.forEach( ( moduleId, path ) -> {
-              if ( path instanceof String ) {
-                addModule( moduleId, (String) path );
-              }
-            } );
-
+            processPaths( paths );
             break;
+
           case "packages":
             List<Object> packages = (List<Object>) value;
-
-            packages.forEach( packageDefinition -> {
-              if ( packageDefinition instanceof String ) {
-                String packageName = (String) packageDefinition;
-                addModule( packageName, modules.get( packageName ), "main" );
-              } else if ( packageDefinition instanceof HashMap ) {
-                final HashMap<String, String> packageObj = (HashMap<String, String>) packageDefinition;
-
-                if ( packageObj.containsKey( "name" ) ) {
-                  String packageName = packageObj.get( "name" );
-                  String path = packageObj.getOrDefault( "location", modules.get( packageName ) );
-                  String mainScript = packageObj.getOrDefault( "main", "main" );
-
-                  addModule( packageName, path, mainScript );
-                }
-              }
-            } );
-
+            processPackages( packages );
             break;
+
           case "dependencies":
             Map<String, ?> dependencies = (Map<String, ?>) value;
-
-            dependencies.forEach( ( packageName, version ) -> {
-              if ( version instanceof String ) {
-                addDependency( packageName, (String) version );
-              }
-            } );
-
+            processDependencies( dependencies );
             break;
+
           case "scripts":
             Map<String, ?> scripts = (Map<String, ?>) value;
-
-            scripts.forEach( ( name, file ) -> {
-              if ( file instanceof String ) {
-                addScript( name, (String) file );
-              }
-            } );
-
+            processScripts( scripts );
             break;
+
           case "config":
             Map<String, ?> config = (Map<String, ?>) value;
-
-            config.forEach( ( moduleId, configuration ) -> {
-              if ( configuration instanceof Map ) {
-                addConfig( moduleId, (Map<String, ?>) configuration );
-              }
-            } );
-
+            processConfig( config );
             break;
+
           case "map":
             Map<String, Map<String, ?>> mappings = (Map<String, Map<String, ?>>) value;
-            mappings.forEach( ( where, map ) -> {
-              map.forEach( ( originalModuleId, mappedModuleId ) -> {
-                if ( mappedModuleId instanceof String ) {
-                  addMap( where, originalModuleId, (String) mappedModuleId );
-                }
-              } );
-            } );
-
+            processMap( mappings );
             break;
+
           case "shim":
             Map<String, ?> shim = (Map<String, ?>) value;
-
-            shim.forEach( ( moduleId, configuration ) -> {
-              if ( configuration instanceof Map ) {
-                addShim( moduleId, (Map<String, ?>) configuration );
-              } else if ( configuration instanceof List ) {
-                Map<String, Object> deps = new HashMap<>();
-                deps.put( "deps", configuration );
-
-                addShim( moduleId, deps );
-              }
-            } );
-
+            processShim( shim );
             break;
 
           case "preferGlobal":
             preferGlobal = ( (Boolean) value );
-
             break;
 
           default:
@@ -283,6 +204,108 @@ public class RequireJsPackageImpl implements RequireJsPackage {
       }
     } );
   }
+
+  private void processPaths( Map<String, ?> paths ) {
+    paths.forEach( ( moduleId, path ) -> {
+      if ( path instanceof String ) {
+        addModule( moduleId, (String) path );
+      }
+    } );
+  }
+
+  private void processPackages( List<Object> packages ) {
+    packages.forEach( packageDefinition -> {
+      if ( packageDefinition instanceof String ) {
+        String packageName = (String) packageDefinition;
+        addModule( packageName, modules.get( packageName ), "main" );
+      } else if ( packageDefinition instanceof HashMap ) {
+        final HashMap<String, String> packageObj = (HashMap<String, String>) packageDefinition;
+
+        if ( packageObj.containsKey( "name" ) ) {
+          String packageName = packageObj.get( "name" );
+          String path = packageObj.getOrDefault( "location", modules.get( packageName ) );
+          String mainScript = packageObj.getOrDefault( "main", "main" );
+
+          addModule( packageName, path, mainScript );
+        }
+      }
+    } );
+  }
+
+  private void addModule( String moduleId, String path, String main ) {
+    this.modules.put( moduleId, path );
+    this.packages.put( moduleId, main );
+  }
+
+  private void addModule( String moduleId, String path ) {
+    this.modules.put( moduleId, path );
+  }
+
+
+  private void processDependencies( Map<String, ?> dependencies ) {
+    dependencies.forEach( ( packageName, version ) -> {
+      if ( version instanceof String ) {
+        addDependency( packageName, (String) version );
+      }
+    } );
+  }
+
+  private void addDependency( String packageName, String version ) {
+    dependencies.put( packageName, version );
+  }
+
+  private void processScripts( Map<String, ?> scripts ) {
+    scripts.forEach( ( name, file ) -> {
+      if ( file instanceof String ) {
+        addScript( name, (String) file );
+      }
+    } );
+  }
+
+  private void addScript( String name, String file ) {
+    this.scripts.put( name, file );
+  }
+
+
+  private void processConfig( Map<String, ?> config ) {
+    config.forEach( ( moduleId, configuration ) -> {
+      if ( configuration instanceof Map ) {
+        addConfig( moduleId, (Map<String, ?>) configuration );
+      }
+    } );
+  }
+
+  private void addConfig( String moduleId, Map<String, ?> configuration ) {
+    this.config.put( moduleId, configuration );
+  }
+
+  private void processMap( Map<String, Map<String, ?>> mappings ) {
+    mappings.forEach( ( where, map ) -> {
+      map.forEach( ( originalModuleId, mappedModuleId ) -> {
+        if ( mappedModuleId instanceof String ) {
+          addMap( where, originalModuleId, (String) mappedModuleId );
+        }
+      } );
+    } );
+  }
+
+  private void processShim( Map<String, ?> shim ) {
+    shim.forEach( ( moduleId, configuration ) -> {
+      if ( configuration instanceof Map ) {
+        addShim( moduleId, (Map<String, ?>) configuration );
+      } else if ( configuration instanceof List ) {
+        Map<String, Object> deps = new HashMap<>();
+        deps.put( "deps", configuration );
+
+        addShim( moduleId, deps );
+      }
+    } );
+  }
+
+  private void addShim( String moduleId, Map<String, ?> configuration ) {
+    this.shim.put( moduleId, configuration );
+  }
+
 
   @Override
   public void register() {
