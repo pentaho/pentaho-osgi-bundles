@@ -115,6 +115,7 @@ public class RequireJsPackageImpl implements IRequireJsPackage {
     return this.scripts.containsKey( name );
   }
 
+  @Override
   public URL getScriptResource( String name ) {
     Bundle bundle = this.bundleContext.getBundle();
     String scriptPath = this.pentahoWebPackage.getResourceRootPath() + "/" + this.scripts.get( name );
@@ -125,10 +126,6 @@ public class RequireJsPackageImpl implements IRequireJsPackage {
   @Override
   public Map<String, Map<String, ?>> getConfig() {
     return Collections.unmodifiableMap( this.config );
-  }
-
-  private void addMap( String where, String originalModuleId, String mappedModuleId ) {
-    this.localMap.computeIfAbsent( where, m -> new HashMap<>() ).put( originalModuleId, mappedModuleId );
   }
 
   @Override
@@ -287,6 +284,10 @@ public class RequireJsPackageImpl implements IRequireJsPackage {
         }
       } );
     } );
+  }
+
+  private void addMap( String where, String originalModuleId, String mappedModuleId ) {
+    this.localMap.computeIfAbsent( where, m -> new HashMap<>() ).put( originalModuleId, mappedModuleId );
   }
 
   private void processShim( Map<String, ?> shim ) {
