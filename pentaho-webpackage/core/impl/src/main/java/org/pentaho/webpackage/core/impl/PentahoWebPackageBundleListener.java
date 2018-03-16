@@ -16,9 +16,8 @@
  */
 package org.pentaho.webpackage.core.impl;
 
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleEvent;
 import org.osgi.framework.BundleListener;
 import org.osgi.framework.ServiceRegistration;
@@ -28,14 +27,12 @@ import org.pentaho.webpackage.core.IPentahoWebPackage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.URL;
-import java.net.URLConnection;
-import java.util.*;
+import java.util.Map;
+import java.util.List;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -47,50 +44,58 @@ import static org.pentaho.webpackage.core.PentahoWebPackageConstants.CAPABILITY_
 public class PentahoWebPackageBundleListener implements BundleListener {
   private static Logger logger = LoggerFactory.getLogger( PentahoWebPackageBundleListener.class );
 
-  // bundleid -> List services
-  final Map<Long, Iterable<ServiceRegistration<IPentahoWebPackage>>> bundleWebPackageServices = new HashMap<>();
-
-  private final JSONParser parser = new JSONParser();
+  // BundleId -> WebPackage Service References
+  final Map<Long, Iterable<ServiceRegistration<IPentahoWebPackage>>> bundleWebPackageServiceReferences = new HashMap<>();
 
   @Override
   public void bundleChanged( BundleEvent bundleEvent ) {
     final Bundle bundle = bundleEvent.getBundle();
+
+    final int bundleEventType = bundleEvent.getType();
+    if ( bundleEventType == BundleEvent.STARTED ) {
+      registerWebPackageServices( bundle );
+    } else if ( bundleEventType == BundleEvent.UNINSTALLED
+        || bundleEventType == BundleEvent.UNRESOLVED
+        || bundleEventType == BundleEvent.STOPPED ) {
+      unregisterWebPackageServices( bundle );
+    }
+  }
+
+  public void registerWebPackageServices( Bundle bundle ) {
     if ( bundle == null ) {
       return;
     }
 
-    final int bundleEventType = bundleEvent.getType();
-    if ( bundleEventType == BundleEvent.STARTED ) {
-      addBundle( bundle );
-    } else if ( bundleEventType == BundleEvent.UNINSTALLED
-        || bundleEventType == BundleEvent.UNRESOLVED
-        || bundleEventType == BundleEvent.STOPPED ) {
-      removeBundle( bundle );
-    }
-  }
+    // Create WebPackages
+    Stream<IPentahoWebPackage> webPackages =
+            getWebPackageCapabilities( bundle ).stream()
+            .map( capability -> createWebPackage( bundle, capability ))
+            .filter( Objects::nonNull );
 
-  public void addBundle( Bundle bundle ) {
-    Stream<IPentahoWebPackage> webpackageStream = createWebPackages( bundle );
+    // Register WebPackages Services
+    BundleContext bundleContext = bundle.getBundleContext();
+    List<ServiceRegistration<IPentahoWebPackage>> webpackageServiceReferences = webPackages
+            .map( webpackage -> bundleContext.registerService( IPentahoWebPackage.class, webpackage, null ))
+            .collect(Collectors.toList());
 
-    // Register services
-    List<ServiceRegistration<IPentahoWebPackage>> webpackageServices = webpackageStream.map(
-            webpackage -> bundle.getBundleContext().registerService( IPentahoWebPackage.class, webpackage, null )
-    ).collect(Collectors.toList());
-
-    if( !webpackageServices.isEmpty() ) {
-      synchronized ( this.bundleWebPackageServices ) {
-        this.bundleWebPackageServices.putIfAbsent( bundle.getBundleId(), webpackageServices );
+    if( !webpackageServiceReferences.isEmpty() ) {
+      synchronized ( this.bundleWebPackageServiceReferences) {
+        this.bundleWebPackageServiceReferences.putIfAbsent( bundle.getBundleId(), webpackageServiceReferences );
       }
     }
   }
 
-  void removeBundle( Bundle bundle ) {
-    Iterable<ServiceRegistration<IPentahoWebPackage>> bundleServiceRegistrations = this.bundleWebPackageServices.get( bundle.getBundleId() );
+  public void unregisterWebPackageServices( Bundle bundle ) {
+    if ( bundle == null ) {
+      return;
+    }
+
+    Iterable<ServiceRegistration<IPentahoWebPackage>> bundleServiceRegistrations = this.bundleWebPackageServiceReferences.get( bundle.getBundleId() );
 
     if ( bundleServiceRegistrations != null ) {
       bundleServiceRegistrations.forEach( this::unregisterService );
-      synchronized ( this.bundleWebPackageServices) {
-        this.bundleWebPackageServices.remove(bundle.getBundleId());
+      synchronized ( this.bundleWebPackageServiceReferences) {
+        this.bundleWebPackageServiceReferences.remove(bundle.getBundleId());
       }
     }
   }
@@ -103,7 +108,7 @@ public class PentahoWebPackageBundleListener implements BundleListener {
     }
   }
 
-  List<BundleCapability> getCapabilities( Bundle bundle ) {
+  List<BundleCapability> getWebPackageCapabilities( Bundle bundle ) {
     BundleWiring wiring = bundle.adapt( BundleWiring.class );
     if ( wiring != null ) {
       return wiring.getCapabilities( CAPABILITY_NAMESPACE );
@@ -111,30 +116,16 @@ public class PentahoWebPackageBundleListener implements BundleListener {
     return Collections.emptyList();
   }
 
-  String getRoot( Map<String, Object> attributes ) {
-    String root = (String) attributes.getOrDefault("root", "");
-    while (root.endsWith("/")) {
-      root = root.substring(0, root.length() - 1);
-    }
-    return root;
-  }
-
-  IPentahoWebPackage createWebPackage( Bundle bundle, String capabilityRoot ) {
+  IPentahoWebPackage createWebPackage( Bundle bundle, BundleCapability webPackageCapability ) {
+    String capabilityRoot = getRoot( webPackageCapability );
     try {
       URL packageJsonUrl = bundle.getResource( capabilityRoot + "/package.json" );
       if ( packageJsonUrl != null ) {
-        Map<String, Object> packageJson = parsePackageJson( packageJsonUrl );
-
-        String name = (String) packageJson.get( "name" );
-        String version = (String) packageJson.get( "version" );
-
-        if ( name != null && version != null ) {
-          return new PentahoWebPackageImpl( name, version, ( capabilityRoot.isEmpty() ? "/" : capabilityRoot ), packageJsonUrl );
-        }
+        return new PentahoWebPackageImpl(  ( capabilityRoot.isEmpty() ? "/" : capabilityRoot ), packageJsonUrl );
       } else {
         logger.warn( bundle.getSymbolicName() + " [" + bundle.getBundleId() + "]: " + capabilityRoot + "/package.json not found." );
       }
-    } catch ( RuntimeException | ParseException | IOException ignored ) {
+    } catch ( RuntimeException ignored ) {
       logger.error( bundle.getSymbolicName() + " [" + bundle.getBundleId() + "]: Error parsing " + capabilityRoot + "/package.json." );
 
       // throwing will make everything fail
@@ -149,24 +140,13 @@ public class PentahoWebPackageBundleListener implements BundleListener {
     return null;
   }
 
-  Stream<IPentahoWebPackage> createWebPackages( Bundle bundle ) {
-
-    return getCapabilities( bundle ).stream()
-            .map(BundleCapability::getAttributes)
-            // for now using only the package.json information - so only the `root` attribute is mandatory
-            .map( this::getRoot )
-            .map( root -> createWebPackage( bundle, root ))
-            .filter(Objects::nonNull);
-  }
-
-  private Map<String, Object> parsePackageJson( URL resourceUrl ) throws IOException, ParseException {
-    URLConnection urlConnection = resourceUrl.openConnection();
-    InputStream inputStream = urlConnection.getInputStream();
-
-    InputStreamReader inputStreamReader = new InputStreamReader( inputStream );
-    BufferedReader bufferedReader = new BufferedReader( inputStreamReader );
-
-    return (Map<String, Object>) parser.parse( bufferedReader );
+  String getRoot( BundleCapability capability ) {
+    String root = (String) capability.getAttributes()
+            .getOrDefault("root", "");
+    while (root.endsWith("/")) {
+      root = root.substring(0, root.length() - 1);
+    }
+    return root;
   }
 
 }

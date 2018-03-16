@@ -35,12 +35,20 @@ public final class PentahoWebPackageImpl implements IPentahoWebPackage {
   private final String resourceRootPath;
   private final URL packageJsonUrl;
 
-  public PentahoWebPackageImpl(String name, String version, String resourceRootPath, URL packageJsonUrl ) {
-    this.name = name;
-    this.version = version;
+  private final JSONParser parser = new JSONParser();
+
+  public PentahoWebPackageImpl( String resourceRootPath, URL packageJsonUrl ) {
     this.resourceRootPath = resourceRootPath;
     this.packageJsonUrl = packageJsonUrl;
 
+    // caching name and version
+    Map<String, Object> packageJson = this.getPackageJson();
+    this.name = (String) packageJson.get( "name" );
+    this.version = (String) packageJson.get( "version" );
+
+    if( this.name == null || this.version == null ) {
+      throw new java.lang.IllegalArgumentException( "Cannot create WebPackage with null Name or Version." );
+    }
   }
 
   public String getName() {
@@ -69,11 +77,11 @@ public final class PentahoWebPackageImpl implements IPentahoWebPackage {
       InputStreamReader inputStreamReader = new InputStreamReader( inputStream );
       BufferedReader bufferedReader = new BufferedReader( inputStreamReader );
 
-      JSONParser parser = new JSONParser();
       return (Map<String, Object>) parser.parse( bufferedReader );
     } catch ( IOException | ParseException ignored ) {
     }
 
     return Collections.emptyMap();
   }
+
 }

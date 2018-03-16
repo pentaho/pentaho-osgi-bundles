@@ -37,7 +37,7 @@ public class Activator implements BundleActivator {
     if ( bundles != null ) {
       for ( Bundle bundle : bundles ) {
         if ( bundle.getState() == Bundle.ACTIVE ) {
-          this.pentahoWebPackageBundleListener.addBundle( bundle );
+          this.pentahoWebPackageBundleListener.registerWebPackageServices( bundle );
         }
       }
     }
