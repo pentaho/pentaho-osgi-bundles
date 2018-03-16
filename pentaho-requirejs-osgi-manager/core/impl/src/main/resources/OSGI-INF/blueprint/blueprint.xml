@@ -14,7 +14,6 @@
   </cm:property-placeholder>
 
   <bean id="configManager" class="org.pentaho.requirejs.impl.RequireJsConfigManager" scope="singleton" destroy-method="destroy">
-    <property name="bundleContext" ref="blueprintBundleContext"/>
     <property name="packageConfigurationsTracker" ref="packageConfigurationsTracker"/>
     <property name="externalResourcesScriptsTracker" ref="externalResourcesScriptsTracker"/>
     <property name="plugins">
@@ -29,12 +28,12 @@
 
   <bean id="packageConfigurationsTracker" class="org.pentaho.requirejs.impl.listeners.RequireJsPackageServiceTracker" scope="singleton" init-method="init" destroy-method="destroy">
     <property name="bundleContext" ref="blueprintBundleContext"/>
-    <property name="manager" ref="configManager"/>
+    <property name="requireJsConfigManager" ref="configManager"/>
   </bean>
 
   <bean id="externalResourcesScriptsTracker" class="org.pentaho.requirejs.impl.listeners.RequireJsBundleListener" scope="singleton" init-method="init" destroy-method="destroy">
     <property name="bundleContext" ref="blueprintBundleContext"/>
-    <property name="manager" ref="configManager"/>
+    <property name="requireJsConfigManager" ref="configManager"/>
   </bean>
 
   <!-- This belongs in a Type API webpackage bundle -->
