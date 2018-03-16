@@ -47,12 +47,12 @@ public class PentahoWebPackageServiceTracker implements ServiceTrackerCustomizer
   }
 
   @Override
-  public void modifiedService(ServiceReference<IPentahoWebPackage> reference, PentahoWebPackageResourceMapping mapping ) {
+  public void modifiedService( ServiceReference<IPentahoWebPackage> reference, PentahoWebPackageResourceMapping mapping ) {
 
   }
 
   @Override
-  public void removedService(ServiceReference<IPentahoWebPackage> reference, PentahoWebPackageResourceMapping mapping ) {
+  public void removedService( ServiceReference<IPentahoWebPackage> reference, PentahoWebPackageResourceMapping mapping ) {
     this.context.ungetService( reference );
 
     mapping.unregister();

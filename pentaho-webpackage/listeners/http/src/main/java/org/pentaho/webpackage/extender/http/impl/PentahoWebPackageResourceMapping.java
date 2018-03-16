@@ -31,13 +31,12 @@ public class PentahoWebPackageResourceMapping implements ResourceMapping {
 
   private final IPentahoWebPackage pentahoWebPackage;
 
-  private ServiceRegistration<?> serviceReference;
+  private ServiceRegistration<ResourceMapping> serviceRegistration;
 
   PentahoWebPackageResourceMapping( BundleContext bundleContext, IPentahoWebPackage pentahoWebPackage ) {
     super();
 
     this.bundleContext = bundleContext;
-
     this.pentahoWebPackage = pentahoWebPackage;
   }
 
@@ -60,15 +59,15 @@ public class PentahoWebPackageResourceMapping implements ResourceMapping {
     return this.getClass().getSimpleName() + "{" + "alias=" + this.getAlias() + ",path=" + this.getPath() + "}";
   }
 
-  public boolean equals(Object obj) {
-    if (this == obj) {
+  public boolean equals( Object obj ) {
+    if ( this == obj ) {
       return true;
-    } else if (obj == null) {
+    } else if ( obj == null ) {
       return false;
-    } else if (this.getClass() != obj.getClass()) {
+    } else if ( this.getClass() != obj.getClass() ) {
       return false;
     } else {
-      PentahoWebPackageResourceMapping other = (PentahoWebPackageResourceMapping)obj;
+      PentahoWebPackageResourceMapping other = (PentahoWebPackageResourceMapping) obj;
 
       return other.pentahoWebPackage.equals( this.pentahoWebPackage );
     }
@@ -76,18 +75,18 @@ public class PentahoWebPackageResourceMapping implements ResourceMapping {
 
   public void register() {
     // Register resource mapping in httpService whiteboard
-    this.serviceReference = this.bundleContext.registerService( ResourceMapping.class.getName(), this, null );
+    this.serviceRegistration = this.bundleContext.registerService( ResourceMapping.class, this, null );
   }
 
   public void unregister() {
-    if ( this.serviceReference != null ) {
+    if ( this.serviceRegistration != null ) {
       try {
-        this.serviceReference.unregister();
+        this.serviceRegistration.unregister();
       } catch ( RuntimeException ignored ) {
         // service might be already unregistered automatically by the bundle lifecycle manager
       }
 
-      this.serviceReference = null;
+      this.serviceRegistration = null;
     }
   }
 }
