@@ -13,10 +13,36 @@
     </cm:default-properties>
   </cm:property-placeholder>
 
-  <bean id="configManager" class="org.pentaho.requirejs.impl.RequireJsConfigManager" scope="singleton" init-method="init"
-        destroy-method="destroy">
+  <bean id="configManager" class="org.pentaho.requirejs.impl.RequireJsConfigManager" scope="singleton" destroy-method="destroy">
     <property name="bundleContext" ref="blueprintBundleContext"/>
+    <property name="packageConfigurationsTracker" ref="packageConfigurationsTracker"/>
+    <property name="externalResourcesScriptsTracker" ref="externalResourcesScriptsTracker"/>
+    <property name="plugins">
+      <!-- This shouldn't be a fixed list, but instead services registered by any bundle and injected here -->
+      <list>
+        <ref component-id="typeAndInstanceInfoPlugin" />
+        <ref component-id="amdPlugin" />
+        <ref component-id="nomAmdPackagePlugin" />
+      </list>
+    </property>
   </bean>
+
+  <bean id="packageConfigurationsTracker" class="org.pentaho.requirejs.impl.listeners.RequireJsPackageServiceTracker" scope="singleton" init-method="init" destroy-method="destroy">
+    <property name="bundleContext" ref="blueprintBundleContext"/>
+    <property name="manager" ref="configManager"/>
+  </bean>
+
+  <bean id="externalResourcesScriptsTracker" class="org.pentaho.requirejs.impl.listeners.RequireJsBundleListener" scope="singleton" init-method="init" destroy-method="destroy">
+    <property name="bundleContext" ref="blueprintBundleContext"/>
+    <property name="manager" ref="configManager"/>
+  </bean>
+
+  <!-- This belongs in a Type API webpackage bundle -->
+  <bean id="typeAndInstanceInfoPlugin" class="org.pentaho.requirejs.impl.plugins.TypeAndInstanceInfoPluginConfig" />
+  <!-- This belongs in a Core Utils webpackage bundle -->
+  <bean id="amdPlugin" class="org.pentaho.requirejs.impl.plugins.AmdPluginConfig" />
+  <!-- This belongs in a pentaho-webjars-deployer's bundle -->
+  <bean id="nomAmdPackagePlugin" class="org.pentaho.requirejs.impl.plugins.NomAmdPackageShim" />
 
   <service interface="javax.servlet.http.HttpServlet">
     <service-properties>

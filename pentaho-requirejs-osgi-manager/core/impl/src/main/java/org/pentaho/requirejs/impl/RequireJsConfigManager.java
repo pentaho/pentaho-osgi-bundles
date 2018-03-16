@@ -17,21 +17,16 @@
 package org.pentaho.requirejs.impl;
 
 import org.json.simple.JSONObject;
-import org.osgi.framework.Bundle;
-import org.osgi.framework.BundleContext;
-import org.osgi.util.tracker.ServiceTracker;
-import org.pentaho.requirejs.RequireJsPackage;
 import org.pentaho.requirejs.RequireJsPackageConfiguration;
+import org.pentaho.requirejs.RequireJsPackageConfigurationPlugin;
 import org.pentaho.requirejs.impl.listeners.RequireJsBundleListener;
 import org.pentaho.requirejs.impl.listeners.RequireJsPackageServiceTracker;
 import org.pentaho.requirejs.impl.servlet.RebuildCacheCallable;
-import org.pentaho.requirejs.impl.servlet.RequireJsConfigServlet;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
@@ -48,56 +43,35 @@ public class RequireJsConfigManager {
         return thread;
       } );
 
-  private BundleContext bundleContext;
+  private RequireJsPackageServiceTracker packageConfigurationsTracker;
+  private RequireJsBundleListener externalResourcesScriptsTracker;
 
-  private volatile ConcurrentHashMap<String, Future<String>> cachedConfigurations;
-  private volatile ConcurrentHashMap<String, String> cachedContextMapping;
+  /**
+   * Plugins that can customize each package's requirejs configuration.
+   */
+  private List<RequireJsPackageConfigurationPlugin> plugins;
 
-  private ServiceTracker<RequireJsPackage, RequireJsPackageConfiguration> requireJsPackageServiceTracker;
-  private RequireJsBundleListener bundleListener;
+  // setting initial capacity to three (relative url and absolute http/https url scenarios)
+  private volatile ConcurrentHashMap<String, Future<String>> cachedConfigurations = new ConcurrentHashMap<>( 3 );
+  private volatile ConcurrentHashMap<String, String> cachedContextMapping = new ConcurrentHashMap<>();
 
-  public void setBundleContext( BundleContext bundleContext ) {
-    this.bundleContext = bundleContext;
+  public void setPackageConfigurationsTracker( RequireJsPackageServiceTracker packageConfigurationsTracker ) {
+    this.packageConfigurationsTracker = packageConfigurationsTracker;
   }
 
-  public void init() throws Exception {
-    if ( this.bundleListener != null || this.requireJsPackageServiceTracker != null ) {
-      throw new Exception( "Already initialized." );
-    }
+  public void setExternalResourcesScriptsTracker( RequireJsBundleListener externalResourcesScriptsTracker ) {
+    this.externalResourcesScriptsTracker = externalResourcesScriptsTracker;
+  }
 
-    this.requireJsPackageServiceTracker = createRequireJsPackageServiceTracker( this.bundleContext );
-    this.requireJsPackageServiceTracker.open( true );
-
-    // setting initial capacity to three (relative url and absolute http/https url scenarios)
-    this.cachedConfigurations = new ConcurrentHashMap<>( 3 );
-
-    this.cachedContextMapping = new ConcurrentHashMap<>();
-
-    this.bundleListener = new RequireJsBundleListener( this );
-    this.bundleContext.addBundleListener( this.bundleListener );
-
-    for ( Bundle bundle : this.bundleContext.getBundles() ) {
-      this.bundleListener.addBundle( bundle );
-    }
+  public void setPlugins( List<RequireJsPackageConfigurationPlugin> plugins ) {
+    this.plugins = plugins;
   }
 
   public void destroy() {
-    if ( this.requireJsPackageServiceTracker != null ) {
-      this.requireJsPackageServiceTracker.close();
-
-      this.requireJsPackageServiceTracker = null;
-    }
-
-    if ( this.bundleListener != null ) {
-      this.bundleContext.removeBundleListener( this.bundleListener );
-
-      this.bundleListener = null;
-    }
-
     this.invalidateCachedConfigurations();
   }
 
-  public String getRequireJsConfig( String baseUrl, RequireJsConfigServlet.RequestContext requestContext ) {
+  public String getRequireJsConfig( String baseUrl ) {
     // Make sure the baseUrl ends in a slash.
     // like https://github.com/requirejs/requirejs/blob/14526943c937aab3c022235335f20e260395fe15/require.js#L1145
     baseUrl = baseUrl.endsWith( "/" ) ? baseUrl : baseUrl + "/";
@@ -106,7 +80,7 @@ public class RequireJsConfigManager {
     int tries = 3;
     Exception lastException = null;
     while ( tries-- > 0 && result == null ) {
-      Future<String> cache = this.getCachedConfiguration( baseUrl, requestContext );
+      Future<String> cache = this.getCachedConfiguration( baseUrl );
 
       try {
         result = cache.get();
@@ -131,8 +105,8 @@ public class RequireJsConfigManager {
     return result;
   }
 
-  public String getContextMapping( String baseUrl, RequireJsConfigServlet.RequestContext requestContext ) {
-    return this.getCachedContextMapping( baseUrl, requestContext );
+  public String getContextMapping( String baseUrl, String referer ) {
+    return this.getCachedContextMapping( baseUrl, referer );
   }
 
   public void invalidateCachedConfigurations() {
@@ -142,28 +116,15 @@ public class RequireJsConfigManager {
     this.cachedContextMapping.clear();
   }
 
-  // package-private for unit testing
-  ServiceTracker<RequireJsPackage, RequireJsPackageConfiguration> createRequireJsPackageServiceTracker( BundleContext bundleContext ) {
-    return new ServiceTracker<>( bundleContext, RequireJsPackage.class, new RequireJsPackageServiceTracker( bundleContext, this ) );
+  Future<String> getCachedConfiguration( String baseUrl ) {
+    return this.cachedConfigurations.computeIfAbsent( baseUrl, key -> executorService.schedule( createRebuildCacheCallable( key ), 250, TimeUnit.MILLISECONDS ) );
   }
 
-  Future<String> getCachedConfiguration( String baseUrl, RequireJsConfigServlet.RequestContext requestContext ) {
-    return this.cachedConfigurations.computeIfAbsent( baseUrl, k -> {
-      List<RequireJsPackageConfiguration> availablePackages = new ArrayList<>();
-      Collection<RequireJsPackageConfiguration> requireJsPackageConfigurations = this.requireJsPackageServiceTracker.getTracked().values();
-      availablePackages.addAll( requireJsPackageConfigurations );
-
-      return executorService.schedule( new RebuildCacheCallable( baseUrl, availablePackages,
-          new ArrayList<>( this.bundleListener.getExternalResourcesRequireJsScripts() ) ), 250, TimeUnit.MILLISECONDS );
-    } );
-  }
-
-  String getCachedContextMapping( String baseUrl, RequireJsConfigServlet.RequestContext requestContext ) {
-    String referer = requestContext.getReferer();
-
+  private String getCachedContextMapping( String baseUrl, String referer ) {
     if ( referer != null ) {
       return this.cachedContextMapping.computeIfAbsent( referer, k -> {
-        Collection<RequireJsPackageConfiguration> requireJsPackageConfigurations = this.requireJsPackageServiceTracker.getTracked().values();
+        List<RequireJsPackageConfiguration> requireJsPackageConfigurations = this.packageConfigurationsTracker.getPackages();
+
         for ( RequireJsPackageConfiguration requireJsPackage : requireJsPackageConfigurations ) {
           if ( referer.contains( baseUrl + requireJsPackage.getWebRootPath() ) ) {
             Map<String, Object> contextConfig = new HashMap<>();
@@ -185,4 +146,10 @@ public class RequireJsConfigManager {
 
     return null;
   }
+
+  // region package-private factory methods for unit testing
+  Callable<String> createRebuildCacheCallable( String baseUrl ) {
+    return new RebuildCacheCallable( baseUrl, this.packageConfigurationsTracker.getPackages(), this.externalResourcesScriptsTracker.getScripts(), this.plugins );
+  }
+  // endregion
 }

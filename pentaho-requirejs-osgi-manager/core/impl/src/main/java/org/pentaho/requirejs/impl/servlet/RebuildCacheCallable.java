@@ -18,14 +18,14 @@ package org.pentaho.requirejs.impl.servlet;
 
 import org.json.simple.JSONObject;
 import org.osgi.framework.Bundle;
-import org.pentaho.requirejs.impl.types.RequireJsConfiguration;
-import org.pentaho.requirejs.impl.utils.RequireJsDependencyResolver;
-import org.pentaho.requirejs.impl.utils.RequireJsMerger;
+import org.pentaho.requirejs.RequireJsPackageConfiguration;
+import org.pentaho.requirejs.RequireJsPackageConfigurationPlugin;
 import org.pentaho.requirejs.impl.plugins.AmdPluginConfig;
 import org.pentaho.requirejs.impl.plugins.NomAmdPackageShim;
 import org.pentaho.requirejs.impl.plugins.TypeAndInstanceInfoPluginConfig;
-import org.pentaho.requirejs.RequireJsPackageConfiguration;
-import org.pentaho.requirejs.RequireJsPackageConfigurationPlugin;
+import org.pentaho.requirejs.impl.types.RequireJsConfiguration;
+import org.pentaho.requirejs.impl.utils.RequireJsDependencyResolver;
+import org.pentaho.requirejs.impl.utils.RequireJsMerger;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -34,7 +34,8 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -51,38 +52,22 @@ public class RebuildCacheCallable implements Callable<String> {
 
   private final String baseUrl;
 
-  private final List<RequireJsPackageConfiguration> packageConfigurations;
+  private final Collection<RequireJsPackageConfiguration> packageConfigurations;
 
   // pentaho-platform-plugin configuration scripts (legacy)
   private final List<RequireJsConfiguration> requireJsConfigurations;
 
-  public RebuildCacheCallable( String baseUrl, List<RequireJsPackageConfiguration> packageConfigurations, List<RequireJsConfiguration> requireJsConfigurations ) {
+  public RebuildCacheCallable( String baseUrl, Collection<RequireJsPackageConfiguration> packageConfigurations, Collection<RequireJsConfiguration> requireJsConfigurations, List<RequireJsPackageConfigurationPlugin> plugins ) {
     this.baseUrl = baseUrl;
 
     this.packageConfigurations = packageConfigurations;
 
-    this.requireJsConfigurations = requireJsConfigurations;
+    this.requireJsConfigurations = new ArrayList<>( requireJsConfigurations );
 
     // sort configuration scripts by bundle ID, just to ensure some consistency
-    Collections.sort( this.requireJsConfigurations, ( o1, o2 ) -> {
-      long longResult = o1.getBundle().getBundleId() - o2.getBundle().getBundleId();
-      if ( longResult < 0L ) {
-        return -1;
-      } else if ( longResult > 0L ) {
-        return 1;
-      } else {
-        return 0;
-      }
-    } );
+    this.requireJsConfigurations.sort( Comparator.comparingLong( o -> o.getBundle().getBundleId() ) );
 
-    // TODO: This shouldn't be a fixed list, but instead services registered by any bundle and injected here
-    this.plugins = new ArrayList<>( 3 );
-    // TODO: This belongs in a Type API webpackage bundle
-    this.plugins.add( new TypeAndInstanceInfoPluginConfig() );
-    // TODO: This belongs in a Core Utils webpackage bundle
-    this.plugins.add( new AmdPluginConfig() );
-    // TODO: This belongs in a pentaho-webjars-deployer's bundle
-    this.plugins.add( new NomAmdPackageShim() );
+    this.plugins = plugins;
   }
 
   @Override

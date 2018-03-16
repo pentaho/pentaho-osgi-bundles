@@ -113,7 +113,7 @@ public class RequireJsConfigServlet extends HttpServlet {
           "    return versionedBaseModuleId + moduleIdLeaf;\n" +
           "  }\n" );
 
-      printWriter.write( "\n  var requireCfg = " + this.manager.getRequireJsConfig( contextRoot, requestContext ) + "\n" );
+      printWriter.write( "\n  var requireCfg = " + this.manager.getRequireJsConfig( contextRoot ) + "\n" );
 
       // Ensure embeddability: http://requirejs.org/docs/api.html#config-skipDataMain
       printWriter.write( "\n  requireCfg.skipDataMain = true;" );
@@ -140,7 +140,7 @@ public class RequireJsConfigServlet extends HttpServlet {
       printWriter.write( "\n  require.config(requireCfg);" );
 
       // setup contextual mappings if the referer corresponds to a known package
-      String cachedContextMapping = this.manager.getContextMapping( contextRoot, requestContext );
+      String cachedContextMapping = this.manager.getContextMapping( contextRoot, requestContext.getReferer() );
       if ( cachedContextMapping != null ) {
         printWriter.write( "\n  var contextMappingCfg = " + cachedContextMapping + ";\n" );
         printWriter.write( "\n  require.config(contextMappingCfg);" );
