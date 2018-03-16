@@ -3,7 +3,7 @@ package org.pentaho.requirejs.impl;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
-import org.pentaho.requirejs.RequireJsPackage;
+import org.pentaho.requirejs.IRequireJsPackage;
 import org.pentaho.requirejs.RequireJsPackageConfiguration;
 import org.pentaho.requirejs.RequireJsPackageConfigurationPlugin;
 
@@ -85,7 +85,7 @@ public class RequireJsPackageConfigurationImplTest {
 
   @Test
   public void getBaseModuleIdsMappingEmpty() {
-    RequireJsPackage mockRequireJsPackage = getRequireJsPackageMock();
+    IRequireJsPackage mockRequireJsPackage = getRequireJsPackageMock();
 
     RequireJsPackageConfigurationImpl packageConfiguration = new RequireJsPackageConfigurationImpl( mockRequireJsPackage );
 
@@ -96,7 +96,7 @@ public class RequireJsPackageConfigurationImplTest {
 
   @Test
   public void getBaseModuleIdsMapping() {
-    RequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version );
+    IRequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version );
 
     doReturn( modules ).when( mockRequireJsPackage ).getModules();
 
@@ -110,7 +110,7 @@ public class RequireJsPackageConfigurationImplTest {
 
   @Test
   public void getBaseModuleIdsMappingGlobalPackage() {
-    RequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version, webRoot, modules );
+    IRequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version, webRoot, modules );
     doReturn( true ).when( mockRequireJsPackage ).preferGlobal();
 
     RequireJsPackageConfigurationImpl packageConfiguration = new RequireJsPackageConfigurationImpl( mockRequireJsPackage );
@@ -130,7 +130,7 @@ public class RequireJsPackageConfigurationImplTest {
     modules.put( "other/A", "/" );
     modules.put( "tests/other/A", "/" );
 
-    RequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version );
+    IRequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version );
 
     doReturn( modules ).when( mockRequireJsPackage ).getModules();
 
@@ -154,7 +154,7 @@ public class RequireJsPackageConfigurationImplTest {
     modules.put( "tests/basic/stuff/A", "/" );
     modules.put( "basic/stuff/A", "/" );
 
-    RequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version );
+    IRequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version );
 
     doReturn( modules ).when( mockRequireJsPackage ).getModules();
 
@@ -175,7 +175,7 @@ public class RequireJsPackageConfigurationImplTest {
     modules.put( "basic/A", "/" );
     modules.put( "other/A", "/" );
 
-    RequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version );
+    IRequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version );
 
     doReturn( modules ).when( mockRequireJsPackage ).getModules();
 
@@ -198,7 +198,7 @@ public class RequireJsPackageConfigurationImplTest {
     modules.put( "basic/A", "/" );
     modules.put( "other/A", "/" );
 
-    RequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version );
+    IRequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version );
 
     doReturn( modules ).when( mockRequireJsPackage ).getModules();
 
@@ -215,7 +215,7 @@ public class RequireJsPackageConfigurationImplTest {
 
   @Test(expected = UnsupportedOperationException.class)
   public void getBaseModuleIdsMappingReturnsUnmodifiableMap() {
-    RequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version, webRoot, modules );
+    IRequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version, webRoot, modules );
 
     RequireJsPackageConfigurationImpl packageConfiguration = new RequireJsPackageConfigurationImpl( mockRequireJsPackage );
 
@@ -225,7 +225,7 @@ public class RequireJsPackageConfigurationImplTest {
 
   @Test
   public void processRequireJsPackage() {
-    RequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version, webRoot, modules );
+    IRequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version, webRoot, modules );
 
     // processRequireJsPackage is called at construction time, so the base modules IDs of all packages are available during dependency resolution
     RequireJsPackageConfigurationImpl packageConfiguration = new RequireJsPackageConfigurationImpl( mockRequireJsPackage );
@@ -260,7 +260,7 @@ public class RequireJsPackageConfigurationImplTest {
 
   @Test
   public void processDependencies() {
-    RequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version, webRoot, modules, dependencies );
+    IRequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version, webRoot, modules, dependencies );
 
     RequireJsPackageConfigurationImpl packageConfiguration = new RequireJsPackageConfigurationImpl( mockRequireJsPackage );
 
@@ -273,7 +273,7 @@ public class RequireJsPackageConfigurationImplTest {
 
   @Test(expected = IllegalStateException.class)
   public void getModuleIdsMappingBeforeProcessDependencies() {
-    RequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version, webRoot, modules, dependencies );
+    IRequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version, webRoot, modules, dependencies );
 
     RequireJsPackageConfigurationImpl packageConfiguration = new RequireJsPackageConfigurationImpl( mockRequireJsPackage );
 
@@ -282,7 +282,7 @@ public class RequireJsPackageConfigurationImplTest {
 
   @Test(expected = IllegalStateException.class)
   public void processRequireJsPackageInvalidatesProcessDependencies() {
-    RequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version, webRoot, modules, dependencies );
+    IRequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version, webRoot, modules, dependencies );
 
     RequireJsPackageConfigurationImpl packageConfiguration = new RequireJsPackageConfigurationImpl( mockRequireJsPackage );
 
@@ -299,7 +299,7 @@ public class RequireJsPackageConfigurationImplTest {
 
   @Test
   public void getModuleIdsMapping() {
-    RequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version, webRoot, modules, dependencies );
+    IRequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version, webRoot, modules, dependencies );
 
     RequireJsPackageConfigurationImpl packageConfiguration = new RequireJsPackageConfigurationImpl( mockRequireJsPackage );
 
@@ -326,7 +326,7 @@ public class RequireJsPackageConfigurationImplTest {
 
   @Test(expected = UnsupportedOperationException.class)
   public void getModuleIdsMappingReturnsUnmodifiableMap() {
-    RequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version, webRoot, modules, dependencies );
+    IRequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version, webRoot, modules, dependencies );
 
     RequireJsPackageConfigurationImpl packageConfiguration = new RequireJsPackageConfigurationImpl( mockRequireJsPackage );
 
@@ -338,7 +338,7 @@ public class RequireJsPackageConfigurationImplTest {
 
   @Test
   public void getEmptyRequireConfig() {
-    RequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version );
+    IRequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version );
 
     RequireJsPackageConfigurationImpl packageConfiguration = new RequireJsPackageConfigurationImpl( mockRequireJsPackage );
 
@@ -355,7 +355,7 @@ public class RequireJsPackageConfigurationImplTest {
 
   @Test
   public void getRequireConfigPaths() {
-    RequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version, webRoot, modules );
+    IRequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version, webRoot, modules );
 
     RequireJsPackageConfigurationImpl packageConfiguration = new RequireJsPackageConfigurationImpl( mockRequireJsPackage );
 
@@ -379,7 +379,7 @@ public class RequireJsPackageConfigurationImplTest {
 
   @Test
   public void getRequireConfigPathsRootPath() {
-    RequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version, webRoot );
+    IRequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version, webRoot );
 
     Map<String, String> modules = new HashMap<>();
     modules.put( "tests/basic/A", "/" );
@@ -402,7 +402,7 @@ public class RequireJsPackageConfigurationImplTest {
 
   @Test
   public void getRequireConfigPathsWithoutPathBeginningSlash() {
-    RequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version, webRoot );
+    IRequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version, webRoot );
 
     Map<String, String> modules = new HashMap<>();
     modules.put( "tests/basic/A", "something/without/beginning-slash" );
@@ -425,7 +425,7 @@ public class RequireJsPackageConfigurationImplTest {
 
   @Test
   public void getRequireConfigPackages() {
-    RequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version, webRoot, modules );
+    IRequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version, webRoot, modules );
 
     RequireJsPackageConfigurationImpl packageConfiguration = new RequireJsPackageConfigurationImpl( mockRequireJsPackage );
 
@@ -449,7 +449,7 @@ public class RequireJsPackageConfigurationImplTest {
 
   @Test
   public void getRequireConfigMaps() {
-    RequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version, webRoot, modules );
+    IRequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version, webRoot, modules );
 
     RequireJsPackageConfigurationImpl packageConfiguration = new RequireJsPackageConfigurationImpl( mockRequireJsPackage );
 
@@ -474,7 +474,7 @@ public class RequireJsPackageConfigurationImplTest {
 
   @Test
   public void getRequireConfigMapsPackageMapsMerge() {
-    RequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version, webRoot, modules, dependencies );
+    IRequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version, webRoot, modules, dependencies );
 
     doReturn( modules ).when( mockRequireJsPackage ).getModules();
 
@@ -542,7 +542,7 @@ public class RequireJsPackageConfigurationImplTest {
 
   @Test
   public void getRequireConfigConfig() {
-    RequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version, webRoot, modules, dependencies );
+    IRequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version, webRoot, modules, dependencies );
 
     Map<String, Map<String, String>> packageConfig = new HashMap<>();
 
@@ -579,7 +579,7 @@ public class RequireJsPackageConfigurationImplTest {
 
   @Test
   public void getRequireConfigShim() {
-    RequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version, webRoot, modules, dependencies );
+    IRequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version, webRoot, modules, dependencies );
 
     Map<String, Map<String, ?>> packageShim = new HashMap<>();
 
@@ -630,7 +630,7 @@ public class RequireJsPackageConfigurationImplTest {
 
   @Test
   public void getRequireConfigPluginsAreCalled() {
-    RequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version );
+    IRequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version );
 
     RequireJsPackageConfigurationImpl packageConfiguration = new RequireJsPackageConfigurationImpl( mockRequireJsPackage );
 
@@ -649,7 +649,7 @@ public class RequireJsPackageConfigurationImplTest {
 
   @Test
   public void getRequireConfigPluginCanModifyConfigAndShim() {
-    RequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version );
+    IRequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version );
 
     RequireJsPackageConfigurationImpl packageConfiguration = new RequireJsPackageConfigurationImpl( mockRequireJsPackage );
 
@@ -684,7 +684,7 @@ public class RequireJsPackageConfigurationImplTest {
 
   @Test(expected = UnsupportedOperationException.class)
   public void getRequireConfigPluginCannotModifyTop() {
-    RequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version );
+    IRequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version );
 
     RequireJsPackageConfigurationImpl packageConfiguration = new RequireJsPackageConfigurationImpl( mockRequireJsPackage );
 
@@ -709,7 +709,7 @@ public class RequireJsPackageConfigurationImplTest {
 
   @Test(expected = UnsupportedOperationException.class)
   public void getRequireConfigPluginCannotModifyPaths() {
-    RequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version );
+    IRequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version );
 
     RequireJsPackageConfigurationImpl packageConfiguration = new RequireJsPackageConfigurationImpl( mockRequireJsPackage );
 
@@ -735,7 +735,7 @@ public class RequireJsPackageConfigurationImplTest {
 
   @Test(expected = UnsupportedOperationException.class)
   public void getRequireConfigPluginCannotModifyPackages() {
-    RequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version );
+    IRequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version );
 
     RequireJsPackageConfigurationImpl packageConfiguration = new RequireJsPackageConfigurationImpl( mockRequireJsPackage );
 
@@ -761,7 +761,7 @@ public class RequireJsPackageConfigurationImplTest {
 
   @Test(expected = UnsupportedOperationException.class)
   public void getRequireConfigPluginCannotModifyMap() {
-    RequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version );
+    IRequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version );
 
     RequireJsPackageConfigurationImpl packageConfiguration = new RequireJsPackageConfigurationImpl( mockRequireJsPackage );
 
@@ -787,7 +787,7 @@ public class RequireJsPackageConfigurationImplTest {
 
   @Test
   public void testModuleIdVersioning() {
-    RequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version, webRoot, modules, dependencies );
+    IRequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version, webRoot, modules, dependencies );
 
     Map<String, Map<String, String>> packageConfig = new HashMap<>();
 
@@ -839,7 +839,7 @@ public class RequireJsPackageConfigurationImplTest {
   // region Access to the underlying RequireJsPackage
   @Test
   public void getRequireJsPackage() {
-    RequireJsPackage mockRequireJsPackage = getRequireJsPackageMock();
+    IRequireJsPackage mockRequireJsPackage = getRequireJsPackageMock();
 
     RequireJsPackageConfigurationImpl packageConfiguration = new RequireJsPackageConfigurationImpl( mockRequireJsPackage );
 
@@ -848,7 +848,7 @@ public class RequireJsPackageConfigurationImplTest {
 
   @Test
   public void getName() {
-    RequireJsPackage mockRequireJsPackage = getRequireJsPackageMock();
+    IRequireJsPackage mockRequireJsPackage = getRequireJsPackageMock();
 
     RequireJsPackageConfigurationImpl packageConfiguration = new RequireJsPackageConfigurationImpl( mockRequireJsPackage );
 
@@ -861,7 +861,7 @@ public class RequireJsPackageConfigurationImplTest {
 
   @Test
   public void getVersion() {
-    RequireJsPackage mockRequireJsPackage = getRequireJsPackageMock();
+    IRequireJsPackage mockRequireJsPackage = getRequireJsPackageMock();
 
     RequireJsPackageConfigurationImpl packageConfiguration = new RequireJsPackageConfigurationImpl( mockRequireJsPackage );
 
@@ -874,7 +874,7 @@ public class RequireJsPackageConfigurationImplTest {
 
   @Test
   public void getWebRootPath() {
-    RequireJsPackage mockRequireJsPackage = getRequireJsPackageMock();
+    IRequireJsPackage mockRequireJsPackage = getRequireJsPackageMock();
 
     RequireJsPackageConfigurationImpl packageConfiguration = new RequireJsPackageConfigurationImpl( mockRequireJsPackage );
 
@@ -893,7 +893,7 @@ public class RequireJsPackageConfigurationImplTest {
 
   @Test
   public void getDependencies() {
-    RequireJsPackage mockRequireJsPackage = getRequireJsPackageMock();
+    IRequireJsPackage mockRequireJsPackage = getRequireJsPackageMock();
 
     RequireJsPackageConfigurationImpl packageConfiguration = new RequireJsPackageConfigurationImpl( mockRequireJsPackage );
 
@@ -910,7 +910,7 @@ public class RequireJsPackageConfigurationImplTest {
 
   @Test(expected = UnsupportedOperationException.class)
   public void getDependenciesReturnsUnmodifiableMap() {
-    RequireJsPackage mockRequireJsPackage = getRequireJsPackageMock();
+    IRequireJsPackage mockRequireJsPackage = getRequireJsPackageMock();
 
     RequireJsPackageConfigurationImpl packageConfiguration = new RequireJsPackageConfigurationImpl( mockRequireJsPackage );
 
@@ -922,7 +922,7 @@ public class RequireJsPackageConfigurationImplTest {
 
   @Test
   public void hasScript() {
-    RequireJsPackage mockRequireJsPackage = getRequireJsPackageMock();
+    IRequireJsPackage mockRequireJsPackage = getRequireJsPackageMock();
 
     RequireJsPackageConfigurationImpl packageConfiguration = new RequireJsPackageConfigurationImpl( mockRequireJsPackage );
 
@@ -935,7 +935,7 @@ public class RequireJsPackageConfigurationImplTest {
 
   @Test
   public void getScriptResource() throws MalformedURLException {
-    RequireJsPackage mockRequireJsPackage = getRequireJsPackageMock();
+    IRequireJsPackage mockRequireJsPackage = getRequireJsPackageMock();
 
     RequireJsPackageConfigurationImpl packageConfiguration = new RequireJsPackageConfigurationImpl( mockRequireJsPackage );
 
@@ -949,8 +949,8 @@ public class RequireJsPackageConfigurationImplTest {
   // endregion
 
   // region Mock factory
-  private RequireJsPackage getRequireJsPackageMock( String name, String version, String webRoot, Map<String, String> modules, Map<String, String> dependencies ) {
-    RequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version, webRoot, modules );
+  private IRequireJsPackage getRequireJsPackageMock(String name, String version, String webRoot, Map<String, String> modules, Map<String, String> dependencies ) {
+    IRequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version, webRoot, modules );
 
     if ( dependencies != null ) {
       doReturn( dependencies ).when( mockRequireJsPackage ).getDependencies();
@@ -959,8 +959,8 @@ public class RequireJsPackageConfigurationImplTest {
     return mockRequireJsPackage;
   }
 
-  private RequireJsPackage getRequireJsPackageMock( String name, String version, String webRoot, Map<String, String> modules ) {
-    RequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version, webRoot );
+  private IRequireJsPackage getRequireJsPackageMock(String name, String version, String webRoot, Map<String, String> modules ) {
+    IRequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version, webRoot );
 
     if ( modules != null ) {
       doReturn( modules ).when( mockRequireJsPackage ).getModules();
@@ -972,32 +972,32 @@ public class RequireJsPackageConfigurationImplTest {
     return mockRequireJsPackage;
   }
 
-  private RequireJsPackage getRequireJsPackageMock( String name, String version, String webRoot ) {
-    RequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version );
+  private IRequireJsPackage getRequireJsPackageMock(String name, String version, String webRoot ) {
+    IRequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version );
 
     doReturn( webRoot ).when( mockRequireJsPackage ).getWebRootPath();
 
     return mockRequireJsPackage;
   }
 
-  private RequireJsPackage getRequireJsPackageMock( String name, String version ) {
-    RequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name );
+  private IRequireJsPackage getRequireJsPackageMock(String name, String version ) {
+    IRequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name );
 
     doReturn( version ).when( mockRequireJsPackage ).getVersion();
 
     return mockRequireJsPackage;
   }
 
-  private RequireJsPackage getRequireJsPackageMock( String name ) {
-    RequireJsPackage mockRequireJsPackage = getRequireJsPackageMock();
+  private IRequireJsPackage getRequireJsPackageMock(String name ) {
+    IRequireJsPackage mockRequireJsPackage = getRequireJsPackageMock();
 
     doReturn( name ).when( mockRequireJsPackage ).getName();
 
     return mockRequireJsPackage;
   }
 
-  private RequireJsPackage getRequireJsPackageMock() {
-    return Mockito.mock( RequireJsPackage.class );
+  private IRequireJsPackage getRequireJsPackageMock() {
+    return Mockito.mock( IRequireJsPackage.class );
   }
 
   private BiFunction<String, String, RequireJsPackageConfiguration> getMockDependencyResolverFunction() {

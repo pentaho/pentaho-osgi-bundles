@@ -22,7 +22,7 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleEvent;
 import org.osgi.framework.BundleListener;
-import org.pentaho.requirejs.RequireJsPackage;
+import org.pentaho.requirejs.IRequireJsPackage;
 import org.pentaho.requirejs.impl.RequireJsConfigManager;
 import org.pentaho.requirejs.impl.types.MetaInfPackageJson;
 import org.pentaho.requirejs.impl.types.MetaInfRequireJson;
@@ -45,7 +45,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * Listens to and processes bundles that include some sort of RequireJS configuration information.
  * <p>
  * For bundles with META-INF/js/package.json or META-INF/js/require.json files, parses the json file
- * and registers a corresponding {@link RequireJsPackage} service implementation, to be dealt by {@link RequireJsPackageServiceTracker}.
+ * and registers a corresponding {@link IRequireJsPackage} service implementation, to be dealt by {@link RequireJsPackageServiceTracker}.
  * The service reference is maintained so it can be unregistered when the bundle stops.
  * <p>
  * For bundles with META-INF/js/externalResources.json file (and optionally an accompanying META-INF/js/staticResources.json file),
@@ -62,7 +62,7 @@ public class RequireJsBundleListener implements BundleListener {
 
   private RequireJsConfigManager requireJsConfigManager;
 
-  private Map<Long, RequireJsPackage> configMap;
+  private Map<Long, IRequireJsPackage> configMap;
   private Map<Long, RequireJsConfiguration> requireConfigMap;
 
   private JSONParser parser;
@@ -129,7 +129,7 @@ public class RequireJsBundleListener implements BundleListener {
   }
 
   private boolean removeBundleInternal( Bundle bundle ) {
-    RequireJsPackage bundleConfig = this.configMap.remove( bundle.getBundleId() );
+    IRequireJsPackage bundleConfig = this.configMap.remove( bundle.getBundleId() );
     if ( bundleConfig != null ) {
       bundleConfig.unregister();
     }
@@ -163,7 +163,7 @@ public class RequireJsBundleListener implements BundleListener {
         Map<String, Object> requireJsonObject = this.loadJsonObject( configFileUrl );
 
         if ( requireJsonObject != null ) {
-          RequireJsPackage packageInfo = new MetaInfRequireJson( bundle.getBundleContext(), requireJsonObject );
+          IRequireJsPackage packageInfo = new MetaInfRequireJson( bundle.getBundleContext(), requireJsonObject );
           packageInfo.register();
 
           this.configMap.put( bundle.getBundleId(), packageInfo );
@@ -173,7 +173,7 @@ public class RequireJsBundleListener implements BundleListener {
         Map<String, Object> packageJsonObject = this.loadJsonObject( packageJsonUrl );
 
         if ( packageJsonObject != null ) {
-          RequireJsPackage packageInfo = new MetaInfPackageJson( bundle.getBundleContext(), packageJsonObject );
+          IRequireJsPackage packageInfo = new MetaInfPackageJson( bundle.getBundleContext(), packageJsonObject );
           packageInfo.register();
 
           this.configMap.put( bundle.getBundleId(), packageInfo );

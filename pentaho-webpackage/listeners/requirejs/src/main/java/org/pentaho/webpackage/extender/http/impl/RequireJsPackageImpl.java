@@ -19,7 +19,7 @@ package org.pentaho.webpackage.extender.http.impl;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
-import org.pentaho.requirejs.RequireJsPackage;
+import org.pentaho.requirejs.IRequireJsPackage;
 import org.pentaho.webpackage.core.IPentahoWebPackage;
 
 import java.net.URL;
@@ -32,7 +32,7 @@ import java.util.function.BiConsumer;
 /**
  * This RequireJsPackage implementation handles webpackage's package.json files.
  */
-public class RequireJsPackageImpl implements RequireJsPackage {
+public class RequireJsPackageImpl implements IRequireJsPackage {
   private final BundleContext bundleContext;
 
   private final IPentahoWebPackage pentahoWebPackage;
@@ -309,7 +309,7 @@ public class RequireJsPackageImpl implements RequireJsPackage {
 
   @Override
   public void register() {
-    this.serviceReference = this.bundleContext.registerService( RequireJsPackage.class.getName(), this, null );
+    this.serviceReference = this.bundleContext.registerService( IRequireJsPackage.class.getName(), this, null );
   }
 
   @Override

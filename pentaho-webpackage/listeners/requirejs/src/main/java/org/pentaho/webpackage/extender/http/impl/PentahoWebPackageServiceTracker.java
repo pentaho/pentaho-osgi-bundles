@@ -20,10 +20,11 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 import org.osgi.util.tracker.ServiceTrackerCustomizer;
+import org.pentaho.requirejs.IRequireJsPackage;
 import org.pentaho.webpackage.core.IPentahoWebPackage;
 
 /**
- * Tracks registered {@link IPentahoWebPackage} services and in turn registers {@link org.pentaho.requirejs.RequireJsPackage} service.
+ * Tracks registered {@link IPentahoWebPackage} services and in turn registers {@link IRequireJsPackage} service.
  */
 public class PentahoWebPackageServiceTracker implements ServiceTrackerCustomizer<IPentahoWebPackage, RequireJsPackageImpl> {
   private final BundleContext context;

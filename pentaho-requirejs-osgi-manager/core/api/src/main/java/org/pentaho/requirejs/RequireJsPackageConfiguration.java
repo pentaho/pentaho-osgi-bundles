@@ -14,7 +14,7 @@ public interface RequireJsPackageConfiguration {
   Map<String, String> getBaseModuleIdsMapping();
   Map<String, String> getModuleIdsMapping();
 
-  RequireJsPackage getRequireJsPackage();
+  IRequireJsPackage getRequireJsPackage();
 
   String getName();
   String getVersion();

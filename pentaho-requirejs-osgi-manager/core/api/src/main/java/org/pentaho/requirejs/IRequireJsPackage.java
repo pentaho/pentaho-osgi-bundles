@@ -3,7 +3,7 @@ package org.pentaho.requirejs;
 import java.net.URL;
 import java.util.Map;
 
-public interface RequireJsPackage {
+public interface IRequireJsPackage {
   String getName();
   String getVersion();
 

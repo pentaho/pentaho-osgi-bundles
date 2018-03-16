@@ -7,7 +7,7 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleEvent;
 import org.osgi.framework.ServiceRegistration;
 import org.osgi.framework.Version;
-import org.pentaho.requirejs.RequireJsPackage;
+import org.pentaho.requirejs.IRequireJsPackage;
 import org.pentaho.requirejs.impl.RequireJsConfigManager;
 import org.pentaho.requirejs.impl.types.MetaInfPackageJson;
 import org.pentaho.requirejs.impl.types.MetaInfRequireJson;
@@ -201,7 +201,7 @@ public class RequireJsBundleListenerTest {
     // check that shouldInvalidate is false
     assertFalse( shouldInvalidate );
 
-    verify( mockBundleMockContexts.get( (int) mockBundle.getBundleId() ), times( 0 ) ).registerService( eq( RequireJsPackage.class ), any( RequireJsPackage.class ), any() );
+    verify( mockBundleMockContexts.get( (int) mockBundle.getBundleId() ), times( 0 ) ).registerService( eq( IRequireJsPackage.class ), any( IRequireJsPackage.class ), any() );
   }
 
   @Test
@@ -215,7 +215,7 @@ public class RequireJsBundleListenerTest {
     // check that shouldInvalidate is true
     assertTrue( shouldInvalidate );
 
-    verify( mockBundleMockContexts.get( (int) mockBundle.getBundleId() ), times( 0 ) ).registerService( eq( RequireJsPackage.class ), any( RequireJsPackage.class ), any() );
+    verify( mockBundleMockContexts.get( (int) mockBundle.getBundleId() ), times( 0 ) ).registerService( eq( IRequireJsPackage.class ), any( IRequireJsPackage.class ), any() );
   }
 
   @Test
@@ -227,7 +227,7 @@ public class RequireJsBundleListenerTest {
     // check that shouldInvalidate is false
     assertFalse( shouldInvalidate );
 
-    verify( mockBundleMockContexts.get( (int) mockBundle.getBundleId() ), times( 0 ) ).registerService( eq( RequireJsPackage.class.getName() ), any( RequireJsPackage.class ), any() );
+    verify( mockBundleMockContexts.get( (int) mockBundle.getBundleId() ), times( 0 ) ).registerService( eq( IRequireJsPackage.class.getName() ), any( IRequireJsPackage.class ), any() );
   }
 
   @Test
@@ -239,7 +239,7 @@ public class RequireJsBundleListenerTest {
     // check that shouldInvalidate is false
     assertFalse( shouldInvalidate );
 
-    verify( mockBundleMockContexts.get( (int) mockBundle.getBundleId() ), times( 1 ) ).registerService( eq( RequireJsPackage.class.getName() ), any( MetaInfPackageJson.class ), any() );
+    verify( mockBundleMockContexts.get( (int) mockBundle.getBundleId() ), times( 1 ) ).registerService( eq( IRequireJsPackage.class.getName() ), any( MetaInfPackageJson.class ), any() );
   }
 
   @Test
@@ -251,7 +251,7 @@ public class RequireJsBundleListenerTest {
     // check that shouldInvalidate is false
     assertFalse( shouldInvalidate );
 
-    verify( mockBundleMockContexts.get( (int) mockBundle.getBundleId() ), times( 1 ) ).registerService( eq( RequireJsPackage.class.getName() ), any( MetaInfRequireJson.class ), any() );
+    verify( mockBundleMockContexts.get( (int) mockBundle.getBundleId() ), times( 1 ) ).registerService( eq( IRequireJsPackage.class.getName() ), any( MetaInfRequireJson.class ), any() );
   }
 
   @Test
@@ -263,7 +263,7 @@ public class RequireJsBundleListenerTest {
     // check that shouldInvalidate is true
     assertTrue( shouldInvalidate );
 
-    verify( mockBundleMockContexts.get( (int) mockBundle.getBundleId() ), times( 0 ) ).registerService( eq( RequireJsPackage.class.getName() ), any( RequireJsPackage.class ), any() );
+    verify( mockBundleMockContexts.get( (int) mockBundle.getBundleId() ), times( 0 ) ).registerService( eq( IRequireJsPackage.class.getName() ), any( IRequireJsPackage.class ), any() );
   }
 
   @Test
@@ -275,7 +275,7 @@ public class RequireJsBundleListenerTest {
     // check that shouldInvalidate is true
     assertTrue( shouldInvalidate );
 
-    verify( mockBundleMockContexts.get( (int) mockBundle.getBundleId() ), times( 0 ) ).registerService( eq( RequireJsPackage.class.getName() ), any( RequireJsPackage.class ), any() );
+    verify( mockBundleMockContexts.get( (int) mockBundle.getBundleId() ), times( 0 ) ).registerService( eq( IRequireJsPackage.class.getName() ), any( IRequireJsPackage.class ), any() );
   }
 
   @Test
@@ -287,7 +287,7 @@ public class RequireJsBundleListenerTest {
     // check that shouldInvalidate is false
     assertFalse( shouldInvalidate );
 
-    verify( mockBundleMockContexts.get( (int) mockBundleNoClientSide.getBundleId() ), times( 0 ) ).registerService( eq( RequireJsPackage.class.getName() ), any( RequireJsPackage.class ), any() );
+    verify( mockBundleMockContexts.get( (int) mockBundleNoClientSide.getBundleId() ), times( 0 ) ).registerService( eq( IRequireJsPackage.class.getName() ), any( IRequireJsPackage.class ), any() );
   }
 
   @Test
@@ -303,7 +303,7 @@ public class RequireJsBundleListenerTest {
 
     verify( mockServiceRegistrations.get( (int) mockBundleWithPackageJson.getBundleId() ), times( 1 ) ).unregister();
 
-    verify( mockBundleMockContexts.get( (int) mockBundleWithPackageJson.getBundleId() ), times( 2 ) ).registerService( eq( RequireJsPackage.class.getName() ), any( MetaInfPackageJson.class ), any() );
+    verify( mockBundleMockContexts.get( (int) mockBundleWithPackageJson.getBundleId() ), times( 2 ) ).registerService( eq( IRequireJsPackage.class.getName() ), any( MetaInfPackageJson.class ), any() );
   }
 
   @Test
@@ -319,7 +319,7 @@ public class RequireJsBundleListenerTest {
 
     verify( mockServiceRegistrations.get( (int) mockBundleWithRequireJson.getBundleId() ), times( 1 ) ).unregister();
 
-    verify( mockBundleMockContexts.get( (int) mockBundleWithRequireJson.getBundleId() ), times( 2 ) ).registerService( eq( RequireJsPackage.class.getName() ), any( MetaInfRequireJson.class ), any() );
+    verify( mockBundleMockContexts.get( (int) mockBundleWithRequireJson.getBundleId() ), times( 2 ) ).registerService( eq( IRequireJsPackage.class.getName() ), any( MetaInfRequireJson.class ), any() );
   }
 
   @Test
@@ -335,7 +335,7 @@ public class RequireJsBundleListenerTest {
 
     // TODO Not unregistered
 
-    verify( mockBundleMockContexts.get( (int) mockBundleWithExternalResources.getBundleId() ), times( 0 ) ).registerService( eq( RequireJsPackage.class.getName() ), any( RequireJsPackage.class ), any() );
+    verify( mockBundleMockContexts.get( (int) mockBundleWithExternalResources.getBundleId() ), times( 0 ) ).registerService( eq( IRequireJsPackage.class.getName() ), any( IRequireJsPackage.class ), any() );
   }
 
   @Test
@@ -351,7 +351,7 @@ public class RequireJsBundleListenerTest {
 
     // TODO Not unregistered
 
-    verify( mockBundleMockContexts.get( (int) mockBundleWithExternalAndStaticResources.getBundleId() ), times( 0 ) ).registerService( eq( RequireJsPackage.class.getName() ), any( RequireJsPackage.class ), any() );
+    verify( mockBundleMockContexts.get( (int) mockBundleWithExternalAndStaticResources.getBundleId() ), times( 0 ) ).registerService( eq( IRequireJsPackage.class.getName() ), any( IRequireJsPackage.class ), any() );
   }
 
   @Test
@@ -427,7 +427,7 @@ public class RequireJsBundleListenerTest {
     BundleContext mockBundleMockContext = mock( BundleContext.class );
     final ServiceRegistration mockServiceRegistration = mock( ServiceRegistration.class );
     when( mockBundleMockContext
-        .registerService( eq( RequireJsPackage.class.getName() ), any( RequireJsPackage.class ), any() ) )
+        .registerService( eq( IRequireJsPackage.class.getName() ), any( IRequireJsPackage.class ), any() ) )
         .thenReturn( mockServiceRegistration );
 
     doReturn( mockBundleMockContext ).when( mockBundle ).getBundleContext();

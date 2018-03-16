@@ -1,6 +1,6 @@
 package org.pentaho.requirejs.impl;
 
-import org.pentaho.requirejs.RequireJsPackage;
+import org.pentaho.requirejs.IRequireJsPackage;
 import org.pentaho.requirejs.RequireJsPackageConfiguration;
 import org.pentaho.requirejs.RequireJsPackageConfigurationPlugin;
 import org.pentaho.requirejs.impl.utils.JsonMerger;
@@ -19,7 +19,7 @@ import java.util.function.BiFunction;
 public class RequireJsPackageConfigurationImpl implements RequireJsPackageConfiguration {
   private final JsonMerger merger = new JsonMerger();
 
-  private final RequireJsPackage requireJsPackage;
+  private final IRequireJsPackage requireJsPackage;
 
   private Map<String, String> baseModuleIdsMappings;
   private Map<String, String> baseModuleIdsMappingsWithDependencies;
@@ -33,7 +33,7 @@ public class RequireJsPackageConfigurationImpl implements RequireJsPackageConfig
 
   private Map<String, RequireJsPackageConfiguration> dependencyCache;
 
-  public RequireJsPackageConfigurationImpl( RequireJsPackage requireJsPackage ) {
+  public RequireJsPackageConfigurationImpl( IRequireJsPackage requireJsPackage ) {
     if ( requireJsPackage == null ) {
       throw new IllegalArgumentException( "requireJsPackage is mandatory" );
     }
@@ -311,7 +311,7 @@ public class RequireJsPackageConfigurationImpl implements RequireJsPackageConfig
 
   // region Access to the underlying RequireJsPackage
   @Override
-  public RequireJsPackage getRequireJsPackage() {
+  public IRequireJsPackage getRequireJsPackage() {
     return requireJsPackage;
   }
 

@@ -18,7 +18,7 @@ package org.pentaho.requirejs.impl.types;
 
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
-import org.pentaho.requirejs.RequireJsPackage;
+import org.pentaho.requirejs.IRequireJsPackage;
 
 import java.net.URL;
 import java.util.Collections;
@@ -36,7 +36,7 @@ import java.util.Map;
  * difference to webpackage's package.json files, as it only supports a single level map syntax, allowing only
  * to specify local mappings.
  */
-public class MetaInfPackageJson implements RequireJsPackage {
+public class MetaInfPackageJson implements IRequireJsPackage {
   private final BundleContext bundleContext;
 
   private ServiceRegistration<?> serviceReference;
@@ -284,7 +284,7 @@ public class MetaInfPackageJson implements RequireJsPackage {
 
   @Override
   public void register() {
-    this.serviceReference = this.bundleContext.registerService( RequireJsPackage.class.getName(), this, null );
+    this.serviceReference = this.bundleContext.registerService( IRequireJsPackage.class.getName(), this, null );
   }
 
   @Override

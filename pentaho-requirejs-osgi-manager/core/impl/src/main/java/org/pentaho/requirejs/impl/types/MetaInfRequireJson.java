@@ -18,7 +18,7 @@ package org.pentaho.requirejs.impl.types;
 
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
-import org.pentaho.requirejs.RequireJsPackage;
+import org.pentaho.requirejs.IRequireJsPackage;
 
 import java.net.URL;
 import java.util.ArrayList;
@@ -37,9 +37,9 @@ import java.util.regex.Pattern;
  *
  * There are also some bundles with handmade require.json files that don't include
  * requirejs-osgi-meta property. Those become nameless and versionless RequireJsPackages which
- * configuration is applied globally ({@link RequireJsPackage#preferGlobal} returns true).
+ * configuration is applied globally ({@link IRequireJsPackage#preferGlobal} returns true).
  */
-public class MetaInfRequireJson implements RequireJsPackage {
+public class MetaInfRequireJson implements IRequireJsPackage {
   private final BundleContext bundleContext;
 
   private ServiceRegistration<?> serviceReference;
@@ -365,7 +365,7 @@ public class MetaInfRequireJson implements RequireJsPackage {
 
   @Override
   public void register() {
-    this.serviceReference = this.bundleContext.registerService( RequireJsPackage.class.getName(), this, null );
+    this.serviceReference = this.bundleContext.registerService( IRequireJsPackage.class.getName(), this, null );
   }
 
   @Override
