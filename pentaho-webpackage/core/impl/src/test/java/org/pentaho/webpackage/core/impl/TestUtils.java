@@ -15,7 +15,6 @@ import java.net.URLStreamHandler;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -25,20 +24,31 @@ class TestUtils {
     URLConnection mockUrlCon = mock( URLConnection.class );
     URLStreamHandler stubUrlHandler = null;
     try {
-      ByteArrayInputStream is = new ByteArrayInputStream(
-          "<myList></myList>".getBytes( "UTF-8" ) );
-      doReturn( is ).when( mockUrlCon ).getInputStream();
-
       stubUrlHandler = new URLStreamHandler() {
         @Override
         protected URLConnection openConnection( URL u ) throws IOException {
           return mockUrlCon;
         }
       };
-
       when( mockUrlCon.getInputStream() ).thenReturn( new ByteArrayInputStream( payload.getBytes() ) );
     } catch ( IOException ignored ) {
     }
+    try {
+      return new URL( "http", "someurl.com", 9999, "", stubUrlHandler );
+    } catch ( MalformedURLException e ) {
+      e.printStackTrace();
+    }
+    return null;
+  }
+
+  static URL createInvalidMockUrlConnection( String payload ) {
+    URLStreamHandler stubUrlHandler = stubUrlHandler = new URLStreamHandler() {
+      @Override
+      protected URLConnection openConnection( URL u ) throws IOException {
+        throw new IOException( "Can't open connection" );
+      }
+    };
+
     try {
       return new URL( "http", "someurl.com", 9999, "", stubUrlHandler );
     } catch ( MalformedURLException e ) {
