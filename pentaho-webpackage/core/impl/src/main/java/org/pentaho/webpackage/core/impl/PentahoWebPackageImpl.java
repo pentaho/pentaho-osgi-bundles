@@ -46,7 +46,7 @@ public final class PentahoWebPackageImpl implements IPentahoWebPackage {
     this.name = (String) packageJson.get( "name" );
     this.version = (String) packageJson.get( "version" );
 
-    if( this.name == null || this.version == null ) {
+    if ( this.name == null || this.version == null ) {
       throw new java.lang.IllegalArgumentException( "Cannot create WebPackage with null Name or Version." );
     }
   }

@@ -69,17 +69,17 @@ public class PentahoWebPackageBundleListener implements BundleListener {
     // Create WebPackages
     Stream<IPentahoWebPackage> webPackages =
             getWebPackageCapabilities( bundle ).stream()
-            .map( capability -> createWebPackage( bundle, capability ))
+            .map( capability -> createWebPackage( bundle, capability ) )
             .filter( Objects::nonNull );
 
     // Register WebPackages Services
     BundleContext bundleContext = bundle.getBundleContext();
     List<ServiceRegistration<IPentahoWebPackage>> webpackageServiceReferences = webPackages
-            .map( webpackage -> bundleContext.registerService( IPentahoWebPackage.class, webpackage, null ))
-            .collect(Collectors.toList());
+            .map( webpackage -> bundleContext.registerService( IPentahoWebPackage.class, webpackage, null ) )
+            .collect( Collectors.toList() );
 
-    if( !webpackageServiceReferences.isEmpty() ) {
-      synchronized ( this.bundleWebPackageServiceReferences) {
+    if ( !webpackageServiceReferences.isEmpty() ) {
+      synchronized ( this.bundleWebPackageServiceReferences ) {
         this.bundleWebPackageServiceReferences.putIfAbsent( bundle.getBundleId(), webpackageServiceReferences );
       }
     }
@@ -94,8 +94,8 @@ public class PentahoWebPackageBundleListener implements BundleListener {
 
     if ( bundleServiceRegistrations != null ) {
       bundleServiceRegistrations.forEach( this::unregisterService );
-      synchronized ( this.bundleWebPackageServiceReferences) {
-        this.bundleWebPackageServiceReferences.remove(bundle.getBundleId());
+      synchronized ( this.bundleWebPackageServiceReferences ) {
+        this.bundleWebPackageServiceReferences.remove( bundle.getBundleId() );
       }
     }
   }
@@ -142,9 +142,9 @@ public class PentahoWebPackageBundleListener implements BundleListener {
 
   String getRoot( BundleCapability capability ) {
     String root = (String) capability.getAttributes()
-            .getOrDefault("root", "");
-    while (root.endsWith("/")) {
-      root = root.substring(0, root.length() - 1);
+            .getOrDefault( "root", "" );
+    while ( root.endsWith( "/" ) ) {
+      root = root.substring( 0, root.length() - 1 );
     }
     return root;
   }
