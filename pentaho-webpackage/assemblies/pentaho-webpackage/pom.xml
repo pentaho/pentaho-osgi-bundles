@@ -10,7 +10,6 @@
   </parent>
 
   <artifactId>pentaho-webpackage</artifactId>
-
   <packaging>feature</packaging>
 
   <dependencies>
