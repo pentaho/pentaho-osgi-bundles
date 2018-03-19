@@ -24,6 +24,7 @@
 
   <properties>
     <java-semver.version>0.9.0</java-semver.version>
+    <javax.servlet-api.version>3.0.1</javax.servlet-api.version>
     <karaf-maven-plugin.version>3.0.8</karaf-maven-plugin.version>
     <karaf-maven-plugin.aggregateFeatures>false</karaf-maven-plugin.aggregateFeatures>
   </properties>
@@ -39,7 +40,7 @@
       <dependency>
         <groupId>javax.servlet</groupId>
         <artifactId>javax.servlet-api</artifactId>
-        <version>${dependency.javax.servlet-api.version}</version>
+        <version>${javax.servlet-api.version}</version>
         <scope>provided</scope>
         <exclusions>
           <exclusion>
@@ -123,18 +124,6 @@
   <build>
     <pluginManagement>
       <plugins>
-        <plugin>
-          <groupId>org.apache.felix</groupId>
-          <artifactId>maven-bundle-plugin</artifactId>
-          <version>${maven-bundle-plugin.version}</version>
-          <extensions>true</extensions>
-          <configuration>
-            <instructions>
-              <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
-              <Bundle-Version>${project.version}</Bundle-Version>
-            </instructions>
-          </configuration>
-        </plugin>
         <plugin>
           <groupId>org.apache.karaf.tooling</groupId>
           <artifactId>karaf-maven-plugin</artifactId>
