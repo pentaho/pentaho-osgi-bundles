@@ -18,6 +18,15 @@ package org.pentaho.webpackage.extender.http.impl.osgi;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.osgi.framework.BundleContext;
+import org.osgi.util.tracker.ServiceTracker;
+
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class ActivatorTest {
   private Activator activator;
@@ -29,31 +38,20 @@ public class ActivatorTest {
 
   @Test
   public void start() throws Exception {
-//    BundleContext mockBundleContext = mock( BundleContext.class );
-//
-//    this.activator.start( mockBundleContext );
-//
-//    verify( mockBundleContext, times( 1 ) ).registerService( eq( PentahoWebPackageBundleListener.class ), any( PentahoWebPackageBundleListener.class ), any() );
-//    verify( mockBundleContext, times( 1 ) ).addBundleListener( any( BundleListener.class ) );
+    BundleContext mockBundleContext = mock( BundleContext.class );
+    this.activator.start( mockBundleContext );
+    ServiceTracker mockServiceTracker = spy(activator.pentahoWebPackageServiceTracker);
+    verify( mockServiceTracker, times( 1 ) ).open( true );
   }
 
   @Test
   public void stop() throws Exception {
-//    ArgumentCaptor<BundleListener> bundleListenerCaptor = ArgumentCaptor.forClass( BundleListener.class );
-//
-//    BundleContext mockBundleContext = mock( BundleContext.class );
-//    final ServiceRegistration mockServiceRegistration = mock( ServiceRegistration.class );
-//    when( mockBundleContext
-//        .registerService( eq( PentahoWebPackageBundleListener.class ), any( PentahoWebPackageBundleListener.class ), any() ) )
-//        .thenReturn( mockServiceRegistration );
-//
-//    this.activator.start( mockBundleContext );
-//
-//    verify( mockBundleContext, times( 1 ) ).addBundleListener( bundleListenerCaptor.capture() );
-//
-//    this.activator.stop( mockBundleContext );
-//
-//    verify( mockServiceRegistration, times( 1 ) ).unregister();
-//    verify( mockBundleContext, times( 1 ) ).removeBundleListener( same( bundleListenerCaptor.getValue() ) );
+    BundleContext mockBundleContext = mock( BundleContext.class );
+    this.activator.start( mockBundleContext );
+    ServiceTracker mockServiceTracker = spy(activator.pentahoWebPackageServiceTracker);
+    this.activator.stop(mockBundleContext);
+
+    verify( mockServiceTracker, times( 1 ) ).open( true );
+    verify( mockServiceTracker, times( 1 ) ).close();
   }
 }

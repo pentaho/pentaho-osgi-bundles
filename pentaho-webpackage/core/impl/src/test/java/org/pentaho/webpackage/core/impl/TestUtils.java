@@ -18,9 +18,9 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-class TestUtils {
+public class TestUtils {
 
-  static URL createMockUrlConnection( String payload ) {
+  public static URL createMockUrlConnection( String payload ) {
     URLConnection mockUrlCon = mock( URLConnection.class );
     URLStreamHandler stubUrlHandler = null;
     try {
@@ -57,14 +57,15 @@ class TestUtils {
     return null;
   }
 
-  static Bundle createBaseMockBundle( String bundleName, String bundleVersion, int bundleState, ServiceRegistration mockServiceReference ) {
+  public static Bundle createBaseMockBundle() {
     Bundle mockBundle = mock( Bundle.class );
-    when( mockBundle.getSymbolicName() ).thenReturn( bundleName );
+    when( mockBundle.getSymbolicName() ).thenReturn( "SomeBundleName" );
     Version version = mock( Version.class );
-    when( version.toString() ).thenReturn( bundleVersion );
+    when( version.toString() ).thenReturn( "1.1.1.1" );
     when( mockBundle.getVersion() ).thenReturn( version );
-    when( mockBundle.getState() ).thenReturn( bundleState );
+    when( mockBundle.getState() ).thenReturn( Bundle.ACTIVE );
 
+    ServiceRegistration mockServiceReference = mock( ServiceRegistration.class );
     BundleContext mockBundleContext = mock( BundleContext.class );
     when( mockBundleContext.getBundle() ).thenReturn( mockBundle );
     when( mockBundle.getBundleContext() ).thenReturn( mockBundleContext );

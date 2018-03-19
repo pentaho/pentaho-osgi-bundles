@@ -23,7 +23,7 @@ import org.pentaho.webpackage.core.IPentahoWebPackage;
 import org.pentaho.webpackage.extender.http.impl.PentahoWebPackageServiceTracker;
 
 public class Activator implements BundleActivator {
-  private ServiceTracker pentahoWebPackageServiceTracker;
+  ServiceTracker pentahoWebPackageServiceTracker;
 
   public void start( BundleContext bundleContext ) {
     this.pentahoWebPackageServiceTracker = createPentahoWebPackageServiceTracker( bundleContext );

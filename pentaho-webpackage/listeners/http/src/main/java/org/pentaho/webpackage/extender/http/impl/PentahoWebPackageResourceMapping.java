@@ -23,7 +23,7 @@ import org.pentaho.webpackage.core.IPentahoWebPackage;
 
 /**
  * A webpackage targeted implementation of {@link ResourceMapping}.
- *
+ * <p>
  * Also provides methods to register and unregister itself.
  */
 public class PentahoWebPackageResourceMapping implements ResourceMapping {

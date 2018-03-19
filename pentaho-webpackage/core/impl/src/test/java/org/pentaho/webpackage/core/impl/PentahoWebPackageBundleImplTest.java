@@ -1,19 +1,13 @@
-/*
 package org.pentaho.webpackage.core.impl;
 
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
-import org.junit.Before;
 import org.junit.Test;
 import org.osgi.framework.Bundle;
-import org.osgi.framework.BundleContext;
-import org.osgi.framework.ServiceRegistration;
+import org.osgi.framework.BundleEvent;
 import org.osgi.framework.wiring.BundleCapability;
 import org.osgi.framework.wiring.BundleWiring;
+import org.pentaho.webpackage.core.IPentahoWebPackage;
 import org.pentaho.webpackage.core.PentahoWebPackageConstants;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -21,164 +15,256 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class PentahoWebPackageBundleImplTest {
 
-  private Bundle mockBundle;
-  private BundleContext mockBundleContext;
-  private String mockPackageJson = "{\"name\":\"foo\",\"description\":\"A packaged foo fooer for fooing foos\",\"main\":\"foo.js\",\"man\":[\".\\/man\\/foo.1\",\".\\/man\\/bar.1\"],\"version\":\"1.2.3\"}";
-  private ServiceRegistration mockServiceReference;
-  private URL mockUrl;
-  private PentahoWebPackageBundleImpl pentahoWebPackageBundle;
   private String resourceRootPath = "some/resource/path";
 
-  @Before
-  public void setUp() {
-    mockBundle = this.createMockBundle( "BundleName", "1.0", Bundle.ACTIVE );
-    pentahoWebPackageBundle = spy( new PentahoWebPackageBundleImpl( mockBundle ) );
-  }
-
-
-  private Bundle createMockBundle( String bundleName, String bundleVersion, int bundleState ) {
-    mockServiceReference = mock( ServiceRegistration.class );
-    Bundle mockBundle = TestUtils.createBaseMockBundle( bundleName, bundleVersion, bundleState, mockServiceReference );
-    return mockBundle;
-  }
-
+  // Also tests registerWebPackageServices
   @Test
-  public void getCapabilities() {
+  public void testBundleChangedShouldRegisterWebpackageServicesOnBundleEventStarted() {
+    // arrange
     BundleWiring mockBundleWiring = mock( BundleWiring.class );
-
     BundleCapability mockBundleCapability = mock( BundleCapability.class );
     List<BundleCapability> bundleCapabilityList = new ArrayList<>();
-
-    when( mockBundleWiring.getCapabilities( PentahoWebPackageConstants.CAPABILITY_NAMESPACE ) ).thenReturn( bundleCapabilityList );
-    List<BundleCapability> capabilities = null;
-
-    // Assert Empty collection when BundleWiring is null
-    when( mockBundle.adapt( BundleWiring.class ) ).thenReturn( null );
-    capabilities = pentahoWebPackageBundle.getCapabilities();
-    assertEquals( 0, capabilities.size() );
-
-
-    // Assert BundleWiring has no Capabilities (empty collection)
-    when( mockBundle.adapt( BundleWiring.class ) ).thenReturn( mockBundleWiring );
-    assertEquals( 0, capabilities.size() );
-
-    // Assert BundleWiring has 1 Capabilities (non empty collection)
     bundleCapabilityList.add( mockBundleCapability );
-    capabilities = pentahoWebPackageBundle.getCapabilities();
-    assertEquals( 1, capabilities.size() );
-
-  }
-
-  @Test
-  public void parsePackageJson() {
-    mockUrl = TestUtils.createMockUrlConnection( mockPackageJson );
-    when( mockBundle.getResource( eq( this.resourceRootPath + "/package.json" ) ) )
-        .thenReturn( this.mockUrl );
-    Map<String, Object> jsonResponse = null;
-    try {
-      Method m = PentahoWebPackageBundleImpl.class.getDeclaredMethod( "parsePackageJson", URL.class );
-      m.setAccessible( true );
-      jsonResponse = (Map<String, Object>) m.invoke( null, mockUrl );
-    } catch ( NoSuchMethodException | IllegalAccessException | InvocationTargetException e ) {
-      e.printStackTrace();
-    }
-    Map<String, Object> jsonObjectMap = null;
-    try {
-      jsonObjectMap = (Map<String, Object>) new JSONParser().parse( mockPackageJson );
-    } catch ( ParseException ignored ) {
-    }
-    assertEquals( "Should return valid JSON", jsonObjectMap, jsonResponse );
-  }
-
-
-  @Test
-  public void getWebPackages() {
-    mockUrl = TestUtils.createMockUrlConnection( mockPackageJson );
-    when( mockBundle.getResource( eq( this.resourceRootPath + "/package.json" ) ) )
-        .thenReturn( this.mockUrl );
-    List<PentahoWebPackageImpl> webPackages = setupGetWebPackages();
-    // Assert returned collection has the webpackage passed
-    assertEquals( 1, webPackages.size() );
-  }
-
-  @Test
-  public void getWebPackagesThrowException() {
-    mockUrl = TestUtils.createMockUrlConnection( "some invalid json data" );
-    when( mockBundle.getResource( eq( this.resourceRootPath + "/package.json" ) ) )
-        .thenReturn( this.mockUrl );
-    List<PentahoWebPackageImpl> webPackages = setupGetWebPackages();
-    // Assert returned collection is empty
-    assertEquals( 0, webPackages.size() );
-  }
-
-  @Test
-  public void getWebPackagesCantGetBundleResource() {
-    mockUrl = TestUtils.createMockUrlConnection( "some invalid json data" );
-    when( mockBundle.getResource( eq( this.resourceRootPath + "/package.json" ) ) )
-        .thenReturn( null );
-    List<PentahoWebPackageImpl> webPackages = setupGetWebPackages();
-
-    // Assert returned collection is empty
-    assertEquals( 0, webPackages.size() );
-  }
-
-  private List<PentahoWebPackageImpl> setupGetWebPackages() {
-    BundleWiring mockBundleWiring = mock( BundleWiring.class );
-
-    BundleCapability mockBundleCapability = mock( BundleCapability.class );
-    List<BundleCapability> bundleCapabilityList = new ArrayList<>();
-
-    when( mockBundleWiring.getCapabilities( PentahoWebPackageConstants.CAPABILITY_NAMESPACE ) ).thenReturn( bundleCapabilityList );
-    List<BundleCapability> capabilities = null;
-
-    when( mockBundle.adapt( BundleWiring.class ) ).thenReturn( mockBundleWiring );
-
+    Bundle mockBundle = TestUtils.createBaseMockBundle();
+    PentahoWebPackageBundleListener listener = new PentahoWebPackageBundleListener();
+    String mockPackageJson = "{\"name\":\"foo\",\"description\":\"A packaged foo fooer for fooing foos\",\"main\":\"foo.js\",\"man\":[\".\\/man\\/foo.1\",\".\\/man\\/bar.1\"],\"version\":\"1.2.3\"}";
+    URL mockUrl = TestUtils.createMockUrlConnection( mockPackageJson );
     Map<String, Object> attributes = new HashMap<>();
     attributes.put( "root", resourceRootPath + "/" );
     when( mockBundleCapability.getAttributes() ).thenReturn( attributes );
+    when( mockBundle.getResource( eq( resourceRootPath + "/package.json" ) ) )
+        .thenReturn( mockUrl );
 
+    when( mockBundleWiring.getCapabilities( PentahoWebPackageConstants.CAPABILITY_NAMESPACE ) ).thenReturn( bundleCapabilityList );
+    when( mockBundle.adapt( BundleWiring.class ) ).thenReturn( mockBundleWiring );
+
+    BundleEvent mockBundleEvent = mock( BundleEvent.class );
+    doReturn( mockBundle ).when( mockBundleEvent ).getBundle();
+    when( mockBundleEvent.getType() ).thenReturn( BundleEvent.STARTED );
+
+    int expectedBundleWebPackageServiceReferencesSize = 1;
+
+    // act
+    listener.bundleChanged( mockBundleEvent );
+    int actualBundleWebPackageServiceReferencesSize = listener.bundleWebPackageServiceReferences.size();
+
+    // assert
+    assertEquals( "Should return a collection with one element", expectedBundleWebPackageServiceReferencesSize, actualBundleWebPackageServiceReferencesSize );
+  }
+
+  // Also tests unregisterWebPackageServices
+  @Test
+  public void testBundleChangedShouldRegisterWebpackageServicesOnBundleEventUninstalledOrUnresolvedOrStopped() {
+    // arrange
+    BundleWiring mockBundleWiring = mock( BundleWiring.class );
+    BundleCapability mockBundleCapability = mock( BundleCapability.class );
+    List<BundleCapability> bundleCapabilityList = new ArrayList<>();
     bundleCapabilityList.add( mockBundleCapability );
-    capabilities = pentahoWebPackageBundle.getCapabilities();
-    assertEquals( 1, capabilities.size() );
-    return pentahoWebPackageBundle.getWebPackages( capabilities );
+    Bundle mockBundle = TestUtils.createBaseMockBundle();
+    PentahoWebPackageBundleListener listener = new PentahoWebPackageBundleListener();
+    String mockPackageJson = "{\"name\":\"foo\",\"description\":\"A packaged foo fooer for fooing foos\",\"main\":\"foo.js\",\"man\":[\".\\/man\\/foo.1\",\".\\/man\\/bar.1\"],\"version\":\"1.2.3\"}";
+    URL mockUrl = TestUtils.createMockUrlConnection( mockPackageJson );
+    Map<String, Object> attributes = new HashMap<>();
+    attributes.put( "root", resourceRootPath + "/" );
+    when( mockBundleCapability.getAttributes() ).thenReturn( attributes );
+    when( mockBundle.getResource( eq( resourceRootPath + "/package.json" ) ) )
+        .thenReturn( mockUrl );
+
+    when( mockBundleWiring.getCapabilities( PentahoWebPackageConstants.CAPABILITY_NAMESPACE ) ).thenReturn( bundleCapabilityList );
+    when( mockBundle.adapt( BundleWiring.class ) ).thenReturn( mockBundleWiring );
+
+    BundleEvent mockBundleEvent = mock( BundleEvent.class );
+    doReturn( mockBundle ).when( mockBundleEvent ).getBundle();
+    when( mockBundleEvent.getType() ).thenReturn( BundleEvent.STARTED );
+
+    int expectedBundleWebPackageServiceReferencesSizeAfterStarted = 1;
+    int expectedBundleWebPackageServiceReferencesSizeAfterUninstalled = 0;
+
+    // act
+    listener.bundleChanged( mockBundleEvent );
+    int actualBundleWebPackageServiceReferencesSizeAfterStarted = listener.bundleWebPackageServiceReferences.size();
+
+    when( mockBundleEvent.getType() ).thenReturn( BundleEvent.UNINSTALLED );
+    listener.bundleChanged( mockBundleEvent );
+
+    int actualBundleWebPackageServiceReferencesSizeAfterUninstalled = listener.bundleWebPackageServiceReferences.size();
+
+    // assert
+    assertEquals( "Should return a collection with one element", expectedBundleWebPackageServiceReferencesSizeAfterStarted, actualBundleWebPackageServiceReferencesSizeAfterStarted );
+    assertEquals( "Should return a collection with one element", expectedBundleWebPackageServiceReferencesSizeAfterUninstalled, actualBundleWebPackageServiceReferencesSizeAfterUninstalled );
   }
 
+  // this test is just for coverage
+  @Test
+  public void testRegisterWebPackageServicesWhenBundleIsNull() {
+    // arrange
+    PentahoWebPackageBundleListener listener = new PentahoWebPackageBundleListener();
+
+    // act
+    listener.registerWebPackageServices( null );
+
+    // assert
+
+  }
+
+  // This test is just for coverage
+  @Test
+  public void testUnregisterWebPackageServicesWhenBundleIsNull() {
+    // arrange
+    PentahoWebPackageBundleListener listener = new PentahoWebPackageBundleListener();
+
+    // act
+    listener.unregisterWebPackageServices( null );
+
+    // assert
+  }
 
   @Test
-  public void init() {
-    PentahoWebPackageImpl pentahoWebPackage = getPentahoWebPackage();
-    pentahoWebPackageBundle.init();
-    verify( pentahoWebPackage, times( 3 ) ).init();
+  public void testGetWebPackageCapabilitiesWhenBundleWiringIsNull() {
+    // arrange
+    Bundle mockBundle = TestUtils.createBaseMockBundle();
+    BundleWiring mockBundleWiring = mock( BundleWiring.class );
+    PentahoWebPackageBundleListener listener = new PentahoWebPackageBundleListener();
+    List<BundleCapability> bundleCapabilityList = new ArrayList<>();
+    int expectedCapabilitiesSize = 0;
+
+    when( mockBundleWiring.getCapabilities( PentahoWebPackageConstants.CAPABILITY_NAMESPACE ) ).thenReturn( bundleCapabilityList );
+    when( mockBundle.adapt( BundleWiring.class ) ).thenReturn( null );
+
+    // act
+    int actualCapabilitiesSize = listener.getWebPackageCapabilities( mockBundle ).size();
+
+    // assert
+    assertEquals( expectedCapabilitiesSize, actualCapabilitiesSize );
   }
 
   @Test
-  public void destroy() {
-    PentahoWebPackageImpl pentahoWebPackage = getPentahoWebPackage();
-    pentahoWebPackageBundle.init();
-    pentahoWebPackageBundle.destroy();
-    verify( pentahoWebPackage, times( 3 ) ).destroy();
+  public void testGetWebPackageCapabilitiesWhenBundleWiringHasNoCapabilities() {
+    // arrange
+    Bundle mockBundle = TestUtils.createBaseMockBundle();
+    BundleWiring mockBundleWiring = mock( BundleWiring.class );
+    PentahoWebPackageBundleListener listener = new PentahoWebPackageBundleListener();
+    List<BundleCapability> bundleCapabilityList = new ArrayList<>();
+    int expectedCapabilitiesSize = 0;
+
+    when( mockBundleWiring.getCapabilities( PentahoWebPackageConstants.CAPABILITY_NAMESPACE ) ).thenReturn( bundleCapabilityList );
+    when( mockBundle.adapt( BundleWiring.class ) ).thenReturn( mockBundleWiring );
+
+    // act
+    int actualCapabilitiesSize = listener.getWebPackageCapabilities( mockBundle ).size();
+
+    // assert
+    assertEquals( expectedCapabilitiesSize, actualCapabilitiesSize );
   }
 
-  private PentahoWebPackageImpl getPentahoWebPackage() {
-    mockBundleContext = mockBundle.getBundleContext();
-    PentahoWebPackageImpl pentahoWebPackage = spy( new PentahoWebPackageImpl( mockBundleContext, "", "", "" ) );
-    List<PentahoWebPackageImpl> packages = new ArrayList<>();
-    packages.add( pentahoWebPackage );
-    packages.add( pentahoWebPackage );
-    packages.add( pentahoWebPackage );
-    doReturn( packages ).when( pentahoWebPackageBundle ).getWebPackages( any() );
-    return pentahoWebPackage;
+  @Test
+  public void testGetWebPackageCapabilitiesWhenBundleWiringHasCapabilities() {
+    // arrange
+    Bundle mockBundle = TestUtils.createBaseMockBundle();
+    BundleWiring mockBundleWiring = mock( BundleWiring.class );
+    PentahoWebPackageBundleListener listener = new PentahoWebPackageBundleListener();
+    BundleCapability mockBundleCapability = mock( BundleCapability.class );
+    List<BundleCapability> bundleCapabilityList = new ArrayList<>();
+    bundleCapabilityList.add( mockBundleCapability );
+    int expectedCapabilitiesSize = 1;
+
+    when( mockBundleWiring.getCapabilities( PentahoWebPackageConstants.CAPABILITY_NAMESPACE ) ).thenReturn( bundleCapabilityList );
+    when( mockBundle.adapt( BundleWiring.class ) ).thenReturn( mockBundleWiring );
+
+    // act
+    int actualCapabilitiesSize = listener.getWebPackageCapabilities( mockBundle ).size();
+
+    // assert
+    assertEquals( expectedCapabilitiesSize, actualCapabilitiesSize );
+  }
+
+  @Test
+  public void testCreateWebPackageShouldReturnValidPentahoWebPackage() {
+    Bundle mockBundle = TestUtils.createBaseMockBundle();
+    BundleCapability mockBundleCapability = mock( BundleCapability.class );
+    PentahoWebPackageBundleListener listener = new PentahoWebPackageBundleListener();
+    String mockPackageJson = "{\"name\":\"foo\",\"description\":\"A packaged foo fooer for fooing foos\",\"main\":\"foo.js\",\"man\":[\".\\/man\\/foo.1\",\".\\/man\\/bar.1\"],\"version\":\"1.2.3\"}";
+    URL mockUrl = TestUtils.createMockUrlConnection( mockPackageJson );
+    Map<String, Object> attributes = new HashMap<>();
+    attributes.put( "root", resourceRootPath + "/" );
+    when( mockBundleCapability.getAttributes() ).thenReturn( attributes );
+    when( mockBundle.getResource( eq( resourceRootPath + "/package.json" ) ) )
+        .thenReturn( mockUrl );
+
+    String expectedWebPackageName = "foo";
+    String expectedWebPackageVersion = "1.2.3";
+    String expectedResourceRootPath = resourceRootPath;
+
+    // act
+    IPentahoWebPackage pentahoWebPackage = listener.createWebPackage( mockBundle, mockBundleCapability );
+    String actualWebPackageName = pentahoWebPackage.getName();
+    String actualWebPackageVersion = pentahoWebPackage.getVersion();
+    String actualResourceRootPath = pentahoWebPackage.getResourceRootPath();
+
+
+    // asset
+    assertNotNull( "Should nor be null", pentahoWebPackage );
+    assertEquals( "Should have the correct webpackage name", expectedWebPackageName, actualWebPackageName );
+    assertEquals( "Should have the correct webpackage version", expectedWebPackageVersion, actualWebPackageVersion );
+    assertEquals( "Should have the correct webpackage Resource root path", expectedResourceRootPath, actualResourceRootPath );
+  }
+
+  @Test
+  public void testCreateWebPackageShouldReturnNullGivenInvalidPackageJsonUrl() {
+    // arrange
+    Bundle mockBundle = TestUtils.createBaseMockBundle();
+    BundleCapability mockBundleCapability = mock( BundleCapability.class );
+    PentahoWebPackageBundleListener listener = new PentahoWebPackageBundleListener();
+    when( mockBundle.getResource( eq( resourceRootPath + "/package.json" ) ) )
+        .thenReturn( null );
+
+    // act
+    IPentahoWebPackage pentahoWebPackage = listener.createWebPackage( mockBundle, mockBundleCapability );
+
+    // assert
+    assertNull( pentahoWebPackage );
+  }
+
+  @Test
+  public void testCreateWebPackageShouldReturnNullGivenExceptionThrown() {
+    // arrange
+    Bundle mockBundle = TestUtils.createBaseMockBundle();
+    BundleCapability mockBundleCapability = mock( BundleCapability.class );
+    PentahoWebPackageBundleListener listener = new PentahoWebPackageBundleListener();
+    doThrow( new RuntimeException( "Error" ) ).when( mockBundle ).getResource( any() );
+
+    // act
+    IPentahoWebPackage pentahoWebPackage = listener.createWebPackage( mockBundle, mockBundleCapability );
+
+    // assert
+    assertNull( pentahoWebPackage );
+  }
+
+  @Test
+  public void testGetRootShouldReturnCapabilityRootPath() {
+    // arrange
+    BundleCapability mockBundleCapability = mock( BundleCapability.class );
+    PentahoWebPackageBundleListener listener = new PentahoWebPackageBundleListener();
+    Map<String, Object> attributes = new HashMap<>();
+    attributes.put( "root", resourceRootPath + "/" );
+    when( mockBundleCapability.getAttributes() ).thenReturn( attributes );
+    String expectedRootPath = resourceRootPath;
+
+    // act
+    String actualRootPath = listener.getRoot( mockBundleCapability );
+
+    // assert
+    assertEquals( "Should return capability root path", expectedRootPath, actualRootPath );
   }
 }
-*/

@@ -21,6 +21,7 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 import org.osgi.util.tracker.ServiceTrackerCustomizer;
 import org.pentaho.webpackage.core.IPentahoWebPackage;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**
  * Tracks registered {@link IPentahoWebPackage} services and in turn registers {@link PentahoWebPackageResourceMapping} service.
