@@ -10,7 +10,6 @@
   </parent>
 
   <artifactId>pentaho-requirejs-osgi-manager</artifactId>
-
   <packaging>feature</packaging>
 
   <dependencies>
@@ -20,4 +19,5 @@
       <version>${project.version}</version>
     </dependency>
   </dependencies>
+
 </project>
