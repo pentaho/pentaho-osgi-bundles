@@ -1,7 +1,7 @@
 package org.pentaho.requirejs.impl.plugins;
 
-import org.pentaho.requirejs.RequireJsPackageConfiguration;
-import org.pentaho.requirejs.RequireJsPackageConfigurationPlugin;
+import org.pentaho.requirejs.IRequireJsPackageConfiguration;
+import org.pentaho.requirejs.IRequireJsPackageConfigurationPlugin;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -10,10 +10,10 @@ import java.util.function.Function;
 /**
  * Handles the moduleId version mapping inside configurations for pentaho/typeInfo and pentaho/instanceInfo.
  */
-public class TypeAndInstanceInfoPluginConfig implements RequireJsPackageConfigurationPlugin {
+public class TypeAndInstanceInfoPluginConfig implements IRequireJsPackageConfigurationPlugin {
   @Override
-  public void apply( RequireJsPackageConfiguration requireJsPackageConfig,
-                     Function<String, RequireJsPackageConfiguration> dependencyResolver,
+  public void apply( IRequireJsPackageConfiguration requireJsPackageConfig,
+                     Function<String, IRequireJsPackageConfiguration> dependencyResolver,
                      Function<String, String> resolveModuleId,
                      Map<String, ?> requireConfig ) {
     if ( requireConfig.containsKey( "config" ) ) {

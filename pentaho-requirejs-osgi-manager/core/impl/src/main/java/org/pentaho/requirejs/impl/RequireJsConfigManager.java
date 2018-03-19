@@ -17,8 +17,8 @@
 package org.pentaho.requirejs.impl;
 
 import org.json.simple.JSONObject;
-import org.pentaho.requirejs.RequireJsPackageConfiguration;
-import org.pentaho.requirejs.RequireJsPackageConfigurationPlugin;
+import org.pentaho.requirejs.IRequireJsPackageConfiguration;
+import org.pentaho.requirejs.IRequireJsPackageConfigurationPlugin;
 import org.pentaho.requirejs.impl.listeners.RequireJsBundleListener;
 import org.pentaho.requirejs.impl.listeners.RequireJsPackageServiceTracker;
 import org.pentaho.requirejs.impl.servlet.RebuildCacheCallable;
@@ -49,7 +49,7 @@ public class RequireJsConfigManager {
   /**
    * Plugins that can customize each package's requirejs configuration.
    */
-  private List<RequireJsPackageConfigurationPlugin> plugins;
+  private List<IRequireJsPackageConfigurationPlugin> plugins;
 
   // setting initial capacity to three (relative url and absolute http/https url scenarios)
   private volatile ConcurrentHashMap<String, Future<String>> cachedConfigurations = new ConcurrentHashMap<>( 3 );
@@ -63,7 +63,7 @@ public class RequireJsConfigManager {
     this.externalResourcesScriptsTracker = externalResourcesScriptsTracker;
   }
 
-  public void setPlugins( List<RequireJsPackageConfigurationPlugin> plugins ) {
+  public void setPlugins( List<IRequireJsPackageConfigurationPlugin> plugins ) {
     this.plugins = plugins;
   }
 
@@ -123,9 +123,9 @@ public class RequireJsConfigManager {
   private String getCachedContextMapping( String baseUrl, String referer ) {
     if ( referer != null ) {
       return this.cachedContextMapping.computeIfAbsent( referer, k -> {
-        List<RequireJsPackageConfiguration> requireJsPackageConfigurations = this.packageConfigurationsTracker.getPackages();
+        List<IRequireJsPackageConfiguration> requireJsPackageConfigurations = this.packageConfigurationsTracker.getPackages();
 
-        for ( RequireJsPackageConfiguration requireJsPackage : requireJsPackageConfigurations ) {
+        for ( IRequireJsPackageConfiguration requireJsPackage : requireJsPackageConfigurations ) {
           if ( referer.contains( baseUrl + requireJsPackage.getWebRootPath() ) ) {
             Map<String, Object> contextConfig = new HashMap<>();
             Map<String, Map<String, String>> topMap = new HashMap<>();

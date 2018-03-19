@@ -22,7 +22,7 @@ import org.osgi.framework.ServiceReference;
 import org.osgi.util.tracker.ServiceTracker;
 import org.osgi.util.tracker.ServiceTrackerCustomizer;
 import org.pentaho.requirejs.IRequireJsPackage;
-import org.pentaho.requirejs.RequireJsPackageConfiguration;
+import org.pentaho.requirejs.IRequireJsPackageConfiguration;
 import org.pentaho.requirejs.impl.RequireJsConfigManager;
 import org.pentaho.requirejs.impl.RequireJsPackageConfigurationImpl;
 
@@ -30,14 +30,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Tracks {@link IRequireJsPackage} registered services, providing a corresponding {@link RequireJsPackageConfiguration} instance.
+ * Tracks {@link IRequireJsPackage} registered services, providing a corresponding {@link IRequireJsPackageConfiguration} instance.
  */
-public class RequireJsPackageServiceTracker implements ServiceTrackerCustomizer<IRequireJsPackage, RequireJsPackageConfiguration> {
+public class RequireJsPackageServiceTracker implements ServiceTrackerCustomizer<IRequireJsPackage, IRequireJsPackageConfiguration> {
   private BundleContext bundleContext;
 
   private RequireJsConfigManager requireJsConfigManager;
 
-  private ServiceTracker<IRequireJsPackage, RequireJsPackageConfiguration> serviceTracker;
+  private ServiceTracker<IRequireJsPackage, IRequireJsPackageConfiguration> serviceTracker;
 
   public void setBundleContext( BundleContext bundleContext ) {
     this.bundleContext = bundleContext;
@@ -57,12 +57,12 @@ public class RequireJsPackageServiceTracker implements ServiceTrackerCustomizer<
     this.serviceTracker = null;
   }
 
-  public List<RequireJsPackageConfiguration> getPackages() {
+  public List<IRequireJsPackageConfiguration> getPackages() {
     return new ArrayList<>( this.serviceTracker.getTracked().values() );
   }
 
   @Override
-  public RequireJsPackageConfiguration addingService( ServiceReference<IRequireJsPackage> reference ) {
+  public IRequireJsPackageConfiguration addingService(ServiceReference<IRequireJsPackage> reference ) {
     Bundle bundle = reference.getBundle();
     // if null then the service is unregistered
     if ( bundle != null ) {
@@ -75,7 +75,7 @@ public class RequireJsPackageServiceTracker implements ServiceTrackerCustomizer<
   }
 
   @Override
-  public void modifiedService(ServiceReference<IRequireJsPackage> reference, RequireJsPackageConfiguration config ) {
+  public void modifiedService(ServiceReference<IRequireJsPackage> reference, IRequireJsPackageConfiguration config ) {
     // the RequireJsPackage details might have changed, so it must reprocess it
     config.processRequireJsPackage();
 
@@ -83,7 +83,7 @@ public class RequireJsPackageServiceTracker implements ServiceTrackerCustomizer<
   }
 
   @Override
-  public void removedService(ServiceReference<IRequireJsPackage> reference, RequireJsPackageConfiguration config ) {
+  public void removedService(ServiceReference<IRequireJsPackage> reference, IRequireJsPackageConfiguration config ) {
     this.bundleContext.ungetService( reference );
 
     this.requireJsConfigManager.invalidateCachedConfigurations();

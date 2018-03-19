@@ -1,8 +1,8 @@
 package org.pentaho.requirejs.impl;
 
 import org.pentaho.requirejs.IRequireJsPackage;
-import org.pentaho.requirejs.RequireJsPackageConfiguration;
-import org.pentaho.requirejs.RequireJsPackageConfigurationPlugin;
+import org.pentaho.requirejs.IRequireJsPackageConfiguration;
+import org.pentaho.requirejs.IRequireJsPackageConfigurationPlugin;
 import org.pentaho.requirejs.impl.utils.JsonMerger;
 
 import java.net.URL;
@@ -16,7 +16,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.function.BiFunction;
 
-public class RequireJsPackageConfigurationImpl implements RequireJsPackageConfiguration {
+public class RequireJsPackageConfigurationImpl implements IRequireJsPackageConfiguration {
   private final JsonMerger merger = new JsonMerger();
 
   private final IRequireJsPackage requireJsPackage;
@@ -31,7 +31,7 @@ public class RequireJsPackageConfigurationImpl implements RequireJsPackageConfig
   private List<Object> packages;
   private Map<String, Map<String, ?>> shim;
 
-  private Map<String, RequireJsPackageConfiguration> dependencyCache;
+  private Map<String, IRequireJsPackageConfiguration> dependencyCache;
 
   public RequireJsPackageConfigurationImpl( IRequireJsPackage requireJsPackage ) {
     if ( requireJsPackage == null ) {
@@ -104,7 +104,7 @@ public class RequireJsPackageConfigurationImpl implements RequireJsPackageConfig
   }
 
   @Override
-  public void processDependencies( BiFunction<String, String, RequireJsPackageConfiguration> dependencyResolver ) {
+  public void processDependencies( BiFunction<String, String, IRequireJsPackageConfiguration> dependencyResolver ) {
     this.dependencyCache = new HashMap<>();
 
     this.baseModuleIdsMappingsWithDependencies = new HashMap<>();
@@ -113,7 +113,7 @@ public class RequireJsPackageConfigurationImpl implements RequireJsPackageConfig
     for ( String dependencyPackageName : dependencies.keySet() ) {
       String dependencyPackageVersion = dependencies.get( dependencyPackageName );
 
-      final RequireJsPackageConfiguration dependencyResolvedVersion = dependencyResolver.apply( dependencyPackageName, dependencyPackageVersion );
+      final IRequireJsPackageConfiguration dependencyResolvedVersion = dependencyResolver.apply( dependencyPackageName, dependencyPackageVersion );
 
       // TODO Should we fail if dependency is not resolved?
       if ( dependencyResolvedVersion != null ) {
@@ -129,7 +129,7 @@ public class RequireJsPackageConfigurationImpl implements RequireJsPackageConfig
   }
 
   @Override
-  public Map<String, Object> getRequireConfig( List<RequireJsPackageConfigurationPlugin> plugins ) {
+  public Map<String, Object> getRequireConfig( List<IRequireJsPackageConfigurationPlugin> plugins ) {
     Map<String, Object> requireConfig = new HashMap<>();
 
     requireConfig.put( "paths", Collections.unmodifiableMap( this.paths ) );

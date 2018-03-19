@@ -17,7 +17,7 @@
 package org.pentaho.requirejs.impl.utils;
 
 import com.github.zafarkhaja.semver.Version;
-import org.pentaho.requirejs.RequireJsPackageConfiguration;
+import org.pentaho.requirejs.IRequireJsPackageConfiguration;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -25,18 +25,17 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 public class RequireJsDependencyResolver {
-  public static RequireJsDependencyResolver createDependencyResolver( Collection<RequireJsPackageConfiguration> availablePackages ) {
-    Map<String, Map<String, RequireJsPackageConfiguration>> packagesIndex = new HashMap<>();
+  public static RequireJsDependencyResolver createDependencyResolver( Collection<IRequireJsPackageConfiguration> availablePackages ) {
+    Map<String, Map<String, IRequireJsPackageConfiguration>> packagesIndex = new HashMap<>();
 
     availablePackages.forEach( packageConfiguration -> {
       // if it is a nameless and/or versionless package, no other can depend on it
       if ( !packageConfiguration.getName().isEmpty() && !packageConfiguration.getVersion().isEmpty() ) {
-        Map<String, RequireJsPackageConfiguration> packageVersion = packagesIndex.computeIfAbsent( packageConfiguration.getName(), name -> new HashMap<>() );
+        Map<String, IRequireJsPackageConfiguration> packageVersion = packagesIndex.computeIfAbsent( packageConfiguration.getName(), name -> new HashMap<>() );
         packageVersion.putIfAbsent( packageConfiguration.getVersion(), packageConfiguration );
       }
     } );
@@ -49,9 +48,9 @@ public class RequireJsDependencyResolver {
 
   private final Map<String, PackageDependentsRequirements> requirements;
 
-  private Map<String, Map<String, RequireJsPackageConfiguration>> availablePackages;
+  private Map<String, Map<String, IRequireJsPackageConfiguration>> availablePackages;
 
-  private RequireJsDependencyResolver( Map<String, Map<String, RequireJsPackageConfiguration>> availablePackages ) {
+  private RequireJsDependencyResolver( Map<String, Map<String, IRequireJsPackageConfiguration>> availablePackages ) {
     this.availablePackages = availablePackages;
 
     this.requirements = new HashMap<>();
@@ -69,7 +68,7 @@ public class RequireJsDependencyResolver {
     requirements.values().forEach( PackageDependentsRequirements::resolve );
   }
 
-  public RequireJsPackageConfiguration getResolvedVersion( String dependencyPackageName, String dependencyPackageVersion ) {
+  public IRequireJsPackageConfiguration getResolvedVersion(String dependencyPackageName, String dependencyPackageVersion ) {
     String resolvedVersion = requirements.get( dependencyPackageName ).getResolution( dependencyPackageVersion );
 
     return resolvedVersion != null ? this.availablePackages.get( dependencyPackageName ).get( resolvedVersion ) : null;

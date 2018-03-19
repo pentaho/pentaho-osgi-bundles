@@ -1,7 +1,7 @@
 package org.pentaho.requirejs.impl.plugins;
 
-import org.pentaho.requirejs.RequireJsPackageConfiguration;
-import org.pentaho.requirejs.RequireJsPackageConfigurationPlugin;
+import org.pentaho.requirejs.IRequireJsPackageConfiguration;
+import org.pentaho.requirejs.IRequireJsPackageConfigurationPlugin;
 import org.pentaho.requirejs.impl.types.MetaInfRequireJson;
 
 import java.util.ArrayList;
@@ -17,10 +17,10 @@ import java.util.function.Function;
  * the pentaho-webjars-deployer), creates a generic shim configuration with both the
  * {@link MetaInfRequireJson#getExports} value (if any) and dependencies that also aren't AMD packages.
  */
-public class NomAmdPackageShim implements RequireJsPackageConfigurationPlugin {
+public class NomAmdPackageShim implements IRequireJsPackageConfigurationPlugin {
   @Override
-  public void apply( RequireJsPackageConfiguration requireJsPackageConfig,
-                     Function<String, RequireJsPackageConfiguration> dependencyResolver,
+  public void apply( IRequireJsPackageConfiguration requireJsPackageConfig,
+                     Function<String, IRequireJsPackageConfiguration> dependencyResolver,
                      Function<String, String> resolveModuleId,
                      Map<String, ?> requireConfig ) {
     if ( requireJsPackageConfig.getRequireJsPackage() instanceof MetaInfRequireJson ) {
@@ -31,7 +31,7 @@ public class NomAmdPackageShim implements RequireJsPackageConfigurationPlugin {
 
         Map<String, String> dependencies = requireJsPackageConfig.getDependencies();
         for ( String dependencyPackageName : dependencies.keySet() ) {
-          final RequireJsPackageConfiguration dependencyResolvedVersion = dependencyResolver.apply( dependencyPackageName );
+          final IRequireJsPackageConfiguration dependencyResolvedVersion = dependencyResolver.apply( dependencyPackageName );
 
           if ( dependencyResolvedVersion != null && dependencyResolvedVersion.getRequireJsPackage() instanceof MetaInfRequireJson ) {
             MetaInfRequireJson depMetaInfRequireJson = (MetaInfRequireJson) dependencyResolvedVersion.getRequireJsPackage();

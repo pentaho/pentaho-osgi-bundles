@@ -3,7 +3,7 @@ package org.pentaho.requirejs.impl;
 import org.json.simple.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
-import org.pentaho.requirejs.RequireJsPackageConfiguration;
+import org.pentaho.requirejs.IRequireJsPackageConfiguration;
 import org.pentaho.requirejs.impl.listeners.RequireJsBundleListener;
 import org.pentaho.requirejs.impl.listeners.RequireJsPackageServiceTracker;
 
@@ -163,7 +163,7 @@ public class RequireJsConfigManagerTest {
 
   @Test
   public void testGetContextMappingKnownReferer() {
-    Collection<RequireJsPackageConfiguration> requireJsPackages = new ArrayList<>();
+    Collection<IRequireJsPackageConfiguration> requireJsPackages = new ArrayList<>();
     requireJsPackages.add( createRequireJsPackageConfigurationMock( "package/1.0" ) );
     doReturn( requireJsPackages ).when( this.mockPackageConfigurationsTracker ).getPackages();
 
@@ -194,7 +194,7 @@ public class RequireJsConfigManagerTest {
 
   @Test
   public void testGetContextMappingUnknownReferer() {
-    Collection<RequireJsPackageConfiguration> requireJsPackages = new ArrayList<>();
+    Collection<IRequireJsPackageConfiguration> requireJsPackages = new ArrayList<>();
     requireJsPackages.add( createRequireJsPackageConfigurationMock( "package/1.0" ) );
     doReturn( requireJsPackages ).when( this.mockPackageConfigurationsTracker ).getPackages();
 
@@ -205,9 +205,9 @@ public class RequireJsConfigManagerTest {
 
   @Test
   public void testGetContextMappingCache() {
-    Collection<RequireJsPackageConfiguration> requireJsPackages = new ArrayList<>();
-    RequireJsPackageConfiguration packageA = createRequireJsPackageConfigurationMock( "packageA/1.0" );
-    RequireJsPackageConfiguration packageB = createRequireJsPackageConfigurationMock( "packageB/1.5" );
+    Collection<IRequireJsPackageConfiguration> requireJsPackages = new ArrayList<>();
+    IRequireJsPackageConfiguration packageA = createRequireJsPackageConfigurationMock( "packageA/1.0" );
+    IRequireJsPackageConfiguration packageB = createRequireJsPackageConfigurationMock( "packageB/1.5" );
     requireJsPackages.add( packageA );
     requireJsPackages.add( packageB );
     doReturn( requireJsPackages ).when( this.mockPackageConfigurationsTracker ).getPackages();
@@ -233,8 +233,8 @@ public class RequireJsConfigManagerTest {
     verify( packageB, times( 1 ) ).getModuleIdsMapping();
   }
 
-  private RequireJsPackageConfiguration createRequireJsPackageConfigurationMock( String webRootPath ) {
-    RequireJsPackageConfiguration config = mock( RequireJsPackageConfiguration.class );
+  private IRequireJsPackageConfiguration createRequireJsPackageConfigurationMock(String webRootPath ) {
+    IRequireJsPackageConfiguration config = mock( IRequireJsPackageConfiguration.class );
     doReturn( webRootPath ).when( config ).getWebRootPath();
 
     packageConfigurationMapping = new HashMap<>();

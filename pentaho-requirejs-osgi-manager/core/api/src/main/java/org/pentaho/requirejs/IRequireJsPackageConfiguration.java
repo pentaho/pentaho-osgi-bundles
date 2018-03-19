@@ -5,11 +5,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
 
-public interface RequireJsPackageConfiguration {
+public interface IRequireJsPackageConfiguration {
   void processRequireJsPackage();
-  void processDependencies( final BiFunction<String, String, RequireJsPackageConfiguration> dependencyResolver );
+  void processDependencies( final BiFunction<String, String, IRequireJsPackageConfiguration> dependencyResolver );
 
-  Map<String, Object> getRequireConfig( final List<RequireJsPackageConfigurationPlugin> plugins );
+  Map<String, Object> getRequireConfig( final List<IRequireJsPackageConfigurationPlugin> plugins );
 
   Map<String, String> getBaseModuleIdsMapping();
   Map<String, String> getModuleIdsMapping();

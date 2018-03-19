@@ -18,11 +18,8 @@ package org.pentaho.requirejs.impl.servlet;
 
 import org.json.simple.JSONObject;
 import org.osgi.framework.Bundle;
-import org.pentaho.requirejs.RequireJsPackageConfiguration;
-import org.pentaho.requirejs.RequireJsPackageConfigurationPlugin;
-import org.pentaho.requirejs.impl.plugins.AmdPluginConfig;
-import org.pentaho.requirejs.impl.plugins.NomAmdPackageShim;
-import org.pentaho.requirejs.impl.plugins.TypeAndInstanceInfoPluginConfig;
+import org.pentaho.requirejs.IRequireJsPackageConfiguration;
+import org.pentaho.requirejs.IRequireJsPackageConfigurationPlugin;
 import org.pentaho.requirejs.impl.types.RequireJsConfiguration;
 import org.pentaho.requirejs.impl.utils.RequireJsDependencyResolver;
 import org.pentaho.requirejs.impl.utils.RequireJsMerger;
@@ -48,16 +45,16 @@ public class RebuildCacheCallable implements Callable<String> {
   /**
    * Plugins that can customize each package's requirejs configuration.
    */
-  private final List<RequireJsPackageConfigurationPlugin> plugins;
+  private final List<IRequireJsPackageConfigurationPlugin> plugins;
 
   private final String baseUrl;
 
-  private final Collection<RequireJsPackageConfiguration> packageConfigurations;
+  private final Collection<IRequireJsPackageConfiguration> packageConfigurations;
 
   // pentaho-platform-plugin configuration scripts (legacy)
   private final List<RequireJsConfiguration> requireJsConfigurations;
 
-  public RebuildCacheCallable( String baseUrl, Collection<RequireJsPackageConfiguration> packageConfigurations, Collection<RequireJsConfiguration> requireJsConfigurations, List<RequireJsPackageConfigurationPlugin> plugins ) {
+  public RebuildCacheCallable(String baseUrl, Collection<IRequireJsPackageConfiguration> packageConfigurations, Collection<RequireJsConfiguration> requireJsConfigurations, List<IRequireJsPackageConfigurationPlugin> plugins ) {
     this.baseUrl = baseUrl;
 
     this.packageConfigurations = packageConfigurations;
@@ -74,7 +71,7 @@ public class RebuildCacheCallable implements Callable<String> {
   public String call() {
     RequireJsDependencyResolver dependencyResolver = RequireJsDependencyResolver.createDependencyResolver( this.packageConfigurations );
 
-    BiFunction<String, String, RequireJsPackageConfiguration> getResolvedVersion = dependencyResolver::getResolvedVersion;
+    BiFunction<String, String, IRequireJsPackageConfiguration> getResolvedVersion = dependencyResolver::getResolvedVersion;
 
     RequireJsMerger merger = new RequireJsMerger();
     this.packageConfigurations.forEach( config -> {

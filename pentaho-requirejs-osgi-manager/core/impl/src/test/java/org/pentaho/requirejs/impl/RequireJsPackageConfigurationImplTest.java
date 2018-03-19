@@ -4,8 +4,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.pentaho.requirejs.IRequireJsPackage;
-import org.pentaho.requirejs.RequireJsPackageConfiguration;
-import org.pentaho.requirejs.RequireJsPackageConfigurationPlugin;
+import org.pentaho.requirejs.IRequireJsPackageConfiguration;
+import org.pentaho.requirejs.IRequireJsPackageConfigurationPlugin;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -264,7 +264,7 @@ public class RequireJsPackageConfigurationImplTest {
 
     RequireJsPackageConfigurationImpl packageConfiguration = new RequireJsPackageConfigurationImpl( mockRequireJsPackage );
 
-    BiFunction<String, String, RequireJsPackageConfiguration> dependencyResolverFunction = mock( BiFunction.class );
+    BiFunction<String, String, IRequireJsPackageConfiguration> dependencyResolverFunction = mock( BiFunction.class );
     packageConfiguration.processDependencies( dependencyResolverFunction );
 
     // Should call the dependencyResolverFunction for each dependency
@@ -286,7 +286,7 @@ public class RequireJsPackageConfigurationImplTest {
 
     RequireJsPackageConfigurationImpl packageConfiguration = new RequireJsPackageConfigurationImpl( mockRequireJsPackage );
 
-    BiFunction<String, String, RequireJsPackageConfiguration> dependencyResolverFunction = mock( BiFunction.class );
+    BiFunction<String, String, IRequireJsPackageConfiguration> dependencyResolverFunction = mock( BiFunction.class );
 
     packageConfiguration.processDependencies( dependencyResolverFunction );
 
@@ -634,13 +634,13 @@ public class RequireJsPackageConfigurationImplTest {
 
     RequireJsPackageConfigurationImpl packageConfiguration = new RequireJsPackageConfigurationImpl( mockRequireJsPackage );
 
-    BiFunction<String, String, RequireJsPackageConfiguration> mockDependencyResolverFunction = getMockDependencyResolverFunction();
+    BiFunction<String, String, IRequireJsPackageConfiguration> mockDependencyResolverFunction = getMockDependencyResolverFunction();
     packageConfiguration.processDependencies( mockDependencyResolverFunction );
 
-    List<RequireJsPackageConfigurationPlugin> plugins = new ArrayList<>();
-    plugins.add( mock( RequireJsPackageConfigurationPlugin.class ) );
-    plugins.add( mock( RequireJsPackageConfigurationPlugin.class ) );
-    plugins.add( mock( RequireJsPackageConfigurationPlugin.class ) );
+    List<IRequireJsPackageConfigurationPlugin> plugins = new ArrayList<>();
+    plugins.add( mock( IRequireJsPackageConfigurationPlugin.class ) );
+    plugins.add( mock( IRequireJsPackageConfigurationPlugin.class ) );
+    plugins.add( mock( IRequireJsPackageConfigurationPlugin.class ) );
 
     packageConfiguration.getRequireConfig( plugins );
 
@@ -653,10 +653,10 @@ public class RequireJsPackageConfigurationImplTest {
 
     RequireJsPackageConfigurationImpl packageConfiguration = new RequireJsPackageConfigurationImpl( mockRequireJsPackage );
 
-    BiFunction<String, String, RequireJsPackageConfiguration> mockDependencyResolverFunction = getMockDependencyResolverFunction();
+    BiFunction<String, String, IRequireJsPackageConfiguration> mockDependencyResolverFunction = getMockDependencyResolverFunction();
     packageConfiguration.processDependencies( mockDependencyResolverFunction );
 
-    RequireJsPackageConfigurationPlugin mockPlugin = mock( RequireJsPackageConfigurationPlugin.class );
+    IRequireJsPackageConfigurationPlugin mockPlugin = mock( IRequireJsPackageConfigurationPlugin.class );
     doAnswer( invocation -> {
       Object[] args = invocation.getArguments();
       Map<String, ?> requireConfig = (Map<String, ?>) args[ 3 ];
@@ -670,7 +670,7 @@ public class RequireJsPackageConfigurationImplTest {
       return null;
     } ).when( mockPlugin ).apply( same( packageConfiguration ), any(), any(), any() );
 
-    List<RequireJsPackageConfigurationPlugin> plugins = new ArrayList<>();
+    List<IRequireJsPackageConfigurationPlugin> plugins = new ArrayList<>();
     plugins.add( mockPlugin );
 
     Map<String, ?> requireConfig = packageConfiguration.getRequireConfig( plugins );
@@ -688,10 +688,10 @@ public class RequireJsPackageConfigurationImplTest {
 
     RequireJsPackageConfigurationImpl packageConfiguration = new RequireJsPackageConfigurationImpl( mockRequireJsPackage );
 
-    BiFunction<String, String, RequireJsPackageConfiguration> mockDependencyResolverFunction = getMockDependencyResolverFunction();
+    BiFunction<String, String, IRequireJsPackageConfiguration> mockDependencyResolverFunction = getMockDependencyResolverFunction();
     packageConfiguration.processDependencies( mockDependencyResolverFunction );
 
-    RequireJsPackageConfigurationPlugin mockPlugin = mock( RequireJsPackageConfigurationPlugin.class );
+    IRequireJsPackageConfigurationPlugin mockPlugin = mock( IRequireJsPackageConfigurationPlugin.class );
     doAnswer( invocation -> {
       Object[] args = invocation.getArguments();
       Map<String, Object> requireConfig = (Map<String, Object>) args[ 3 ];
@@ -701,7 +701,7 @@ public class RequireJsPackageConfigurationImplTest {
       return null;
     } ).when( mockPlugin ).apply( same( packageConfiguration ), any(), any(), any() );
 
-    List<RequireJsPackageConfigurationPlugin> plugins = new ArrayList<>();
+    List<IRequireJsPackageConfigurationPlugin> plugins = new ArrayList<>();
     plugins.add( mockPlugin );
 
     packageConfiguration.getRequireConfig( plugins );
@@ -713,10 +713,10 @@ public class RequireJsPackageConfigurationImplTest {
 
     RequireJsPackageConfigurationImpl packageConfiguration = new RequireJsPackageConfigurationImpl( mockRequireJsPackage );
 
-    BiFunction<String, String, RequireJsPackageConfiguration> mockDependencyResolverFunction = getMockDependencyResolverFunction();
+    BiFunction<String, String, IRequireJsPackageConfiguration> mockDependencyResolverFunction = getMockDependencyResolverFunction();
     packageConfiguration.processDependencies( mockDependencyResolverFunction );
 
-    RequireJsPackageConfigurationPlugin mockPlugin = mock( RequireJsPackageConfigurationPlugin.class );
+    IRequireJsPackageConfigurationPlugin mockPlugin = mock( IRequireJsPackageConfigurationPlugin.class );
     doAnswer( invocation -> {
       Object[] args = invocation.getArguments();
       Map<String, ?> requireConfig = (Map<String, ?>) args[ 3 ];
@@ -727,7 +727,7 @@ public class RequireJsPackageConfigurationImplTest {
       return null;
     } ).when( mockPlugin ).apply( same( packageConfiguration ), any(), any(), any() );
 
-    List<RequireJsPackageConfigurationPlugin> plugins = new ArrayList<>();
+    List<IRequireJsPackageConfigurationPlugin> plugins = new ArrayList<>();
     plugins.add( mockPlugin );
 
     packageConfiguration.getRequireConfig( plugins );
@@ -739,10 +739,10 @@ public class RequireJsPackageConfigurationImplTest {
 
     RequireJsPackageConfigurationImpl packageConfiguration = new RequireJsPackageConfigurationImpl( mockRequireJsPackage );
 
-    BiFunction<String, String, RequireJsPackageConfiguration> mockDependencyResolverFunction = getMockDependencyResolverFunction();
+    BiFunction<String, String, IRequireJsPackageConfiguration> mockDependencyResolverFunction = getMockDependencyResolverFunction();
     packageConfiguration.processDependencies( mockDependencyResolverFunction );
 
-    RequireJsPackageConfigurationPlugin mockPlugin = mock( RequireJsPackageConfigurationPlugin.class );
+    IRequireJsPackageConfigurationPlugin mockPlugin = mock( IRequireJsPackageConfigurationPlugin.class );
     doAnswer( invocation -> {
       Object[] args = invocation.getArguments();
       Map<String, ?> requireConfig = (Map<String, ?>) args[ 3 ];
@@ -753,7 +753,7 @@ public class RequireJsPackageConfigurationImplTest {
       return null;
     } ).when( mockPlugin ).apply( same( packageConfiguration ), any(), any(), any() );
 
-    List<RequireJsPackageConfigurationPlugin> plugins = new ArrayList<>();
+    List<IRequireJsPackageConfigurationPlugin> plugins = new ArrayList<>();
     plugins.add( mockPlugin );
 
     packageConfiguration.getRequireConfig( plugins );
@@ -765,10 +765,10 @@ public class RequireJsPackageConfigurationImplTest {
 
     RequireJsPackageConfigurationImpl packageConfiguration = new RequireJsPackageConfigurationImpl( mockRequireJsPackage );
 
-    BiFunction<String, String, RequireJsPackageConfiguration> mockDependencyResolverFunction = getMockDependencyResolverFunction();
+    BiFunction<String, String, IRequireJsPackageConfiguration> mockDependencyResolverFunction = getMockDependencyResolverFunction();
     packageConfiguration.processDependencies( mockDependencyResolverFunction );
 
-    RequireJsPackageConfigurationPlugin mockPlugin = mock( RequireJsPackageConfigurationPlugin.class );
+    IRequireJsPackageConfigurationPlugin mockPlugin = mock( IRequireJsPackageConfigurationPlugin.class );
     doAnswer( invocation -> {
       Object[] args = invocation.getArguments();
       Map<String, ?> requireConfig = (Map<String, ?>) args[ 3 ];
@@ -779,7 +779,7 @@ public class RequireJsPackageConfigurationImplTest {
       return null;
     } ).when( mockPlugin ).apply( same( packageConfiguration ), any(), any(), any() );
 
-    List<RequireJsPackageConfigurationPlugin> plugins = new ArrayList<>();
+    List<IRequireJsPackageConfigurationPlugin> plugins = new ArrayList<>();
     plugins.add( mockPlugin );
 
     packageConfiguration.getRequireConfig( plugins );
@@ -1000,16 +1000,16 @@ public class RequireJsPackageConfigurationImplTest {
     return Mockito.mock( IRequireJsPackage.class );
   }
 
-  private BiFunction<String, String, RequireJsPackageConfiguration> getMockDependencyResolverFunction() {
-    BiFunction<String, String, RequireJsPackageConfiguration> dependencyResolverFunction = mock( BiFunction.class );
+  private BiFunction<String, String, IRequireJsPackageConfiguration> getMockDependencyResolverFunction() {
+    BiFunction<String, String, IRequireJsPackageConfiguration> dependencyResolverFunction = mock( BiFunction.class );
 
-    RequireJsPackageConfiguration dependencyA = mock( RequireJsPackageConfiguration.class );
+    IRequireJsPackageConfiguration dependencyA = mock( IRequireJsPackageConfiguration.class );
     doReturn( dependencyABaseModuleIdsMapping ).when( dependencyA ).getBaseModuleIdsMapping();
     doReturn( dependencyA ).when( dependencyResolverFunction ).apply( eq( "@dep/A" ), anyString() );
 
     doReturn( null ).when( dependencyResolverFunction ).apply( eq( "@dep/B" ), anyString() );
 
-    RequireJsPackageConfiguration dependencyC = mock( RequireJsPackageConfiguration.class );
+    IRequireJsPackageConfiguration dependencyC = mock( IRequireJsPackageConfiguration.class );
     doReturn( dependencyCBaseModuleIdsMapping ).when( dependencyC ).getBaseModuleIdsMapping();
     doReturn( dependencyC ).when( dependencyResolverFunction ).apply( eq( "@dep/C" ), anyString() );
     return dependencyResolverFunction;
