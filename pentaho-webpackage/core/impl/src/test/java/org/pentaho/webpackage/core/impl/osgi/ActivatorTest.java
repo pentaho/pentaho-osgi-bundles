@@ -19,104 +19,102 @@ package org.pentaho.webpackage.core.impl.osgi;
 import org.junit.Test;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
-import org.osgi.framework.BundleEvent;
-import org.osgi.framework.wiring.BundleCapability;
-import org.osgi.framework.wiring.BundleWiring;
-import org.pentaho.webpackage.core.PentahoWebPackageConstants;
 import org.pentaho.webpackage.core.impl.PentahoWebPackageBundleListener;
-import org.pentaho.webpackage.core.impl.TestUtils;
 
-import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.Collection;
 
-import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 public class ActivatorTest {
 
-  // Also tests addActiveBundles and createPentahoWebPackageService
   @Test
-  public void start() {
-    // arrange
-    String resourceRootPath = "some/resource/path";
-    BundleWiring mockBundleWiring = mock( BundleWiring.class );
-    BundleCapability mockBundleCapability = mock( BundleCapability.class );
-    List<BundleCapability> bundleCapabilityList = new ArrayList<>();
-    bundleCapabilityList.add( mockBundleCapability );
-    Bundle mockBundle = TestUtils.createBaseMockBundle();
-    PentahoWebPackageBundleListener listener = new PentahoWebPackageBundleListener();
-    String mockPackageJson = "{\"name\":\"foo\",\"description\":\"A packaged foo fooer for fooing foos\",\"main\":\"foo.js\",\"man\":[\".\\/man\\/foo.1\",\".\\/man\\/bar.1\"],\"version\":\"1.2.3\"}";
-    URL mockUrl = TestUtils.createMockUrlConnection( mockPackageJson );
-    Map<String, Object> attributes = new HashMap<>();
-    attributes.put( "root", resourceRootPath + "/" );
-    when( mockBundleCapability.getAttributes() ).thenReturn( attributes );
-    when( mockBundle.getResource( eq( resourceRootPath + "/package.json" ) ) )
-        .thenReturn( mockUrl );
-
-    when( mockBundleWiring.getCapabilities( PentahoWebPackageConstants.CAPABILITY_NAMESPACE ) ).thenReturn( bundleCapabilityList );
-    when( mockBundle.adapt( BundleWiring.class ) ).thenReturn( mockBundleWiring );
-
-    BundleEvent mockBundleEvent = mock( BundleEvent.class );
-    doReturn( mockBundle ).when( mockBundleEvent ).getBundle();
-    when( mockBundleEvent.getType() ).thenReturn( BundleEvent.STARTED );
-
-    BundleContext mockBundleContext = mock(BundleContext.class);
-    Bundle[] bundles = new Bundle[1];
-    bundles[0] = mockBundle;
-    doReturn( bundles ).when( mockBundleContext ).getBundles();
-
-    Activator activator = new Activator();
+  public void bundleListenerIsAddedToBundleContextOnActivatorStart() {
+    PentahoWebPackageBundleListener bundleListener = mock( PentahoWebPackageBundleListener.class );
+    Activator activator = createActivatorSpy( bundleListener );
+    BundleContext bundleContext = mock( BundleContext.class );
 
     // act
-    activator.start( mockBundleContext );
+    activator.start( bundleContext );
 
     // assert
-    // TODO: check if pentahoWebPackageBundleListener has elements ???
+    verify( bundleContext ).addBundleListener( bundleListener );
   }
 
   @Test
-  public void stop() {
-    // arrange
-    String resourceRootPath = "some/resource/path";
-    BundleWiring mockBundleWiring = mock( BundleWiring.class );
-    BundleCapability mockBundleCapability = mock( BundleCapability.class );
-    List<BundleCapability> bundleCapabilityList = new ArrayList<>();
-    bundleCapabilityList.add( mockBundleCapability );
-    Bundle mockBundle = TestUtils.createBaseMockBundle();
-    PentahoWebPackageBundleListener listener = new PentahoWebPackageBundleListener();
-    String mockPackageJson = "{\"name\":\"foo\",\"description\":\"A packaged foo fooer for fooing foos\",\"main\":\"foo.js\",\"man\":[\".\\/man\\/foo.1\",\".\\/man\\/bar.1\"],\"version\":\"1.2.3\"}";
-    URL mockUrl = TestUtils.createMockUrlConnection( mockPackageJson );
-    Map<String, Object> attributes = new HashMap<>();
-    attributes.put( "root", resourceRootPath + "/" );
-    when( mockBundleCapability.getAttributes() ).thenReturn( attributes );
-    when( mockBundle.getResource( eq( resourceRootPath + "/package.json" ) ) )
-        .thenReturn( mockUrl );
+  public void listenerRegisterIsCalledForEveryActiveBundleOnActivatorStart() {
+    PentahoWebPackageBundleListener bundleListener = mock( PentahoWebPackageBundleListener.class );
+    Activator activator = createActivatorSpy( bundleListener );
 
-    when( mockBundleWiring.getCapabilities( PentahoWebPackageConstants.CAPABILITY_NAMESPACE ) ).thenReturn( bundleCapabilityList );
-    when( mockBundle.adapt( BundleWiring.class ) ).thenReturn( mockBundleWiring );
+    Collection<Bundle> activeBundles = new ArrayList<>();
+    int numberOfActiveBundles = 3;
+    for ( int iBundle = 0; iBundle < numberOfActiveBundles; iBundle++ ) {
+      activeBundles.add( createMockBundle( Bundle.ACTIVE ) );
+    }
 
-    BundleEvent mockBundleEvent = mock( BundleEvent.class );
-    doReturn( mockBundle ).when( mockBundleEvent ).getBundle();
-    when( mockBundleEvent.getType() ).thenReturn( BundleEvent.STARTED );
-
-    BundleContext mockBundleContext = mock(BundleContext.class);
-    Bundle[] bundles = new Bundle[1];
-    bundles[0] = mockBundle;
-    doReturn( bundles ).when( mockBundleContext ).getBundles();
-
-    Activator activator = new Activator();
+    BundleContext bundleContext = mock( BundleContext.class );
+    doReturn( activeBundles.toArray( new Bundle[0] ) ).when( bundleContext ).getBundles();
 
     // act
-    activator.start( mockBundleContext );
-    activator.stop( mockBundleContext );
+    activator.start( bundleContext );
 
     // assert
-    // TODO: Check if pentahoWebPackageBundleListener is null?
+    verify( bundleListener, times( numberOfActiveBundles ) ).registerWebPackageServices( any() );
   }
 
+
+  @Test
+  public void listenerRegisterIsNotCalledForBundlesNotActiveOnActivatorStart() {
+    PentahoWebPackageBundleListener bundleListener = mock( PentahoWebPackageBundleListener.class );
+    Activator activator = createActivatorSpy( bundleListener );
+
+    Collection<Bundle> nonActiveBundles = new ArrayList<>();
+    nonActiveBundles.add( createMockBundle( Bundle.UNINSTALLED ) );
+    nonActiveBundles.add( createMockBundle( Bundle.INSTALLED ) );
+    nonActiveBundles.add( createMockBundle( Bundle.RESOLVED ) );
+    nonActiveBundles.add( createMockBundle( Bundle.STARTING ) );
+    nonActiveBundles.add( createMockBundle( Bundle.STOPPING ) );
+
+    BundleContext bundleContext = mock( BundleContext.class );
+    doReturn( nonActiveBundles.toArray( new Bundle[0] ) ).when( bundleContext ).getBundles();
+
+    // act
+    activator.start( bundleContext );
+
+    // assert
+    verify( bundleListener, never() ).registerWebPackageServices( any() );
+  }
+
+  @Test
+  public void bundleListenerIsRemovedFromBundleContextOnActivatorStop() {
+    PentahoWebPackageBundleListener bundleListener = mock( PentahoWebPackageBundleListener.class );
+    Activator activator = createActivatorSpy( bundleListener );
+    BundleContext bundleContext = mock( BundleContext.class );
+    // starting the activator to set the private activator.pentahoWebPackageBundleListener to bundleListener
+    activator.start( bundleContext );
+
+    // act
+    activator.stop( bundleContext );
+
+    // assert
+    verify( bundleContext ).removeBundleListener( bundleListener );
+  }
+
+  private Bundle createMockBundle( int bundleState ) {
+    Bundle bundle = mock( Bundle.class );
+    doReturn( bundleState ).when( bundle ).getState();
+    return bundle;
+  }
+
+  private Activator createActivatorSpy( PentahoWebPackageBundleListener bundleListener ) {
+    Activator activator = spy( new Activator() );
+    doReturn( bundleListener ).when( activator ).createPentahoWebPackageService();
+    return activator;
+  }
 }
