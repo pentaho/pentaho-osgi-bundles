@@ -21,8 +21,8 @@ import org.osgi.framework.Bundle;
 import org.pentaho.requirejs.IRequireJsPackageConfiguration;
 import org.pentaho.requirejs.IRequireJsPackageConfigurationPlugin;
 import org.pentaho.requirejs.impl.types.RequireJsConfiguration;
+import org.pentaho.requirejs.impl.utils.JsonMerger;
 import org.pentaho.requirejs.impl.utils.RequireJsDependencyResolver;
-import org.pentaho.requirejs.impl.utils.RequireJsMerger;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -54,7 +54,7 @@ public class RebuildCacheCallable implements Callable<String> {
   // pentaho-platform-plugin configuration scripts (legacy)
   private final List<RequireJsConfiguration> requireJsConfigurations;
 
-  public RebuildCacheCallable(String baseUrl, Collection<IRequireJsPackageConfiguration> packageConfigurations, Collection<RequireJsConfiguration> requireJsConfigurations, List<IRequireJsPackageConfigurationPlugin> plugins ) {
+  public RebuildCacheCallable( String baseUrl, Collection<IRequireJsPackageConfiguration> packageConfigurations, Collection<RequireJsConfiguration> requireJsConfigurations, List<IRequireJsPackageConfigurationPlugin> plugins ) {
     this.baseUrl = baseUrl;
 
     this.packageConfigurations = packageConfigurations;
@@ -73,17 +73,19 @@ public class RebuildCacheCallable implements Callable<String> {
 
     BiFunction<String, String, IRequireJsPackageConfiguration> getResolvedVersion = dependencyResolver::getResolvedVersion;
 
-    RequireJsMerger merger = new RequireJsMerger();
-    this.packageConfigurations.forEach( config -> {
-      config.processDependencies( getResolvedVersion );
-      merger.merge( config.getRequireConfig( this.plugins ) );
-    } );
+    Map<String, Object> requireJsConfig = createEmptyRequireConfig();
 
-    Map<String, Object> result = merger.getRequireConfig();
+    JsonMerger merger = new JsonMerger();
 
-    RebuildCacheCallable.makePathsAbsolute( result, this.baseUrl );
+    for ( IRequireJsPackageConfiguration packageConfiguration : this.packageConfigurations ) {
+      packageConfiguration.processDependencies( getResolvedVersion );
 
-    StringBuilder sb = new StringBuilder( JSONObject.toJSONString( result ) );
+      requireJsConfig = merger.merge( requireJsConfig, packageConfiguration.getRequireConfig( this.plugins ) );
+    }
+
+    RebuildCacheCallable.makePathsAbsolute( requireJsConfig, this.baseUrl );
+
+    StringBuilder sb = new StringBuilder( JSONObject.toJSONString( requireJsConfig ) );
     sb.append( ";\n" );
 
     this.packageConfigurations.forEach( requireJsPackage -> {
@@ -133,6 +135,24 @@ public class RebuildCacheCallable implements Callable<String> {
     }
 
     return sb.toString();
+  }
+
+  private Map<String, Object> createEmptyRequireConfig() {
+    Map<String, Object> emptyConfig = new HashMap<>();
+
+    emptyConfig.put( "paths", new HashMap<String, Object>() );
+    emptyConfig.put( "packages", new ArrayList<>() );
+    emptyConfig.put( "bundles", new HashMap<String, Object>() );
+
+    final Map<String, Object> map = new HashMap<>();
+    map.put( "*", new HashMap<String, Object>() );
+    emptyConfig.put( "map", map );
+
+    emptyConfig.put( "config", new HashMap<String, Object>() );
+
+    emptyConfig.put( "shim", new HashMap<String, Object>() );
+
+    return emptyConfig;
   }
 
   private static void makePathsAbsolute( Map<String, Object> result, String baseUrl ) {

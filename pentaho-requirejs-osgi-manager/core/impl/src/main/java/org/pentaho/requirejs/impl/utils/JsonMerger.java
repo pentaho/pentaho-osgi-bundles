@@ -42,32 +42,6 @@ public class JsonMerger {
     return result;
   }
 
-  private Object merge( String key, Object value1, Object value2 ) {
-    if ( value1 == null ) {
-      return value2 instanceof Map ? clone( (Map<String, Object>) value2 ) : value2;
-    } else if ( value2 == null ) {
-      return value1 instanceof Map ? clone( (Map<String, Object>) value1 ) : value1;
-    } else if ( value1 instanceof Map ) {
-      if ( value2 instanceof Map ) {
-        return merge( (Map) value1, clone( (Map<String, Object>) value2 ) );
-      } else {
-        throw new RuntimeException( "Cannot merge key " + key + " due to different types" );
-      }
-    } else if ( value2 instanceof Map ) {
-      throw new RuntimeException( "Cannot merge key " + key + " due to different types" );
-    } else if ( value1 instanceof List ) {
-      if ( value2 instanceof List ) {
-        return merge( (List) value1, (List) value2 );
-      } else {
-        throw new RuntimeException( "Cannot merge key " + key + " due to different types" );
-      }
-    } else if ( value2 instanceof List ) {
-      throw new RuntimeException( "Cannot merge key " + key + " due to different types" );
-    } else {
-      return value2;
-    }
-  }
-
   public List<Object> merge( List<?> array1, List<?> array2 ) {
     Set<Object> hs = new LinkedHashSet<>();
 
@@ -81,6 +55,24 @@ public class JsonMerger {
   }
 
   public Map<String, Object> clone( Map<String, ?> jsonObject ) {
+    return cloneMap( jsonObject );
+  }
+
+  public List<Object> clone( List<?> array ) {
+    return cloneList( array );
+  }
+
+  private Object cloneValue( Object o ) {
+    if ( o instanceof Map ) {
+      return cloneMap( (Map<String, Object>) o );
+    } else if ( o instanceof List ) {
+      return cloneList( (List) o );
+    }
+
+    return o;
+  }
+
+  private Map<String, Object> cloneMap( Map<String, ?> jsonObject ) {
     Map<String, Object> clone = new HashMap<>();
 
     jsonObject.keySet();
@@ -100,7 +92,7 @@ public class JsonMerger {
     return clone;
   }
 
-  public List<Object> clone( List<?> array ) {
+  private List<Object> cloneList( List<?> array ) {
     List<Object> clone = new ArrayList<>();
 
     copyToCollection( array, clone );
@@ -108,15 +100,33 @@ public class JsonMerger {
     return clone;
   }
 
-  private void copyToCollection( List array, Collection<Object> collection ) {
-    array.forEach( val -> {
-      if ( val instanceof Map ) {
-        collection.add( clone( (Map<String, Object>) val ) );
-      } else if ( val instanceof List ) {
-        collection.add( clone( (List) val ) );
+  private Object merge( String key, Object value1, Object value2 ) {
+    if ( value1 == null ) {
+      return cloneValue( value2 );
+    } else if ( value2 == null ) {
+      return cloneValue( value1 );
+    } else if ( value1 instanceof Map ) {
+      if ( value2 instanceof Map ) {
+        return merge( (Map) value1, (Map<String, Object>) value2 );
       } else {
-        collection.add( val );
+        throw new RuntimeException( "Cannot merge key " + key + " due to different types" );
       }
-    } );
+    } else if ( value2 instanceof Map ) {
+      throw new RuntimeException( "Cannot merge key " + key + " due to different types" );
+    } else if ( value1 instanceof List ) {
+      if ( value2 instanceof List ) {
+        return merge( (List) value1, (List) value2 );
+      } else {
+        throw new RuntimeException( "Cannot merge key " + key + " due to different types" );
+      }
+    } else if ( value2 instanceof List ) {
+      throw new RuntimeException( "Cannot merge key " + key + " due to different types" );
+    } else {
+      return cloneValue( value2 );
+    }
+  }
+
+  private void copyToCollection( List array, Collection<Object> collection ) {
+    array.forEach( val -> collection.add( cloneValue( val ) ) );
   }
 }
