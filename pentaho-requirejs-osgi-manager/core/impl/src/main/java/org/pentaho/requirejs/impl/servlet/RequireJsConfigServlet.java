@@ -52,8 +52,8 @@ public class RequireJsConfigServlet extends HttpServlet {
     resp.setContentType( "text/javascript" );
 
     // Prevent browser cache, as contents now might vary with the request's context
-    resp.setHeader("Cache-Control", "private, no-store, no-cache, must-revalidate");
-    resp.setHeader("Pragma", "no-cache");
+    resp.setHeader( "Cache-Control", "private, no-store, no-cache, must-revalidate" );
+    resp.setHeader( "Pragma", "no-cache" );
 
     try ( PrintWriter printWriter = new PrintWriter( resp.getOutputStream() ) ) {
       RequestContext requestContext = new RequestContext( req );
@@ -80,38 +80,38 @@ public class RequireJsConfigServlet extends HttpServlet {
       printWriter.write( "\n" );
 
       // auxiliary function that allows packages' scripts to access its mapping information
-      printWriter.write( "  function getVersionedModuleId(moduleIdsMappings, moduleId) {\n" +
-          "    if (moduleId.indexOf(\"!\") != -1) {\n" +
-          "      var parts = moduleId.split(\"!\", 2).slice(0);\n" +
-          "      return getVersionedModuleId(parts[0], moduleIdsMappings) + \"!\" + getVersionedModuleId(parts[1], moduleIdsMappings);\n" +
-          "    }\n" +
-          "    \n" +
-          "    var baseModuleId = moduleId;\n" +
-          "\n" +
-          "    if (!moduleIdsMappings.hasOwnProperty(moduleId)) {\n" +
-          "      var longestBaseModuleId = \"\";\n" +
-          "      for(var candidateBaseModuleId in moduleIdsMappings) {\n" +
-          "        if(moduleId.indexOf(candidateBaseModuleId) === 0 && candidateBaseModuleId.length > longestBaseModuleId.length) {\n" +
-          "          longestBaseModuleId = candidateBaseModuleId;\n" +
-          "        }\n" +
-          "      }\n" +
-          "\n" +
-          "      if(longestBaseModuleId.length === 0) {\n" +
-          "        return moduleId;\n" +
-          "      }\n" +
-          "\n" +
-          "      baseModuleId = longestBaseModuleId;\n" +
-          "    }\n" +
-          "\n" +
-          "    var versionedBaseModuleId = moduleIdsMappings[baseModuleId];\n" +
-          "    var moduleIdLeaf = moduleId.substring(baseModuleId.length);\n" +
-          "    if (moduleIdLeaf.length > 0 && moduleIdLeaf.indexOf(\"/\") !== 0) {\n" +
-          "      // false positive, we just caught a substring (probably some old mapping that included an hardcoded version)" +
-          "      return moduleId;\n" +
-          "    }\n" +
-          "\n" +
-          "    return versionedBaseModuleId + moduleIdLeaf;\n" +
-          "  }\n" );
+      printWriter.write( "  function getVersionedModuleId(moduleIdsMappings, moduleId) {\n" );
+      printWriter.write( "    if (moduleId.indexOf(\"!\") != -1) {\n" );
+      printWriter.write( "      var parts = moduleId.split(\"!\", 2).slice(0);\n" );
+      printWriter.write( "      return getVersionedModuleId(parts[0], moduleIdsMappings) + \"!\" + getVersionedModuleId(parts[1], moduleIdsMappings);\n" );
+      printWriter.write( "    }\n" );
+      printWriter.write( "    \n" );
+      printWriter.write( "    var baseModuleId = moduleId;\n" );
+      printWriter.write( "\n" );
+      printWriter.write( "    if (!moduleIdsMappings.hasOwnProperty(moduleId)) {\n" );
+      printWriter.write( "      var longestBaseModuleId = \"\";\n" );
+      printWriter.write( "      for(var candidateBaseModuleId in moduleIdsMappings) {\n" );
+      printWriter.write( "        if(moduleId.indexOf(candidateBaseModuleId) === 0 && candidateBaseModuleId.length > longestBaseModuleId.length) {\n" );
+      printWriter.write( "          longestBaseModuleId = candidateBaseModuleId;\n" );
+      printWriter.write( "        }\n" );
+      printWriter.write( "      }\n" );
+      printWriter.write( "\n" );
+      printWriter.write( "      if(longestBaseModuleId.length === 0) {\n" );
+      printWriter.write( "        return moduleId;\n" );
+      printWriter.write( "      }\n" );
+      printWriter.write( "\n" );
+      printWriter.write( "      baseModuleId = longestBaseModuleId;\n" );
+      printWriter.write( "    }\n" );
+      printWriter.write( "\n" );
+      printWriter.write( "    var versionedBaseModuleId = moduleIdsMappings[baseModuleId];\n" );
+      printWriter.write( "    var moduleIdLeaf = moduleId.substring(baseModuleId.length);\n" );
+      printWriter.write( "    if (moduleIdLeaf.length > 0 && moduleIdLeaf.indexOf(\"/\") !== 0) {\n" );
+      printWriter.write( "      // false positive, we just caught a substring (probably some old mapping that included an hardcoded version)\n" );
+      printWriter.write( "      return moduleId;\n" );
+      printWriter.write( "    }\n" );
+      printWriter.write( "\n" );
+      printWriter.write( "    return versionedBaseModuleId + moduleIdLeaf;\n" );
+      printWriter.write( "  }\n" );
 
       printWriter.write( "\n  var requireCfg = " + this.manager.getRequireJsConfig( contextRoot ) + "\n" );
 

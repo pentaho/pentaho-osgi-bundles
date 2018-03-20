@@ -19,7 +19,6 @@ package org.pentaho.requirejs.impl.utils;
 import com.github.zafarkhaja.semver.Version;
 import org.pentaho.requirejs.IRequireJsPackageConfiguration;
 
-import java.security.acl.Group;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -28,8 +27,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Function;
-import java.util.function.Predicate;
 
 public class RequireJsDependencyResolver {
   private Map<String, Map<String, IRequireJsPackageConfiguration>> packagesIndex;

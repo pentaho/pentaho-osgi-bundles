@@ -48,7 +48,6 @@ public class PentahoWebPackageServiceTracker implements ServiceTrackerCustomizer
 
   @Override
   public void modifiedService( ServiceReference<IPentahoWebPackage> reference, PentahoWebPackageResourceMapping mapping ) {
-
   }
 
   @Override

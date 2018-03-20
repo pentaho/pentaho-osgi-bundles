@@ -62,7 +62,7 @@ public class RequireJsPackageServiceTracker implements ServiceTrackerCustomizer<
   }
 
   @Override
-  public IRequireJsPackageConfiguration addingService(ServiceReference<IRequireJsPackage> reference ) {
+  public IRequireJsPackageConfiguration addingService( ServiceReference<IRequireJsPackage> reference ) {
     Bundle bundle = reference.getBundle();
     // if null then the service is unregistered
     if ( bundle != null ) {
@@ -75,7 +75,7 @@ public class RequireJsPackageServiceTracker implements ServiceTrackerCustomizer<
   }
 
   @Override
-  public void modifiedService(ServiceReference<IRequireJsPackage> reference, IRequireJsPackageConfiguration config ) {
+  public void modifiedService( ServiceReference<IRequireJsPackage> reference, IRequireJsPackageConfiguration config ) {
     // the RequireJsPackage details might have changed, so it must reprocess it
     config.processRequireJsPackage();
 
@@ -83,7 +83,7 @@ public class RequireJsPackageServiceTracker implements ServiceTrackerCustomizer<
   }
 
   @Override
-  public void removedService(ServiceReference<IRequireJsPackage> reference, IRequireJsPackageConfiguration config ) {
+  public void removedService( ServiceReference<IRequireJsPackage> reference, IRequireJsPackageConfiguration config ) {
     this.bundleContext.ungetService( reference );
 
     this.requireJsConfigManager.invalidateCachedConfigurations();
