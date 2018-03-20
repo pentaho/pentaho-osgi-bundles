@@ -22,14 +22,6 @@ import org.ops4j.pax.web.extender.whiteboard.ResourceMapping;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
 import org.pentaho.webpackage.core.IPentahoWebPackage;
-import org.pentaho.webpackage.core.impl.PentahoWebPackageImpl;
-
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLConnection;
-import java.net.URLStreamHandler;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -44,24 +36,25 @@ import static org.mockito.Mockito.when;
 public class PentahoWebPackageResourceMappingTest {
 
   private PentahoWebPackageResourceMapping pentahoWebPackageResourceMapping;
-  private String mockPackageJson = "{\"name\":\"SomeName\",\"description\":\"A packaged foo fooer for fooing foos\",\"main\":\"foo.js\",\"man\":[\".\\/man\\/foo.1\",\".\\/man\\/bar.1\"],\"version\":\"1.2.3\"}";
   private BundleContext mockBundleContext;
-  private IPentahoWebPackage pentahoWebPackage;
-  private URL mockUrl;
-  private String resourcesRootPath = "/some/path/to/web/root";
+  private IPentahoWebPackage mockPentahoWebPackage;
+  private String resourcesRootPath = "/some/path/to/resources/root";
+  private String webRootPath = "/some/path/to/web/root";
 
   @Before
   public void setUp() {
     mockBundleContext = mock( BundleContext.class );
-    mockUrl = this.createMockUrlConnection( mockPackageJson );
-    pentahoWebPackage = new PentahoWebPackageImpl( resourcesRootPath, mockUrl );
+    mockPentahoWebPackage = mock( IPentahoWebPackage.class );
+    when( mockPentahoWebPackage.getResourceRootPath() ).thenReturn( resourcesRootPath );
+    when( mockPentahoWebPackage.getWebRootPath() ).thenReturn( webRootPath );
   }
 
   @Test
-  public void testGetHttpContextIdShouldReturnNull() throws Exception {
+  public void testGetHttpContextIdShouldReturnNull() {
     // arrange
     this.pentahoWebPackageResourceMapping =
-        new PentahoWebPackageResourceMapping( this.mockBundleContext, this.pentahoWebPackage );
+        new PentahoWebPackageResourceMapping( null /*not relevant */,
+            null /* not relevant */ );
 
     // act
     String actualHttpContext = this.pentahoWebPackageResourceMapping.getHttpContextId();
@@ -71,11 +64,11 @@ public class PentahoWebPackageResourceMappingTest {
   }
 
   @Test
-  public void testGetAliasShouldReturnValidWebRootPath() throws Exception {
+  public void testGetAliasShouldReturnValidWebRootPath() {
     // arrange
     this.pentahoWebPackageResourceMapping =
-        new PentahoWebPackageResourceMapping( this.mockBundleContext, this.pentahoWebPackage );
-    String expectedWebRootPath = pentahoWebPackage.getWebRootPath();
+        new PentahoWebPackageResourceMapping( null /* not relevant */, this.mockPentahoWebPackage);
+    String expectedWebRootPath = mockPentahoWebPackage.getWebRootPath();
 
     // act
     String actualWebRootPath = this.pentahoWebPackageResourceMapping.getAlias();
@@ -85,11 +78,11 @@ public class PentahoWebPackageResourceMappingTest {
   }
 
   @Test
-  public void testGetPathShouldReturnValidResourcesRootPath() throws Exception {
+  public void testGetPathShouldReturnValidResourcesRootPath() {
     // arrange
     this.pentahoWebPackageResourceMapping =
-        new PentahoWebPackageResourceMapping( this.mockBundleContext, this.pentahoWebPackage );
-    String expectedResourcesRootPath = this.resourcesRootPath;
+        new PentahoWebPackageResourceMapping( null /* not relevant */, this.mockPentahoWebPackage);
+    String expectedResourcesRootPath = this.mockPentahoWebPackage.getResourceRootPath();
 
     // act
     String actualResourcesRootPath = this.pentahoWebPackageResourceMapping.getPath();
@@ -99,14 +92,14 @@ public class PentahoWebPackageResourceMappingTest {
   }
 
   @Test
-  public void testToStringShouldReturnValidToString() throws Exception {
+  public void testToStringShouldReturnValidToString() {
     // arrange
     this.pentahoWebPackageResourceMapping =
-        new PentahoWebPackageResourceMapping( this.mockBundleContext, this.pentahoWebPackage );
-    String alias = pentahoWebPackage.getWebRootPath();
-    String path = this.resourcesRootPath;
+        new PentahoWebPackageResourceMapping( null /* not relevant */, this.mockPentahoWebPackage);
+    String expectedAlias = mockPentahoWebPackage.getWebRootPath();
+    String expectedPath = mockPentahoWebPackage.getResourceRootPath();
     String expectedToString = PentahoWebPackageResourceMapping.class.getSimpleName()
-        + "{" + "alias=" + alias + ",path=" + path + "}";
+        + "{" + "alias=" + expectedAlias + ",path=" + expectedPath + "}";
 
     // act
     String actualToString = this.pentahoWebPackageResourceMapping.toString();
@@ -116,20 +109,22 @@ public class PentahoWebPackageResourceMappingTest {
   }
 
   @Test
-  public void testEqualsWhereObjectNull() throws Exception {
+  public void testEqualsWhereObjectNull() {
     // arrange
     this.pentahoWebPackageResourceMapping =
-        new PentahoWebPackageResourceMapping( this.mockBundleContext, this.pentahoWebPackage );
+        new PentahoWebPackageResourceMapping( null /* not relevant */,
+            null /* not relevant */ );
 
     // assert
     assertFalse( this.pentahoWebPackageResourceMapping.equals( null ) );
   }
 
   @Test
-  public void testEqualsWhereObjectIsInvalidReference() throws Exception {
+  public void testEqualsWhereObjectIsInvalidReference() {
     // arrange
     this.pentahoWebPackageResourceMapping =
-        new PentahoWebPackageResourceMapping( this.mockBundleContext, this.pentahoWebPackage );
+        new PentahoWebPackageResourceMapping( null /* not relevant */,
+            null /* not relevant */ );
 
     // act
     Object invalidRef = new Object();
@@ -139,37 +134,37 @@ public class PentahoWebPackageResourceMappingTest {
   }
 
   @Test
-  public void testEqualsWhereObjectIsValidReference() throws Exception {
+  public void testEqualsWhereObjectIsSameReference() {
     // arrange
     this.pentahoWebPackageResourceMapping =
-        new PentahoWebPackageResourceMapping( this.mockBundleContext, this.pentahoWebPackage );
+        new PentahoWebPackageResourceMapping( this.mockBundleContext, this.mockPentahoWebPackage );
 
     // act
-    Object validRef = this.pentahoWebPackageResourceMapping;
+    Object sameRef = this.pentahoWebPackageResourceMapping;
 
     // assert
-    assertTrue( this.pentahoWebPackageResourceMapping.equals( validRef ) );
+    assertTrue( this.pentahoWebPackageResourceMapping.equals( sameRef ) );
   }
 
   @Test
-  public void testEqualsWhereObjectIsValidReferenceOther() throws Exception {
+  public void testEqualsWhereObjectIsValidReferenceOther() {
     // arrange
     this.pentahoWebPackageResourceMapping =
-        new PentahoWebPackageResourceMapping( this.mockBundleContext, this.pentahoWebPackage );
+        new PentahoWebPackageResourceMapping( null /* not relevant */, this.mockPentahoWebPackage );
 
     // act
     Object other =
-        new PentahoWebPackageResourceMapping( this.mockBundleContext, this.pentahoWebPackage );
+        new PentahoWebPackageResourceMapping( null /* not relevant */, this.mockPentahoWebPackage );
 
     // assert
     assertTrue( this.pentahoWebPackageResourceMapping.equals( other ) );
   }
 
   @Test
-  public void testRegisterShouldCallRegisterServiceOnce() throws Exception {
+  public void testRegisterShouldCallRegisterServiceOnce() {
     // arrange
     this.pentahoWebPackageResourceMapping =
-        new PentahoWebPackageResourceMapping( this.mockBundleContext, this.pentahoWebPackage );
+        new PentahoWebPackageResourceMapping( this.mockBundleContext, null /* not relevant */ );
 
     // act
     this.pentahoWebPackageResourceMapping.register();
@@ -180,10 +175,10 @@ public class PentahoWebPackageResourceMappingTest {
   }
   
   @Test
-  public void testUnregisterShouldCallServiceRegistrationUnregisterOnce() throws Exception {
+  public void testUnregisterShouldCallServiceRegistrationUnregisterOnce() {
     // arrange
     this.pentahoWebPackageResourceMapping =
-        new PentahoWebPackageResourceMapping( this.mockBundleContext, this.pentahoWebPackage );
+        new PentahoWebPackageResourceMapping( this.mockBundleContext, this.mockPentahoWebPackage );
     ServiceRegistration mockServiceRegistration = mock( ServiceRegistration.class );
     doReturn( mockServiceRegistration ).when( this.mockBundleContext )
         .registerService( ResourceMapping.class, this.pentahoWebPackageResourceMapping, null );
@@ -197,25 +192,5 @@ public class PentahoWebPackageResourceMappingTest {
         .unregister();
   }
 
-  private URL createMockUrlConnection( String payload ) {
-    URLConnection mockUrlCon = mock( URLConnection.class );
-    URLStreamHandler stubUrlHandler = null;
-    try {
-      stubUrlHandler = new URLStreamHandler() {
-        @Override
-        protected URLConnection openConnection( URL u ) throws IOException {
-          return mockUrlCon;
-        }
-      };
-      when( mockUrlCon.getInputStream() ).thenReturn( new ByteArrayInputStream( payload.getBytes() ) );
-    } catch ( IOException ignored ) {
-    }
-    try {
-      return new URL( "http", "someurl.com", 9999, "", stubUrlHandler );
-    } catch ( MalformedURLException e ) {
-      e.printStackTrace();
-    }
-    return null;
-  }
 
 }

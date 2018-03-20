@@ -23,14 +23,7 @@ import org.osgi.framework.ServiceReference;
 import org.osgi.framework.ServiceRegistration;
 import org.osgi.framework.Version;
 import org.pentaho.webpackage.core.IPentahoWebPackage;
-import org.pentaho.webpackage.core.impl.PentahoWebPackageImpl;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLConnection;
-import java.net.URLStreamHandler;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -44,7 +37,6 @@ import static org.mockito.Mockito.when;
 
 public class PentahoWebPackageServiceTrackerTest {
 
-  private String mockPackageJson = "{\"name\":\"SomeName\",\"description\":\"A packaged foo fooer for fooing foos\",\"main\":\"foo.js\",\"man\":[\".\\/man\\/foo.1\",\".\\/man\\/bar.1\"],\"version\":\"1.2.3\"}";
 
   @Test
   public void testAddingServiceWithValidServiceReference() throws Exception {
@@ -54,8 +46,7 @@ public class PentahoWebPackageServiceTrackerTest {
     ServiceReference mockServiceReference = mock( ServiceReference.class );
     doReturn( mockBundle ).when( mockServiceReference ).getBundle();
 
-    URL mockUrl = this.createMockUrlConnection( mockPackageJson );
-    PentahoWebPackageImpl pentahoWebPackage = new PentahoWebPackageImpl( null, mockUrl );
+    IPentahoWebPackage pentahoWebPackage = mock( IPentahoWebPackage.class );
     doReturn( pentahoWebPackage ).when( mockBundleContext ).getService( any() );
 
     PentahoWebPackageServiceTracker pentahoWebPackageServiceTracker =
@@ -109,8 +100,7 @@ public class PentahoWebPackageServiceTrackerTest {
     ServiceReference mockServiceReference = mock( ServiceReference.class );
     doReturn( mockBundle ).when( mockServiceReference ).getBundle();
 
-    URL mockUrl = this.createMockUrlConnection( mockPackageJson );
-    PentahoWebPackageImpl pentahoWebPackage = new PentahoWebPackageImpl( null, mockUrl );
+    IPentahoWebPackage pentahoWebPackage = mock( IPentahoWebPackage.class ); // new PentahoWebPackageImpl( null, mockUrl );
     doReturn( pentahoWebPackage ).when( mockBundleContext ).getService( any() );
 
     PentahoWebPackageServiceTracker pentahoWebPackageServiceTracker =
@@ -145,24 +135,4 @@ public class PentahoWebPackageServiceTrackerTest {
 
   }
 
-  private URL createMockUrlConnection( String payload ) {
-    URLConnection mockUrlCon = mock( URLConnection.class );
-    URLStreamHandler stubUrlHandler = null;
-    try {
-      stubUrlHandler = new URLStreamHandler() {
-        @Override
-        protected URLConnection openConnection( URL u ) throws IOException {
-          return mockUrlCon;
-        }
-      };
-      when( mockUrlCon.getInputStream() ).thenReturn( new ByteArrayInputStream( payload.getBytes() ) );
-    } catch ( IOException ignored ) {
-    }
-    try {
-      return new URL( "http", "someurl.com", 9999, "", stubUrlHandler );
-    } catch ( MalformedURLException e ) {
-      e.printStackTrace();
-    }
-    return null;
-  }
 }
