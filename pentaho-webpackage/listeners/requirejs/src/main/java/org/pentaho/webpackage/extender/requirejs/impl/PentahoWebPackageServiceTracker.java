@@ -26,7 +26,7 @@ import org.pentaho.webpackage.core.IPentahoWebPackage;
 /**
  * Tracks registered {@link IPentahoWebPackage} services and in turn registers {@link IRequireJsPackage} service.
  */
-public class PentahoWebPackageServiceTracker implements ServiceTrackerCustomizer<IPentahoWebPackage, RequireJsPackageImpl> {
+public class PentahoWebPackageServiceTracker implements ServiceTrackerCustomizer<IPentahoWebPackage, IRequireJsPackage> {
   private final BundleContext context;
 
   public PentahoWebPackageServiceTracker( BundleContext context ) {
@@ -34,7 +34,7 @@ public class PentahoWebPackageServiceTracker implements ServiceTrackerCustomizer
   }
 
   @Override
-  public RequireJsPackageImpl addingService( ServiceReference<IPentahoWebPackage> reference ) {
+  public IRequireJsPackage addingService( ServiceReference<IPentahoWebPackage> reference ) {
     Bundle bundle = reference.getBundle();
     // if null then the service is unregistered
     if ( bundle != null ) {
@@ -48,11 +48,11 @@ public class PentahoWebPackageServiceTracker implements ServiceTrackerCustomizer
   }
 
   @Override
-  public void modifiedService( ServiceReference<IPentahoWebPackage> reference, RequireJsPackageImpl mapping ) {
+  public void modifiedService( ServiceReference<IPentahoWebPackage> reference, IRequireJsPackage mapping ) {
   }
 
   @Override
-  public void removedService( ServiceReference<IPentahoWebPackage> reference, RequireJsPackageImpl mapping ) {
+  public void removedService( ServiceReference<IPentahoWebPackage> reference, IRequireJsPackage mapping ) {
     this.context.ungetService( reference );
 
     mapping.unregister();
