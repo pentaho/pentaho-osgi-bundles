@@ -50,7 +50,7 @@ public class ActivatorTest {
   }
 
   @Test
-  public void serviceTrackerIsClsedOnActivatorStop() {
+  public void serviceTrackerIsClosedOnActivatorStop() {
     ServiceTracker mockServiceTracker = mock( ServiceTracker.class );
     activator.pentahoWebPackageServiceTracker = mockServiceTracker;
 
