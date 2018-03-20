@@ -19,6 +19,7 @@ package org.pentaho.requirejs.impl.utils;
 import com.github.zafarkhaja.semver.Version;
 import org.pentaho.requirejs.IRequireJsPackageConfiguration;
 
+import java.security.acl.Group;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -27,85 +28,61 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 public class RequireJsDependencyResolver {
-  public static RequireJsDependencyResolver createDependencyResolver( Collection<IRequireJsPackageConfiguration> availablePackages ) {
-    Map<String, Map<String, IRequireJsPackageConfiguration>> packagesIndex = new HashMap<>();
+  private Map<String, Map<String, IRequireJsPackageConfiguration>> packagesIndex;
+  private final Map<String, PackageDependentsRequirements> requirements;
+
+  public RequireJsDependencyResolver( Collection<IRequireJsPackageConfiguration> availablePackages ) {
+    this.packagesIndex = new HashMap<>();
+    this.requirements = new HashMap<>();
 
     availablePackages.forEach( packageConfiguration -> {
       // if it is a nameless and/or versionless package, no other can depend on it
       if ( !packageConfiguration.getName().isEmpty() && !packageConfiguration.getVersion().isEmpty() ) {
-        Map<String, IRequireJsPackageConfiguration> packageVersion = packagesIndex.computeIfAbsent( packageConfiguration.getName(), name -> new HashMap<>() );
+        Map<String, IRequireJsPackageConfiguration> packageVersion = this.packagesIndex.computeIfAbsent( packageConfiguration.getName(), name -> new HashMap<>() );
         packageVersion.putIfAbsent( packageConfiguration.getVersion(), packageConfiguration );
+
+        packageConfiguration.getDependencies().forEach( this::processPackageDependentsRequirements );
       }
     } );
 
-    RequireJsDependencyResolver resolver = new RequireJsDependencyResolver( packagesIndex );
-    resolver.run();
-
-    return resolver;
+    this.requirements.values().forEach( PackageDependentsRequirements::resolve );
   }
 
-  private final Map<String, PackageDependentsRequirements> requirements;
+  public IRequireJsPackageConfiguration getResolvedVersion( String dependencyPackageName, String dependencyPackageVersion ) {
+    String resolvedVersion = requirements.containsKey( dependencyPackageName ) ? requirements.get( dependencyPackageName ).getResolution( dependencyPackageVersion ) : null;
 
-  private Map<String, Map<String, IRequireJsPackageConfiguration>> availablePackages;
-
-  private RequireJsDependencyResolver( Map<String, Map<String, IRequireJsPackageConfiguration>> availablePackages ) {
-    this.availablePackages = availablePackages;
-
-    this.requirements = new HashMap<>();
+    return resolvedVersion != null ? this.packagesIndex.get( dependencyPackageName ).get( resolvedVersion ) : null;
   }
 
-  private void run() {
-    availablePackages.values().forEach( packageInfo -> {
-      packageInfo.values().forEach( versionInfo -> {
-        final Map<String, String> dependencies = versionInfo.getDependencies();
-
-        dependencies.forEach( this::processPackageDependentsRequirements );
-      } );
-    } );
-
-    requirements.values().forEach( PackageDependentsRequirements::resolve );
-  }
-
-  public IRequireJsPackageConfiguration getResolvedVersion(String dependencyPackageName, String dependencyPackageVersion ) {
-    String resolvedVersion = requirements.get( dependencyPackageName ).getResolution( dependencyPackageVersion );
-
-    return resolvedVersion != null ? this.availablePackages.get( dependencyPackageName ).get( resolvedVersion ) : null;
-  }
-
-  private void processPackageDependentsRequirements( String requiredPackageId, String requiredPackageVersion ) {
-    PackageDependentsRequirements packageDependentsRequirements;
-
-    if ( !requirements.containsKey( requiredPackageId ) ) {
-      packageDependentsRequirements = new PackageDependentsRequirements();
-      requirements.put( requiredPackageId, packageDependentsRequirements );
-    } else {
-      packageDependentsRequirements = requirements.get( requiredPackageId );
+  private void processPackageDependentsRequirements( String requiredPackageId, String requiredVersionCondition ) {
+    if ( !this.packagesIndex.containsKey( requiredPackageId ) ) {
+      // package is not installed
+      return;
     }
 
-    if ( !packageDependentsRequirements.groups.containsKey( requiredPackageVersion ) && availablePackages.containsKey( requiredPackageId ) ) {
-      final ArrayList<String> resolvedVersions = resolveVersion( requiredPackageVersion, availablePackages.get( requiredPackageId ).keySet() );
+    PackageDependentsRequirements requiredPackage = this.requirements.computeIfAbsent( requiredPackageId, k -> new PackageDependentsRequirements() );
+
+    if ( !requiredPackage.hasProcessedVersionCondition( requiredVersionCondition ) ) {
+      Set<String> availableVersions = this.packagesIndex.get( requiredPackageId ).keySet();
+
+      final ArrayList<String> resolvedVersions = filterVersions( requiredVersionCondition, availableVersions );
 
       GroupDetail g = new GroupDetail( resolvedVersions );
 
-      packageDependentsRequirements.groups.put( requiredPackageVersion, g );
+      requiredPackage.groups.put( requiredVersionCondition, g );
 
       for ( String resolvedVersionId : resolvedVersions ) {
-        VersionDetail resolvedVersion;
-        if ( !packageDependentsRequirements.versions.containsKey( resolvedVersionId ) ) {
-          resolvedVersion = new VersionDetail( resolvedVersionId );
-          packageDependentsRequirements.versions.put( resolvedVersionId, resolvedVersion );
-        } else {
-          resolvedVersion = packageDependentsRequirements.versions.get( resolvedVersionId );
-        }
-
+        VersionDetail resolvedVersion = requiredPackage.versions.computeIfAbsent( resolvedVersionId, VersionDetail::new );
         resolvedVersion.addGroup( g );
       }
     }
   }
 
-  private ArrayList<String> resolveVersion( String versionFilter, Set<String> availableVersions ) {
+  private ArrayList<String> filterVersions( String versionFilter, Set<String> availableVersions ) {
     ArrayList<Version> validVersions = new ArrayList<>();
     ArrayList<String> validVersionsStrings = new ArrayList<>();
 
@@ -132,7 +109,7 @@ public class RequireJsDependencyResolver {
       try {
         Version.valueOf( versionFilter );
 
-        return resolveVersion( "^" + versionFilter, availableVersions );
+        return filterVersions( "^" + versionFilter, availableVersions );
       } catch ( Exception ignored ) {
         // Ignore
       }
@@ -180,43 +157,47 @@ public class RequireJsDependencyResolver {
 
       return null;
     }
+
+    boolean hasProcessedVersionCondition( String requiredVersionCondition ) {
+      return this.groups.containsKey( requiredVersionCondition );
+    }
   }
 
   private class VersionDetail implements Comparable<VersionDetail> {
     private final String version;
     private final HashSet<GroupDetail> groups;
 
+    private Version parsedVersion;
+
     VersionDetail( String version ) {
       this.version = version;
 
       this.groups = new HashSet<>();
+
+      try {
+        this.parsedVersion = Version.valueOf( this.version );
+      } catch ( Exception ignored ) {
+        // Ignore
+      }
     }
 
     @Override
     public int compareTo( VersionDetail v ) {
+      // TODO More important would be the number of packages benefiting from the version
+
       final int groupsCount = this.getGroupsCount();
       final int groupsCount1 = v.getGroupsCount();
       if ( groupsCount != groupsCount1 ) {
-        return groupsCount > groupsCount1 ? -1 : 1;
+        return groupsCount > groupsCount1 ? 1 : -1;
       }
 
       final int uniqueVersions = this.getUniqueVersionsCount();
       final int uniqueVersions1 = v.getUniqueVersionsCount();
       if ( uniqueVersions != uniqueVersions1 ) {
-        return uniqueVersions > uniqueVersions1 ? -1 : 1;
+        return uniqueVersions > uniqueVersions1 ? 1 : -1;
       }
 
-      final int totalVersions = this.getVersionsCount();
-      final int totalVersions1 = v.getVersionsCount();
-      if ( totalVersions != totalVersions1 ) {
-        return totalVersions > totalVersions1 ? -1 : 1;
-      }
-
-      return 0;
-    }
-
-    String getVersion() {
-      return version;
+      return this.parsedVersion != null && v.parsedVersion != null ? this.parsedVersion.compareTo( v.parsedVersion ) : 0;
     }
 
     int getGroupsCount() {
@@ -231,16 +212,6 @@ public class RequireJsDependencyResolver {
       }
 
       return uniqueVersions.size();
-    }
-
-    int getVersionsCount() {
-      int count = 0;
-
-      for ( GroupDetail g : this.groups ) {
-        count += g.getVersionsCount();
-      }
-
-      return count;
     }
 
     public void excludeYourself() {
@@ -262,10 +233,6 @@ public class RequireJsDependencyResolver {
       this.versions = resolvedVersions;
 
       this.excluded = new ArrayList<>();
-    }
-
-    int getVersionsCount() {
-      return this.versions.size();
     }
 
     ArrayList<String> getVersions() {

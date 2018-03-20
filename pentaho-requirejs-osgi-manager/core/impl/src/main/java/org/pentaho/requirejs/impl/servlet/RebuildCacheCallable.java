@@ -69,7 +69,7 @@ public class RebuildCacheCallable implements Callable<String> {
 
   @Override
   public String call() {
-    RequireJsDependencyResolver dependencyResolver = RequireJsDependencyResolver.createDependencyResolver( this.packageConfigurations );
+    RequireJsDependencyResolver dependencyResolver = new RequireJsDependencyResolver( this.packageConfigurations );
 
     BiFunction<String, String, IRequireJsPackageConfiguration> getResolvedVersion = dependencyResolver::getResolvedVersion;
 
