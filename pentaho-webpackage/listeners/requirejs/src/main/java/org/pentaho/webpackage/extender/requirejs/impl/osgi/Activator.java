@@ -14,13 +14,13 @@
  * limitations under the License.
  *
  */
-package org.pentaho.webpackage.extender.http.impl.osgi;
+package org.pentaho.webpackage.extender.requirejs.impl.osgi;
 
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.util.tracker.ServiceTracker;
 import org.pentaho.webpackage.core.IPentahoWebPackage;
-import org.pentaho.webpackage.extender.http.impl.PentahoWebPackageServiceTracker;
+import org.pentaho.webpackage.extender.requirejs.impl.PentahoWebPackageServiceTracker;
 
 public class Activator implements BundleActivator {
   private ServiceTracker pentahoWebPackageServiceTracker;

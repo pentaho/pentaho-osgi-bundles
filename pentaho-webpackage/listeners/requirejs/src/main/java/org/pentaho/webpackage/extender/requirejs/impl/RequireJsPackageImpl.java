@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  */
-package org.pentaho.webpackage.extender.http.impl;
+package org.pentaho.webpackage.extender.requirejs.impl;
 
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;

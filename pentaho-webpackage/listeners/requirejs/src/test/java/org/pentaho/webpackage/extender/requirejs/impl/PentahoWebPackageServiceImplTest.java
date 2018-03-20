@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  */
-package org.pentaho.webpackage.extender.http.impl;
+package org.pentaho.webpackage.extender.requirejs.impl;
 
 public class PentahoWebPackageServiceImplTest {
 //  private long mockBundleCounter;

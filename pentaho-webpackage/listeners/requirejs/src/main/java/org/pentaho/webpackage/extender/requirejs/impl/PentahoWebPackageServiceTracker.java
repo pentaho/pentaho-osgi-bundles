@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  */
-package org.pentaho.webpackage.extender.http.impl;
+package org.pentaho.webpackage.extender.requirejs.impl;
 
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
@@ -48,11 +48,11 @@ public class PentahoWebPackageServiceTracker implements ServiceTrackerCustomizer
   }
 
   @Override
-  public void modifiedService(ServiceReference<IPentahoWebPackage> reference, RequireJsPackageImpl mapping ) {
+  public void modifiedService( ServiceReference<IPentahoWebPackage> reference, RequireJsPackageImpl mapping ) {
   }
 
   @Override
-  public void removedService(ServiceReference<IPentahoWebPackage> reference, RequireJsPackageImpl mapping ) {
+  public void removedService( ServiceReference<IPentahoWebPackage> reference, RequireJsPackageImpl mapping ) {
     this.context.ungetService( reference );
 
     mapping.unregister();

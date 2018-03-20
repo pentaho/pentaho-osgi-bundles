@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  */
-package org.pentaho.webpackage.extender.http.impl.osgi;
+package org.pentaho.webpackage.extender.requirejs.impl.osgi;
 
 import org.junit.Before;
 import org.junit.Test;
