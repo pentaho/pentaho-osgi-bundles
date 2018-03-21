@@ -1,5 +1,5 @@
 /*!
- * Copyright 2010 - 2018 Hitachi Vantara.  All rights reserved.
+ * Copyright 2018 Hitachi Vantara.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,15 +28,14 @@ import java.io.PrintWriter;
 import java.util.Locale;
 
 public class PentahoWebContextServletImpl extends HttpServlet {
-  private static final String WEB_CONTEXT_JS = "webcontext.js";
+  static final String WEB_CONTEXT_JS = "webcontext.js";
+  static final String LOCALE_REQUEST_PARAM = "locale";
 
   private static final String SERVER_ROOT = "/";
   private static final String REQUIREJS_INIT_LOCATION = "requirejs-manager/js/require-init.js";
 
   private static final String DEFAULT_SERVICES_ROOT = "cxf/";
   private static final Integer DEFAULT_WAIT_TIME = 30;
-
-  private static final String LOCALE_REQUEST_PARAM = "locale";
 
   // region Blueprint Injection
   private Integer requireWaitTime;
@@ -75,7 +74,7 @@ public class PentahoWebContextServletImpl extends HttpServlet {
 
     String requestStr = httpRequest.getRequestURI();
     if ( requestStr != null && requestStr.contains( WEB_CONTEXT_JS ) ) {
-      httpResponse.setContentType( "text/javascript" ); //$NON-NLS-1$
+      httpResponse.setContentType( "text/javascript" );
 
       try ( PrintWriter printWriter = new PrintWriter( httpResponse.getOutputStream() ) ) {
         writeRequireCfg( printWriter );
@@ -126,7 +125,7 @@ public class PentahoWebContextServletImpl extends HttpServlet {
   }
 
   private void writeRequireJsInitScriptTag( PrintWriter writer ) {
-    String location = SERVER_ROOT + REQUIREJS_INIT_LOCATION;
+    String location = getRequirejsInitLocation();
 
     writer.write( "\ndocument.write(\"<script type='text/javascript' src='" + location + "'></scr\" + \"ipt>\");\n" );
   }
@@ -157,16 +156,16 @@ public class PentahoWebContextServletImpl extends HttpServlet {
     return locale;
   }
 
-  // region
-  private String getServerRoot() {
+  // region Server Root
+  String getServerRoot() {
     return SERVER_ROOT;
   }
 
-  private String getServerPackages() {
+  String getServerPackages() {
     return SERVER_ROOT;
   }
 
-  private String getServerServices() {
+  String getServerServices() {
     String servicesRoot = getServicesRoot();
     boolean isRootValid = StringUtils.isNotEmpty( servicesRoot );
 
@@ -180,6 +179,7 @@ public class PentahoWebContextServletImpl extends HttpServlet {
 
     return SERVER_ROOT + servicesRoot;
   }
+  // endregion
 
   /**
    * Gets the base structure of the `requireCfg` javascript object.
@@ -200,6 +200,10 @@ public class PentahoWebContextServletImpl extends HttpServlet {
       .append( "\n}" );
 
     return requireCfg.toString();
+  }
+
+  String getRequirejsInitLocation() {
+    return SERVER_ROOT + REQUIREJS_INIT_LOCATION;
   }
 
 }
