@@ -117,34 +117,34 @@ public class RequireJsPackageImplTest {
     assertEquals( "Should return true", expectedPreferGlobal, actualPreferGlobal );
   }
 
-//  @Test
-//  public void testInitFromPackageJsonPathsCase() {
-//    // arrange
-//    Map<String, String> expectedPath = new HashMap<>();
-//    expectedPath.put( "SomeModule", "/" );
-//    Map<String, Object> preferGlobalJson = new HashMap<>();
-//    preferGlobalJson.put( "paths", expectedPath );
-//    when( mockPentahoWebPackage.getPackageJson() ).thenReturn( preferGlobalJson );
-//    this.requireJsPackage = new RequireJsPackageImpl( this.mockBundleContext, this.mockPentahoWebPackage );
-//
-//    // act
-//    boolean actualPreferGlobal = this.requireJsPackage.preferGlobal();
-//
-//    // assert
-//    assertEquals( "Should return true", expectedPath, actualPreferGlobal );
-//  }
+  @Test
+  public void testInitFromPackageJsonPathsCase() {
+    // arrange
+    String moduleName = "SomeModule";
+    Map<String, String> expectedPath = new HashMap<>();
+    expectedPath.put( moduleName, "/" );
+    Map<String, Object> pathsJson = new HashMap<>();
+    pathsJson.put( "paths", expectedPath );
+    when( mockPentahoWebPackage.getPackageJson() ).thenReturn( pathsJson );
+    this.requireJsPackage = new RequireJsPackageImpl( this.mockBundleContext, this.mockPentahoWebPackage );
+
+    // act
+    Map<String, String> actualModules = this.requireJsPackage.getModules();
+
+    // assert
+    assertTrue( "SomeModule should exist in Modules collection",
+        actualModules.containsKey( moduleName ) );
+  }
 
   @Test
   public void testGetModulesWhenPackageDefinitionIsString() {
     // arrange
     String expectedPackageName = "SomePackageName";
-    when( mockPentahoWebPackage.getName() ).thenReturn( expectedPackageName );
-
-    List<String> packages = new ArrayList<>(  );
-    packages.add( "SomePackageName" );
+    List<String> packages = new ArrayList<>();
+    packages.add( expectedPackageName );
 
     Map<String, Object> packagesJson = new HashMap<>();
-    packagesJson.put( "packages", packages);
+    packagesJson.put( "packages", packages );
     when( mockPentahoWebPackage.getPackageJson() ).thenReturn( packagesJson );
     this.requireJsPackage = new RequireJsPackageImpl( this.mockBundleContext, this.mockPentahoWebPackage );
 
@@ -155,36 +155,50 @@ public class RequireJsPackageImplTest {
     assertTrue( "Should contain package", actualModules.containsKey( expectedPackageName ) );
   }
 
-//  @Test
-//  public void testGetModulesWhenPackageDefinitionIsHashMap() {
-//    // arrange
-//    String expectedPackageName = "SomePackageName";
-//    when( mockPentahoWebPackage.getName() ).thenReturn( expectedPackageName );
-//
-//    Map<String, String> packages = new HashMap<>(  );
-//    packages.put( "name", "SomeName" );
-//    packages.put( "location", "SomeLocation" );
-//
-//    Map<String, Object> packagesJson = new HashMap<>();
-//    packagesJson.put( "packages", packages);
-//    when( mockPentahoWebPackage.getPackageJson() ).thenReturn( packagesJson );
-//    this.requireJsPackage = new RequireJsPackageImpl( this.mockBundleContext, this.mockPentahoWebPackage );
-//
-//    // act
-//    Map<String, String> actualModules = this.requireJsPackage.getModules();
-//
-//    // assert
-//    assertTrue( "Should contain package", actualModules.containsKey( expectedPackageName ) );
-//  }
-//
-//  @Test
-//  public void testGetModuleMainFile() {
-//    // arrange
-//
-//    // act
-//
-//    // assert
-//  }
+  @Test
+  public void testGetModulesWhenPackageDefinitionIsHashMap() {
+    // arrange
+    Map<String, String> packageDefinition = new HashMap<>();
+    packageDefinition.put( "name", "a name" );
+    packageDefinition.put( "location", "a location" );
+
+    List<Map<String, String>> packages = new ArrayList<>();
+    packages.add( packageDefinition );
+
+    Map<String, Object> packagesJson = new HashMap<>();
+    packagesJson.put( "packages", packages );
+    when( mockPentahoWebPackage.getPackageJson() ).thenReturn( packagesJson );
+    this.requireJsPackage = new RequireJsPackageImpl( this.mockBundleContext, this.mockPentahoWebPackage );
+
+    // act
+    Map<String, String> actualModules = this.requireJsPackage.getModules();
+
+    // assert
+    assertTrue( "Should contain module", actualModules.containsKey( "a name" ) );
+  }
+
+  @Test
+  public void testGetModuleMainFile() {
+    // arrange
+    String expectedModuleName = "main";
+    String packageName = "SomePackageName";
+    when( mockPentahoWebPackage.getName() ).thenReturn( packageName );
+
+    List<String> packages = new ArrayList<>();
+    packages.add( packageName );
+
+    Map<String, Object> packagesJson = new HashMap<>();
+    packagesJson.put( "packages", packages );
+    when( mockPentahoWebPackage.getPackageJson() ).thenReturn( packagesJson );
+
+    this.requireJsPackage = new RequireJsPackageImpl( this.mockBundleContext, this.mockPentahoWebPackage );
+
+    // act
+    String actualModuleName = this.requireJsPackage.getModuleMainFile( packageName );
+
+    // assert
+    assertEquals( "Module names should be equal", expectedModuleName, actualModuleName );
+  }
 
   @Test
   public void testGetDependencies() {
