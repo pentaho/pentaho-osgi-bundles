@@ -62,7 +62,7 @@ public class RequireJsPackageConfigurationImpl implements IRequireJsPackageConfi
   /**
    * Prepare everything that can be done without the resolved dependencies information, specially the base moduleIDs mappings,
    * required in all RequireJsPackageConfiguration before getRequireConfig is called on each.
-   *
+   * <p>
    * It also resets all dependencies related information processed earlier, as it is probably invalid and {@link #processDependencies(BiFunction)}
    * will be called soon.
    */
@@ -220,7 +220,12 @@ public class RequireJsPackageConfigurationImpl implements IRequireJsPackageConfi
     requireConfig.put( "shim", concreteShim );
 
     if ( plugins != null ) {
-      plugins.forEach( plugin -> plugin.apply( this, this.dependencyCache::get, moduleId -> getVersionedModuleId( moduleId, this.baseModuleIdsMappingsWithDependencies ), Collections.unmodifiableMap( requireConfig ) ) );
+      plugins.forEach( plugin -> {
+        try {
+          plugin.apply( this, this.dependencyCache::get, moduleId -> getVersionedModuleId( moduleId, this.baseModuleIdsMappingsWithDependencies ), Collections.unmodifiableMap( requireConfig ) );
+        } catch ( Exception ignored ) {
+        }
+      } );
     }
 
     // lock config and shim after plugins

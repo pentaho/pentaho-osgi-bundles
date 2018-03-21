@@ -42,6 +42,7 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.same;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -664,6 +665,30 @@ public class RequireJsPackageConfigurationImplTest {
   }
 
   @Test
+  public void getRequireConfigPluginsThrowsAreIgnored() {
+    IRequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version );
+
+    RequireJsPackageConfigurationImpl packageConfiguration = new RequireJsPackageConfigurationImpl( mockRequireJsPackage );
+
+    BiFunction<String, String, IRequireJsPackageConfiguration> mockDependencyResolverFunction = getMockDependencyResolverFunction();
+    packageConfiguration.processDependencies( mockDependencyResolverFunction );
+
+    List<IRequireJsPackageConfigurationPlugin> plugins = new ArrayList<>();
+    plugins.add( mock( IRequireJsPackageConfigurationPlugin.class ) );
+
+    IRequireJsPackageConfigurationPlugin mockPlugin = mock( IRequireJsPackageConfigurationPlugin.class );
+    doThrow( Exception.class ).when( mockPlugin ).apply( same( packageConfiguration ), any(), any(), any() );
+
+    plugins.add( mockPlugin );
+
+    plugins.add( mock( IRequireJsPackageConfigurationPlugin.class ) );
+
+    packageConfiguration.getRequireConfig( plugins );
+
+    plugins.forEach( plugin -> verify( plugin, times( 1 ) ).apply( same( packageConfiguration ), any(), any(), any() ) );
+  }
+
+  @Test
   public void getRequireConfigPluginCanModifyConfigAndShim() {
     IRequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version );
 
@@ -698,7 +723,7 @@ public class RequireJsPackageConfigurationImplTest {
     assertTrue( "Shim was modified", shim.containsKey( "my-key" ) );
   }
 
-  @Test(expected = UnsupportedOperationException.class)
+  @Test
   public void getRequireConfigPluginCannotModifyTop() {
     IRequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version );
 
@@ -720,10 +745,12 @@ public class RequireJsPackageConfigurationImplTest {
     List<IRequireJsPackageConfigurationPlugin> plugins = new ArrayList<>();
     plugins.add( mockPlugin );
 
-    packageConfiguration.getRequireConfig( plugins );
+    Map<String, ?> requireConfig = packageConfiguration.getRequireConfig( plugins );
+
+    assertTrue( "Top was not modified", !requireConfig.containsKey( "my-key" ) );
   }
 
-  @Test(expected = UnsupportedOperationException.class)
+  @Test
   public void getRequireConfigPluginCannotModifyPaths() {
     IRequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version );
 
@@ -746,10 +773,13 @@ public class RequireJsPackageConfigurationImplTest {
     List<IRequireJsPackageConfigurationPlugin> plugins = new ArrayList<>();
     plugins.add( mockPlugin );
 
-    packageConfiguration.getRequireConfig( plugins );
+    Map<String, ?> requireConfig = packageConfiguration.getRequireConfig( plugins );
+
+    Map<String, String> paths = (Map<String, String>) requireConfig.get( "paths" );
+    assertTrue( "Paths was not modified", !paths.containsKey( "my-key" ) );
   }
 
-  @Test(expected = UnsupportedOperationException.class)
+  @Test
   public void getRequireConfigPluginCannotModifyPackages() {
     IRequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version );
 
@@ -772,10 +802,13 @@ public class RequireJsPackageConfigurationImplTest {
     List<IRequireJsPackageConfigurationPlugin> plugins = new ArrayList<>();
     plugins.add( mockPlugin );
 
-    packageConfiguration.getRequireConfig( plugins );
+    Map<String, ?> requireConfig = packageConfiguration.getRequireConfig( plugins );
+
+    List<Object> packages = (List<Object>) requireConfig.get( "packages" );
+    assertTrue( "Packages was not modified", !packages.contains( "my-key" ) );
   }
 
-  @Test(expected = UnsupportedOperationException.class)
+  @Test
   public void getRequireConfigPluginCannotModifyMap() {
     IRequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version );
 
@@ -798,7 +831,10 @@ public class RequireJsPackageConfigurationImplTest {
     List<IRequireJsPackageConfigurationPlugin> plugins = new ArrayList<>();
     plugins.add( mockPlugin );
 
-    packageConfiguration.getRequireConfig( plugins );
+    Map<String, ?> requireConfig = packageConfiguration.getRequireConfig( plugins );
+
+    Map<String, Object> map = (Map<String, Object>) requireConfig.get( "map" );
+    assertTrue( "Packages was not modified", !map.containsKey( "my-key" ) );
   }
 
   @Test
@@ -965,7 +1001,7 @@ public class RequireJsPackageConfigurationImplTest {
   // endregion
 
   // region Mock factory
-  private IRequireJsPackage getRequireJsPackageMock(String name, String version, String webRoot, Map<String, String> modules, Map<String, String> dependencies ) {
+  private IRequireJsPackage getRequireJsPackageMock( String name, String version, String webRoot, Map<String, String> modules, Map<String, String> dependencies ) {
     IRequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version, webRoot, modules );
 
     if ( dependencies != null ) {
@@ -975,7 +1011,7 @@ public class RequireJsPackageConfigurationImplTest {
     return mockRequireJsPackage;
   }
 
-  private IRequireJsPackage getRequireJsPackageMock(String name, String version, String webRoot, Map<String, String> modules ) {
+  private IRequireJsPackage getRequireJsPackageMock( String name, String version, String webRoot, Map<String, String> modules ) {
     IRequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version, webRoot );
 
     if ( modules != null ) {
@@ -988,7 +1024,7 @@ public class RequireJsPackageConfigurationImplTest {
     return mockRequireJsPackage;
   }
 
-  private IRequireJsPackage getRequireJsPackageMock(String name, String version, String webRoot ) {
+  private IRequireJsPackage getRequireJsPackageMock( String name, String version, String webRoot ) {
     IRequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name, version );
 
     doReturn( webRoot ).when( mockRequireJsPackage ).getWebRootPath();
@@ -996,7 +1032,7 @@ public class RequireJsPackageConfigurationImplTest {
     return mockRequireJsPackage;
   }
 
-  private IRequireJsPackage getRequireJsPackageMock(String name, String version ) {
+  private IRequireJsPackage getRequireJsPackageMock( String name, String version ) {
     IRequireJsPackage mockRequireJsPackage = getRequireJsPackageMock( name );
 
     doReturn( version ).when( mockRequireJsPackage ).getVersion();
@@ -1004,7 +1040,7 @@ public class RequireJsPackageConfigurationImplTest {
     return mockRequireJsPackage;
   }
 
-  private IRequireJsPackage getRequireJsPackageMock(String name ) {
+  private IRequireJsPackage getRequireJsPackageMock( String name ) {
     IRequireJsPackage mockRequireJsPackage = getRequireJsPackageMock();
 
     doReturn( name ).when( mockRequireJsPackage ).getName();
