@@ -18,6 +18,7 @@ package org.pentaho.webpackage.core.impl;
 
 import org.junit.Test;
 import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleEvent;
 import org.osgi.framework.wiring.BundleCapability;
 import org.osgi.framework.wiring.BundleWiring;
@@ -29,6 +30,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -38,15 +40,105 @@ import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class PentahoWebPackageBundleImplTest {
+public class PentahoWebPackageBundleListenerTest {
 
   private String resourceRootPath = "some/resource/path";
 
-  // Also tests registerWebPackageServices
   @Test
   public void testBundleChangedShouldRegisterWebpackageServicesOnBundleEventStarted() {
+    PentahoWebPackageBundleListener bundleListener = spy( new PentahoWebPackageBundleListener() );
+    Bundle bundle = mock( Bundle.class );
+    BundleEvent bundleEvent = createBundleEventMock( BundleEvent.STARTED, bundle );
+
+    // act
+    bundleListener.bundleChanged( bundleEvent );
+
+    // assert
+    verify( bundleListener ).registerWebPackageServices( bundle );
+  }
+
+  @Test
+  public void testBundleChangedShouldUnregisterWebpackageServicesOnBundleEventUninstalled() {
+    this.testBundleChangedShouldUnregisterWebpackageServicesOnBundleEvent( BundleEvent.UNINSTALLED );
+  }
+
+  @Test
+  public void testBundleChangedShouldUnregisterWebpackageServicesOnBundleEventUnresolved() {
+    this.testBundleChangedShouldUnregisterWebpackageServicesOnBundleEvent( BundleEvent.UNRESOLVED );
+  }
+
+  @Test
+  public void testBundleChangedShouldUnregisterWebpackageServicesOnBundleEventStopped() {
+    this.testBundleChangedShouldUnregisterWebpackageServicesOnBundleEvent( BundleEvent.STOPPED );
+  }
+
+  private void testBundleChangedShouldUnregisterWebpackageServicesOnBundleEvent( int bundleEventType ) {
+    PentahoWebPackageBundleListener bundleListener = spy( new PentahoWebPackageBundleListener() );
+    Bundle bundle = mock( Bundle.class );
+    BundleEvent bundleEvent = createBundleEventMock( bundleEventType, bundle );
+
+    // act
+    bundleListener.bundleChanged( bundleEvent );
+
+    // assert
+    verify( bundleListener ).unregisterWebPackageServices( bundle );
+  }
+
+  private BundleEvent createBundleEventMock( int eventType, Bundle bundle ) {
+    BundleEvent bundleEvent = mock( BundleEvent.class );
+    doReturn( eventType ).when( bundleEvent ).getType();
+    doReturn( bundle ).when( bundleEvent ).getBundle();
+    return bundleEvent;
+  }
+
+  @Test
+  public void testRegisterShouldRegisterAWebpackageServiceForEachWebpackageCapabilityProvidedByTheBundle() {
+    PentahoWebPackageBundleListener bundleListener = spy( new PentahoWebPackageBundleListener() );
+    Bundle bundle = mock( Bundle.class );
+    BundleContext bundleContext = mock( BundleContext.class );
+    doReturn( bundleContext ).when( bundle ).getBundleContext();
+
+    int numberOfWebpackages = 3;
+    List<IPentahoWebPackage> webPackages = new ArrayList<>();
+    IPentahoWebPackage expectedPentahoWebpackage = mock( IPentahoWebPackage.class );
+    for ( int i = 0; i < numberOfWebpackages; i++ ) {
+      webPackages.add( expectedPentahoWebpackage );
+    }
+    doReturn( webPackages.stream() ).when( bundleListener ).createWebPackages( bundle );
+
+    // act
+    bundleListener.registerWebPackageServices( bundle );
+
+    // assert
+    verify( bundleContext, times( numberOfWebpackages ) ).registerService( IPentahoWebPackage.class, expectedPentahoWebpackage, null );
+  }
+
+  @Test
+  public void testRegisterShouldNotTrowIfNoWebpackageCapabilitiesAreProvidedByTheBundle() {
+    PentahoWebPackageBundleListener bundleListener = spy( new PentahoWebPackageBundleListener() );
+    Bundle bundle = mock( Bundle.class );
+    BundleContext bundleContext = mock( BundleContext.class );
+    doReturn( bundleContext ).when( bundle ).getBundleContext();
+
+    doReturn( Stream.empty() ).when( bundleListener ).createWebPackages( bundle );
+
+    // act
+    bundleListener.registerWebPackageServices( bundle );
+
+    // assert
+    verify( bundleContext, never() ).registerService( any( String.class ), any(), any() );
+  }
+
+
+  // Also tests registerWebPackageServices
+  @Test
+  public void testBundleChangedShouldRegisterWebpackageServicesOnBundleEventStartedTTT() {
     // arrange
     BundleWiring mockBundleWiring = mock( BundleWiring.class );
     BundleCapability mockBundleCapability = mock( BundleCapability.class );
@@ -73,7 +165,7 @@ public class PentahoWebPackageBundleImplTest {
 
     // act
     listener.bundleChanged( mockBundleEvent );
-    int actualBundleWebPackageServiceReferencesSize = listener.bundleWebPackageServiceReferences.size();
+    int actualBundleWebPackageServiceReferencesSize = listener.bundleWebPackageServiceRegistrations.size();
 
     // assert
     assertEquals( "Should return a collection with one element", expectedBundleWebPackageServiceReferencesSize, actualBundleWebPackageServiceReferencesSize );
@@ -81,7 +173,7 @@ public class PentahoWebPackageBundleImplTest {
 
   // Also tests unregisterWebPackageServices
   @Test
-  public void testBundleChangedShouldRegisterWebpackageServicesOnBundleEventUninstalledOrUnresolvedOrStopped() {
+  public void testBundleChangedShouldRegisterWebpackageServicesOnBundleEventUninstalledOrUnresolvedOrStoppedTTT() {
     // arrange
     BundleWiring mockBundleWiring = mock( BundleWiring.class );
     BundleCapability mockBundleCapability = mock( BundleCapability.class );
@@ -109,12 +201,12 @@ public class PentahoWebPackageBundleImplTest {
 
     // act
     listener.bundleChanged( mockBundleEvent );
-    int actualBundleWebPackageServiceReferencesSizeAfterStarted = listener.bundleWebPackageServiceReferences.size();
+    int actualBundleWebPackageServiceReferencesSizeAfterStarted = listener.bundleWebPackageServiceRegistrations.size();
 
     when( mockBundleEvent.getType() ).thenReturn( BundleEvent.UNINSTALLED );
     listener.bundleChanged( mockBundleEvent );
 
-    int actualBundleWebPackageServiceReferencesSizeAfterUninstalled = listener.bundleWebPackageServiceReferences.size();
+    int actualBundleWebPackageServiceReferencesSizeAfterUninstalled = listener.bundleWebPackageServiceRegistrations.size();
 
     // assert
     assertEquals( "Should return a collection with one element", expectedBundleWebPackageServiceReferencesSizeAfterStarted, actualBundleWebPackageServiceReferencesSizeAfterStarted );
@@ -125,7 +217,7 @@ public class PentahoWebPackageBundleImplTest {
   @Test
   public void testRegisterWebPackageServicesWhenBundleIsNull() {
     // arrange
-    PentahoWebPackageBundleListener listener = new PentahoWebPackageBundleListener();
+    PentahoWebPackageBundleListener listener = spy( new PentahoWebPackageBundleListener() );
 
     // act
     listener.registerWebPackageServices( null );

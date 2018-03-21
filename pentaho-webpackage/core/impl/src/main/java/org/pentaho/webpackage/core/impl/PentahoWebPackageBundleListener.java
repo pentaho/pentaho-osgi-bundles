@@ -45,7 +45,7 @@ public class PentahoWebPackageBundleListener implements BundleListener {
   private static Logger logger = LoggerFactory.getLogger( PentahoWebPackageBundleListener.class );
 
   // BundleId -> WebPackage Service References
-  final Map<Long, Iterable<ServiceRegistration<IPentahoWebPackage>>> bundleWebPackageServiceReferences = new HashMap<>();
+  final Map<Long, Iterable<ServiceRegistration<IPentahoWebPackage>>> bundleWebPackageServiceRegistrations = new HashMap<>();
 
   @Override
   public void bundleChanged( BundleEvent bundleEvent ) {
@@ -67,20 +67,17 @@ public class PentahoWebPackageBundleListener implements BundleListener {
     }
 
     // Create WebPackages
-    Stream<IPentahoWebPackage> webPackages =
-            getWebPackageCapabilities( bundle ).stream()
-            .map( capability -> createWebPackage( bundle, capability ) )
-            .filter( Objects::nonNull );
+    Stream<IPentahoWebPackage> webPackages = createWebPackages( bundle );
 
     // Register WebPackages Services
     BundleContext bundleContext = bundle.getBundleContext();
-    List<ServiceRegistration<IPentahoWebPackage>> webpackageServiceReferences = webPackages
+    List<ServiceRegistration<IPentahoWebPackage>> webpackageServiceRegistrations = webPackages
             .map( webpackage -> bundleContext.registerService( IPentahoWebPackage.class, webpackage, null ) )
             .collect( Collectors.toList() );
 
-    if ( !webpackageServiceReferences.isEmpty() ) {
-      synchronized ( this.bundleWebPackageServiceReferences ) {
-        this.bundleWebPackageServiceReferences.putIfAbsent( bundle.getBundleId(), webpackageServiceReferences );
+    if ( !webpackageServiceRegistrations.isEmpty() ) {
+      synchronized ( this.bundleWebPackageServiceRegistrations) {
+        this.bundleWebPackageServiceRegistrations.putIfAbsent( bundle.getBundleId(), webpackageServiceRegistrations );
       }
     }
   }
@@ -90,12 +87,12 @@ public class PentahoWebPackageBundleListener implements BundleListener {
       return;
     }
 
-    Iterable<ServiceRegistration<IPentahoWebPackage>> bundleServiceRegistrations = this.bundleWebPackageServiceReferences.get( bundle.getBundleId() );
+    Iterable<ServiceRegistration<IPentahoWebPackage>> bundleServiceRegistrations = this.bundleWebPackageServiceRegistrations.get( bundle.getBundleId() );
 
     if ( bundleServiceRegistrations != null ) {
       bundleServiceRegistrations.forEach( this::unregisterService );
-      synchronized ( this.bundleWebPackageServiceReferences ) {
-        this.bundleWebPackageServiceReferences.remove( bundle.getBundleId() );
+      synchronized ( this.bundleWebPackageServiceRegistrations) {
+        this.bundleWebPackageServiceRegistrations.remove( bundle.getBundleId() );
       }
     }
   }
@@ -138,6 +135,12 @@ public class PentahoWebPackageBundleListener implements BundleListener {
     }
 
     return null;
+  }
+
+  Stream<IPentahoWebPackage> createWebPackages( Bundle bundle ) {
+    return getWebPackageCapabilities( bundle ).stream()
+        .map( capability -> createWebPackage( bundle, capability ) )
+        .filter( Objects::nonNull );
   }
 
   String getRoot( BundleCapability capability ) {
