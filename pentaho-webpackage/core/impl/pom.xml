@@ -49,6 +49,7 @@
       <plugin>
         <groupId>org.apache.felix</groupId>
         <artifactId>maven-bundle-plugin</artifactId>
+
         <configuration>
           <instructions>
             <Bundle-Activator>org.pentaho.webpackage.core.impl.osgi.Activator</Bundle-Activator>
