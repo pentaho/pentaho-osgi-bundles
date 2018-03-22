@@ -16,9 +16,9 @@
  */
 package org.pentaho.osgi.notification.webservice;
 
-import org.codehaus.jackson.JsonFactory;
-import org.codehaus.jackson.JsonGenerator;
-import org.codehaus.jackson.map.ObjectMapper;
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.pentaho.osgi.notification.api.NotificationAggregator;
 import org.pentaho.osgi.notification.api.NotificationListener;
 import org.pentaho.osgi.notification.api.NotificationObject;

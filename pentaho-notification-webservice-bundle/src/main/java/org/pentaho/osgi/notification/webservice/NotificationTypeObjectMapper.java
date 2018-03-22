@@ -16,7 +16,7 @@
  */
 package org.pentaho.osgi.notification.webservice;
 
-import org.codehaus.jackson.map.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Created by bryan on 5/1/15.
