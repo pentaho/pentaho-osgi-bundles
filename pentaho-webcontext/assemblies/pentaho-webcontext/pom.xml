@@ -9,10 +9,10 @@
     <version>8.1.0.0-SNAPSHOT</version>
   </parent>
 
+  <name>Pentaho WebContext Feature</name>
+
   <artifactId>pentaho-webcontext</artifactId>
   <packaging>feature</packaging>
-
-  <name>Pentaho WebContext Feature</name>
 
   <dependencies>
     <dependency>

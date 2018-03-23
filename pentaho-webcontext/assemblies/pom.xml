@@ -10,9 +10,9 @@
     <version>8.1.0.0-SNAPSHOT</version>
   </parent>
 
-  <artifactId>assemblies</artifactId>
-  <version>8.1.0.0-SNAPSHOT</version>
+  <name>Pentaho WebContext Assemblies</name>
 
+  <artifactId>assemblies</artifactId>
   <packaging>pom</packaging>
 
   <modules>
