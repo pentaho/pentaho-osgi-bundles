@@ -125,7 +125,7 @@ public class ActivatorTest {
 
   // Just for coverage
   @Test
-  public void testCreatePentahoWebPackageService(){
+  public void testCreatePentahoWebPackageService() {
     // arange
     PentahoWebPackageBundleListener pentahoWebPackageBundleListener;
     Activator activator = spy( new Activator() );
@@ -134,6 +134,6 @@ public class ActivatorTest {
     pentahoWebPackageBundleListener = activator.createPentahoWebPackageService();
 
     // assert
-    assertNotNull(pentahoWebPackageBundleListener);
+    assertNotNull( pentahoWebPackageBundleListener );
   }
 }

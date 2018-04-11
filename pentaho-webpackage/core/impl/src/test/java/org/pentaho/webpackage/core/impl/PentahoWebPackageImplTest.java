@@ -109,7 +109,7 @@ public class PentahoWebPackageImplTest {
   @Test( expected = IllegalArgumentException.class )
   public void testGetPackageJsonShouldThrowExceptionOnInvalidUrlConnection() {
     // arrange
-    URL mockUrl = this.createInvalidMockUrlConnection(  mockPackageJson );
+    URL mockUrl = this.createInvalidMockUrlConnection( mockPackageJson );
     PentahoWebPackageImpl pentahoWebPackage = new PentahoWebPackageImpl( null, mockUrl );
 
     // act

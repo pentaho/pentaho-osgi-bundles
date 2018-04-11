@@ -161,6 +161,7 @@ public class PentahoWebPackageBundleListenerTest {
     // assert
     verify( mockWebPackageBundleListener, never() ).getBundleServiceRegistrations( anyLong() );
   }
+
   @Test
   public void testUnregisterWebPackageServicesSouldCallUnregisterServiceOnAllRegisteredServices() {
     // arrange
