@@ -18,19 +18,28 @@ package org.pentaho.webpackage.core.impl;
 
 import org.junit.Test;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLConnection;
+import java.net.URLStreamHandler;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class PentahoWebPackageImplTest {
 
-  private String mockPackageJson = "{\"name\":\"SomeName\",\"description\":\"A packaged foo fooer for fooing foos\",\"main\":\"foo.js\",\"man\":[\".\\/man\\/foo.1\",\".\\/man\\/bar.1\"],\"version\":\"1.2.3\"}";
+  private String packageName = "SomeName";
+  private String packageVersion = "1.2.3";
+  private String mockPackageJson = "{\"name\":\"" + packageName + "\",\"version\":\"" + packageVersion + "\"}";
 
   @Test
   public void testGetNameShouldReturnPackageNameGivenTheUrlInConstructor() {
     // arrange
-    String expectedName = "SomeName";
-    URL mockUrl = TestUtils.createMockUrlConnection( mockPackageJson );
+    String expectedName = this.packageName;
+    URL mockUrl = this.createMockUrlConnection( mockPackageJson );
     PentahoWebPackageImpl pentahoWebPackage = new PentahoWebPackageImpl( null, mockUrl );
 
     // act
@@ -43,8 +52,8 @@ public class PentahoWebPackageImplTest {
   @Test
   public void testGetVersionShouldReturnPackageVersionGivenTheUrlInConstructor() {
     // arrange
-    String expectedVersion = "1.2.3";
-    URL mockUrl = TestUtils.createMockUrlConnection( mockPackageJson );
+    String expectedVersion = this.packageVersion;
+    URL mockUrl = this.createMockUrlConnection( mockPackageJson );
     PentahoWebPackageImpl pentahoWebPackage = new PentahoWebPackageImpl( null, mockUrl );
 
     // act
@@ -58,7 +67,7 @@ public class PentahoWebPackageImplTest {
   public void testGetResourceRootPathShouldReturnResourceRootPathGivenInConstructor() {
     // arrange
     String expectedRootPath = "some/resource/path";
-    URL mockUrl = TestUtils.createMockUrlConnection( mockPackageJson );
+    URL mockUrl = this.createMockUrlConnection( mockPackageJson );
     PentahoWebPackageImpl pentahoWebPackage = new PentahoWebPackageImpl( expectedRootPath, mockUrl );
 
     // act
@@ -71,8 +80,8 @@ public class PentahoWebPackageImplTest {
   @Test( expected = IllegalArgumentException.class )
   public void testPentahoWebPackageImplShouldThrowExceptionOnInvalidWebpackageNameOrVersion() {
     // arrange
-    String invalidMockPackageJson = "{\"description\":\"A packaged foo fooer for fooing foos\",\"main\":\"foo.js\",\"man\":[\".\\/man\\/foo.1\",\".\\/man\\/bar.1\"]}";
-    URL mockUrl = TestUtils.createMockUrlConnection( invalidMockPackageJson );
+    String invalidMockPackageJson = "{}";
+    URL mockUrl = this.createMockUrlConnection( invalidMockPackageJson );
 
     // act
     PentahoWebPackageImpl pentahoWebPackage = new PentahoWebPackageImpl( null, mockUrl );
@@ -84,7 +93,7 @@ public class PentahoWebPackageImplTest {
     String name = "SomeName";
     String version = "1.2.3";
     String expectedWebRootPath = "/" + name + "/" + version;
-    URL mockUrl = TestUtils.createMockUrlConnection( mockPackageJson );
+    URL mockUrl = this.createMockUrlConnection( mockPackageJson );
     PentahoWebPackageImpl pentahoWebPackage = new PentahoWebPackageImpl( null, mockUrl );
 
     // act
@@ -100,10 +109,47 @@ public class PentahoWebPackageImplTest {
   @Test( expected = IllegalArgumentException.class )
   public void testGetPackageJsonShouldThrowExceptionOnInvalidUrlConnection() {
     // arrange
-    URL mockUrl = TestUtils.createInvalidMockUrlConnection(  mockPackageJson );
+    URL mockUrl = this.createInvalidMockUrlConnection(  mockPackageJson );
     PentahoWebPackageImpl pentahoWebPackage = new PentahoWebPackageImpl( null, mockUrl );
 
     // act
     pentahoWebPackage.getPackageJson();
+  }
+
+  private URL createMockUrlConnection( String payload ) {
+    URLConnection mockUrlCon = mock( URLConnection.class );
+    URLStreamHandler stubUrlHandler = null;
+    try {
+      stubUrlHandler = new URLStreamHandler() {
+        @Override
+        protected URLConnection openConnection( URL u ) throws IOException {
+          return mockUrlCon;
+        }
+      };
+      when( mockUrlCon.getInputStream() ).thenReturn( new ByteArrayInputStream( payload.getBytes() ) );
+    } catch ( IOException ignored ) {
+    }
+    try {
+      return new URL( "http", "someurl.com", 9999, "", stubUrlHandler );
+    } catch ( MalformedURLException e ) {
+      e.printStackTrace();
+    }
+    return null;
+  }
+
+  private URL createInvalidMockUrlConnection( String payload ) {
+    URLStreamHandler stubUrlHandler = stubUrlHandler = new URLStreamHandler() {
+      @Override
+      protected URLConnection openConnection( URL u ) throws IOException {
+        throw new IOException( "Can't open connection" );
+      }
+    };
+
+    try {
+      return new URL( "http", "someurl.com", 9999, "", stubUrlHandler );
+    } catch ( MalformedURLException e ) {
+      e.printStackTrace();
+    }
+    return null;
   }
 }

@@ -87,7 +87,8 @@ public class PentahoWebPackageBundleListener implements BundleListener {
       return;
     }
 
-    Iterable<ServiceRegistration<IPentahoWebPackage>> bundleServiceRegistrations = this.bundleWebPackageServiceRegistrations.get( bundle.getBundleId() );
+    Iterable<ServiceRegistration<IPentahoWebPackage>> bundleServiceRegistrations =
+        this.getBundleServiceRegistrations( bundle.getBundleId() );
 
     if ( bundleServiceRegistrations != null ) {
       bundleServiceRegistrations.forEach( this::unregisterService );
@@ -95,6 +96,10 @@ public class PentahoWebPackageBundleListener implements BundleListener {
         this.bundleWebPackageServiceRegistrations.remove( bundle.getBundleId() );
       }
     }
+  }
+
+  Iterable<ServiceRegistration<IPentahoWebPackage>> getBundleServiceRegistrations( long bundleId ){
+    return this.bundleWebPackageServiceRegistrations.get( bundleId );
   }
 
   private void unregisterService( ServiceRegistration registration ) {

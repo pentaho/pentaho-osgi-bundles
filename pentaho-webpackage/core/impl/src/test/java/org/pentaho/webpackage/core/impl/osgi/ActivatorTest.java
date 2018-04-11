@@ -24,6 +24,7 @@ import org.pentaho.webpackage.core.impl.PentahoWebPackageBundleListener;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import static org.junit.Assert.assertNotNull;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -36,6 +37,7 @@ public class ActivatorTest {
 
   @Test
   public void bundleListenerIsAddedToBundleContextOnActivatorStart() {
+    // arrange
     PentahoWebPackageBundleListener bundleListener = mock( PentahoWebPackageBundleListener.class );
     Activator activator = createActivatorSpy( bundleListener );
     BundleContext bundleContext = mock( BundleContext.class );
@@ -49,6 +51,7 @@ public class ActivatorTest {
 
   @Test
   public void listenerRegisterIsCalledForEveryActiveBundleOnActivatorStart() {
+    // arrange
     PentahoWebPackageBundleListener bundleListener = mock( PentahoWebPackageBundleListener.class );
     Activator activator = createActivatorSpy( bundleListener );
 
@@ -71,6 +74,7 @@ public class ActivatorTest {
 
   @Test
   public void listenerRegisterIsNotCalledForBundlesNotActiveOnActivatorStart() {
+    // arrange
     PentahoWebPackageBundleListener bundleListener = mock( PentahoWebPackageBundleListener.class );
     Activator activator = createActivatorSpy( bundleListener );
 
@@ -93,6 +97,7 @@ public class ActivatorTest {
 
   @Test
   public void bundleListenerIsRemovedFromBundleContextOnActivatorStop() {
+    // arrange
     PentahoWebPackageBundleListener bundleListener = mock( PentahoWebPackageBundleListener.class );
     Activator activator = createActivatorSpy( bundleListener );
     BundleContext bundleContext = mock( BundleContext.class );
@@ -116,5 +121,19 @@ public class ActivatorTest {
     Activator activator = spy( new Activator() );
     doReturn( bundleListener ).when( activator ).createPentahoWebPackageService();
     return activator;
+  }
+
+  // Just for coverage
+  @Test
+  public void testCreatePentahoWebPackageService(){
+    // arange
+    PentahoWebPackageBundleListener pentahoWebPackageBundleListener;
+    Activator activator = spy( new Activator() );
+
+    // act
+    pentahoWebPackageBundleListener = activator.createPentahoWebPackageService();
+
+    // assert
+    assertNotNull(pentahoWebPackageBundleListener);
   }
 }
