@@ -40,7 +40,7 @@ public class ActivatorTest {
   @Test
   public void serviceTrackerIsOpenedOnActivatorStart() {
     BundleContext mockBundleContext = mock( BundleContext.class );
-    ServiceTracker serviceTrackerMock = spy(  activator.createPentahoWebPackageServiceTracker( mockBundleContext ) );
+    ServiceTracker serviceTrackerMock = spy( activator.createPentahoWebPackageServiceTracker( mockBundleContext ) );
     activator = spy( new Activator() );
     doReturn( serviceTrackerMock ).when( activator ).createPentahoWebPackageServiceTracker( mockBundleContext );
 

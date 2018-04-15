@@ -67,7 +67,7 @@ public class PentahoWebPackageResourceMappingTest {
   public void testGetAliasShouldReturnValidWebRootPath() {
     // arrange
     this.pentahoWebPackageResourceMapping =
-        new PentahoWebPackageResourceMapping( null /* not relevant */, this.mockPentahoWebPackage);
+        new PentahoWebPackageResourceMapping( null /* not relevant */, this.mockPentahoWebPackage );
     String expectedWebRootPath = mockPentahoWebPackage.getWebRootPath();
 
     // act
@@ -81,7 +81,7 @@ public class PentahoWebPackageResourceMappingTest {
   public void testGetPathShouldReturnValidResourcesRootPath() {
     // arrange
     this.pentahoWebPackageResourceMapping =
-        new PentahoWebPackageResourceMapping( null /* not relevant */, this.mockPentahoWebPackage);
+        new PentahoWebPackageResourceMapping( null /* not relevant */, this.mockPentahoWebPackage );
     String expectedResourcesRootPath = this.mockPentahoWebPackage.getResourceRootPath();
 
     // act
@@ -95,7 +95,7 @@ public class PentahoWebPackageResourceMappingTest {
   public void testToStringShouldReturnValidToString() {
     // arrange
     this.pentahoWebPackageResourceMapping =
-        new PentahoWebPackageResourceMapping( null /* not relevant */, this.mockPentahoWebPackage);
+        new PentahoWebPackageResourceMapping( null /* not relevant */, this.mockPentahoWebPackage );
     String expectedAlias = mockPentahoWebPackage.getWebRootPath();
     String expectedPath = mockPentahoWebPackage.getResourceRootPath();
     String expectedToString = PentahoWebPackageResourceMapping.class.getSimpleName()
@@ -173,7 +173,7 @@ public class PentahoWebPackageResourceMappingTest {
     verify( mockBundleContext, times( 1 ) )
         .registerService( ResourceMapping.class, this.pentahoWebPackageResourceMapping, null );
   }
-  
+
   @Test
   public void testUnregisterShouldCallServiceRegistrationUnregisterOnce() {
     // arrange
@@ -191,6 +191,4 @@ public class PentahoWebPackageResourceMappingTest {
     verify( mockServiceRegistration, times( 1 ) )
         .unregister();
   }
-
-
 }
