@@ -5,10 +5,10 @@
   <parent>
     <groupId>pentaho</groupId>
     <artifactId>pentaho-cache-manager-parent</artifactId>
-    <version>7.1-SNAPSHOT</version>
+    <version>7.1.0.11-122</version>
   </parent>
   <artifactId>pentaho-cache-manager-api</artifactId>
-  <version>7.1-SNAPSHOT</version>
+  <version>7.1.0.11-122</version>
   <packaging>bundle</packaging>
   <name>Pentaho Community Edition Project: Cache Manager</name>
   <description>a Pentaho open source project</description>
