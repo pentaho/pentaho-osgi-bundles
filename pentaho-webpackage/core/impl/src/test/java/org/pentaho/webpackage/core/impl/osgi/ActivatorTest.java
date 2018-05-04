@@ -123,7 +123,6 @@ public class ActivatorTest {
     return activator;
   }
 
-  // Just for coverage
   @Test
   public void testCreatePentahoWebPackageService() {
     // arange

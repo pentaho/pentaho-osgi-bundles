@@ -103,9 +103,6 @@ public class PentahoWebPackageImplTest {
     assertEquals( "Should return WebPackage web root path", expectedWebRootPath, actualWebRootPath );
   }
 
-  /*
-      This test is just for coverage
-   */
   @Test( expected = IllegalArgumentException.class )
   public void testGetPackageJsonShouldThrowExceptionOnInvalidUrlConnection() {
     // arrange
