@@ -6,7 +6,7 @@
   <parent>
     <groupId>org.pentaho.webcontext</groupId>
     <artifactId>assemblies</artifactId>
-    <version>8.1.0.0-SNAPSHOT</version>
+    <version>8.2.0.0-SNAPSHOT</version>
   </parent>
 
   <name>Pentaho WebContext Feature</name>
@@ -18,7 +18,7 @@
     <dependency>
       <groupId>org.pentaho.webcontext</groupId>
       <artifactId>core-impl</artifactId>
-      <version>8.1.0.0-SNAPSHOT</version>
+      <version>8.2.0.0-SNAPSHOT</version>
     </dependency>
   </dependencies>
   
