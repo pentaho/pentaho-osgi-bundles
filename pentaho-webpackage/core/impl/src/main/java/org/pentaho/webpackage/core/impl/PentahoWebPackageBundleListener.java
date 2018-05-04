@@ -76,7 +76,7 @@ public class PentahoWebPackageBundleListener implements BundleListener {
             .collect( Collectors.toList() );
 
     if ( !webpackageServiceRegistrations.isEmpty() ) {
-      synchronized ( this.bundleWebPackageServiceRegistrations) {
+      synchronized ( this.bundleWebPackageServiceRegistrations ) {
         this.bundleWebPackageServiceRegistrations.putIfAbsent( bundle.getBundleId(), webpackageServiceRegistrations );
       }
     }
@@ -92,13 +92,13 @@ public class PentahoWebPackageBundleListener implements BundleListener {
 
     if ( bundleServiceRegistrations != null ) {
       bundleServiceRegistrations.forEach( this::unregisterService );
-      synchronized ( this.bundleWebPackageServiceRegistrations) {
+      synchronized ( this.bundleWebPackageServiceRegistrations ) {
         this.bundleWebPackageServiceRegistrations.remove( bundle.getBundleId() );
       }
     }
   }
 
-  Iterable<ServiceRegistration<IPentahoWebPackage>> getBundleServiceRegistrations( long bundleId ){
+  Iterable<ServiceRegistration<IPentahoWebPackage>> getBundleServiceRegistrations( long bundleId ) {
     return this.bundleWebPackageServiceRegistrations.get( bundleId );
   }
 
