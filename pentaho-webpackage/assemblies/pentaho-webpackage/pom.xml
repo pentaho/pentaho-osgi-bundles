@@ -10,21 +10,31 @@
   </parent>
 
   <artifactId>pentaho-webpackage</artifactId>
-
   <packaging>feature</packaging>
 
   <dependencies>
-    <dependency>
-      <groupId>org.pentaho.webpackage</groupId>
-      <artifactId>http-extender-impl</artifactId>
-      <version>${project.version}</version>
-    </dependency>
     <dependency>
       <groupId>org.pentaho.webpackage</groupId>
       <artifactId>pentaho-webpackage-archive-deployer</artifactId>
       <version>${project.version}</version>
       <type>xml</type>
       <classifier>features</classifier>
+    </dependency>
+
+    <dependency>
+      <groupId>org.pentaho.webpackage</groupId>
+      <artifactId>core-impl</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.pentaho.webpackage</groupId>
+      <artifactId>http-listener-impl</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.pentaho.webpackage</groupId>
+      <artifactId>requirejs-listener-impl</artifactId>
+      <version>${project.version}</version>
     </dependency>
   </dependencies>
 </project>

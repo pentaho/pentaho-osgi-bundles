@@ -1,0 +1,2490 @@
+{
+  "requirejs-osgi-meta": {
+    "modules": {
+      "angular-locale_en-gu": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_sl": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_bn-bd": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_sk": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_ko": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_sw": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_kn": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_sv": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_sl-si": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_sr": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_lt-lt": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_fil-ph": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_sq": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_ca": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_ml-in": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_bn": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_sr-cyrl-rs": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-route": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_hu-hu": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_tl-ph": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_th-th": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_en-gb": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_et-ee": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_gsw-ch": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_ro": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_is-is": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_ja": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_bg": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_ru": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_ta-in": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_am": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-resource": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_it": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_sr-latn-rs": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_fr-re": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-touch": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_or-in": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_is": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_sw-tz": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_ca-es": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_hr-hr": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-mocks": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_ja-jp": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_ar": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_zh": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_iw": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_it-it": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_ur": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_pl-pl": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_en-vi": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_pt-pt": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_he-il": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_uk": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_mr": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_ur-pk": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_mo": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_lv-lv": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_ml": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_en-us": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_uk-ua": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_en-dsrt": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_lv": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_lt": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_en-mp": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_de-de": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-animate": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_fr-bl": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_en-um": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_en-mh": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_de-lu": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_tr-tr": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_id-id": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_da": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_tl": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_es-es": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_sr-rs": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_ln": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_de": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_fr-ca": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_tr": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_ta": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_de-ch": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_zh-hans-cn": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_zh-hk": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_fi-fi": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_kn-in": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_th": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_te": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_cs": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_de-at": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_cs-cz": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_gl": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_or": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_pt-br": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_fr": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_de-be": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_fr-mc": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_el-polyton": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_mt-mt": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_ko-kr": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_ro-ro": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_vi-vn": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_en-dsrt-us": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_te-in": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_fa": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_sv-se": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_fr-mq": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_en-sg": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_fr-mf": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_ln-cd": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_eu-es": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_fi": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_no": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_fil": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_nl": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_gsw": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_en-zz": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_en": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_en-iso": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_mt": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_el": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_ms": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_vi": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_eu": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_et": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_es": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_el-gr": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_ru-ru": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_id": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_en-as": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_en-au": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_in": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_en-za": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-loader": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_zh-cn": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_hu": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-cookies": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_zh-hans": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_hr": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_en-in": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_mr-in": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_da-dk": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_fr-fr": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_gu-in": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-scenario": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_en-ie": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_sq-al": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_he": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_pl": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_fa-ir": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-sanitize": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_ar-eg": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_nl-nl": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_pt": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_am-et": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_hi": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_sk-sk": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_gl-es": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_ms-my": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_zh-tw": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_hi-in": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_fr-gp": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_bg-bg": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      },
+      "angular-locale_gu": {
+        "1.3.0-rc.0": {
+          "path": "",
+          "versionedName": "angularjs_1.3.0-rc.0",
+          "name": "angularjs",
+          "isAmdPackage": true,
+          "versionedPath": "angularjs/1.3.0-rc.0"
+        }
+      }
+    },
+    "artifacts": {
+      "org.webjars/angularjs": {
+        "1.3.0-rc.0": {
+          "angular-locale_en-gu": "1.3.0-rc.0",
+          "angular-locale_sl": "1.3.0-rc.0",
+          "angular-locale_bn-bd": "1.3.0-rc.0",
+          "angular-locale_sk": "1.3.0-rc.0",
+          "angular-locale_ko": "1.3.0-rc.0",
+          "angular-locale_sw": "1.3.0-rc.0",
+          "angular-locale_kn": "1.3.0-rc.0",
+          "angular-locale_sv": "1.3.0-rc.0",
+          "angular-locale_sl-si": "1.3.0-rc.0",
+          "angular-locale_sr": "1.3.0-rc.0",
+          "angular-locale_lt-lt": "1.3.0-rc.0",
+          "angular-locale_fil-ph": "1.3.0-rc.0",
+          "angular-locale_sq": "1.3.0-rc.0",
+          "angular-locale_ca": "1.3.0-rc.0",
+          "angular-locale_ml-in": "1.3.0-rc.0",
+          "angular-locale_bn": "1.3.0-rc.0",
+          "angular-locale_sr-cyrl-rs": "1.3.0-rc.0",
+          "angular-route": "1.3.0-rc.0",
+          "angular-locale_hu-hu": "1.3.0-rc.0",
+          "angular-locale_tl-ph": "1.3.0-rc.0",
+          "angular-locale_th-th": "1.3.0-rc.0",
+          "angular-locale_en-gb": "1.3.0-rc.0",
+          "angular-locale_et-ee": "1.3.0-rc.0",
+          "angular-locale_gsw-ch": "1.3.0-rc.0",
+          "angular-locale_ro": "1.3.0-rc.0",
+          "angular-locale_is-is": "1.3.0-rc.0",
+          "angular-locale_ja": "1.3.0-rc.0",
+          "angular-locale_bg": "1.3.0-rc.0",
+          "angular-locale_ru": "1.3.0-rc.0",
+          "angular-locale_ta-in": "1.3.0-rc.0",
+          "angular": "1.3.0-rc.0",
+          "angular-locale_am": "1.3.0-rc.0",
+          "angular-resource": "1.3.0-rc.0",
+          "angular-locale_it": "1.3.0-rc.0",
+          "angular-locale_sr-latn-rs": "1.3.0-rc.0",
+          "angular-locale_fr-re": "1.3.0-rc.0",
+          "angular-touch": "1.3.0-rc.0",
+          "angular-locale_or-in": "1.3.0-rc.0",
+          "angular-locale_is": "1.3.0-rc.0",
+          "angular-locale_sw-tz": "1.3.0-rc.0",
+          "angular-locale_ca-es": "1.3.0-rc.0",
+          "angular-locale_hr-hr": "1.3.0-rc.0",
+          "angular-mocks": "1.3.0-rc.0",
+          "angular-locale_ja-jp": "1.3.0-rc.0",
+          "angular-locale_ar": "1.3.0-rc.0",
+          "angular-locale_zh": "1.3.0-rc.0",
+          "angular-locale_iw": "1.3.0-rc.0",
+          "angular-locale_it-it": "1.3.0-rc.0",
+          "angular-locale_ur": "1.3.0-rc.0",
+          "angular-locale_pl-pl": "1.3.0-rc.0",
+          "angular-locale_en-vi": "1.3.0-rc.0",
+          "angular-locale_pt-pt": "1.3.0-rc.0",
+          "angular-locale_he-il": "1.3.0-rc.0",
+          "angular-locale_uk": "1.3.0-rc.0",
+          "angular-locale_mr": "1.3.0-rc.0",
+          "angular-locale_ur-pk": "1.3.0-rc.0",
+          "angular-locale_mo": "1.3.0-rc.0",
+          "angular-locale_lv-lv": "1.3.0-rc.0",
+          "angular-locale_ml": "1.3.0-rc.0",
+          "angular-locale_en-us": "1.3.0-rc.0",
+          "angular-locale_uk-ua": "1.3.0-rc.0",
+          "angular-locale_en-dsrt": "1.3.0-rc.0",
+          "angular-locale_lv": "1.3.0-rc.0",
+          "angular-locale_lt": "1.3.0-rc.0",
+          "angular-locale_en-mp": "1.3.0-rc.0",
+          "angular-locale_de-de": "1.3.0-rc.0",
+          "angular-animate": "1.3.0-rc.0",
+          "angular-locale_fr-bl": "1.3.0-rc.0",
+          "angular-locale_en-um": "1.3.0-rc.0",
+          "angular-locale_en-mh": "1.3.0-rc.0",
+          "angular-locale_de-lu": "1.3.0-rc.0",
+          "angular-locale_tr-tr": "1.3.0-rc.0",
+          "angular-locale_id-id": "1.3.0-rc.0",
+          "angular-locale_da": "1.3.0-rc.0",
+          "angular-locale_tl": "1.3.0-rc.0",
+          "angular-locale_es-es": "1.3.0-rc.0",
+          "angular-locale_sr-rs": "1.3.0-rc.0",
+          "angular-locale_ln": "1.3.0-rc.0",
+          "angular-locale_de": "1.3.0-rc.0",
+          "angular-locale_fr-ca": "1.3.0-rc.0",
+          "angular-locale_tr": "1.3.0-rc.0",
+          "angular-locale_ta": "1.3.0-rc.0",
+          "angular-locale_de-ch": "1.3.0-rc.0",
+          "angular-locale_zh-hans-cn": "1.3.0-rc.0",
+          "angular-locale_zh-hk": "1.3.0-rc.0",
+          "angular-locale_fi-fi": "1.3.0-rc.0",
+          "angular-locale_kn-in": "1.3.0-rc.0",
+          "angular-locale_th": "1.3.0-rc.0",
+          "angular-locale_te": "1.3.0-rc.0",
+          "angular-locale_cs": "1.3.0-rc.0",
+          "angular-locale_de-at": "1.3.0-rc.0",
+          "angular-locale_cs-cz": "1.3.0-rc.0",
+          "angular-locale_gl": "1.3.0-rc.0",
+          "angular-locale_or": "1.3.0-rc.0",
+          "angular-locale_pt-br": "1.3.0-rc.0",
+          "angular-locale_fr": "1.3.0-rc.0",
+          "angular-locale_de-be": "1.3.0-rc.0",
+          "angular-locale_fr-mc": "1.3.0-rc.0",
+          "angular-locale_el-polyton": "1.3.0-rc.0",
+          "angular-locale_mt-mt": "1.3.0-rc.0",
+          "angular-locale_ko-kr": "1.3.0-rc.0",
+          "angular-locale_ro-ro": "1.3.0-rc.0",
+          "angular-locale_vi-vn": "1.3.0-rc.0",
+          "angular-locale_en-dsrt-us": "1.3.0-rc.0",
+          "angular-locale_te-in": "1.3.0-rc.0",
+          "angular-locale_fa": "1.3.0-rc.0",
+          "angular-locale_sv-se": "1.3.0-rc.0",
+          "angular-locale_fr-mq": "1.3.0-rc.0",
+          "angular-locale_en-sg": "1.3.0-rc.0",
+          "angular-locale_fr-mf": "1.3.0-rc.0",
+          "angular-locale_ln-cd": "1.3.0-rc.0",
+          "angular-locale_eu-es": "1.3.0-rc.0",
+          "angular-locale_fi": "1.3.0-rc.0",
+          "angular-locale_no": "1.3.0-rc.0",
+          "angular-locale_fil": "1.3.0-rc.0",
+          "angular-locale_nl": "1.3.0-rc.0",
+          "angular-locale_gsw": "1.3.0-rc.0",
+          "angular-locale_en-zz": "1.3.0-rc.0",
+          "angular-locale_en": "1.3.0-rc.0",
+          "angular-locale_en-iso": "1.3.0-rc.0",
+          "angular-locale_mt": "1.3.0-rc.0",
+          "angular-locale_el": "1.3.0-rc.0",
+          "angular-locale_ms": "1.3.0-rc.0",
+          "angular-locale_vi": "1.3.0-rc.0",
+          "angular-locale_eu": "1.3.0-rc.0",
+          "angular-locale_et": "1.3.0-rc.0",
+          "angular-locale_es": "1.3.0-rc.0",
+          "angular-locale_el-gr": "1.3.0-rc.0",
+          "angular-locale_ru-ru": "1.3.0-rc.0",
+          "angular-locale_id": "1.3.0-rc.0",
+          "angular-locale_en-as": "1.3.0-rc.0",
+          "angular-locale_en-au": "1.3.0-rc.0",
+          "angular-locale_in": "1.3.0-rc.0",
+          "angular-locale_en-za": "1.3.0-rc.0",
+          "angular-loader": "1.3.0-rc.0",
+          "angular-locale_zh-cn": "1.3.0-rc.0",
+          "angular-locale_hu": "1.3.0-rc.0",
+          "angular-cookies": "1.3.0-rc.0",
+          "angular-locale_zh-hans": "1.3.0-rc.0",
+          "angular-locale_hr": "1.3.0-rc.0",
+          "angular-locale_en-in": "1.3.0-rc.0",
+          "angular-locale_mr-in": "1.3.0-rc.0",
+          "angular-locale_da-dk": "1.3.0-rc.0",
+          "angular-locale_fr-fr": "1.3.0-rc.0",
+          "angular-locale_gu-in": "1.3.0-rc.0",
+          "angular-scenario": "1.3.0-rc.0",
+          "angular-locale_en-ie": "1.3.0-rc.0",
+          "angular-locale_sq-al": "1.3.0-rc.0",
+          "angular-locale_he": "1.3.0-rc.0",
+          "angular-locale_pl": "1.3.0-rc.0",
+          "angular-locale_fa-ir": "1.3.0-rc.0",
+          "angular-sanitize": "1.3.0-rc.0",
+          "angular-locale_ar-eg": "1.3.0-rc.0",
+          "angular-locale_nl-nl": "1.3.0-rc.0",
+          "angular-locale_pt": "1.3.0-rc.0",
+          "angular-locale_am-et": "1.3.0-rc.0",
+          "angular-locale_hi": "1.3.0-rc.0",
+          "angular-locale_sk-sk": "1.3.0-rc.0",
+          "angular-locale_gl-es": "1.3.0-rc.0",
+          "angular-locale_ms-my": "1.3.0-rc.0",
+          "angular-locale_zh-tw": "1.3.0-rc.0",
+          "angular-locale_hi-in": "1.3.0-rc.0",
+          "angular-locale_fr-gp": "1.3.0-rc.0",
+          "angular-locale_bg-bg": "1.3.0-rc.0",
+          "angular-locale_gu": "1.3.0-rc.0"
+        }
+      }
+    }
+  },
+  "shim": {
+    "angular-locale_da_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_sv-se_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_ca_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_gl-es_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_hr-hr_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_fa_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_en-um_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_id_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_fil_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_eu-es_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_en-us_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_el-polyton_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-loader_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_fr-ca_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_en-sg_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_fr-gp_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_en-dsrt_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_en-mp_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_gu-in_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_et-ee_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_ta-in_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-mocks_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_es_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_vi-vn_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_sr-latn-rs_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-touch_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_ja_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_cs_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_sr-rs_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_gsw_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_sv_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_pl-pl_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_de-ch_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_ru-ru_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_kn_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_fi-fi_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_he-il_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_ln_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_zh-hans_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_zh-cn_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_fr-mf_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_hu-hu_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_sw_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_in_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_vi_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_lt-lt_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_en-ie_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_fr-mc_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_sl_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_en-gb_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_tl_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_am_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_am-et_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_en-as_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_ml_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_fa-ir_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_uk_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_ml-in_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_sq-al_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_pl_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_en-za_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_ur-pk_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-sanitize_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_zh-hans-cn_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_bn_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_zh-hk_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_cs-cz_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_en-au_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_sk_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular_1.3.0-rc.0": {
+      "exports": "angular"
+    },
+    "angular-locale_zh-tw_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_en_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_nl_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_bg-bg_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_ln-cd_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_fr-re_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_fr_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_uk-ua_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_tr-tr_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_gu_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-animate_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_eu_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_en-gu_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_lv-lv_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_hr_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_pt-pt_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_ar-eg_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_ja-jp_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_gsw-ch_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_ar_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_ca-es_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_ru_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_zh_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-route_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_gl_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_el_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_ko_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_or_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_te_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_mr_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_de-lu_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_fr-bl_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_ro_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_tl-ph_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_sw-tz_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_th_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_hi_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_mo_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_kn-in_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_fi_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_no_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_fr-mq_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_is-is_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_mt-mt_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_ko-kr_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-cookies_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_ro-ro_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_fil-ph_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_fr-fr_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_en-dsrt-us_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_id-id_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_pt-br_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_te-in_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_en-in_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_en-zz_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_el-gr_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_hi-in_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_pt_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_sl-si_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-scenario_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_en-mh_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_nl-nl_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_sq_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_lv_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_mr-in_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_th-th_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_iw_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_de_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_et_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_is_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_ur_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_ta_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_de-be_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_or-in_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_tr_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_sr_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_bn-bd_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_it_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_de-de_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_ms_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_es-es_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_it-it_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_he_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-resource_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_en-vi_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_sk-sk_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_ms-my_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_de-at_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_en-iso_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_bg_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_da-dk_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_sr-cyrl-rs_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_lt_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_mt_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ],
+    "angular-locale_hu_1.3.0-rc.0": [
+      "angular",
+      "angular"
+    ]
+  },
+  "paths": {
+    "angular-locale_da_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_da",
+    "angular-locale_sv-se_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_sv-se",
+    "angular-locale_ca_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_ca",
+    "angular-locale_gl-es_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_gl-es",
+    "angular-locale_hr-hr_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_hr-hr",
+    "angular-locale_fa_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_fa",
+    "angular-locale_en-um_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_en-um",
+    "angular-locale_id_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_id",
+    "angular-locale_fil_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_fil",
+    "angular-locale_eu-es_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_eu-es",
+    "angular-locale_en-us_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_en-us",
+    "angular-locale_el-polyton_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_el-polyton",
+    "angular-loader_1.3.0-rc.0": "angularjs/1.3.0-rc.0/angular-loader",
+    "angular-locale_fr-ca_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_fr-ca",
+    "angular-locale_en-sg_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_en-sg",
+    "angular-locale_fr-gp_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_fr-gp",
+    "angular-locale_en-dsrt_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_en-dsrt",
+    "angular-locale_en-mp_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_en-mp",
+    "angular-locale_gu-in_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_gu-in",
+    "angular-locale_et-ee_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_et-ee",
+    "angular-locale_ta-in_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_ta-in",
+    "angular-mocks_1.3.0-rc.0": "angularjs/1.3.0-rc.0/angular-mocks",
+    "angular-locale_es_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_es",
+    "angular-locale_vi-vn_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_vi-vn",
+    "angular-locale_sr-latn-rs_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_sr-latn-rs",
+    "angular-touch_1.3.0-rc.0": "angularjs/1.3.0-rc.0/angular-touch",
+    "angular-locale_ja_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_ja",
+    "angular-locale_cs_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_cs",
+    "angular-locale_sr-rs_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_sr-rs",
+    "angular-locale_gsw_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_gsw",
+    "angular-locale_sv_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_sv",
+    "angular-locale_pl-pl_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_pl-pl",
+    "angular-locale_de-ch_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_de-ch",
+    "angular-locale_ru-ru_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_ru-ru",
+    "angular-locale_kn_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_kn",
+    "angular-locale_fi-fi_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_fi-fi",
+    "angular-locale_he-il_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_he-il",
+    "angular-locale_ln_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_ln",
+    "angular-locale_zh-hans_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_zh-hans",
+    "angular-locale_zh-cn_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_zh-cn",
+    "angular-locale_fr-mf_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_fr-mf",
+    "angular-locale_hu-hu_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_hu-hu",
+    "angular-locale_sw_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_sw",
+    "angular-locale_in_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_in",
+    "angular-locale_vi_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_vi",
+    "angular-locale_lt-lt_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_lt-lt",
+    "angular-locale_en-ie_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_en-ie",
+    "angular-locale_fr-mc_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_fr-mc",
+    "angular-locale_sl_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_sl",
+    "angular-locale_en-gb_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_en-gb",
+    "angular-locale_tl_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_tl",
+    "angular-locale_am_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_am",
+    "angular-locale_am-et_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_am-et",
+    "angular-locale_en-as_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_en-as",
+    "angular-locale_ml_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_ml",
+    "angular-locale_fa-ir_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_fa-ir",
+    "angular-locale_uk_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_uk",
+    "angular-locale_ml-in_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_ml-in",
+    "angular-locale_sq-al_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_sq-al",
+    "angular-locale_pl_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_pl",
+    "angular-locale_en-za_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_en-za",
+    "angular-locale_ur-pk_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_ur-pk",
+    "angular-sanitize_1.3.0-rc.0": "angularjs/1.3.0-rc.0/angular-sanitize",
+    "angular-locale_zh-hans-cn_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_zh-hans-cn",
+    "angular-locale_bn_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_bn",
+    "angular-locale_zh-hk_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_zh-hk",
+    "angular-locale_cs-cz_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_cs-cz",
+    "angular-locale_en-au_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_en-au",
+    "angular-locale_sk_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_sk",
+    "angular_1.3.0-rc.0": "angularjs/1.3.0-rc.0/angular",
+    "angular-locale_zh-tw_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_zh-tw",
+    "angular-locale_en_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_en",
+    "angular-locale_nl_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_nl",
+    "angular-locale_bg-bg_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_bg-bg",
+    "angular-locale_ln-cd_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_ln-cd",
+    "angular-locale_fr-re_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_fr-re",
+    "angular-locale_fr_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_fr",
+    "angular-locale_uk-ua_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_uk-ua",
+    "angular-locale_tr-tr_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_tr-tr",
+    "angular-locale_gu_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_gu",
+    "angular-animate_1.3.0-rc.0": "angularjs/1.3.0-rc.0/angular-animate",
+    "angular-locale_eu_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_eu",
+    "angular-locale_en-gu_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_en-gu",
+    "angular-locale_lv-lv_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_lv-lv",
+    "angular-locale_hr_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_hr",
+    "angular-locale_pt-pt_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_pt-pt",
+    "angular-locale_ar-eg_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_ar-eg",
+    "angular-locale_ja-jp_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_ja-jp",
+    "angular-locale_gsw-ch_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_gsw-ch",
+    "angular-locale_ar_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_ar",
+    "angular-locale_ca-es_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_ca-es",
+    "angular-locale_ru_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_ru",
+    "angular-locale_zh_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_zh",
+    "angular-route_1.3.0-rc.0": "angularjs/1.3.0-rc.0/angular-route",
+    "angular-locale_gl_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_gl",
+    "angular-locale_el_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_el",
+    "angular-locale_ko_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_ko",
+    "angular-locale_or_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_or",
+    "angular-locale_te_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_te",
+    "angular-locale_mr_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_mr",
+    "angular-locale_de-lu_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_de-lu",
+    "angular-locale_fr-bl_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_fr-bl",
+    "angular-locale_ro_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_ro",
+    "angular-locale_tl-ph_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_tl-ph",
+    "angular-locale_sw-tz_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_sw-tz",
+    "angular-locale_th_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_th",
+    "angular-locale_hi_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_hi",
+    "angular-locale_mo_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_mo",
+    "angular-locale_kn-in_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_kn-in",
+    "angular-locale_fi_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_fi",
+    "angular-locale_no_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_no",
+    "angular-locale_fr-mq_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_fr-mq",
+    "angular-locale_is-is_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_is-is",
+    "angular-locale_mt-mt_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_mt-mt",
+    "angular-locale_ko-kr_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_ko-kr",
+    "angular-cookies_1.3.0-rc.0": "angularjs/1.3.0-rc.0/angular-cookies",
+    "angular-locale_ro-ro_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_ro-ro",
+    "angular-locale_fil-ph_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_fil-ph",
+    "angular-locale_fr-fr_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_fr-fr",
+    "angular-locale_en-dsrt-us_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_en-dsrt-us",
+    "angular-locale_id-id_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_id-id",
+    "angular-locale_pt-br_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_pt-br",
+    "angular-locale_te-in_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_te-in",
+    "angular-locale_en-in_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_en-in",
+    "angular-locale_en-zz_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_en-zz",
+    "angular-locale_el-gr_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_el-gr",
+    "angular-locale_hi-in_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_hi-in",
+    "angular-locale_pt_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_pt",
+    "angular-locale_sl-si_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_sl-si",
+    "angular-scenario_1.3.0-rc.0": "angularjs/1.3.0-rc.0/angular-scenario",
+    "angular-locale_en-mh_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_en-mh",
+    "angular-locale_nl-nl_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_nl-nl",
+    "angular-locale_sq_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_sq",
+    "angular-locale_lv_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_lv",
+    "angular-locale_mr-in_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_mr-in",
+    "angular-locale_th-th_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_th-th",
+    "angular-locale_iw_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_iw",
+    "angular-locale_de_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_de",
+    "angular-locale_et_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_et",
+    "angular-locale_is_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_is",
+    "angular-locale_ur_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_ur",
+    "angular-locale_ta_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_ta",
+    "angular-locale_de-be_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_de-be",
+    "angular-locale_or-in_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_or-in",
+    "angular-locale_tr_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_tr",
+    "angular-locale_sr_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_sr",
+    "angular-locale_bn-bd_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_bn-bd",
+    "angular-locale_it_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_it",
+    "angular-locale_de-de_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_de-de",
+    "angular-locale_ms_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_ms",
+    "angular-locale_es-es_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_es-es",
+    "angular-locale_it-it_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_it-it",
+    "angular-locale_he_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_he",
+    "angular-resource_1.3.0-rc.0": "angularjs/1.3.0-rc.0/angular-resource",
+    "angular-locale_en-vi_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_en-vi",
+    "angular-locale_sk-sk_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_sk-sk",
+    "angular-locale_ms-my_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_ms-my",
+    "angular-locale_de-at_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_de-at",
+    "angular-locale_en-iso_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_en-iso",
+    "angular-locale_bg_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_bg",
+    "angular-locale_da-dk_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_da-dk",
+    "angular-locale_sr-cyrl-rs_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_sr-cyrl-rs",
+    "angular-locale_lt_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_lt",
+    "angular-locale_mt_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_mt",
+    "angular-locale_hu_1.3.0-rc.0": "angularjs/1.3.0-rc.0/i18n/angular-locale_hu"
+  }
+}
