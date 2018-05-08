@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xmlns:cm="http://aries.apache.org/blueprint/xmlns/blueprint-cm/v1.1.0"
+           xsi:schemaLocation="http://www.osgi.org/xmlns/blueprint/v1.0.0
+                               http://www.osgi.org/xmlns/blueprint/v1.0.0/blueprint.xsd
+                               http://aries.apache.org/blueprint/xmlns/blueprint-cm/v1.1.0
+                               http://aries.apache.org/schemas/blueprint-cm/blueprint-cm-1.1.0.xsd">
+
+
+  <!-- START: Configuration -->
+  <cm:property-placeholder persistent-id="org.pentaho.webcontext.core" update-strategy="reload"
+                           placeholder-prefix="require(" placeholder-suffix=")">
+    <cm:default-properties>
+      <cm:property name="requireCfg.waitTime" value="30"/>
+    </cm:default-properties>
+  </cm:property-placeholder>
+
+  <cm:property-placeholder persistent-id="org.apache.cxf.osgi" update-strategy="none"
+                           placeholder-prefix="cxf(" placeholder-suffix=")">
+    <cm:default-properties>
+      <cm:property name="org.apache.cxf.servlet.context" value=""/>
+    </cm:default-properties>
+  </cm:property-placeholder>
+  <!-- END: Configuration -->
+
+  <bean id="WebContextServletRef" class="org.pentaho.webcontext.core.impl.PentahoWebContextServletImpl">
+    <property name="requireWaitTime" value="require(requireCfg.waitTime)"/>
+    <property name="servicesRoot" value="cxf(org.apache.cxf.servlet.context)"/>
+  </bean>
+
+
+  <service interface="javax.servlet.Servlet" id="pentahoWebContext" ref="WebContextServletRef">
+    <service-properties>
+      <entry key="alias" value="/*"/>
+      <entry key="servlet-name" value="pentahoWebContext"/>
+    </service-properties>
+  </service>
+
+</blueprint>
