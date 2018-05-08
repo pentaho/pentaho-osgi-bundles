@@ -25,24 +25,14 @@
     </dependency>
     <dependency>
       <groupId>pentaho</groupId>
-      <artifactId>pentaho-platform-api</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>pentaho</groupId>
       <artifactId>pentaho-platform-core</artifactId>
-      <version>${project.version}</version>
+      <version>${platform.version}</version>
       <exclusions>
         <exclusion>
           <artifactId>xbean</artifactId>
           <groupId>org.apache.xbean</groupId>
         </exclusion>
       </exclusions>
-    </dependency>
-    <dependency>
-      <groupId>pentaho</groupId>
-      <artifactId>pentaho-platform-extensions</artifactId>
-      <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>pentaho</groupId>
@@ -58,11 +48,6 @@
       <groupId>org.osgi</groupId>
       <artifactId>org.osgi.core</artifactId>
       <version>4.3.1</version>
-    </dependency>
-    <dependency>
-      <groupId>javax.servlet</groupId>
-      <artifactId>javax.servlet-api</artifactId>
-      <version>3.0.1</version>
     </dependency>
     <dependency>
       <groupId>org.mockito</groupId>
@@ -105,7 +90,7 @@
     <dependency>
       <groupId>javax.servlet</groupId>
       <artifactId>javax.servlet-api</artifactId>
-      <version>3.0.1</version>
+      <version>${javax.servlet-api.version}</version>
     </dependency>
     <dependency>
       <groupId>pentaho</groupId>

@@ -16,13 +16,8 @@
   <dependencies>
     <dependency>
       <groupId>pentaho</groupId>
-      <artifactId>pentaho-platform-api</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>pentaho</groupId>
       <artifactId>pentaho-platform-core</artifactId>
-      <version>${project.version}</version>
+      <version>${platform.version}</version>
       <exclusions>
         <exclusion>
           <artifactId>xbean</artifactId>
@@ -43,7 +38,7 @@
     <dependency>
       <groupId>javax.servlet</groupId>
       <artifactId>javax.servlet-api</artifactId>
-      <version>3.0.1</version>
+      <version>${javax.servlet-api.version}</version>
     </dependency>
     <dependency>
       <groupId>org.mockito</groupId>
@@ -82,11 +77,6 @@
       <groupId>org.ops4j.pax.web</groupId>
       <artifactId>pax-web-spi</artifactId>
       <version>3.1.4</version>
-    </dependency>
-    <dependency>
-      <groupId>javax.servlet</groupId>
-      <artifactId>javax.servlet-api</artifactId>
-      <version>3.0.1</version>
     </dependency>
   </dependencies>
   <build>

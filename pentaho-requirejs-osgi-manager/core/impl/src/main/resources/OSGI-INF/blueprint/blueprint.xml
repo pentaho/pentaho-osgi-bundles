@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<blueprint xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xmlns:cm="http://aries.apache.org/blueprint/xmlns/blueprint-cm/v1.1.0"
+           xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0"
+           xsi:schemaLocation="http://www.osgi.org/xmlns/blueprint/v1.0.0
+            http://www.osgi.org/xmlns/blueprint/v1.0.0/blueprint.xsd
+            http://aries.apache.org/blueprint/xmlns/blueprint-cm/v1.1.0
+            http://aries.apache.org/schemas/blueprint-cm/blueprint-cm-1.1.0.xsd">
+
+  <cm:property-placeholder persistent-id="org.pentaho.requirejs" update-strategy="reload">
+    <cm:default-properties>
+      <cm:property name="context.root" value="/"/>
+    </cm:default-properties>
+  </cm:property-placeholder>
+
+  <bean id="configManager" class="org.pentaho.requirejs.impl.RequireJsConfigManager" scope="singleton" destroy-method="destroy">
+    <property name="packageConfigurationsTracker" ref="packageConfigurationsTracker"/>
+    <property name="externalResourcesScriptsTracker" ref="externalResourcesScriptsTracker"/>
+    <property name="plugins">
+      <!-- This shouldn't be a fixed list, but instead services registered by any bundle and injected here -->
+      <list>
+        <ref component-id="typeAndInstanceInfoPlugin" />
+        <ref component-id="amdPlugin" />
+        <ref component-id="nomAmdPackagePlugin" />
+      </list>
+    </property>
+  </bean>
+
+  <bean id="packageConfigurationsTracker" class="org.pentaho.requirejs.impl.listeners.RequireJsPackageServiceTracker" scope="singleton" init-method="init" destroy-method="destroy">
+    <property name="bundleContext" ref="blueprintBundleContext"/>
+    <property name="requireJsConfigManager" ref="configManager"/>
+  </bean>
+
+  <bean id="externalResourcesScriptsTracker" class="org.pentaho.requirejs.impl.listeners.RequireJsBundleListener" scope="singleton" init-method="init" destroy-method="destroy">
+    <property name="bundleContext" ref="blueprintBundleContext"/>
+    <property name="requireJsConfigManager" ref="configManager"/>
+  </bean>
+
+  <!-- This belongs in a Type API webpackage bundle -->
+  <bean id="typeAndInstanceInfoPlugin" class="org.pentaho.requirejs.impl.plugins.TypeAndInstanceInfoPluginConfig" />
+  <!-- This belongs in a Core Utils webpackage bundle -->
+  <bean id="amdPlugin" class="org.pentaho.requirejs.impl.plugins.AmdPluginConfig" />
+  <!-- This belongs in a pentaho-webjars-deployer's bundle -->
+  <bean id="nomAmdPackagePlugin" class="org.pentaho.requirejs.impl.plugins.NomAmdPackageShim" />
+
+  <service interface="javax.servlet.http.HttpServlet">
+    <service-properties>
+      <entry key="alias" value="/requirejs-manager/js/require-init.js"/>
+    </service-properties>
+
+    <bean class="org.pentaho.requirejs.impl.servlet.RequireJsConfigServlet">
+      <property name="contextRoot" value="${context.root}"/>
+      <property name="manager" ref="configManager"/>
+    </bean>
+  </service>
+</blueprint>

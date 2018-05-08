@@ -150,7 +150,7 @@ public class WebjarsURLConnectionTest {
   }
 
   @Test
-  public void testMinifiedResources() throws IOException, ParseException {
+  public void testMinifiedResources() throws IOException {
     ZipFile zipInputStream = getDeployedJar( new URL( "mvn:org.webjars/smart-table/2.0.3-1" ), true );
 
     verifyBlueprint( zipInputStream, "smart-table/2.0.3-1" );
@@ -159,7 +159,7 @@ public class WebjarsURLConnectionTest {
   }
 
   @Test
-  public void testFailedMinification() throws IOException, ParseException {
+  public void testFailedMinification() throws IOException {
     ZipFile zipInputStream = getDeployedJar( new URL( "mvn:org.webjars/smart-table/2.0.3-1-fail-minification" ), true );
 
     verifyBlueprint( zipInputStream, "smart-table/2.0.3-1" );
@@ -168,7 +168,7 @@ public class WebjarsURLConnectionTest {
   }
 
   @Test
-  public void testDisabledMinification() throws IOException, ParseException {
+  public void testDisabledMinification() throws IOException {
     ZipFile zipInputStream = getDeployedJar( new URL( "mvn:org.webjars/smart-table/2.0.3-1" ), false );
 
     ZipEntry entry = zipInputStream.getEntry( "OSGI-INF/blueprint/blueprint.xml" );
@@ -243,7 +243,7 @@ public class WebjarsURLConnectionTest {
     assertTrue( "blueprint.xml does not include path for " + expectedPath + " sources", matcher.find() );
   }
 
-  private void verifyNoBlueprint( ZipFile zipInputStream ) throws IOException {
+  private void verifyNoBlueprint( ZipFile zipInputStream ) {
     ZipEntry entry = zipInputStream.getEntry( "OSGI-INF/blueprint/blueprint.xml" );
     assertNull( entry );
   }
@@ -268,7 +268,7 @@ public class WebjarsURLConnectionTest {
     assertTrue( "version is " + version, versionInfo.containsKey( version ) );
   }
 
-  private void verifyNoRequireJson( ZipFile zipInputStream ) throws IOException, ParseException {
+  private void verifyNoRequireJson( ZipFile zipInputStream ) {
     ZipEntry entry = zipInputStream.getEntry( "META-INF/js/require.json" );
     assertNull( entry );
   }

@@ -10,7 +10,6 @@
   </parent>
 
   <artifactId>pentaho-webpackage-archive-deployer</artifactId>
-
   <packaging>feature</packaging>
 
   <dependencies>

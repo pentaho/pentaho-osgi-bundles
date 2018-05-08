@@ -1,0 +1,40 @@
+{
+  "requirejs-osgi-meta": {
+    "modules": {
+      "asap": {
+        "2.0.3": {
+          "path": "",
+          "versionedName": "asap_2.0.3",
+          "name": "asap",
+          "packages": [
+            {
+              "name": "",
+              "main": "asap"
+            }
+          ],
+          "isAmdPackage": true,
+          "versionedPath": "asap/2.0.3"
+        }
+      }
+    },
+    "artifacts": {
+      "org.webjars.npm/asap": {
+        "2.0.3": {
+          "asap": "2.0.3"
+        }
+      }
+    }
+  },
+  "packages": [
+    {
+      "name": "asap_2.0.3",
+      "main": "asap"
+    }
+  ],
+  "paths": {
+    "asap_2.0.3/asap": "asap/2.0.3/browser-asap",
+    "asap_2.0.3/raw": "asap/2.0.3/browser-raw",
+    "asap_2.0.3/test/domain": "asap/2.0.3/test/browser-domain",
+    "asap_2.0.3": "asap/2.0.3"
+  }
+}

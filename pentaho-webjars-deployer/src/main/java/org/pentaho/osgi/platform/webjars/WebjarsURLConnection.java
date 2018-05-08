@@ -30,7 +30,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.filefilter.TrueFileFilter;
 import org.osgi.framework.Constants;
-import org.pentaho.js.require.RequireJsGenerator;
+import org.pentaho.osgi.platform.webjars.utils.RequireJsGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
