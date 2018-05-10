@@ -65,15 +65,13 @@
     <commons-lang.version>2.6</commons-lang.version>
     <platform.version>9.0.0.0-SNAPSHOT</platform.version>
     <karaf.version>3.0.3</karaf.version>
-	
-	 <!-- All 3 of these properties are required -->
+    <!-- All 3 of these properties are required -->
     <license.organizationName>Hitachi Vantara</license.organizationName>
     <license.inceptionYear>2003</license.inceptionYear>
     <!-- Override this property in sub-modules IF it has a different license -->
     <license.licenseName>apache_v2</license.licenseName>
   </properties>
   <build>
-    <finalName>${project.artifactId}</finalName>
     <plugins>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
@@ -97,7 +95,6 @@
       </plugin>
     </plugins>
   </build>
-
   <profiles>
     <profile>
       <id>lowdeps</id>
@@ -126,6 +123,7 @@
         <module>pentaho-object-tunnel</module>
         <module>pentaho-zookeeper-fragment</module>
         <module>pentaho-bundle-resource-manager</module>
+        <module>pentaho-metastore-locator-api</module>
       </modules>
     </profile>
     <profile>
@@ -141,7 +139,7 @@
         <module>pentaho-proxy-factory</module>
         <module>pentaho-proxy-spring4</module>
         <module>pentaho-kettle-repository-locator</module>
-        <module>pentaho-metastore-locator</module>
+        <module>pentaho-metastore-locator-impl</module>
         <module>pentaho-webcontext</module>
         <module>pentaho-pdi-platform</module>
         <module>pentaho-camel-guava-eventbus</module>
