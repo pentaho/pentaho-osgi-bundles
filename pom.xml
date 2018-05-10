@@ -84,7 +84,6 @@
   </dependencyManagement>
 
   <build>
-    <finalName>${project.artifactId}</finalName>
     <plugins>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
@@ -137,6 +136,7 @@
         <module>pentaho-object-tunnel</module>
         <module>pentaho-zookeeper-fragment</module>
         <module>pentaho-bundle-resource-manager</module>
+        <module>pentaho-metastore-locator-api</module>
         <module>pentaho-proc-governor</module>
       </modules>
     </profile>
@@ -153,7 +153,7 @@
         <module>pentaho-proxy-factory</module>
         <module>pentaho-proxy-spring4</module>
         <module>pentaho-kettle-repository-locator</module>
-        <module>pentaho-metastore-locator</module>
+        <module>pentaho-metastore-locator-impl</module>
         <module>pentaho-webcontext</module>
         <module>pentaho-pdi-platform</module>
         <module>pentaho-camel-guava-eventbus</module>
