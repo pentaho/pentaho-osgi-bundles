@@ -46,6 +46,10 @@ public class AuthenticationMappingManagerImpl implements AuthenticationMappingMa
   public AuthenticationMappingManagerImpl() throws IOException {
   }
 
+  public AuthenticationMappingManagerImpl(AuthenticationMappingService service) throws IOException {
+    serviceMap.put( new TypePair( service ), new RankedAuthService( 50, service ) );
+  }
+
   @Override
   @SuppressWarnings( "unchecked" )
   public <InputType, OutputType> OutputType getMapping( Class<InputType> inputType, InputType input,
