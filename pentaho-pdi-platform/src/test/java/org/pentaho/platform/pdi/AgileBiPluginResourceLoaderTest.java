@@ -22,7 +22,11 @@ import org.osgi.framework.BundleReference;
 
 import java.util.MissingResourceException;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.withSettings;
@@ -79,14 +83,14 @@ public class AgileBiPluginResourceLoaderTest {
 
   @Test
   public void findResources() throws Exception {
-    assertEquals(1, resourceLoader.findResources( getClass(), "README.md" ).size());
-    assertEquals(0, resourceLoader.findResources( getClass(), "bogus.md" ).size());
+    assertEquals( 1, resourceLoader.findResources( getClass(), "README.md" ).size() );
+    assertEquals( 0, resourceLoader.findResources( getClass(), "bogus.md" ).size() );
   }
 
   @Test
   public void findResources1() throws Exception {
-    assertEquals(1, resourceLoader.findResources( getClass().getClassLoader(), "README.md" ).size());
-    assertEquals(0, resourceLoader.findResources( getClass().getClassLoader(), "bogus.md" ).size());
+    assertEquals( 1, resourceLoader.findResources( getClass().getClassLoader(), "README.md" ).size() );
+    assertEquals( 0, resourceLoader.findResources( getClass().getClassLoader(), "bogus.md" ).size() );
   }
 
   @Test
@@ -95,7 +99,7 @@ public class AgileBiPluginResourceLoaderTest {
     try {
       resourceLoader.getResourceBundle( getClass(), "bogus" );
       fail();
-    } catch( MissingResourceException e ){}
+    } catch ( MissingResourceException e ) { }
   }
 
   @Test
@@ -113,7 +117,7 @@ public class AgileBiPluginResourceLoaderTest {
     ClassLoader classLoader = mock( ClassLoader.class, withSettings().extraInterfaces( BundleReference.class ) );
     Bundle bundle = mock( Bundle.class );
     when( bundle.getSymbolicName() ).thenReturn( "test" );
-    when( ((BundleReference)classLoader).getBundle() ).thenReturn( bundle );
+    when( ((BundleReference) classLoader).getBundle() ).thenReturn( bundle );
     assertEquals( "test", pluginResourceLoader.getSymbolicName( classLoader ) );
 
   }
