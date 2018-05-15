@@ -36,16 +36,21 @@ public class RequireJsDependencyResolver {
     this.packagesIndex = new HashMap<>();
     this.requirements = new HashMap<>();
 
-    availablePackages.forEach( packageConfiguration -> {
+    // index packages that can be depended upon
+    for ( IRequireJsPackageConfiguration availablePackage : availablePackages ) {
       // if it is a nameless and/or versionless package, no other can depend on it
-      if ( !packageConfiguration.getName().isEmpty() && !packageConfiguration.getVersion().isEmpty() ) {
-        Map<String, IRequireJsPackageConfiguration> packageVersion = this.packagesIndex.computeIfAbsent( packageConfiguration.getName(), name -> new HashMap<>() );
-        packageVersion.putIfAbsent( packageConfiguration.getVersion(), packageConfiguration );
-
-        packageConfiguration.getDependencies().forEach( this::processPackageDependentsRequirements );
+      if ( !availablePackage.getName().isEmpty() && !availablePackage.getVersion().isEmpty() ) {
+        Map<String, IRequireJsPackageConfiguration> packageVersion = this.packagesIndex.computeIfAbsent( availablePackage.getName(), name -> new HashMap<>() );
+        packageVersion.putIfAbsent( availablePackage.getVersion(), availablePackage );
       }
-    } );
+    }
 
+    // collect package's requirements
+    for ( IRequireJsPackageConfiguration packageConfiguration : availablePackages ) {
+      packageConfiguration.getDependencies().forEach( this::processPackageDependentsRequirements );
+    }
+
+    // resolve package's requirements
     this.requirements.values().forEach( PackageDependentsRequirements::resolve );
   }
 
