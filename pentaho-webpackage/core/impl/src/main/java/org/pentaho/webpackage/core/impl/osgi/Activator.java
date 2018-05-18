@@ -19,7 +19,6 @@ package org.pentaho.webpackage.core.impl.osgi;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
-import org.pentaho.webpackage.core.impl.PentahoWebPackageBundleListener;
 
 public class Activator implements BundleActivator {
   private PentahoWebPackageBundleListener pentahoWebPackageBundleListener;

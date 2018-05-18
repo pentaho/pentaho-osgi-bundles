@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  */
-package org.pentaho.webpackage.core.impl;
+package org.pentaho.webpackage.core.impl.osgi;
 
 import org.junit.Test;
 import org.osgi.framework.*;
@@ -22,6 +22,7 @@ import org.osgi.framework.wiring.BundleCapability;
 import org.osgi.framework.wiring.BundleWiring;
 import org.pentaho.webpackage.core.IPentahoWebPackage;
 import org.pentaho.webpackage.core.PentahoWebPackageConstants;
+import org.pentaho.webpackage.core.impl.osgi.PentahoWebPackageBundleListener;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;

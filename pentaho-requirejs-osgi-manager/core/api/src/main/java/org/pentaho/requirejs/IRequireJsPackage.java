@@ -38,8 +38,4 @@ public interface IRequireJsPackage {
 
   boolean hasScript( String name );
   URL getScriptResource( String name );
-
-  void register();
-
-  void unregister();
 }

@@ -74,19 +74,11 @@ public final class PentahoWebPackageImpl implements IPentahoWebPackage {
       URLConnection urlConnection = this.packageJsonUrl.openConnection();
       urlConnection.connect();
       InputStream inputStream = urlConnection.getInputStream();
-      inputStream.mark( 0 );
 
       InputStreamReader inputStreamReader = new InputStreamReader( inputStream );
       BufferedReader bufferedReader = new BufferedReader( inputStreamReader );
 
-      Map<String, Object> map = (Map<String, Object>) parser.parse( bufferedReader );
-
-      // Reset input stream for next read operation
-      if ( inputStream.markSupported() ) {
-        inputStream.reset();
-      }
-
-      return map;
+      return (Map<String, Object>) parser.parse( bufferedReader );
     } catch ( IOException | ParseException ignored ) {
     }
 

@@ -19,7 +19,6 @@ package org.pentaho.webpackage.core.impl.osgi;
 import org.junit.Test;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
-import org.pentaho.webpackage.core.impl.PentahoWebPackageBundleListener;
 
 import java.util.ArrayList;
 import java.util.Collection;

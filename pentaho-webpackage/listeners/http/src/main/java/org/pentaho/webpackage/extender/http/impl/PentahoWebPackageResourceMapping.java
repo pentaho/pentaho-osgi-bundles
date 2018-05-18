@@ -17,26 +17,17 @@
 package org.pentaho.webpackage.extender.http.impl;
 
 import org.ops4j.pax.web.extender.whiteboard.ResourceMapping;
-import org.osgi.framework.BundleContext;
-import org.osgi.framework.ServiceRegistration;
 import org.pentaho.webpackage.core.IPentahoWebPackage;
 
 /**
  * A webpackage targeted implementation of {@link ResourceMapping}.
- * <p>
- * Also provides methods to register and unregister itself.
  */
 public class PentahoWebPackageResourceMapping implements ResourceMapping {
-  private final BundleContext bundleContext;
-
   private final IPentahoWebPackage pentahoWebPackage;
 
-  private ServiceRegistration<ResourceMapping> serviceRegistration;
-
-  PentahoWebPackageResourceMapping( BundleContext bundleContext, IPentahoWebPackage pentahoWebPackage ) {
+  public PentahoWebPackageResourceMapping( IPentahoWebPackage pentahoWebPackage ) {
     super();
 
-    this.bundleContext = bundleContext;
     this.pentahoWebPackage = pentahoWebPackage;
   }
 
@@ -70,23 +61,6 @@ public class PentahoWebPackageResourceMapping implements ResourceMapping {
       PentahoWebPackageResourceMapping other = (PentahoWebPackageResourceMapping) obj;
 
       return other.pentahoWebPackage.equals( this.pentahoWebPackage );
-    }
-  }
-
-  public void register() {
-    // Register resource mapping in httpService whiteboard
-    this.serviceRegistration = this.bundleContext.registerService( ResourceMapping.class, this, null );
-  }
-
-  public void unregister() {
-    if ( this.serviceRegistration != null ) {
-      try {
-        this.serviceRegistration.unregister();
-      } catch ( RuntimeException ignored ) {
-        // service might be already unregistered automatically by the bundle lifecycle manager
-      }
-
-      this.serviceRegistration = null;
     }
   }
 }

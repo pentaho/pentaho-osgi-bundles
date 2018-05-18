@@ -20,7 +20,6 @@ import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.util.tracker.ServiceTracker;
 import org.pentaho.webpackage.core.IPentahoWebPackage;
-import org.pentaho.webpackage.extender.requirejs.impl.PentahoWebPackageServiceTracker;
 
 public class Activator implements BundleActivator {
   ServiceTracker pentahoWebPackageServiceTracker;

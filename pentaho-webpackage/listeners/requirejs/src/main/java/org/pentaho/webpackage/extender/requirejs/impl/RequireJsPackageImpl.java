@@ -16,12 +16,11 @@
  */
 package org.pentaho.webpackage.extender.requirejs.impl;
 
-import org.osgi.framework.Bundle;
-import org.osgi.framework.BundleContext;
-import org.osgi.framework.ServiceRegistration;
 import org.pentaho.requirejs.IRequireJsPackage;
 import org.pentaho.webpackage.core.IPentahoWebPackage;
 
+import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.util.Collections;
 import java.util.HashMap;
@@ -33,11 +32,8 @@ import java.util.function.BiConsumer;
  * This RequireJsPackage implementation handles webpackage's package.json files.
  */
 public class RequireJsPackageImpl implements IRequireJsPackage {
-  private final BundleContext bundleContext;
-
   private final IPentahoWebPackage pentahoWebPackage;
-
-  private ServiceRegistration<?> serviceReference;
+  private final URI resourceRoot;
 
   private final Map<String, String> modules;
   private final Map<String, String> packages;
@@ -54,10 +50,9 @@ public class RequireJsPackageImpl implements IRequireJsPackage {
 
   private boolean preferGlobal;
 
-  RequireJsPackageImpl( BundleContext bundleContext, IPentahoWebPackage pentahoWebPackage ) {
-    this.bundleContext = bundleContext;
-
+  public RequireJsPackageImpl( IPentahoWebPackage pentahoWebPackage, URI resourceRoot ) {
     this.pentahoWebPackage = pentahoWebPackage;
+    this.resourceRoot = resourceRoot;
 
     this.modules = new HashMap<>();
     this.packages = new HashMap<>();
@@ -117,10 +112,14 @@ public class RequireJsPackageImpl implements IRequireJsPackage {
 
   @Override
   public URL getScriptResource( String name ) {
-    Bundle bundle = this.bundleContext.getBundle();
-    String scriptPath = this.pentahoWebPackage.getResourceRootPath() + "/" + this.scripts.get( name );
+    URL url = null;
 
-    return bundle.getResource( scriptPath );
+    try {
+      url = this.resourceRoot.resolve( this.scripts.get( name ) ).toURL();
+    } catch ( MalformedURLException ignored ) {
+    }
+
+    return url;
   }
 
   @Override
@@ -305,24 +304,5 @@ public class RequireJsPackageImpl implements IRequireJsPackage {
 
   private void addShim( String moduleId, Map<String, ?> configuration ) {
     this.shim.put( moduleId, configuration );
-  }
-
-
-  @Override
-  public void register() {
-    this.serviceReference = this.bundleContext.registerService( IRequireJsPackage.class.getName(), this, null );
-  }
-
-  @Override
-  public void unregister() {
-    if ( this.serviceReference != null ) {
-      try {
-        this.serviceReference.unregister();
-      } catch ( RuntimeException ignored ) {
-        // service might be already unregistered automatically by the bundle lifecycle manager
-      }
-
-      this.serviceReference = null;
-    }
   }
 }

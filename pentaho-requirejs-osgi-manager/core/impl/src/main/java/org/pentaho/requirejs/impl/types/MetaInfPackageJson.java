@@ -16,8 +16,6 @@
  */
 package org.pentaho.requirejs.impl.types;
 
-import org.osgi.framework.BundleContext;
-import org.osgi.framework.ServiceRegistration;
 import org.pentaho.requirejs.IRequireJsPackage;
 
 import java.net.URL;
@@ -28,19 +26,15 @@ import java.util.Map;
 
 /**
  * This RequireJsPackage implementation handles bundles with a META-INF/js/package.json file.
- *
+ * <p>
  * These files are historically filtered during build to inject versioned information, so this class
  * undoes the version scheme applied to moduleIDs and paths, to let pentaho-requirejs-manager apply its own.
- *
+ * <p>
  * Apart from functionality like {@code preferGlobal} and {@code scripts}, there is also a significant syntax
  * difference to webpackage's package.json files, as it only supports a single level map syntax, allowing only
  * to specify local mappings.
  */
 public class MetaInfPackageJson implements IRequireJsPackage {
-  private final BundleContext bundleContext;
-
-  private ServiceRegistration<?> serviceReference;
-
   private final Map<String, Object> packageJsonObject;
 
   private String name;
@@ -57,9 +51,7 @@ public class MetaInfPackageJson implements IRequireJsPackage {
 
   private final Map<String, Map<String, ?>> shim;
 
-  public MetaInfPackageJson( BundleContext bundleContext, Map<String, Object> packageJsonObject ) {
-    this.bundleContext = bundleContext;
-
+  public MetaInfPackageJson( Map<String, Object> packageJsonObject ) {
     this.packageJsonObject = packageJsonObject;
 
     this.modules = new HashMap<>();
@@ -279,24 +271,6 @@ public class MetaInfPackageJson implements IRequireJsPackage {
           this.addShim( moduleId, deps );
         }
       } );
-    }
-  }
-
-  @Override
-  public void register() {
-    this.serviceReference = this.bundleContext.registerService( IRequireJsPackage.class.getName(), this, null );
-  }
-
-  @Override
-  public void unregister() {
-    if ( this.serviceReference != null ) {
-      try {
-        this.serviceReference.unregister();
-      } catch ( RuntimeException ignored ) {
-        // service might be already unregistered automatically by the bundle lifecycle manager
-      }
-
-      this.serviceReference = null;
     }
   }
 }

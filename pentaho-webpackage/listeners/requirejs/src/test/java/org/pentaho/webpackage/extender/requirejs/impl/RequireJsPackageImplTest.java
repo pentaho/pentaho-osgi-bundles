@@ -18,45 +18,35 @@ package org.pentaho.webpackage.extender.requirejs.impl;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.osgi.framework.Bundle;
-import org.osgi.framework.BundleContext;
-import org.osgi.framework.ServiceRegistration;
 import org.pentaho.webpackage.core.IPentahoWebPackage;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
-import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
-import java.net.URLConnection;
-import java.net.URLStreamHandler;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyObject;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class RequireJsPackageImplTest {
 
   private RequireJsPackageImpl requireJsPackage;
-  private BundleContext mockBundleContext;
-  private IPentahoWebPackage mockPentahoWebPackage;
 
+  private IPentahoWebPackage mockPentahoWebPackage;
+  private URI resourceRootUri;
 
   @Before
-  public void setUp() {
-    mockBundleContext = mock( BundleContext.class );
+  public void setUp() throws URISyntaxException {
     mockPentahoWebPackage = mock( IPentahoWebPackage.class );
+    resourceRootUri = this.getClass().getResource( "/" ).toURI();
   }
 
   @Test
@@ -64,7 +54,7 @@ public class RequireJsPackageImplTest {
     // arrange
     String expectedPackageName = "SomePackageName";
     when( mockPentahoWebPackage.getName() ).thenReturn( expectedPackageName );
-    this.requireJsPackage = new RequireJsPackageImpl( this.mockBundleContext, this.mockPentahoWebPackage );
+    this.requireJsPackage = new RequireJsPackageImpl( this.mockPentahoWebPackage, this.resourceRootUri );
 
     // act
     String actualName = this.requireJsPackage.getName();
@@ -78,7 +68,7 @@ public class RequireJsPackageImplTest {
     // arrange
     String expectedPackageVersion = "1.2.3";
     when( mockPentahoWebPackage.getVersion() ).thenReturn( expectedPackageVersion );
-    this.requireJsPackage = new RequireJsPackageImpl( this.mockBundleContext, this.mockPentahoWebPackage );
+    this.requireJsPackage = new RequireJsPackageImpl( this.mockPentahoWebPackage, this.resourceRootUri );
 
     // act
     String actualPackageVersion = this.requireJsPackage.getVersion();
@@ -92,7 +82,7 @@ public class RequireJsPackageImplTest {
     // arrange
     String expectedWebRootPath = "some/path/to/web/root";
     when( mockPentahoWebPackage.getWebRootPath() ).thenReturn( expectedWebRootPath );
-    this.requireJsPackage = new RequireJsPackageImpl( this.mockBundleContext, this.mockPentahoWebPackage );
+    this.requireJsPackage = new RequireJsPackageImpl( this.mockPentahoWebPackage, this.resourceRootUri );
 
     // act
     String actualWebRootPath = this.requireJsPackage.getWebRootPath();
@@ -108,7 +98,7 @@ public class RequireJsPackageImplTest {
     Map<String, Object> preferGlobalJson = new HashMap<>();
     preferGlobalJson.put( "preferGlobal", expectedPreferGlobal );
     when( mockPentahoWebPackage.getPackageJson() ).thenReturn( preferGlobalJson );
-    this.requireJsPackage = new RequireJsPackageImpl( this.mockBundleContext, this.mockPentahoWebPackage );
+    this.requireJsPackage = new RequireJsPackageImpl( this.mockPentahoWebPackage, this.resourceRootUri );
 
     // act
     boolean actualPreferGlobal = this.requireJsPackage.preferGlobal();
@@ -126,7 +116,7 @@ public class RequireJsPackageImplTest {
     Map<String, Object> pathsJson = new HashMap<>();
     pathsJson.put( "paths", expectedPath );
     when( mockPentahoWebPackage.getPackageJson() ).thenReturn( pathsJson );
-    this.requireJsPackage = new RequireJsPackageImpl( this.mockBundleContext, this.mockPentahoWebPackage );
+    this.requireJsPackage = new RequireJsPackageImpl( this.mockPentahoWebPackage, this.resourceRootUri );
 
     // act
     Map<String, String> actualModules = this.requireJsPackage.getModules();
@@ -146,7 +136,7 @@ public class RequireJsPackageImplTest {
     Map<String, Object> packagesJson = new HashMap<>();
     packagesJson.put( "packages", packages );
     when( mockPentahoWebPackage.getPackageJson() ).thenReturn( packagesJson );
-    this.requireJsPackage = new RequireJsPackageImpl( this.mockBundleContext, this.mockPentahoWebPackage );
+    this.requireJsPackage = new RequireJsPackageImpl( this.mockPentahoWebPackage, this.resourceRootUri );
 
     // act
     Map<String, String> actualModules = this.requireJsPackage.getModules();
@@ -168,7 +158,7 @@ public class RequireJsPackageImplTest {
     Map<String, Object> packagesJson = new HashMap<>();
     packagesJson.put( "packages", packages );
     when( mockPentahoWebPackage.getPackageJson() ).thenReturn( packagesJson );
-    this.requireJsPackage = new RequireJsPackageImpl( this.mockBundleContext, this.mockPentahoWebPackage );
+    this.requireJsPackage = new RequireJsPackageImpl( this.mockPentahoWebPackage, this.resourceRootUri );
 
     // act
     Map<String, String> actualModules = this.requireJsPackage.getModules();
@@ -191,7 +181,7 @@ public class RequireJsPackageImplTest {
     packagesJson.put( "packages", packages );
     when( mockPentahoWebPackage.getPackageJson() ).thenReturn( packagesJson );
 
-    this.requireJsPackage = new RequireJsPackageImpl( this.mockBundleContext, this.mockPentahoWebPackage );
+    this.requireJsPackage = new RequireJsPackageImpl( this.mockPentahoWebPackage, this.resourceRootUri );
 
     // act
     String actualModuleName = this.requireJsPackage.getModuleMainFile( packageName );
@@ -209,7 +199,7 @@ public class RequireJsPackageImplTest {
     Map<String, Object> dependencies = new HashMap<>();
     dependencies.put( "dependencies", expectedDependencies );
     when( mockPentahoWebPackage.getPackageJson() ).thenReturn( dependencies );
-    this.requireJsPackage = new RequireJsPackageImpl( this.mockBundleContext, this.mockPentahoWebPackage );
+    this.requireJsPackage = new RequireJsPackageImpl( this.mockPentahoWebPackage, this.resourceRootUri );
 
     // act
     Map<String, String> actualDependencies = this.requireJsPackage.getDependencies();
@@ -227,7 +217,7 @@ public class RequireJsPackageImplTest {
     Map<String, Object> scripts = new HashMap<>();
     scripts.put( "scripts", expectedScripts );
     when( mockPentahoWebPackage.getPackageJson() ).thenReturn( scripts );
-    this.requireJsPackage = new RequireJsPackageImpl( this.mockBundleContext, this.mockPentahoWebPackage );
+    this.requireJsPackage = new RequireJsPackageImpl( this.mockPentahoWebPackage, this.resourceRootUri );
     String scriptThatShouldExist = "a";
 
     // act
@@ -241,17 +231,14 @@ public class RequireJsPackageImplTest {
   public void testGetScriptResource() {
     // arrange
     String scriptName = "a";
-    when( mockPentahoWebPackage.getResourceRootPath() ).thenReturn( "some/resource/path" );
+
     Map<String, String> expectedScripts = new HashMap<>();
     expectedScripts.put( scriptName, "a.js" );
     Map<String, Object> scripts = new HashMap<>();
     scripts.put( "scripts", expectedScripts );
     when( mockPentahoWebPackage.getPackageJson() ).thenReturn( scripts );
-    this.requireJsPackage = new RequireJsPackageImpl( this.mockBundleContext, this.mockPentahoWebPackage );
-    Bundle mockBundle = mock( Bundle.class );
-    when( mockBundleContext.getBundle() ).thenReturn( mockBundle );
-    URL mockUrl = this.createMockUrlConnection( "" );
-    when( mockBundle.getResource( any( String.class ) ) ).thenReturn( mockUrl );
+
+    this.requireJsPackage = new RequireJsPackageImpl( this.mockPentahoWebPackage, this.resourceRootUri );
 
     // make sure script exists
     assertTrue( this.requireJsPackage.hasScript( scriptName ) );
@@ -261,6 +248,7 @@ public class RequireJsPackageImplTest {
 
     // assert
     assertNotNull( actualScriptResource );
+    assertTrue( actualScriptResource.toExternalForm().endsWith( "/a.js" ) );
   }
 
 
@@ -274,7 +262,7 @@ public class RequireJsPackageImplTest {
     Map<String, Object> configs = new HashMap<>();
     configs.put( "config", expectedConfigs );
     when( mockPentahoWebPackage.getPackageJson() ).thenReturn( configs );
-    this.requireJsPackage = new RequireJsPackageImpl( this.mockBundleContext, this.mockPentahoWebPackage );
+    this.requireJsPackage = new RequireJsPackageImpl( this.mockPentahoWebPackage, this.resourceRootUri );
 
     // act
     Map<String, Map<String, ?>> actualConfigs = this.requireJsPackage.getConfig();
@@ -295,7 +283,7 @@ public class RequireJsPackageImplTest {
     Map<String, Object> configs = new HashMap<>();
     configs.put( "map", expectedMap );
     when( mockPentahoWebPackage.getPackageJson() ).thenReturn( configs );
-    this.requireJsPackage = new RequireJsPackageImpl( this.mockBundleContext, this.mockPentahoWebPackage );
+    this.requireJsPackage = new RequireJsPackageImpl( this.mockPentahoWebPackage, this.resourceRootUri );
 
     // act
     Map<String, Map<String, String>> actualMap = this.requireJsPackage.getMap();
@@ -316,7 +304,7 @@ public class RequireJsPackageImplTest {
     Map<String, Object> shims = new HashMap<>();
     shims.put( "shim", expectedShim );
     when( mockPentahoWebPackage.getPackageJson() ).thenReturn( shims );
-    this.requireJsPackage = new RequireJsPackageImpl( this.mockBundleContext, this.mockPentahoWebPackage );
+    this.requireJsPackage = new RequireJsPackageImpl( this.mockPentahoWebPackage, this.resourceRootUri );
 
     // act
     Map<String, ?> actualShim = this.requireJsPackage.getShim();
@@ -336,69 +324,13 @@ public class RequireJsPackageImplTest {
     Map<String, Object> shims = new HashMap<>();
     shims.put( "shim", expectedShim );
     when( mockPentahoWebPackage.getPackageJson() ).thenReturn( shims );
-    this.requireJsPackage = new RequireJsPackageImpl( this.mockBundleContext, this.mockPentahoWebPackage );
+    this.requireJsPackage = new RequireJsPackageImpl( this.mockPentahoWebPackage, this.resourceRootUri );
 
     // act
     Map<String, ?> actualShim = this.requireJsPackage.getShim();
 
     // assert
     assertTrue( actualShim.containsKey( shimName ) );
-  }
-
-
-  @Test
-  public void register() {
-    // arrange
-    ServiceRegistration mockServiceRegistration = mock( ServiceRegistration.class );
-    when( this.mockBundleContext.registerService( anyString(), anyObject(), eq( null ) ) )
-        .thenReturn( mockServiceRegistration );
-    this.requireJsPackage = new RequireJsPackageImpl( this.mockBundleContext, this.mockPentahoWebPackage );
-
-    // act
-    this.requireJsPackage.register();
-
-    // assert
-    verify( this.mockBundleContext, times( 1 ) )
-        .registerService( anyString(), anyObject(), eq( null ) );
-  }
-
-
-  @Test
-  public void unregister() {
-    // arrange
-    ServiceRegistration mockServiceRegistration = mock( ServiceRegistration.class );
-    when( this.mockBundleContext.registerService( anyString(), anyObject(), eq( null ) ) )
-        .thenReturn( mockServiceRegistration );
-    this.requireJsPackage = new RequireJsPackageImpl( this.mockBundleContext, this.mockPentahoWebPackage );
-    this.requireJsPackage.register();
-
-    // act
-    this.requireJsPackage.register();
-    this.requireJsPackage.unregister();
-
-    // assert
-    verify( mockServiceRegistration, times( 1 ) ).unregister();
-  }
-
-  private URL createMockUrlConnection( String payload ) {
-    URLConnection mockUrlCon = mock( URLConnection.class );
-    URLStreamHandler stubUrlHandler = null;
-    try {
-      stubUrlHandler = new URLStreamHandler() {
-        @Override
-        protected URLConnection openConnection( URL u ) throws IOException {
-          return mockUrlCon;
-        }
-      };
-      when( mockUrlCon.getInputStream() ).thenReturn( new ByteArrayInputStream( payload.getBytes() ) );
-    } catch ( IOException ignored ) {
-    }
-    try {
-      return new URL( "http", "someurl.com", 9999, "", stubUrlHandler );
-    } catch ( MalformedURLException e ) {
-      e.printStackTrace();
-    }
-    return null;
   }
 
 }
