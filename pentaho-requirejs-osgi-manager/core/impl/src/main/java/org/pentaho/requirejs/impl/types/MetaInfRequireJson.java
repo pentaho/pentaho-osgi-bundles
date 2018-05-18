@@ -16,8 +16,6 @@
  */
 package org.pentaho.requirejs.impl.types;
 
-import org.osgi.framework.BundleContext;
-import org.osgi.framework.ServiceRegistration;
 import org.pentaho.requirejs.IRequireJsPackage;
 
 import java.net.URL;
@@ -40,10 +38,6 @@ import java.util.regex.Pattern;
  * configuration is applied globally ({@link IRequireJsPackage#preferGlobal} returns true).
  */
 public class MetaInfRequireJson implements IRequireJsPackage {
-  private final BundleContext bundleContext;
-
-  private ServiceRegistration<?> serviceReference;
-
   private final Map<String, Object> requireJsonObject;
 
   private final Map<String, String> modules;
@@ -63,9 +57,7 @@ public class MetaInfRequireJson implements IRequireJsPackage {
   private boolean isAmdPackage;
   private String exports;
 
-  public MetaInfRequireJson( BundleContext bundleContext, Map<String, Object> requireJsonObject ) {
-    this.bundleContext = bundleContext;
-
+  public MetaInfRequireJson( Map<String, Object> requireJsonObject ) {
     this.requireJsonObject = requireJsonObject;
 
     this.modules = new HashMap<>();
@@ -78,6 +70,8 @@ public class MetaInfRequireJson implements IRequireJsPackage {
     this.localMap = new HashMap<>();
 
     this.shim = new HashMap<>();
+
+    this.isAmdPackage = true;
 
     this.init();
   }
@@ -361,23 +355,5 @@ public class MetaInfRequireJson implements IRequireJsPackage {
     }
 
     return moduleId;
-  }
-
-  @Override
-  public void register() {
-    this.serviceReference = this.bundleContext.registerService( IRequireJsPackage.class.getName(), this, null );
-  }
-
-  @Override
-  public void unregister() {
-    if ( this.serviceReference != null ) {
-      try {
-        this.serviceReference.unregister();
-      } catch ( RuntimeException ignored ) {
-        // service might be already unregistered automatically by the bundle lifecycle manager
-      }
-
-      this.serviceReference = null;
-    }
   }
 }

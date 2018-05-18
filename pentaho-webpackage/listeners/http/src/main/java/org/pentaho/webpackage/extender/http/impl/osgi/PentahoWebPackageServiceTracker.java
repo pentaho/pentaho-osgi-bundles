@@ -14,18 +14,21 @@
  * limitations under the License.
  *
  */
-package org.pentaho.webpackage.extender.http.impl;
+package org.pentaho.webpackage.extender.http.impl.osgi;
 
+import org.ops4j.pax.web.extender.whiteboard.ResourceMapping;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
+import org.osgi.framework.ServiceRegistration;
 import org.osgi.util.tracker.ServiceTrackerCustomizer;
 import org.pentaho.webpackage.core.IPentahoWebPackage;
+import org.pentaho.webpackage.extender.http.impl.PentahoWebPackageResourceMapping;
 
 /**
  * Tracks registered {@link IPentahoWebPackage} services and in turn registers {@link PentahoWebPackageResourceMapping} service.
  */
-public class PentahoWebPackageServiceTracker implements ServiceTrackerCustomizer<IPentahoWebPackage, PentahoWebPackageResourceMapping> {
+public class PentahoWebPackageServiceTracker implements ServiceTrackerCustomizer<IPentahoWebPackage, ServiceRegistration<?>> {
   private final BundleContext context;
 
   public PentahoWebPackageServiceTracker( BundleContext context ) {
@@ -33,27 +36,30 @@ public class PentahoWebPackageServiceTracker implements ServiceTrackerCustomizer
   }
 
   @Override
-  public PentahoWebPackageResourceMapping addingService( ServiceReference<IPentahoWebPackage> reference ) {
+  public ServiceRegistration<?> addingService( ServiceReference<IPentahoWebPackage> reference ) {
     Bundle bundle = reference.getBundle();
     // if null then the service is unregistered
     if ( bundle != null ) {
-      PentahoWebPackageResourceMapping mapping = new PentahoWebPackageResourceMapping( bundle.getBundleContext(), this.context.getService( reference ) );
-      mapping.register();
+      ResourceMapping mapping = new PentahoWebPackageResourceMapping( this.context.getService( reference ) );
 
-      return mapping;
+      return bundle.getBundleContext().registerService( ResourceMapping.class.getName(), mapping, null );
     }
 
     return null;
   }
 
   @Override
-  public void modifiedService( ServiceReference<IPentahoWebPackage> reference, PentahoWebPackageResourceMapping mapping ) {
+  public void modifiedService( ServiceReference<IPentahoWebPackage> reference, ServiceRegistration<?> serviceRegistration ) {
   }
 
   @Override
-  public void removedService( ServiceReference<IPentahoWebPackage> reference, PentahoWebPackageResourceMapping mapping ) {
+  public void removedService( ServiceReference<IPentahoWebPackage> reference, ServiceRegistration<?> serviceRegistration ) {
     this.context.ungetService( reference );
 
-    mapping.unregister();
+    try {
+      serviceRegistration.unregister();
+    } catch ( RuntimeException ignored ) {
+      // service might be already unregistered automatically by the bundle lifecycle manager
+    }
   }
 }

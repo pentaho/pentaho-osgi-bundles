@@ -14,7 +14,7 @@
  * limitations under the License.
  *
  */
-package org.pentaho.webpackage.core.impl;
+package org.pentaho.webpackage.core.impl.osgi;
 
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
@@ -24,6 +24,7 @@ import org.osgi.framework.ServiceRegistration;
 import org.osgi.framework.wiring.BundleCapability;
 import org.osgi.framework.wiring.BundleWiring;
 import org.pentaho.webpackage.core.IPentahoWebPackage;
+import org.pentaho.webpackage.core.impl.PentahoWebPackageImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -87,8 +88,7 @@ public class PentahoWebPackageBundleListener implements BundleListener {
       return;
     }
 
-    Iterable<ServiceRegistration<IPentahoWebPackage>> bundleServiceRegistrations =
-        this.getBundleServiceRegistrations( bundle.getBundleId() );
+    Iterable<ServiceRegistration<IPentahoWebPackage>> bundleServiceRegistrations = this.getBundleServiceRegistrations( bundle.getBundleId() );
 
     if ( bundleServiceRegistrations != null ) {
       bundleServiceRegistrations.forEach( this::unregisterService );
@@ -149,12 +149,11 @@ public class PentahoWebPackageBundleListener implements BundleListener {
   }
 
   String getRoot( BundleCapability capability ) {
-    String root = (String) capability.getAttributes()
-            .getOrDefault( "root", "" );
+    String root = (String) capability.getAttributes().getOrDefault( "root", "" );
     while ( root.endsWith( "/" ) ) {
       root = root.substring( 0, root.length() - 1 );
     }
+
     return root;
   }
-
 }

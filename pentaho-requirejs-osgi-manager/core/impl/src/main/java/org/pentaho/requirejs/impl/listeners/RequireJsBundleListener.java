@@ -22,6 +22,7 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleEvent;
 import org.osgi.framework.BundleListener;
+import org.osgi.framework.ServiceRegistration;
 import org.pentaho.requirejs.IRequireJsPackage;
 import org.pentaho.requirejs.impl.RequireJsConfigManager;
 import org.pentaho.requirejs.impl.types.MetaInfPackageJson;
@@ -62,7 +63,7 @@ public class RequireJsBundleListener implements BundleListener {
 
   private RequireJsConfigManager requireJsConfigManager;
 
-  private Map<Long, IRequireJsPackage> configMap;
+  private Map<Long, ServiceRegistration<?>> serviceRegistrationMap;
   private Map<Long, RequireJsConfiguration> requireConfigMap;
 
   private JSONParser parser;
@@ -76,7 +77,7 @@ public class RequireJsBundleListener implements BundleListener {
   }
 
   public void init() {
-    this.configMap = new ConcurrentHashMap<>();
+    this.serviceRegistrationMap = new ConcurrentHashMap<>();
     this.requireConfigMap = new ConcurrentHashMap<>();
 
     this.parser = new JSONParser();
@@ -89,7 +90,7 @@ public class RequireJsBundleListener implements BundleListener {
   }
 
   public void destroy() {
-    this.configMap = null;
+    this.serviceRegistrationMap = null;
     this.requireConfigMap = null;
 
     bundleContext.removeBundleListener( this );
@@ -129,9 +130,13 @@ public class RequireJsBundleListener implements BundleListener {
   }
 
   private boolean removeBundleInternal( Bundle bundle ) {
-    IRequireJsPackage bundleConfig = this.configMap.remove( bundle.getBundleId() );
-    if ( bundleConfig != null ) {
-      bundleConfig.unregister();
+    ServiceRegistration<?> serviceRegistration = this.serviceRegistrationMap.remove( bundle.getBundleId() );
+    if ( serviceRegistration != null ) {
+      try {
+        serviceRegistration.unregister();
+      } catch ( RuntimeException ignored ) {
+        // service might be already unregistered automatically by the bundle lifecycle manager
+      }
     }
 
     RequireJsConfiguration requireJsConfiguration = this.requireConfigMap.remove( bundle.getBundleId() );
@@ -163,20 +168,20 @@ public class RequireJsBundleListener implements BundleListener {
         Map<String, Object> requireJsonObject = this.loadJsonObject( configFileUrl );
 
         if ( requireJsonObject != null ) {
-          IRequireJsPackage packageInfo = new MetaInfRequireJson( bundle.getBundleContext(), requireJsonObject );
-          packageInfo.register();
+          IRequireJsPackage packageInfo = new MetaInfRequireJson( requireJsonObject );
 
-          this.configMap.put( bundle.getBundleId(), packageInfo );
+          ServiceRegistration<?> serviceRegistration = bundle.getBundleContext().registerService( IRequireJsPackage.class.getName(), packageInfo, null );
+          this.serviceRegistrationMap.put( bundle.getBundleId(), serviceRegistration );
         }
       } else if ( packageJsonUrl != null ) {
         // next: fixed META-INF/js/package.json
         Map<String, Object> packageJsonObject = this.loadJsonObject( packageJsonUrl );
 
         if ( packageJsonObject != null ) {
-          IRequireJsPackage packageInfo = new MetaInfPackageJson( bundle.getBundleContext(), packageJsonObject );
-          packageInfo.register();
+          IRequireJsPackage packageInfo = new MetaInfPackageJson( packageJsonObject );
 
-          this.configMap.put( bundle.getBundleId(), packageInfo );
+          ServiceRegistration<?> serviceRegistration = bundle.getBundleContext().registerService( IRequireJsPackage.class.getName(), packageInfo, null );
+          this.serviceRegistrationMap.put( bundle.getBundleId(), serviceRegistration );
         }
       }
 
