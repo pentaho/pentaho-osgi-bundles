@@ -146,7 +146,7 @@ public class RequireJsPackageImpl implements IRequireJsPackage {
   private void initFromPackageJson( Map<String, Object> json ) {
     if ( !json.containsKey( "paths" ) ) {
       // default module
-      this.addModule( this.getName(), "/" );
+      this.addModule( this.getName(), "/", mainFile( json ) );
     }
 
     this.preferGlobal = false;
@@ -201,6 +201,120 @@ public class RequireJsPackageImpl implements IRequireJsPackage {
     } );
   }
 
+  private String mainFile( Map<String, Object> json ) {
+    String pck = null;
+    if ( json.containsKey( "main" ) ) {
+      // npm: https://docs.npmjs.com/files/package.json#main
+      // bower: https://github.com/bower/spec/blob/master/json.md#main
+      Object value = json.get( "main" );
+
+      if ( value instanceof String ) {
+        pck = processMainField( (String) value );
+      } else if ( value instanceof List ) {
+        List files = (List) value;
+
+        for ( Object file : files ) {
+          final String pack = processMainField( (String) file );
+
+          if ( pack != null ) {
+            pck = pack;
+            break;
+          }
+        }
+      }
+    }
+
+    // all these alternate main file fields are due to D3 (see https://github.com/d3/d3/issues/3138)
+    // and possibly other libraries
+    // "module" (https://github.com/rollup/rollup/wiki/pkg.module) and
+    // "jsnext:main" (https://github.com/jsforum/jsforum/issues/5)
+    // are only for ES2015 modules, unsupported for now
+    if ( json.containsKey( "unpkg" ) ) {
+      // "unpkg" field for package.json: https://github.com/unpkg/unpkg-website/issues/63
+      pck = processAlternateMainField( json.get( "unpkg" ) );
+    } else if ( json.containsKey( "jsdelivr" ) ) {
+      // "jsdelivr" field for package.json: https://github.com/jsdelivr/jsdelivr#configuring-a-default-file-in-packagejson
+      pck = processAlternateMainField( json.get( "jsdelivr" ) );
+    } else if ( json.containsKey( "browser" ) ) {
+      // "browser" field for package.json: https://github.com/defunctzombie/package-browser-field-spec
+      pck = processAlternateMainField( json.get( "browser" ) );
+    }
+
+    return pck;
+  }
+
+  private String processAlternateMainField( Object value ) {
+    String pck = null;
+
+    if ( value instanceof String ) {
+      // alternate main - basic
+      pck = processMainField( (String) value );
+    } else if ( value instanceof Map ) {
+      // replace specific files - advanced
+      Map<String, ?> overridePaths = (Map<String, ?>) value;
+
+      for ( String overridePath : overridePaths.keySet() ) {
+        Object replaceRawValue = overridePaths.get( overridePath );
+
+        String replaceValue;
+        if ( replaceRawValue instanceof String ) {
+          replaceValue = (String) replaceRawValue;
+
+          if ( overridePath.startsWith( "./" ) ) {
+            // replacing an internal file, create a path definition for it
+            if ( replaceValue.startsWith( "./" ) ) {
+              replaceValue = replaceValue.substring( 2 );
+            }
+
+            addModule( this.getName() + removeJsExtension( overridePath.substring( 1 ) ), "/" + removeJsExtension( replaceValue ) );
+          } else {
+            // replacing an external module, create a map definition for it
+            if ( replaceValue.startsWith( "./" ) ) {
+              replaceValue = this.getName() + replaceValue.substring( 1 );
+            }
+
+            addMap( this.getName(), removeJsExtension( overridePath ), removeJsExtension( replaceValue ) );
+          }
+        } else {
+          // ignore a module
+          // TODO: Should redirect to an empty module
+          String toIgnore;
+          if ( overridePath.startsWith( "./" ) ) {
+            toIgnore = this.getName() + removeJsExtension( overridePath.substring( 1 ) );
+          } else {
+            toIgnore = removeJsExtension( overridePath );
+          }
+
+          addMap( this.getName(), toIgnore, "no-where-to-be-found" );
+        }
+      }
+    }
+
+    return pck;
+  }
+
+  private String processMainField( String file ) {
+    if ( file.startsWith( "./" ) ) {
+      file = file.substring( 2 );
+    } else if ( file.startsWith( "/" ) ) {
+      file = file.substring( 1 );
+    }
+
+    if ( file.endsWith( ".js" ) ) {
+      return removeJsExtension( file );
+    }
+
+    return null;
+  }
+
+  private String removeJsExtension( String filename ) {
+    if ( !filename.endsWith( ".js" ) ) {
+      return filename;
+    }
+
+    return filename.substring( 0, filename.length() - 3 );
+  }
+
   private void processPaths( Map<String, ?> paths ) {
     paths.forEach( ( moduleId, path ) -> {
       if ( path instanceof String ) {
@@ -230,11 +344,13 @@ public class RequireJsPackageImpl implements IRequireJsPackage {
 
   private void addModule( String moduleId, String path, String main ) {
     this.modules.put( moduleId, path );
-    this.packages.put( moduleId, main );
+    if ( main != null ) {
+      this.packages.put( moduleId, main );
+    }
   }
 
   private void addModule( String moduleId, String path ) {
-    this.modules.put( moduleId, path );
+    this.addModule( moduleId, path, null );
   }
 
 

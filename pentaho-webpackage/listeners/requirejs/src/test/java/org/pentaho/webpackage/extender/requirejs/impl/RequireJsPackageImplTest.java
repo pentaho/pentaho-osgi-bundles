@@ -108,8 +108,172 @@ public class RequireJsPackageImplTest {
   }
 
   @Test
+  public void testDefaultModuleNoMain() {
+    // arrange
+    String expectedPackageName = "SomePackageName";
+    when( mockPentahoWebPackage.getName() ).thenReturn( expectedPackageName );
+
+    this.requireJsPackage = new RequireJsPackageImpl( this.mockPentahoWebPackage, this.resourceRootUri );
+
+    // act
+    Map<String, String> actualModules = this.requireJsPackage.getModules();
+    String main = this.requireJsPackage.getModuleMainFile( expectedPackageName );
+
+    // assert
+    assertEquals( "Default module should be created", "/", actualModules.get( expectedPackageName ) );
+    assertNull( "Default module should have no main file", main );
+  }
+
+  @Test
+  public void testDefaultModuleWithMainField() {
+    // arrange
+    String expectedPackageName = "SomePackageName";
+    when( mockPentahoWebPackage.getName() ).thenReturn( expectedPackageName );
+
+    Map<String, Object> packageJson = new HashMap<>();
+    packageJson.put( "main", "./some-path/some-file.js" );
+    when( mockPentahoWebPackage.getPackageJson() ).thenReturn( packageJson );
+
+    this.requireJsPackage = new RequireJsPackageImpl( this.mockPentahoWebPackage, this.resourceRootUri );
+
+    // act
+    Map<String, String> actualModules = this.requireJsPackage.getModules();
+    String main = this.requireJsPackage.getModuleMainFile( expectedPackageName );
+
+    // assert
+    assertEquals( "Default module should be created", "/", actualModules.get( expectedPackageName ) );
+    assertEquals( "Default module should have main file with no .js extension", "some-path/some-file", main );
+  }
+
+  @Test
+  public void testDefaultModuleWithArrayMainField() {
+    // arrange
+    String expectedPackageName = "SomePackageName";
+    when( mockPentahoWebPackage.getName() ).thenReturn( expectedPackageName );
+
+    List<String> mainArray = new ArrayList<>();
+    mainArray.add( "./some-path/some-style.css" );
+    mainArray.add( "./some-path/some-code.js" );
+
+    Map<String, Object> packageJson = new HashMap<>();
+    packageJson.put( "main", mainArray );
+    when( mockPentahoWebPackage.getPackageJson() ).thenReturn( packageJson );
+
+    this.requireJsPackage = new RequireJsPackageImpl( this.mockPentahoWebPackage, this.resourceRootUri );
+
+    // act
+    Map<String, String> actualModules = this.requireJsPackage.getModules();
+    String main = this.requireJsPackage.getModuleMainFile( expectedPackageName );
+
+    // assert
+    assertEquals( "Default module should be created", "/", actualModules.get( expectedPackageName ) );
+    assertEquals( "Default module should have main file with no .js extension", "some-path/some-code", main );
+  }
+
+  @Test
+  public void testDefaultModuleWithSimpleBrowserField() {
+    // arrange
+    String expectedPackageName = "SomePackageName";
+    when( mockPentahoWebPackage.getName() ).thenReturn( expectedPackageName );
+
+    Map<String, Object> packageJson = new HashMap<>();
+    packageJson.put( "browser", "./some-path/some-file.js" );
+    when( mockPentahoWebPackage.getPackageJson() ).thenReturn( packageJson );
+
+    this.requireJsPackage = new RequireJsPackageImpl( this.mockPentahoWebPackage, this.resourceRootUri );
+
+    // act
+    Map<String, String> actualModules = this.requireJsPackage.getModules();
+    String main = this.requireJsPackage.getModuleMainFile( expectedPackageName );
+
+    // assert
+    assertEquals( "Default module should be created", "/", actualModules.get( expectedPackageName ) );
+    assertEquals( "Default module should have main file with no .js extension", "some-path/some-file", main );
+  }
+
+  @Test
+  public void testDefaultModuleWithAdvancedBrowserField() {
+    // arrange
+    String expectedPackageName = "SomePackageName";
+    when( mockPentahoWebPackage.getName() ).thenReturn( expectedPackageName );
+
+    Map<String, Object> browser = new HashMap<>();
+    browser.put( "./to-replace/file.js", "./some-path/some-file.js" );
+    browser.put( "other-module", "./my-internal/version-of-module.js" );
+    browser.put( "./to-ignore/file.js", false );
+    browser.put( "to-ignore-module", false );
+
+    Map<String, Object> packageJson = new HashMap<>();
+    packageJson.put( "browser", browser );
+
+    when( mockPentahoWebPackage.getPackageJson() ).thenReturn( packageJson );
+
+    this.requireJsPackage = new RequireJsPackageImpl( this.mockPentahoWebPackage, this.resourceRootUri );
+
+    // act
+    Map<String, String> actualModules = this.requireJsPackage.getModules();
+    String main = this.requireJsPackage.getModuleMainFile( expectedPackageName );
+    Map<String, Map<String, String>> actualMappings = this.requireJsPackage.getMap();
+
+    // assert
+    assertEquals( "Default module should be created", "/", actualModules.get( expectedPackageName ) );
+    assertNull( "Default module should have no main file", main );
+
+    assertEquals( "Module for replaced file should be created", "/some-path/some-file", actualModules.get( expectedPackageName + "/to-replace/file" ) );
+
+    assertEquals( "Mapping for replaced module should be created", expectedPackageName + "/my-internal/version-of-module", actualMappings.get( expectedPackageName ).get( "other-module" ) );
+
+    assertEquals( "Mapping for ignored file should be created", "no-where-to-be-found", actualMappings.get( expectedPackageName ).get( expectedPackageName + "/to-ignore/file" ) );
+    assertEquals( "Mapping for ignored module should be created", "no-where-to-be-found", actualMappings.get( expectedPackageName ).get( "to-ignore-module" ) );
+  }
+
+  @Test
+  public void testDefaultModuleWithUnpkgField() {
+    // arrange
+    String expectedPackageName = "SomePackageName";
+    when( mockPentahoWebPackage.getName() ).thenReturn( expectedPackageName );
+
+    Map<String, Object> packageJson = new HashMap<>();
+    packageJson.put( "unpkg", "/some-path/some-file.js" );
+    when( mockPentahoWebPackage.getPackageJson() ).thenReturn( packageJson );
+
+    this.requireJsPackage = new RequireJsPackageImpl( this.mockPentahoWebPackage, this.resourceRootUri );
+
+    // act
+    Map<String, String> actualModules = this.requireJsPackage.getModules();
+    String main = this.requireJsPackage.getModuleMainFile( expectedPackageName );
+
+    // assert
+    assertEquals( "Default module should be created", "/", actualModules.get( expectedPackageName ) );
+    assertEquals( "Default module should have main file with no .js extension", "some-path/some-file", main );
+  }
+
+  @Test
+  public void testDefaultModuleWithJsdelivrField() {
+    // arrange
+    String expectedPackageName = "SomePackageName";
+    when( mockPentahoWebPackage.getName() ).thenReturn( expectedPackageName );
+
+    Map<String, Object> packageJson = new HashMap<>();
+    packageJson.put( "jsdelivr", "some-path/some-file.js" );
+    when( mockPentahoWebPackage.getPackageJson() ).thenReturn( packageJson );
+
+    this.requireJsPackage = new RequireJsPackageImpl( this.mockPentahoWebPackage, this.resourceRootUri );
+
+    // act
+    Map<String, String> actualModules = this.requireJsPackage.getModules();
+    String main = this.requireJsPackage.getModuleMainFile( expectedPackageName );
+
+    // assert
+    assertEquals( "Default module should be created", "/", actualModules.get( expectedPackageName ) );
+    assertEquals( "Default module should have main file with no .js extension", "some-path/some-file", main );
+  }
+
+  @Test
   public void testInitFromPackageJsonPathsCase() {
     // arrange
+    String expectedPackageName = "SomePackageName";
+    when( mockPentahoWebPackage.getName() ).thenReturn( expectedPackageName );
     String moduleName = "SomeModule";
     Map<String, String> expectedPath = new HashMap<>();
     expectedPath.put( moduleName, "/" );
@@ -124,6 +288,8 @@ public class RequireJsPackageImplTest {
     // assert
     assertTrue( "SomeModule should exist in Modules collection",
         actualModules.containsKey( moduleName ) );
+    assertFalse( "Default module should not be created",
+        actualModules.containsKey( expectedPackageName ) );
   }
 
   @Test
