@@ -61,6 +61,7 @@ public class WebContextServletTest {
     HttpServletRequest mockRequest = mock( HttpServletRequest.class );
     when( mockRequest.getRequestURI() ).thenReturn( "fake/uri/" + WebContextServlet.WEB_CONTEXT_JS );
     when( mockRequest.getParameter( WebContextServlet.CONTEXT ) ).thenReturn( "testContext" );
+    when( mockRequest.getParameter( WebContextServlet.APPLICATION ) ).thenReturn( "testApplication" );
     when( mockRequest.getParameter( WebContextServlet.LOCALE ) ).thenReturn( "xp_TO" );
 
     this.httpRequest = mockRequest;
@@ -193,8 +194,12 @@ public class WebContextServletTest {
     String sessionLocale = "fo_BA";
     when( this.httpRequest.getParameter( "locale" ) ).thenReturn( sessionLocale );
 
+    String application = "testApplication";
+    when( this.httpRequest.getParameter( "application" ) ).thenReturn( application );
+
     final String response = doGetWebContextServlet();
     String environmentModuleConfig = "\nrequireCfg.config[\"pentaho/environment\"] = {" +
+            "\n  application: \"" + application + "\"," +
             "\n  theme: null," +
             "\n  locale: \"" + sessionLocale + "\"," +
             "\n  user: {" +
