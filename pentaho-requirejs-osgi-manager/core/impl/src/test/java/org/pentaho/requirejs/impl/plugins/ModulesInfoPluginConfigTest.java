@@ -28,12 +28,12 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 
-public class TypeAndInstanceInfoPluginConfigTest {
-  private TypeAndInstanceInfoPluginConfig plugin;
+public class ModulesInfoPluginConfigTest {
+  private ModulesInfoPluginConfig plugin;
 
   @Before
   public void setup() {
-    this.plugin = new TypeAndInstanceInfoPluginConfig();
+    this.plugin = new ModulesInfoPluginConfig();
   }
 
   @Test
@@ -52,24 +52,24 @@ public class TypeAndInstanceInfoPluginConfigTest {
     moduleConfig.put( "other", "B" );
     module.put( "moduleB", moduleConfig );
 
-    config.put( "pentaho/typeInfo", module );
+    config.put( "pentaho/modules", module );
     requireConfig.put( "config", config );
 
     this.plugin.apply( null, null, createResolveModuleIdFunction(), requireConfig );
 
-    Map<String, Map<String, Object>> typeInfo = requireConfig.get( "config" ).get( "pentaho/typeInfo" );
+    Map<String, Map<String, Object>> modulesInfo = requireConfig.get( "config" ).get( "pentaho/modules" );
 
-    assertTrue( "Original moduleA removed", !typeInfo.containsKey( "moduleA" ) );
-    assertTrue( "Added moduleA_resolved", typeInfo.containsKey( "moduleA_resolved" ) );
+    assertTrue( "Original moduleA removed", !modulesInfo.containsKey( "moduleA" ) );
+    assertTrue( "Added moduleA_resolved", modulesInfo.containsKey( "moduleA_resolved" ) );
 
-    assertTrue( "Original moduleB removed", !typeInfo.containsKey( "moduleB" ) );
-    assertTrue( "Added moduleB_resolved", typeInfo.containsKey( "moduleB_resolved" ) );
+    assertTrue( "Original moduleB removed", !modulesInfo.containsKey( "moduleB" ) );
+    assertTrue( "Added moduleB_resolved", modulesInfo.containsKey( "moduleB_resolved" ) );
 
-    Map<String, Object> moduleA_resolved = typeInfo.get( "moduleA_resolved" );
+    Map<String, Object> moduleA_resolved = modulesInfo.get( "moduleA_resolved" );
     assertEquals( "Base property is resolved", "baseA_resolved", moduleA_resolved.get( "base" ) );
     assertEquals( "Other properties are kept as is", "A", moduleA_resolved.get( "other" ) );
 
-    Map<String, Object> moduleB_resolved = typeInfo.get( "moduleB_resolved" );
+    Map<String, Object> moduleB_resolved = modulesInfo.get( "moduleB_resolved" );
     assertEquals( "Base property is resolved", "baseB_resolved", moduleB_resolved.get( "base" ) );
     assertEquals( "Other properties are kept as is", "B", moduleB_resolved.get( "other" ) );
   }
@@ -90,24 +90,24 @@ public class TypeAndInstanceInfoPluginConfigTest {
     moduleConfig.put( "other", "B" );
     module.put( "moduleB", moduleConfig );
 
-    config.put( "pentaho/instanceInfo", module );
+    config.put( "pentaho/modules", module );
     requireConfig.put( "config", config );
 
     this.plugin.apply( null, null, createResolveModuleIdFunction(), requireConfig );
 
-    Map<String, Map<String, Object>> instanceInfo = requireConfig.get( "config" ).get( "pentaho/instanceInfo" );
+    Map<String, Map<String, Object>> modulesInfo = requireConfig.get( "config" ).get( "pentaho/modules" );
 
-    assertTrue( "Original moduleA removed", !instanceInfo.containsKey( "moduleA" ) );
-    assertTrue( "Added moduleA_resolved", instanceInfo.containsKey( "moduleA_resolved" ) );
+    assertTrue( "Original moduleA removed", !modulesInfo.containsKey( "moduleA" ) );
+    assertTrue( "Added moduleA_resolved", modulesInfo.containsKey( "moduleA_resolved" ) );
 
-    assertTrue( "Original moduleB removed", !instanceInfo.containsKey( "moduleB" ) );
-    assertTrue( "Added moduleB_resolved", instanceInfo.containsKey( "moduleB_resolved" ) );
+    assertTrue( "Original moduleB removed", !modulesInfo.containsKey( "moduleB" ) );
+    assertTrue( "Added moduleB_resolved", modulesInfo.containsKey( "moduleB_resolved" ) );
 
-    Map<String, Object> moduleA_resolved = instanceInfo.get( "moduleA_resolved" );
+    Map<String, Object> moduleA_resolved = modulesInfo.get( "moduleA_resolved" );
     assertEquals( "Type property is resolved", "baseA_resolved", moduleA_resolved.get( "type" ) );
     assertEquals( "Other properties are kept as is", "A", moduleA_resolved.get( "other" ) );
 
-    Map<String, Object> moduleB_resolved = instanceInfo.get( "moduleB_resolved" );
+    Map<String, Object> moduleB_resolved = modulesInfo.get( "moduleB_resolved" );
     assertEquals( "Type property is resolved", "baseB_resolved", moduleB_resolved.get( "type" ) );
     assertEquals( "Other properties are kept as is", "B", moduleB_resolved.get( "other" ) );
   }
@@ -120,7 +120,7 @@ public class TypeAndInstanceInfoPluginConfigTest {
   }
 
   @Test
-  public void applyNoTypeOrInstanceConfig() {
+  public void applyNoModulesConfig() {
     Map<String, Object> requireConfig = new HashMap<>();
     requireConfig.put( "config", new HashMap<>() );
 
@@ -128,11 +128,10 @@ public class TypeAndInstanceInfoPluginConfigTest {
   }
 
   @Test
-  public void applyEmptyTypeOrInstanceConfig() {
+  public void applyEmptyModulesConfig() {
     Map<String, Object> requireConfig = new HashMap<>();
     HashMap<String, Object> config = new HashMap<>();
-    config.put( "pentaho/typeInfo", new HashMap<>() );
-    config.put( "pentaho/instanceInfo", new HashMap<>() );
+    config.put( "pentaho/modules", new HashMap<>() );
     requireConfig.put( "config", config );
 
     this.plugin.apply( null, null, null, requireConfig );
@@ -152,44 +151,22 @@ public class TypeAndInstanceInfoPluginConfigTest {
   }
 
   @Test(expected = ClassCastException.class)
-  public void applyWrongTypeConfig() {
+  public void applyWrongModulesConfig() {
     Map<String, Object> requireConfig = new HashMap<>();
     HashMap<String, Object> config = new HashMap<>();
-    config.put( "pentaho/typeInfo", 5 );
+    config.put( "pentaho/modules", 5 );
     requireConfig.put( "config", config );
 
     this.plugin.apply( null, null, null, requireConfig );
   }
 
   @Test(expected = ClassCastException.class)
-  public void applyWrongInstanceConfig() {
-    Map<String, Object> requireConfig = new HashMap<>();
-    HashMap<String, Object> config = new HashMap<>();
-    config.put( "pentaho/instanceInfo", 5 );
-    requireConfig.put( "config", config );
-
-    this.plugin.apply( null, null, null, requireConfig );
-  }
-
-  @Test(expected = ClassCastException.class)
-  public void applyWrongModuleTypeConfig() {
+  public void applyWrongModuleConfig() {
     Map<String, Object> requireConfig = new HashMap<>();
     HashMap<String, Object> config = new HashMap<>();
     HashMap<String, Object> module = new HashMap<>();
     module.put( "my/module", 5 );
-    config.put( "pentaho/typeInfo", module );
-    requireConfig.put( "config", config );
-
-    this.plugin.apply( null, null, createResolveModuleIdFunction(), requireConfig );
-  }
-
-  @Test(expected = ClassCastException.class)
-  public void applyWrongModuleInstanceConfig() {
-    Map<String, Object> requireConfig = new HashMap<>();
-    HashMap<String, Object> config = new HashMap<>();
-    HashMap<String, Object> module = new HashMap<>();
-    module.put( "my/module", 5 );
-    config.put( "pentaho/instanceInfo", module );
+    config.put( "pentaho/modules", module );
     requireConfig.put( "config", config );
 
     this.plugin.apply( null, null, createResolveModuleIdFunction(), requireConfig );

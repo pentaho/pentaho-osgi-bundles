@@ -228,17 +228,17 @@ public class MetaInfPackageJson implements IRequireJsPackage {
       Map<String, ?> config = (Map<String, ?>) json.get( "config" );
       config.forEach( ( moduleId, configuration ) -> {
         if ( configuration instanceof Map ) {
-          if ( moduleId.equals( "pentaho/typeInfo" ) || moduleId.equals( "pentaho/instanceInfo" ) ) {
+          if ( moduleId.equals( "pentaho/modules" ) ) {
             // undo the use of the versioned moduleID, that will be handled later
             Map<String, Object> newConfiguration = new HashMap<>();
 
-            ( (Map<String, ?>) configuration ).forEach( ( maybeVersionedModuleId, typeOrInstanceInfo ) -> {
+            ( (Map<String, ?>) configuration ).forEach( ( maybeVersionedModuleId, moduleInfo ) -> {
               String notVersionedModuleId = maybeVersionedModuleId;
               if ( maybeVersionedModuleId.startsWith( versionedModuleId ) ) {
                 notVersionedModuleId = getName() + maybeVersionedModuleId.substring( versionedModuleId.length() );
               }
 
-              newConfiguration.put( notVersionedModuleId, typeOrInstanceInfo );
+              newConfiguration.put( notVersionedModuleId, moduleInfo );
             } );
 
             this.addConfig( moduleId, newConfiguration );

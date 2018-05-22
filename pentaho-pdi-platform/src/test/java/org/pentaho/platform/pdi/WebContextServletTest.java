@@ -169,7 +169,7 @@ public class WebContextServletTest {
               "\n  shim: {}," +
               "\n  map: { \"*\": {} }," +
               "\n  bundles: {}," +
-              "\n  config: { \"pentaho/service\": {} }," +
+              "\n  config: { \"pentaho/modules\": {} }," +
               "\n  packages: []" +
               "\n}";
 
