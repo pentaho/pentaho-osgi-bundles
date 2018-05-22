@@ -638,18 +638,18 @@ public class RequireJsGenerator {
 
     final HashMap<String, ?> config = (HashMap<String, ?>) requireConfig.get( "config" );
     if ( config != null ) {
-      requirejs.put( "config", convertTypeAndInstanceConfigurations( config ) );
+      requirejs.put( "config", convertModulesConfigurations( config ) );
     }
 
     return requirejs;
   }
 
-  private HashMap<String, ?> convertTypeAndInstanceConfigurations( HashMap<String, ?> config ) {
+  private HashMap<String, ?> convertModulesConfigurations( HashMap<String, ?> config ) {
     HashMap<String, Object> convertedConfig = new HashMap<>();
 
     if ( config != null ) {
       for ( String key : config.keySet() ) {
-        if ( key.equals( "pentaho/typeInfo" ) || key.equals( "pentaho/instanceInfo" ) || key.equals( "pentaho/service" ) ) {
+        if ( key.equals( "pentaho/modules" ) ) {
           final HashMap<String, ?> serviceConfig = (HashMap<String, ?>) config.get( key );
 
           if ( serviceConfig != null ) {

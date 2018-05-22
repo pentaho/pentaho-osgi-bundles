@@ -19,7 +19,7 @@
     <property name="plugins">
       <!-- This shouldn't be a fixed list, but instead services registered by any bundle and injected here -->
       <list>
-        <ref component-id="typeAndInstanceInfoPlugin" />
+        <ref component-id="modulesInfoPlugin" />
         <ref component-id="amdPlugin" />
         <ref component-id="nomAmdPackagePlugin" />
       </list>
@@ -36,8 +36,8 @@
     <property name="requireJsConfigManager" ref="configManager"/>
   </bean>
 
-  <!-- This belongs in a Type API webpackage bundle -->
-  <bean id="typeAndInstanceInfoPlugin" class="org.pentaho.requirejs.impl.plugins.TypeAndInstanceInfoPluginConfig" />
+  <!-- This belongs in a Modules API webpackage bundle -->
+  <bean id="modulesInfoPlugin" class="org.pentaho.requirejs.impl.plugins.ModulesInfoPluginConfig" />
   <!-- This belongs in a Core Utils webpackage bundle -->
   <bean id="amdPlugin" class="org.pentaho.requirejs.impl.plugins.AmdPluginConfig" />
   <!-- This belongs in a pentaho-webjars-deployer's bundle -->

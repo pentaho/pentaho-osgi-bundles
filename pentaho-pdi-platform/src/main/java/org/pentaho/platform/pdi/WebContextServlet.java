@@ -325,7 +325,7 @@ public class WebContextServlet extends HttpServlet {
             .append( "\n  shim: {}," )
             .append( "\n  map: { \"*\": {} }," )
             .append( "\n  bundles: {}," )
-            .append( "\n  config: { \"pentaho/service\": {} }," )
+            .append( "\n  config: { \"pentaho/modules\": {} }," )
             .append( "\n  packages: []" )
             .append( "\n}" );
 

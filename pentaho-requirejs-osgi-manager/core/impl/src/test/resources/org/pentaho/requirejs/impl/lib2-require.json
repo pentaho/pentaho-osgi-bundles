@@ -9,6 +9,6 @@
     "lib2/old-stuff" : { "exports": "stuff" }
   },
   "config" : {
-    "pentaho/service" : {}
+    "pentaho/modules" : {}
   }
 }
