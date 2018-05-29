@@ -43,7 +43,12 @@ public class PentahoWebPackageResourceMapping implements ResourceMapping {
 
   @Override
   public String getPath() {
-    return this.pentahoWebPackage.getResourceRootPath();
+    String resourceRootPath = this.pentahoWebPackage.getResourceRootPath();
+    while ( resourceRootPath.length() > 1 && resourceRootPath.endsWith( "/" ) ) {
+      resourceRootPath = resourceRootPath.substring( 0, resourceRootPath.length() - 1 );
+    }
+
+    return resourceRootPath;
   }
 
   public String toString() {
