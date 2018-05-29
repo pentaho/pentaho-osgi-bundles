@@ -121,14 +121,14 @@ public class PentahoWebPackageBundleListener implements BundleListener {
   IPentahoWebPackage createWebPackage( Bundle bundle, BundleCapability webPackageCapability ) {
     String capabilityRoot = getRoot( webPackageCapability );
     try {
-      URL packageJsonUrl = bundle.getResource( capabilityRoot + "/package.json" );
+      URL packageJsonUrl = bundle.getResource( capabilityRoot + "package.json" );
       if ( packageJsonUrl != null ) {
-        return new PentahoWebPackageImpl(  ( capabilityRoot.isEmpty() ? "/" : capabilityRoot ), packageJsonUrl );
+        return new PentahoWebPackageImpl( capabilityRoot, packageJsonUrl );
       } else {
-        logger.warn( bundle.getSymbolicName() + " [" + bundle.getBundleId() + "]: " + capabilityRoot + "/package.json not found." );
+        logger.warn( bundle.getSymbolicName() + " [" + bundle.getBundleId() + "]: " + capabilityRoot + "package.json not found." );
       }
     } catch ( RuntimeException ignored ) {
-      logger.error( bundle.getSymbolicName() + " [" + bundle.getBundleId() + "]: Error parsing " + capabilityRoot + "/package.json." );
+      logger.error( bundle.getSymbolicName() + " [" + bundle.getBundleId() + "]: Error parsing " + capabilityRoot + "package.json." );
 
       // throwing will make everything fail
       // what damage control should we do?
@@ -149,9 +149,16 @@ public class PentahoWebPackageBundleListener implements BundleListener {
   }
 
   String getRoot( BundleCapability capability ) {
-    String root = (String) capability.getAttributes().getOrDefault( "root", "" );
-    while ( root.endsWith( "/" ) ) {
-      root = root.substring( 0, root.length() - 1 );
+    String root = (String) capability.getAttributes().getOrDefault( "root", "/" );
+
+    if ( !root.endsWith( "/" ) ) {
+      // ensure it ends with slash
+      root = root + "/";
+    } else {
+      // trim extra slashes
+      while ( root.endsWith( "//" ) ) {
+        root = root.substring( 0, root.length() - 1 );
+      }
     }
 
     return root;

@@ -77,10 +77,10 @@ public class RequireJsBundleListener implements BundleListener {
   }
 
   public void init() {
+    this.parser = new JSONParser();
+
     this.serviceRegistrationMap = new ConcurrentHashMap<>();
     this.requireConfigMap = new ConcurrentHashMap<>();
-
-    this.parser = new JSONParser();
 
     this.bundleContext.addBundleListener( this );
 
@@ -93,7 +93,7 @@ public class RequireJsBundleListener implements BundleListener {
     this.serviceRegistrationMap = null;
     this.requireConfigMap = null;
 
-    bundleContext.removeBundleListener( this );
+    this.bundleContext.removeBundleListener( this );
   }
 
   public Collection<RequireJsConfiguration> getScripts() {
@@ -102,22 +102,24 @@ public class RequireJsBundleListener implements BundleListener {
 
   @Override
   public void bundleChanged( BundleEvent bundleEvent ) {
-    final Bundle bundle = bundleEvent.getBundle();
+    if ( this.isListenerActive() ) {
+      final Bundle bundle = bundleEvent.getBundle();
 
-    final int bundleEventType = bundleEvent.getType();
+      final int bundleEventType = bundleEvent.getType();
 
-    boolean shouldInvalidate = false;
+      boolean shouldInvalidate = false;
 
-    if ( bundleEventType == BundleEvent.STARTED ) {
-      shouldInvalidate = addBundle( bundle );
-    } else if ( bundleEventType == BundleEvent.UNINSTALLED
-        || bundleEventType == BundleEvent.UNRESOLVED
-        || bundleEventType == BundleEvent.STOPPED ) {
-      shouldInvalidate = removeBundle( bundle );
-    }
+      if ( bundleEventType == BundleEvent.STARTED ) {
+        shouldInvalidate = addBundle( bundle );
+      } else if ( bundleEventType == BundleEvent.UNINSTALLED
+          || bundleEventType == BundleEvent.UNRESOLVED
+          || bundleEventType == BundleEvent.STOPPED ) {
+        shouldInvalidate = removeBundle( bundle );
+      }
 
-    if ( shouldInvalidate ) {
-      this.requireJsConfigManager.invalidateCachedConfigurations();
+      if ( shouldInvalidate && this.isListenerActive() ) {
+        this.requireJsConfigManager.invalidateCachedConfigurations();
+      }
     }
   }
 
@@ -149,14 +151,16 @@ public class RequireJsBundleListener implements BundleListener {
    * @return true only if any bundles with META-INF/js/externalResources.json file was added / updated.
    */
   boolean addBundle( Bundle bundle ) {
-    if ( bundle.getState() != Bundle.ACTIVE ) {
-      return false;
-    }
-
-    // clear any previous configurations (for bundle updates)
-    boolean shouldInvalidate = removeBundleInternal( bundle );
+    boolean shouldInvalidate;
 
     try {
+      if ( bundle.getState() != Bundle.ACTIVE ) {
+        return false;
+      }
+
+      // clear any previous configurations (for bundle updates)
+      shouldInvalidate = removeBundleInternal( bundle );
+
       URL packageJsonUrl = bundle.getResource( PACKAGE_JSON_PATH );
       URL configFileUrl = bundle.getResource( REQUIRE_JSON_PATH );
 
@@ -228,6 +232,10 @@ public class RequireJsBundleListener implements BundleListener {
     }
 
     return shouldInvalidate;
+  }
+
+  private boolean isListenerActive() {
+    return this.requireConfigMap != null && this.serviceRegistrationMap != null;
   }
 
   private Map<String, Object> loadJsonObject( URL url ) throws IOException, ParseException {

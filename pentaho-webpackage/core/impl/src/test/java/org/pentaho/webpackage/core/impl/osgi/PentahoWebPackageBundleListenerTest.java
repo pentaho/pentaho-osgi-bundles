@@ -48,8 +48,6 @@ import static org.mockito.Mockito.when;
 
 public class PentahoWebPackageBundleListenerTest {
 
-  private String resourceRootPath = "some/resource/path";
-
   @Test
   public void testBundleChangedShouldRegisterWebpackageServicesOnBundleEventStarted() {
     // arrange
@@ -245,6 +243,8 @@ public class PentahoWebPackageBundleListenerTest {
 
   @Test
   public void testCreateWebPackageShouldReturnValidPentahoWebPackage() {
+    String resourceRootPath = "some/resource/path/";
+
     // arrange
     Bundle mockBundle = mock( Bundle.class );
     BundleCapability mockBundleCapability = mock( BundleCapability.class );
@@ -257,9 +257,9 @@ public class PentahoWebPackageBundleListenerTest {
 
     URL mockUrl = this.createMockUrlConnection( mockPackageJson );
     Map<String, Object> attributes = new HashMap<>();
-    attributes.put( "root", resourceRootPath + "/" );
+    attributes.put( "root", resourceRootPath );
     when( mockBundleCapability.getAttributes() ).thenReturn( attributes );
-    when( mockBundle.getResource( eq( resourceRootPath + "/package.json" ) ) )
+    when( mockBundle.getResource( eq( resourceRootPath + "package.json" ) ) )
         .thenReturn( mockUrl );
 
     // act
@@ -272,6 +272,114 @@ public class PentahoWebPackageBundleListenerTest {
     assertNotNull( "Should not be null", pentahoWebPackage );
     assertEquals( "Should have the correct WebPackage name", expectedWebPackageName, actualWebPackageName );
     assertEquals( "Should have the correct WebPackage version", expectedWebPackageVersion, actualWebPackageVersion );
+    assertEquals( "Should have the correct WebPackage Resource root path", expectedResourceRootPath, actualResourceRootPath );
+  }
+
+  @Test
+  public void testNormalizeResourceRootPathNoEndSlash() {
+    String resourceRootPath = "some/resource/path";
+    String expectedResourceRootPath = "some/resource/path/";
+
+    // arrange
+    Bundle mockBundle = mock( Bundle.class );
+    BundleCapability mockBundleCapability = mock( BundleCapability.class );
+    PentahoWebPackageBundleListener listener = new PentahoWebPackageBundleListener();
+
+    String mockPackageJson = "{\"name\":\"test\",\"version\":\"1.0\"}";
+
+    URL mockUrl = this.createMockUrlConnection( mockPackageJson );
+    Map<String, Object> attributes = new HashMap<>();
+    attributes.put( "root", resourceRootPath );
+    when( mockBundleCapability.getAttributes() ).thenReturn( attributes );
+    when( mockBundle.getResource( eq( resourceRootPath + "/package.json" ) ) )
+        .thenReturn( mockUrl );
+
+    // act
+    IPentahoWebPackage pentahoWebPackage = listener.createWebPackage( mockBundle, mockBundleCapability );
+    String actualResourceRootPath = pentahoWebPackage.getResourceRootPath();
+
+    // asset
+    assertEquals( "Should have the correct WebPackage Resource root path", expectedResourceRootPath, actualResourceRootPath );
+  }
+
+  @Test
+  public void testNormalizeResourceRootPathEmpty() {
+    String resourceRootPath = "";
+    String expectedResourceRootPath = "/";
+
+    // arrange
+    Bundle mockBundle = mock( Bundle.class );
+    BundleCapability mockBundleCapability = mock( BundleCapability.class );
+    PentahoWebPackageBundleListener listener = new PentahoWebPackageBundleListener();
+
+    String mockPackageJson = "{\"name\":\"test\",\"version\":\"1.0\"}";
+
+    URL mockUrl = this.createMockUrlConnection( mockPackageJson );
+    Map<String, Object> attributes = new HashMap<>();
+    attributes.put( "root", resourceRootPath );
+    when( mockBundleCapability.getAttributes() ).thenReturn( attributes );
+    when( mockBundle.getResource( eq( "/package.json" ) ) )
+        .thenReturn( mockUrl );
+
+    // act
+    IPentahoWebPackage pentahoWebPackage = listener.createWebPackage( mockBundle, mockBundleCapability );
+    String actualResourceRootPath = pentahoWebPackage.getResourceRootPath();
+
+    // asset
+    assertEquals( "Should have the correct WebPackage Resource root path", expectedResourceRootPath, actualResourceRootPath );
+  }
+
+  @Test
+  public void testNormalizeResourceRootPathMultipleSlashes() {
+    String resourceRootPath = "////";
+    String expectedResourceRootPath = "/";
+
+    // arrange
+    Bundle mockBundle = mock( Bundle.class );
+    BundleCapability mockBundleCapability = mock( BundleCapability.class );
+    PentahoWebPackageBundleListener listener = new PentahoWebPackageBundleListener();
+
+    String mockPackageJson = "{\"name\":\"test\",\"version\":\"1.0\"}";
+
+    URL mockUrl = this.createMockUrlConnection( mockPackageJson );
+    Map<String, Object> attributes = new HashMap<>();
+    attributes.put( "root", resourceRootPath );
+    when( mockBundleCapability.getAttributes() ).thenReturn( attributes );
+    when( mockBundle.getResource( eq( "/package.json" ) ) )
+        .thenReturn( mockUrl );
+
+    // act
+    IPentahoWebPackage pentahoWebPackage = listener.createWebPackage( mockBundle, mockBundleCapability );
+    String actualResourceRootPath = pentahoWebPackage.getResourceRootPath();
+
+    // asset
+    assertEquals( "Should have the correct WebPackage Resource root path", expectedResourceRootPath, actualResourceRootPath );
+  }
+
+  @Test
+  public void testNormalizeResourceRootPathMultipleEndSlashes() {
+    String resourceRootPath = "some/resource/path///";
+    String expectedResourceRootPath = "some/resource/path/";
+
+    // arrange
+    Bundle mockBundle = mock( Bundle.class );
+    BundleCapability mockBundleCapability = mock( BundleCapability.class );
+    PentahoWebPackageBundleListener listener = new PentahoWebPackageBundleListener();
+
+    String mockPackageJson = "{\"name\":\"test\",\"version\":\"1.0\"}";
+
+    URL mockUrl = this.createMockUrlConnection( mockPackageJson );
+    Map<String, Object> attributes = new HashMap<>();
+    attributes.put( "root", resourceRootPath );
+    when( mockBundleCapability.getAttributes() ).thenReturn( attributes );
+    when( mockBundle.getResource( eq( expectedResourceRootPath + "package.json" ) ) )
+        .thenReturn( mockUrl );
+
+    // act
+    IPentahoWebPackage pentahoWebPackage = listener.createWebPackage( mockBundle, mockBundleCapability );
+    String actualResourceRootPath = pentahoWebPackage.getResourceRootPath();
+
+    // asset
     assertEquals( "Should have the correct WebPackage Resource root path", expectedResourceRootPath, actualResourceRootPath );
   }
 
