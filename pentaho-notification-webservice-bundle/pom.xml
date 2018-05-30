@@ -17,7 +17,6 @@
     <requirejs.version>2.1.14</requirejs.version>
     <jasmine.serverPort>8234</jasmine.serverPort>
     <requirejs.version.full>${requirejs.version}-1</requirejs.version.full>
-    <jackson.version>2.9.4</jackson.version>
   </properties>
   <dependencies>
     <dependency>
@@ -33,7 +32,7 @@
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-core</artifactId>
-      <version>${jackson.version}</version>
+      <version>${fasterxml.jackson.core.version}</version>
       <exclusions>
         <exclusion>
           <artifactId>*</artifactId>
@@ -44,7 +43,7 @@
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-annotations</artifactId>
-      <version>${jackson.version}</version>
+      <version>${fasterxml.jackson.core.version}</version>
       <exclusions>
         <exclusion>
           <artifactId>*</artifactId>
@@ -55,7 +54,7 @@
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-databind</artifactId>
-      <version>${jackson.version}</version>
+      <version>${fasterxml.jackson.core.version}</version>
       <exclusions>
         <exclusion>
           <artifactId>*</artifactId>
