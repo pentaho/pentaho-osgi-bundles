@@ -65,8 +65,8 @@
     <commons-lang.version>2.6</commons-lang.version>
     <platform.version>8.1.0.0-SNAPSHOT</platform.version>
     <karaf.version>3.0.3</karaf.version>
-	
-	 <!-- All 3 of these properties are required -->
+
+    <!-- All 3 of these properties are required -->
     <license.organizationName>Hitachi Vantara</license.organizationName>
     <license.inceptionYear>2003</license.inceptionYear>
     <!-- Override this property in sub-modules IF it has a different license -->
