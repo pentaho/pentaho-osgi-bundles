@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="http://www.osgi.org/xmlns/blueprint/v1.0.0 http://www.osgi.org/xmlns/blueprint/v1.0.0/blueprint.xsd">
+
+    <bean id="processGovernor" class="org.hitachivantara.process.ProcessGovernorImpl" scope="singleton">
+        <argument ref="executorService"/>
+        <argument value="2000"/>
+    </bean>
+
+
+    <bean id="executorService" class="java.util.concurrent.Executors" factory-method="newCachedThreadPool"/>
+
+    <service ref="processGovernor" interface="org.hitachivantara.process.ProcessGovernor"/>
+
+</blueprint>

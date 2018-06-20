@@ -14,7 +14,7 @@
   <properties>
     <dependency.org.apache.felix.org.apache.felix.configadmin.revision>1.6.0</dependency.org.apache.felix.org.apache.felix.configadmin.revision>
     <felix.version>4.4.1</felix.version>
-    <slf4j-log4j12.version>1.7.7</slf4j-log4j12.version>
+
   </properties>
   <dependencies>
     <dependency>
