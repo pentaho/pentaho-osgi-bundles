@@ -23,11 +23,11 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleEvent;
 import org.osgi.framework.ServiceRegistration;
 import org.osgi.framework.Version;
+import org.pentaho.requirejs.IPlatformPluginRequireJsConfiguration;
 import org.pentaho.requirejs.IRequireJsPackage;
 import org.pentaho.requirejs.impl.RequireJsConfigManager;
 import org.pentaho.requirejs.impl.types.MetaInfPackageJson;
 import org.pentaho.requirejs.impl.types.MetaInfRequireJson;
-import org.pentaho.requirejs.impl.types.RequireJsConfiguration;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -381,7 +381,7 @@ public class RequireJsBundleListenerTest {
 
     this.requireJsBundleListener.addBundle( mockBundleWithExternalResources );
 
-    Collection<RequireJsConfiguration> scripts = this.requireJsBundleListener.getScripts();
+    Collection<IPlatformPluginRequireJsConfiguration> scripts = this.requireJsBundleListener.getScripts();
 
     assertEquals( 1, scripts.size() );
 
@@ -397,7 +397,7 @@ public class RequireJsBundleListenerTest {
 
     this.requireJsBundleListener.addBundle( mockBundleWithExternalAndStaticResources );
 
-    Collection<RequireJsConfiguration> scripts = this.requireJsBundleListener.getScripts();
+    Collection<IPlatformPluginRequireJsConfiguration> scripts = this.requireJsBundleListener.getScripts();
 
     assertEquals( 1, scripts.size() );
 
@@ -422,7 +422,7 @@ public class RequireJsBundleListenerTest {
     this.requireJsBundleListener.addBundle( mockBundleWithExternalResources );
     this.requireJsBundleListener.addBundle( mockBundleWithExternalAndStaticResources );
 
-    Collection<RequireJsConfiguration> scripts = this.requireJsBundleListener.getScripts();
+    Collection<IPlatformPluginRequireJsConfiguration> scripts = this.requireJsBundleListener.getScripts();
 
     assertEquals( 2, scripts.size() );
   }

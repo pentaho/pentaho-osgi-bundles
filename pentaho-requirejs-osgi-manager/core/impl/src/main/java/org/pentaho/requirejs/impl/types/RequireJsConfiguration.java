@@ -17,26 +17,42 @@
 package org.pentaho.requirejs.impl.types;
 
 import org.osgi.framework.Bundle;
+import org.pentaho.requirejs.IPlatformPluginRequireJsConfiguration;
 
+import java.net.URL;
 import java.util.List;
 
 /**
  * Created by bryan on 9/2/14.
  */
-public class RequireJsConfiguration {
+public class RequireJsConfiguration implements IPlatformPluginRequireJsConfiguration {
   private final Bundle bundle;
+
   private final List<String> requireConfigurations;
 
   public RequireJsConfiguration( Bundle bundle, List<String> requireConfigurations ) {
     this.bundle = bundle;
+
     this.requireConfigurations = requireConfigurations;
   }
 
-  public Bundle getBundle() {
-    return bundle;
-  }
-
+  @Override
   public List<String> getRequireConfigurations() {
     return requireConfigurations;
+  }
+
+  @Override
+  public URL getResource( final String path ) {
+    return bundle.getResource( path );
+  }
+
+  @Override
+  public String getName() {
+    return "[" + bundle.getBundleId() + "] - " + bundle.getSymbolicName() + ":" + bundle.getVersion();
+  }
+
+  @Override
+  public long getOrdinal() {
+    return this.bundle.getBundleId();
   }
 }
