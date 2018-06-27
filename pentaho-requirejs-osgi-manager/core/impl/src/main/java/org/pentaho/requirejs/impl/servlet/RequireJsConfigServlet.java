@@ -83,7 +83,7 @@ public class RequireJsConfigServlet extends HttpServlet {
       printWriter.write( "  function getVersionedModuleId(moduleIdsMappings, moduleId) {\n" );
       printWriter.write( "    if (moduleId.indexOf(\"!\") != -1) {\n" );
       printWriter.write( "      var parts = moduleId.split(\"!\", 2).slice(0);\n" );
-      printWriter.write( "      return getVersionedModuleId(parts[0], moduleIdsMappings) + \"!\" + getVersionedModuleId(parts[1], moduleIdsMappings);\n" );
+      printWriter.write( "      return getVersionedModuleId(moduleIdsMappings, parts[0]) + \"!\" + getVersionedModuleId(moduleIdsMappings, parts[1]);\n" );
       printWriter.write( "    }\n" );
       printWriter.write( "    \n" );
       printWriter.write( "    var baseModuleId = moduleId;\n" );

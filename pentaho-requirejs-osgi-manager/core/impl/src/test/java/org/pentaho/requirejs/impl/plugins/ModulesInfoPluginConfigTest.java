@@ -75,6 +75,27 @@ public class ModulesInfoPluginConfigTest {
   }
 
   @Test
+  public void applyModuleNullTypeConfig() {
+    Map<String, Map<String, Map<String, Map<String, Object>>>> requireConfig = new HashMap<>();
+    Map<String, Map<String, Map<String, Object>>> config = new HashMap<>();
+    Map<String, Map<String, Object>> module = new HashMap<>();
+
+    Map<String, Object> moduleConfig = new HashMap<>();
+    moduleConfig.put( "base", null );
+    module.put( "moduleA", moduleConfig );
+
+    config.put( "pentaho/modules", module );
+    requireConfig.put( "config", config );
+
+    this.plugin.apply( null, null, createResolveModuleIdFunction(), requireConfig );
+
+    Map<String, Map<String, Object>> modulesInfo = requireConfig.get( "config" ).get( "pentaho/modules" );
+
+    Map<String, Object> moduleA_resolved = modulesInfo.get( "moduleA_resolved" );
+    assertEquals( "Base property is resolved", null, moduleA_resolved.get( "base" ) );
+  }
+
+  @Test
   public void applyModuleInstanceConfig() {
     Map<String, Map<String, Map<String, Map<String, Object>>>> requireConfig = new HashMap<>();
     Map<String, Map<String, Map<String, Object>>> config = new HashMap<>();
