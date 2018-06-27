@@ -52,7 +52,7 @@ public class ModulesInfoPluginConfig implements IRequireJsPackageConfigurationPl
 
       Map<String, Object> config = (Map<String, Object>) configuration.get( moduleId );
       config.forEach( ( key, value ) -> {
-        if ( (key.equals( "base" ) || key.equals( "type" )) && value != null ) {
+        if ( ( key.equals( "base" ) || key.equals( "type" ) ) && value != null ) {
           String versionedType = resolveModuleId.apply( (String) value );
           config.put( key, versionedType );
         }
