@@ -30,6 +30,7 @@ import java.util.Locale;
 public class PentahoWebContextServletImpl extends HttpServlet {
   static final String WEB_CONTEXT_JS = "webcontext.js";
   static final String LOCALE_REQUEST_PARAM = "locale";
+  static final String APPLICATION_REQUEST_PARAM = "application";
 
   private static final String SERVER_ROOT = "/";
   private static final String REQUIREJS_INIT_LOCATION = "requirejs-manager/js/require-init.js";
@@ -102,6 +103,7 @@ public class PentahoWebContextServletImpl extends HttpServlet {
   }
 
   private void writeEnvironmentModuleConfig( PrintWriter writer, HttpServletRequest request ) {
+    String application = escapeEnvironmentVar( getApplication( request ) );
     String locale = escapeEnvironmentVar( getLocale( request ) );
     String serverRoot = escapeEnvironmentVar( getServerRoot() );
     String serverPackages = escapeEnvironmentVar( getServerPackages() );
@@ -109,6 +111,7 @@ public class PentahoWebContextServletImpl extends HttpServlet {
     String serverServices = escapeEnvironmentVar( getServerServices() );
 
     writer.write( "\nrequireCfg.config[\"pentaho/environment\"] = {" );
+    writer.write( "\n  application: " + application + "," );
     writer.write( "\n  theme: null," );
     writer.write( "\n  locale: " + locale + "," );
     writer.write( "\n  user: {" );
@@ -156,6 +159,17 @@ public class PentahoWebContextServletImpl extends HttpServlet {
     return locale;
   }
 
+  /**
+   * Gets the identifier of the application from the http request.
+   *
+   * @param request - The http request.
+   *
+   * @return the application identifier.
+   */
+  private String getApplication( HttpServletRequest request ) {
+    return request.getParameter( APPLICATION_REQUEST_PARAM );
+  }
+
   // region Server Root
   String getServerRoot() {
     return SERVER_ROOT;
@@ -195,7 +209,7 @@ public class PentahoWebContextServletImpl extends HttpServlet {
       .append( "\n  shim: {}," )
       .append( "\n  map: { \"*\": {} }," )
       .append( "\n  bundles: {}," )
-      .append( "\n  config: { \"pentaho/service\": {} }," )
+      .append( "\n  config: { \"pentaho/modules\": {} }," )
       .append( "\n  packages: []" )
       .append( "\n}" );
 

@@ -24,9 +24,9 @@ import java.util.Map;
 import java.util.function.Function;
 
 /**
- * Handles the moduleId version mapping inside configurations for pentaho/typeInfo and pentaho/instanceInfo.
+ * Handles the moduleId version mapping inside configurations for pentaho/modules.
  */
-public class TypeAndInstanceInfoPluginConfig implements IRequireJsPackageConfigurationPlugin {
+public class ModulesInfoPluginConfig implements IRequireJsPackageConfigurationPlugin {
   @Override
   public void apply( IRequireJsPackageConfiguration requireJsPackageConfig,
                      Function<String, IRequireJsPackageConfiguration> dependencyResolver,
@@ -36,15 +36,15 @@ public class TypeAndInstanceInfoPluginConfig implements IRequireJsPackageConfigu
       Map<String, Map<String, ?>> config = (Map<String, Map<String, ?>>) requireConfig.get( "config" );
 
       config.forEach( ( moduleId, configuration ) -> {
-        if ( moduleId.equals( "pentaho/typeInfo" ) || moduleId.equals( "pentaho/instanceInfo" ) ) {
-          Map<String, ?> processedConfiguration = convertTypeAndInstanceConfigurations( configuration, resolveModuleId );
+        if ( moduleId.equals( "pentaho/modules" ) ) {
+          Map<String, ?> processedConfiguration = convertModulesConfigurations( configuration, resolveModuleId );
           config.put( moduleId, processedConfiguration );
         }
       } );
     }
   }
 
-  private Map<String, ?> convertTypeAndInstanceConfigurations( Map<String, ?> configuration, Function<String, String> resolveModuleId ) {
+  private Map<String, ?> convertModulesConfigurations( Map<String, ?> configuration, Function<String, String> resolveModuleId ) {
     HashMap<String, Object> convertedConfiguration = new HashMap<>();
 
     for ( String moduleId : configuration.keySet() ) {
@@ -52,7 +52,7 @@ public class TypeAndInstanceInfoPluginConfig implements IRequireJsPackageConfigu
 
       Map<String, Object> config = (Map<String, Object>) configuration.get( moduleId );
       config.forEach( ( key, value ) -> {
-        if ( key.equals( "base" ) || key.equals( "type" ) ) {
+        if ( ( key.equals( "base" ) || key.equals( "type" ) ) && value != null ) {
           String versionedType = resolveModuleId.apply( (String) value );
           config.put( key, versionedType );
         }

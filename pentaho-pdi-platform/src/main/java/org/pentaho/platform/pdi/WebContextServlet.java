@@ -54,6 +54,7 @@ public class WebContextServlet extends HttpServlet {
 
   static final String CONTEXT = "context";
   static final String LOCALE = "locale";
+  static final String APPLICATION = "application";
 
   private Integer requireWaitTime;
   private String servicesRoot;
@@ -150,6 +151,7 @@ public class WebContextServlet extends HttpServlet {
   }
 
   private void writeEnvironmentModuleConfig( PrintWriter writer, HttpServletRequest request ) {
+    String application = escapeEnvironmentVar( getApplication( request ) );
     String locale = escapeEnvironmentVar( getLocale( request ) );
     String serverRoot = escapeEnvironmentVar( getServerRoot() );
     String serverPackages = escapeEnvironmentVar( getServerPackages() );
@@ -157,6 +159,7 @@ public class WebContextServlet extends HttpServlet {
     String serverServices = escapeEnvironmentVar( getServerServices() );
 
     writer.write( "\nrequireCfg.config[\"pentaho/environment\"] = {" );
+    writer.write( "\n  application: " + application + "," );
     writer.write( "\n  theme: null," );
     writer.write( "\n  locale: " + locale + "," );
     writer.write( "\n  user: {" );
@@ -260,6 +263,17 @@ public class WebContextServlet extends HttpServlet {
   }
 
   /**
+   * Gets the identifier of the application from the http request.
+   *
+   * @param request - The http request.
+   *
+   * @return the application identifier.
+   */
+  private String getApplication( HttpServletRequest request ) {
+    return request.getParameter( APPLICATION );
+  }
+
+  /**
    * Gets Hitachi Vantara context name from the http request.
    *
    * @param request - The http request.
@@ -311,7 +325,7 @@ public class WebContextServlet extends HttpServlet {
             .append( "\n  shim: {}," )
             .append( "\n  map: { \"*\": {} }," )
             .append( "\n  bundles: {}," )
-            .append( "\n  config: { \"pentaho/service\": {} }," )
+            .append( "\n  config: { \"pentaho/modules\": {} }," )
             .append( "\n  packages: []" )
             .append( "\n}" );
 

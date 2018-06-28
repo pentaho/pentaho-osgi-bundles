@@ -32,6 +32,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.spy;
 import static org.pentaho.webcontext.core.impl.PentahoWebContextServletImpl.LOCALE_REQUEST_PARAM;
+import static org.pentaho.webcontext.core.impl.PentahoWebContextServletImpl.APPLICATION_REQUEST_PARAM;
 import static org.pentaho.webcontext.core.impl.PentahoWebContextServletImpl.WEB_CONTEXT_JS;
 
 public class PentahoWebContextServletImplTest {
@@ -78,7 +79,7 @@ public class PentahoWebContextServletImplTest {
       "\n  shim: {}," +
       "\n  map: { \"*\": {} }," +
       "\n  bundles: {}," +
-      "\n  config: { \"pentaho/service\": {} }," +
+      "\n  config: { \"pentaho/modules\": {} }," +
       "\n  packages: []" +
       "\n}";
 
@@ -103,8 +104,12 @@ public class PentahoWebContextServletImplTest {
     String sessionLocale = "fo_BA";
     when( this.httpRequest.getParameter( LOCALE_REQUEST_PARAM ) ).thenReturn( sessionLocale );
 
+    String application = "fo_BA";
+    when( this.httpRequest.getParameter( APPLICATION_REQUEST_PARAM ) ).thenReturn( application );
+
     final String response = doGetWebContextServlet();
     String environmentModuleConfig = "\nrequireCfg.config[\"pentaho/environment\"] = {" +
+      "\n  application: \"" + application + "\"," +
       "\n  theme: null," +
       "\n  locale: \"" + sessionLocale + "\"," +
       "\n  user: {" +
