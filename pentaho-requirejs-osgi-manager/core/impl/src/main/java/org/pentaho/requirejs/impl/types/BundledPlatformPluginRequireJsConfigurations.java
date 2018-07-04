@@ -17,42 +17,33 @@
 package org.pentaho.requirejs.impl.types;
 
 import org.osgi.framework.Bundle;
-import org.pentaho.requirejs.IPlatformPluginRequireJsConfiguration;
+import org.pentaho.requirejs.IPlatformPluginRequireJsConfigurations;
 
 import java.net.URL;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
- * Created by bryan on 9/2/14.
+ * Collection of RequireJS configuration files provided by a Platform Plugin processed and deployed by the pentaho-platform-plugin-deployer.
  */
-public class RequireJsConfiguration implements IPlatformPluginRequireJsConfiguration {
+public class BundledPlatformPluginRequireJsConfigurations implements IPlatformPluginRequireJsConfigurations {
   private final Bundle bundle;
 
   private final List<String> requireConfigurations;
 
-  public RequireJsConfiguration( Bundle bundle, List<String> requireConfigurations ) {
+  public BundledPlatformPluginRequireJsConfigurations( Bundle bundle, List<String> requireConfigurations ) {
     this.bundle = bundle;
 
     this.requireConfigurations = requireConfigurations;
   }
 
   @Override
-  public List<String> getRequireConfigurations() {
-    return requireConfigurations;
-  }
-
-  @Override
-  public URL getResource( final String path ) {
-    return bundle.getResource( path );
+  public List<URL> getRequireConfigurationsURLs() {
+    return requireConfigurations.stream().map( bundle::getResource ).collect( Collectors.toList() );
   }
 
   @Override
   public String getName() {
     return "[" + bundle.getBundleId() + "] - " + bundle.getSymbolicName() + ":" + bundle.getVersion();
-  }
-
-  @Override
-  public long getOrdinal() {
-    return this.bundle.getBundleId();
   }
 }

@@ -23,13 +23,14 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleEvent;
 import org.osgi.framework.ServiceRegistration;
 import org.osgi.framework.Version;
-import org.pentaho.requirejs.IPlatformPluginRequireJsConfiguration;
+import org.pentaho.requirejs.IPlatformPluginRequireJsConfigurations;
 import org.pentaho.requirejs.IRequireJsPackage;
 import org.pentaho.requirejs.impl.RequireJsConfigManager;
 import org.pentaho.requirejs.impl.types.MetaInfPackageJson;
 import org.pentaho.requirejs.impl.types.MetaInfRequireJson;
 
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -381,14 +382,12 @@ public class RequireJsBundleListenerTest {
 
     this.requireJsBundleListener.addBundle( mockBundleWithExternalResources );
 
-    Collection<IPlatformPluginRequireJsConfiguration> scripts = this.requireJsBundleListener.getScripts();
+    Collection<IPlatformPluginRequireJsConfigurations> scripts = this.requireJsBundleListener.getScripts();
 
     assertEquals( 1, scripts.size() );
 
-    List<String> requireConfigurations = scripts.iterator().next().getRequireConfigurations();
+    List<URL> requireConfigurations = scripts.iterator().next().getRequireConfigurationsURLs();
     assertEquals( 1, requireConfigurations.size() );
-
-    assertEquals( "/resources/external/lib3-require-js-cfg.js", requireConfigurations.get( 0 ) );
   }
 
   @Test
@@ -397,15 +396,12 @@ public class RequireJsBundleListenerTest {
 
     this.requireJsBundleListener.addBundle( mockBundleWithExternalAndStaticResources );
 
-    Collection<IPlatformPluginRequireJsConfiguration> scripts = this.requireJsBundleListener.getScripts();
+    Collection<IPlatformPluginRequireJsConfigurations> scripts = this.requireJsBundleListener.getScripts();
 
     assertEquals( 1, scripts.size() );
 
-    List<String> requireConfigurations = scripts.iterator().next().getRequireConfigurations();
+    List<URL> requireConfigurations = scripts.iterator().next().getRequireConfigurationsURLs();
     assertEquals( 2, requireConfigurations.size() );
-
-    assertEquals( "/resources/static/lib4-require-js-cfg.js", requireConfigurations.get( 0 ) );
-    assertEquals( "/resources/external/lib4-require-js-cfg.js", requireConfigurations.get( 1 ) );
   }
 
   @Test
@@ -422,7 +418,7 @@ public class RequireJsBundleListenerTest {
     this.requireJsBundleListener.addBundle( mockBundleWithExternalResources );
     this.requireJsBundleListener.addBundle( mockBundleWithExternalAndStaticResources );
 
-    Collection<IPlatformPluginRequireJsConfiguration> scripts = this.requireJsBundleListener.getScripts();
+    Collection<IPlatformPluginRequireJsConfigurations> scripts = this.requireJsBundleListener.getScripts();
 
     assertEquals( 2, scripts.size() );
   }

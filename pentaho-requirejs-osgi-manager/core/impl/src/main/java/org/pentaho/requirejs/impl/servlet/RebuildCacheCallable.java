@@ -17,7 +17,7 @@
 package org.pentaho.requirejs.impl.servlet;
 
 import org.json.simple.JSONObject;
-import org.pentaho.requirejs.IPlatformPluginRequireJsConfiguration;
+import org.pentaho.requirejs.IPlatformPluginRequireJsConfigurations;
 import org.pentaho.requirejs.IRequireJsPackageConfiguration;
 import org.pentaho.requirejs.IRequireJsPackageConfigurationPlugin;
 import org.pentaho.requirejs.impl.utils.JsonMerger;
@@ -31,7 +31,6 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -51,17 +50,14 @@ public class RebuildCacheCallable implements Callable<String> {
   private final Collection<IRequireJsPackageConfiguration> packageConfigurations;
 
   // pentaho-platform-plugin configuration scripts
-  private final List<IPlatformPluginRequireJsConfiguration> requireJsConfigurations;
+  private final List<IPlatformPluginRequireJsConfigurations> requireJsConfigurations;
 
-  public RebuildCacheCallable( String baseUrl, Collection<IRequireJsPackageConfiguration> packageConfigurations, Collection<IPlatformPluginRequireJsConfiguration> requireJsConfigurations, List<IRequireJsPackageConfigurationPlugin> plugins ) {
+  public RebuildCacheCallable( String baseUrl, Collection<IRequireJsPackageConfiguration> packageConfigurations, Collection<IPlatformPluginRequireJsConfigurations> requireJsConfigurations, List<IRequireJsPackageConfigurationPlugin> plugins ) {
     this.baseUrl = baseUrl;
 
     this.packageConfigurations = packageConfigurations;
 
     this.requireJsConfigurations = new ArrayList<>( requireJsConfigurations );
-
-    // sort pentaho-platform-plugin configuration scripts (by bundle ID), just to ensure some consistency
-    this.requireJsConfigurations.sort( Comparator.comparingLong( IPlatformPluginRequireJsConfiguration::getOrdinal ) );
 
     this.plugins = plugins;
   }
@@ -113,7 +109,7 @@ public class RebuildCacheCallable implements Callable<String> {
       }
     } );
 
-    for ( IPlatformPluginRequireJsConfiguration requireJsConfiguration : requireJsConfigurations ) {
+    for ( IPlatformPluginRequireJsConfigurations requireJsConfiguration : requireJsConfigurations ) {
       try {
         String bundleName = requireJsConfiguration.getName();
 
@@ -121,8 +117,8 @@ public class RebuildCacheCallable implements Callable<String> {
         sb.append( bundleName );
         sb.append( " */\n" );
 
-        for ( String config : requireJsConfiguration.getRequireConfigurations() ) {
-          appendFromResource( sb, requireJsConfiguration.getResource( config ) );
+        for ( URL configURL : requireJsConfiguration.getRequireConfigurationsURLs() ) {
+          appendFromResource( sb, configURL );
         }
 
         sb.append( "/* End of bundle " );

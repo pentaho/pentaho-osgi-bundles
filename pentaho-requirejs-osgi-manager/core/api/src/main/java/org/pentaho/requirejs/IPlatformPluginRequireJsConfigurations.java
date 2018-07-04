@@ -19,10 +19,22 @@ package org.pentaho.requirejs;
 import java.net.URL;
 import java.util.List;
 
-public interface IPlatformPluginRequireJsConfiguration {
-  List<String> getRequireConfigurations();
-  URL getResource( String path );
+/**
+ * Collection of RequireJS configuration files provided by a Platform Plugin
+ * (external resources files declared in plugin.xml with context="requirejs").
+ */
+public interface IPlatformPluginRequireJsConfigurations {
+  /**
+   * Returns the list of RequireJS configuration files provided by this Platform Plugin.
+   *
+   * @return List of URLs of the configuration files.
+   */
+  List<URL> getRequireConfigurationsURLs();
 
+  /**
+   * Provides a not necessarily unique human-readable identifier for this collection of RequireJS configuration files.
+   *
+   * @return The name of this resource collection.
+   */
   String getName();
-  long getOrdinal();
 }

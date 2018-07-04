@@ -23,12 +23,12 @@ import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleEvent;
 import org.osgi.framework.BundleListener;
 import org.osgi.framework.ServiceRegistration;
-import org.pentaho.requirejs.IPlatformPluginRequireJsConfiguration;
+import org.pentaho.requirejs.IPlatformPluginRequireJsConfigurations;
 import org.pentaho.requirejs.IRequireJsPackage;
 import org.pentaho.requirejs.impl.RequireJsConfigManager;
 import org.pentaho.requirejs.impl.types.MetaInfPackageJson;
 import org.pentaho.requirejs.impl.types.MetaInfRequireJson;
-import org.pentaho.requirejs.impl.types.RequireJsConfiguration;
+import org.pentaho.requirejs.impl.types.BundledPlatformPluginRequireJsConfigurations;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -51,7 +51,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * The service reference is maintained so it can be unregistered when the bundle stops.
  *
  * For bundles with META-INF/js/externalResources.json file (and optionally an accompanying META-INF/js/staticResources.json file),
- * a {@link IPlatformPluginRequireJsConfiguration} instance is created, to be returned by {@link #getScripts()} until the
+ * a {@link IPlatformPluginRequireJsConfigurations} instance is created, to be returned by {@link #getScripts()} until the
  * corresponding bundle is stopped.
  */
 public class RequireJsBundleListener implements BundleListener {
@@ -66,7 +66,7 @@ public class RequireJsBundleListener implements BundleListener {
   private RequireJsConfigManager requireJsConfigManager;
 
   private Map<Long, ServiceRegistration<?>> serviceRegistrationMap;
-  private Map<Long, IPlatformPluginRequireJsConfiguration> requireConfigMap;
+  private Map<Long, IPlatformPluginRequireJsConfigurations> requireConfigMap;
 
   private JSONParser parser;
 
@@ -98,7 +98,7 @@ public class RequireJsBundleListener implements BundleListener {
     this.bundleContext.removeBundleListener( this );
   }
 
-  public Collection<IPlatformPluginRequireJsConfiguration> getScripts() {
+  public Collection<IPlatformPluginRequireJsConfigurations> getScripts() {
     return Collections.unmodifiableCollection( this.requireConfigMap.values() );
   }
 
@@ -143,7 +143,7 @@ public class RequireJsBundleListener implements BundleListener {
       }
     }
 
-    IPlatformPluginRequireJsConfiguration requireJsConfiguration = this.requireConfigMap.remove( bundle.getBundleId() );
+    IPlatformPluginRequireJsConfigurations requireJsConfiguration = this.requireConfigMap.remove( bundle.getBundleId() );
 
     return requireJsConfiguration != null;
   }
@@ -200,7 +200,7 @@ public class RequireJsBundleListener implements BundleListener {
           List<String> requireJsList = getRequireJsList( externalResourceJsonObject, staticResourceJsonObject );
 
           if ( requireJsList != null ) {
-            this.requireConfigMap.put( bundle.getBundleId(), new RequireJsConfiguration( bundle, requireJsList ) );
+            this.requireConfigMap.put( bundle.getBundleId(), new BundledPlatformPluginRequireJsConfigurations( bundle, requireJsList ) );
             shouldInvalidate = true;
           }
         }
