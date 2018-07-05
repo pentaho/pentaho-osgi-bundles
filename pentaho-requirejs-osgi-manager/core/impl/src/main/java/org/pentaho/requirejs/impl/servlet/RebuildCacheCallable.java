@@ -17,10 +17,9 @@
 package org.pentaho.requirejs.impl.servlet;
 
 import org.json.simple.JSONObject;
-import org.osgi.framework.Bundle;
+import org.pentaho.requirejs.IPlatformPluginRequireJsConfigurations;
 import org.pentaho.requirejs.IRequireJsPackageConfiguration;
 import org.pentaho.requirejs.IRequireJsPackageConfigurationPlugin;
-import org.pentaho.requirejs.impl.types.RequireJsConfiguration;
 import org.pentaho.requirejs.impl.utils.JsonMerger;
 import org.pentaho.requirejs.impl.utils.RequireJsDependencyResolver;
 
@@ -32,7 +31,6 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -51,18 +49,15 @@ public class RebuildCacheCallable implements Callable<String> {
 
   private final Collection<IRequireJsPackageConfiguration> packageConfigurations;
 
-  // pentaho-platform-plugin configuration scripts (legacy)
-  private final List<RequireJsConfiguration> requireJsConfigurations;
+  // pentaho-platform-plugin configuration scripts
+  private final List<IPlatformPluginRequireJsConfigurations> requireJsConfigurations;
 
-  public RebuildCacheCallable( String baseUrl, Collection<IRequireJsPackageConfiguration> packageConfigurations, Collection<RequireJsConfiguration> requireJsConfigurations, List<IRequireJsPackageConfigurationPlugin> plugins ) {
+  public RebuildCacheCallable( String baseUrl, Collection<IRequireJsPackageConfiguration> packageConfigurations, Collection<IPlatformPluginRequireJsConfigurations> requireJsConfigurations, List<IRequireJsPackageConfigurationPlugin> plugins ) {
     this.baseUrl = baseUrl;
 
     this.packageConfigurations = packageConfigurations;
 
     this.requireJsConfigurations = new ArrayList<>( requireJsConfigurations );
-
-    // sort configuration scripts by bundle ID, just to ensure some consistency
-    this.requireJsConfigurations.sort( Comparator.comparingLong( o -> o.getBundle().getBundleId() ) );
 
     this.plugins = plugins;
   }
@@ -114,21 +109,21 @@ public class RebuildCacheCallable implements Callable<String> {
       }
     } );
 
-    for ( RequireJsConfiguration requireJsConfiguration : requireJsConfigurations ) {
+    for ( IPlatformPluginRequireJsConfigurations requireJsConfiguration : requireJsConfigurations ) {
       try {
-        sb.append( "\n\n/* Following configurations are from bundle " );
-        Bundle bundle = requireJsConfiguration.getBundle();
-        String bundleName = "[" + bundle.getBundleId() + "] - " + bundle.getSymbolicName() + ":" + bundle.getVersion();
-        sb.append( bundleName );
-        sb.append( "*/\n" );
+        String bundleName = requireJsConfiguration.getName();
 
-        for ( String config : requireJsConfiguration.getRequireConfigurations() ) {
-          appendFromResource( sb, bundle.getResource( config ) );
+        sb.append( "\n\n/* Following configurations are from bundle " );
+        sb.append( bundleName );
+        sb.append( " */\n" );
+
+        for ( URL configURL : requireJsConfiguration.getRequireConfigurationsURLs() ) {
+          appendFromResource( sb, configURL );
         }
 
         sb.append( "/* End of bundle " );
         sb.append( bundleName );
-        sb.append( "*/\n" );
+        sb.append( " */\n" );
       } catch ( IOException ignored ) {
         // ignored exception
       }
@@ -193,30 +188,17 @@ public class RebuildCacheCallable implements Callable<String> {
 
   private void appendFromResource( StringBuilder sb, URL configURL ) throws IOException {
     URLConnection urlConnection;
-    InputStream inputStream = null;
-    InputStreamReader inputStreamReader = null;
-    BufferedReader bufferedReader = null;
 
-    try {
-      urlConnection = configURL.openConnection();
-      inputStream = urlConnection.getInputStream();
-      inputStreamReader = new InputStreamReader( inputStream );
-      bufferedReader = new BufferedReader( inputStreamReader );
+    urlConnection = configURL.openConnection();
 
+    try (
+        InputStream inputStream = urlConnection.getInputStream();
+        InputStreamReader inputStreamReader = new InputStreamReader( inputStream );
+        BufferedReader bufferedReader = new BufferedReader( inputStreamReader ) ) {
       String input;
       while ( ( input = bufferedReader.readLine() ) != null ) {
         sb.append( input );
         sb.append( "\n" );
-      }
-    } finally {
-      if ( bufferedReader != null ) {
-        bufferedReader.close();
-      }
-      if ( inputStreamReader != null ) {
-        inputStreamReader.close();
-      }
-      if ( inputStream != null ) {
-        inputStream.close();
       }
     }
   }
