@@ -65,7 +65,7 @@ public class RequireJsGeneratorTest {
 
     System.setProperty( "java.protocol.handler.pkgs", "org.ops4j.pax.url" );
     System.setProperty( "org.ops4j.pax.url.mvn.repositories",
-            input.toURI().toURL().toString() + "@snapshots@id=mock-repo" );
+        input.toURI().toURL().toString() + "@snapshots@id=mock-repo" );
     System.setProperty( "org.ops4j.pax.url.mvn.localRepository", input.toURI().toURL().toString() );
     System.setProperty( "org.ops4j.pax.url.mvn.proxySupport", "false" );
   }
@@ -74,8 +74,8 @@ public class RequireJsGeneratorTest {
   public void testEmptyGenerator() {
     RequireJsGenerator emptyGenerator = RequireJsGenerator.emptyGenerator( "angular-ui-router.stateHelper", "1.3.1" );
 
-    assertEquals( "angular-ui-router.stateHelper" , emptyGenerator.getModuleInfo().getName() );
-    assertEquals( "1.3.1" , emptyGenerator.getModuleInfo().getVersion() );
+    assertEquals( "angular-ui-router.stateHelper", emptyGenerator.getModuleInfo().getName() );
+    assertEquals( "1.3.1", emptyGenerator.getModuleInfo().getVersion() );
   }
 
 
@@ -84,11 +84,11 @@ public class RequireJsGeneratorTest {
     RequireJsGenerator moduleInfo = RequireJsGenerator.parsePom( getResourceAsStream( POM_REQUIRE_XML ) );
 
     RequireJsGenerator.ArtifactInfo artifactInfo = new RequireJsGenerator
-      .ArtifactInfo( "org.webjars", "smart-table", "2.0.3-1" );
+        .ArtifactInfo( "org.webjars", "smart-table", "2.0.3-1" );
 
     assertEquals(
-      getExpectedOutput( POM_REQUIRE_JSON ),
-      getRequireJsConfig( moduleInfo, artifactInfo )
+        getExpectedOutput( POM_REQUIRE_JSON ),
+        getRequireJsConfig( moduleInfo, artifactInfo )
     );
   }
 
@@ -98,14 +98,14 @@ public class RequireJsGeneratorTest {
     String version = "1.3.0-rc.0";
 
     RequireJsGenerator moduleInfo = RequireJsGenerator
-      .processJsScript( name, version, getResourceAsStream( WEBJARS_REQUIREJS_JS ) );
+        .processJsScript( name, version, getResourceAsStream( WEBJARS_REQUIREJS_JS ) );
 
     RequireJsGenerator.ArtifactInfo artifactInfo = new RequireJsGenerator
-      .ArtifactInfo( "org.webjars", name, version );
+        .ArtifactInfo( "org.webjars", name, version );
 
     assertEquals(
-      getExpectedOutput( WEBJARS_REQUIREJS_JSON ),
-      getRequireJsConfig( moduleInfo, artifactInfo )
+        getExpectedOutput( WEBJARS_REQUIREJS_JSON ),
+        getRequireJsConfig( moduleInfo, artifactInfo )
     );
   }
 
@@ -115,11 +115,11 @@ public class RequireJsGeneratorTest {
     assertNotNull( moduleInfo );
 
     RequireJsGenerator.ArtifactInfo artifactInfo = new RequireJsGenerator
-      .ArtifactInfo( "org.webjars.npm", "asap", "2.0.3" );
+        .ArtifactInfo( "org.webjars.npm", "asap", "2.0.3" );
 
     assertEquals(
-      getExpectedOutput( PACKAGE_REQUIRE_JSON ),
-      getRequireJsConfig( moduleInfo, artifactInfo )
+        getExpectedOutput( PACKAGE_REQUIRE_JSON ),
+        getRequireJsConfig( moduleInfo, artifactInfo )
     );
   }
 
@@ -129,11 +129,11 @@ public class RequireJsGeneratorTest {
     assertNotNull( moduleInfo );
 
     RequireJsGenerator.ArtifactInfo artifactInfo = new RequireJsGenerator
-      .ArtifactInfo( "org.webjars.bower", "angular-ui-router.stateHelper", "1.3.1" );
+        .ArtifactInfo( "org.webjars.bower", "angular-ui-router.stateHelper", "1.3.1" );
 
     assertEquals(
-      getExpectedOutput( BOWER_REQUIRE_JSON ),
-      getRequireJsConfig( moduleInfo, artifactInfo )
+        getExpectedOutput( BOWER_REQUIRE_JSON ),
+        getRequireJsConfig( moduleInfo, artifactInfo )
     );
   }
 
@@ -146,14 +146,14 @@ public class RequireJsGeneratorTest {
 
     String version = "1.3.1";
     moduleInfo.getModuleInfo().setVersion( version );
-    assertEquals(version, moduleInfo.getModuleInfo().getVersion());
+    assertEquals( version, moduleInfo.getModuleInfo().getVersion() );
 
     RequireJsGenerator.ArtifactInfo artifactInfo = new RequireJsGenerator
-      .ArtifactInfo( "org.webjars.bower", "angular-ui-router.stateHelper", version );
+        .ArtifactInfo( "org.webjars.bower", "angular-ui-router.stateHelper", version );
 
     assertEquals(
-      getExpectedOutput( BOWER_NO_VERSION_REQUIRE_JSON ),
-      getRequireJsConfig( moduleInfo, artifactInfo )
+        getExpectedOutput( BOWER_NO_VERSION_REQUIRE_JSON ),
+        getRequireJsConfig( moduleInfo, artifactInfo )
     );
   }
 
@@ -177,7 +177,7 @@ public class RequireJsGeneratorTest {
     String expectedPath = "angular-ui-router.stateHelper/1.3.1";
     moduleInfo.getModuleInfo().setPath( expectedPath );
 
-    assertEquals( expectedPath, moduleInfo.getModuleInfo().getPath());
+    assertEquals( expectedPath, moduleInfo.getModuleInfo().getPath() );
   }
 
   @Test
@@ -188,11 +188,11 @@ public class RequireJsGeneratorTest {
     assertNull( moduleInfo.getModuleInfo().getExports() );
 
     RequireJsGenerator.ArtifactInfo artifactInfo = new RequireJsGenerator
-      .ArtifactInfo( "org.webjars.bower", "angular-ui-router.stateHelper", "1.3.1" );
+        .ArtifactInfo( "org.webjars.bower", "angular-ui-router.stateHelper", "1.3.1" );
 
     assertEquals(
-      getExpectedOutput( BOWER_EXPORTS_REQUIRE_JSON ),
-      getRequireJsConfig( moduleInfo, artifactInfo, true, "test_export" )
+        getExpectedOutput( BOWER_EXPORTS_REQUIRE_JSON ),
+        getRequireJsConfig( moduleInfo, artifactInfo, true, "test_export" )
     );
   }
 
@@ -204,14 +204,14 @@ public class RequireJsGeneratorTest {
     assertNull( moduleInfo.getModuleInfo().getExports() );
 
     RequireJsGenerator.ArtifactInfo artifactInfo = new RequireJsGenerator
-      .ArtifactInfo( "org.webjars.bower", "angular-ui-router.stateHelper", "1.3.1" );
+        .ArtifactInfo( "org.webjars.bower", "angular-ui-router.stateHelper", "1.3.1" );
 
     RequireJsGenerator.ModuleInfo infoConvertedFile = moduleInfo
-      .getConvertedConfig( artifactInfo, true, "test_export" );
+        .getConvertedConfig( artifactInfo, true, "test_export", null );
 
     assertEquals(
-      getExpectedOutput( BOWER_EXPORTS_REQUIRE_JSON ),
-      parser.parse( infoConvertedFile.exportRequireJs() )
+        getExpectedOutput( BOWER_EXPORTS_REQUIRE_JSON ),
+        parser.parse( infoConvertedFile.exportRequireJs() )
     );
   }
 
@@ -220,11 +220,11 @@ public class RequireJsGeneratorTest {
     RequireJsGenerator moduleInfo = RequireJsGenerator.parsePom( getResourceAsStream( POM_REQUIRE_XML ) );
 
     RequireJsGenerator.ArtifactInfo artifactInfo = new RequireJsGenerator
-      .ArtifactInfo( new URL( "mvn:org.webjars/smart-table/2.0.3-1" ) );
+        .ArtifactInfo( new URL( "mvn:org.webjars/smart-table/2.0.3-1" ) );
 
     assertEquals(
-      getExpectedOutput( POM_REQUIRE_JSON ),
-      getRequireJsConfig( moduleInfo, artifactInfo )
+        getExpectedOutput( POM_REQUIRE_JSON ),
+        getRequireJsConfig( moduleInfo, artifactInfo )
     );
 
     assertEquals( "2.0.3.1", artifactInfo.getOsgiCompatibleVersion() );
@@ -247,12 +247,12 @@ public class RequireJsGeneratorTest {
   }
 
   private JSONObject getRequireJsConfig( RequireJsGenerator moduleInfo, RequireJsGenerator.ArtifactInfo artifactInfo ) {
-    return new JSONObject( moduleInfo.getConvertedConfig( artifactInfo ).getRequireJs() );
+    return new JSONObject( moduleInfo.getConvertedConfig( artifactInfo, true, null, null ).getRequireJs() );
   }
 
   private JSONObject getRequireJsConfig( RequireJsGenerator moduleInfo, RequireJsGenerator.ArtifactInfo artifactInfo,
                                          boolean isAmdPackage, String exports ) {
-    return new JSONObject( moduleInfo.getConvertedConfig( artifactInfo, isAmdPackage, exports ).getRequireJs() );
+    return new JSONObject( moduleInfo.getConvertedConfig( artifactInfo, isAmdPackage, exports, null ).getRequireJs() );
   }
   // endregion
 
