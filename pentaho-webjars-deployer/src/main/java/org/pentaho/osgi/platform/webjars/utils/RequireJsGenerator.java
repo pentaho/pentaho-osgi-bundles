@@ -638,44 +638,10 @@ public class RequireJsGenerator {
 
     final HashMap<String, ?> config = (HashMap<String, ?>) requireConfig.get( "config" );
     if ( config != null ) {
-      requirejs.put( "config", convertModulesConfigurations( config ) );
+      requirejs.put( "config", convertSubConfig( keyMap, config ) );
     }
 
     return requirejs;
-  }
-
-  private HashMap<String, ?> convertModulesConfigurations( HashMap<String, ?> config ) {
-    HashMap<String, Object> convertedConfig = new HashMap<>();
-
-    if ( config != null ) {
-      for ( String key : config.keySet() ) {
-        if ( key.equals( "pentaho/modules" ) ) {
-          final HashMap<String, ?> serviceConfig = (HashMap<String, ?>) config.get( key );
-
-          if ( serviceConfig != null ) {
-            HashMap<String, Object> convertedServiceConfig = new HashMap<>();
-
-            for ( String serviceKey : serviceConfig.keySet() ) {
-              String convertedServiceKey = serviceKey;
-
-              if ( !serviceKey.startsWith( moduleInfo.getVersionedName() ) && serviceKey.startsWith( moduleInfo.getName() ) ) {
-                convertedServiceKey = StringUtils.replaceOnce( serviceKey, moduleInfo.getName(), moduleInfo.getVersionedName() );
-              } else if ( serviceKey.startsWith( "./" ) ) {
-                convertedServiceKey = moduleInfo.getVersionedName() + serviceKey.substring( 1 );
-              }
-
-              convertedServiceConfig.put( convertedServiceKey, serviceConfig.get( serviceKey ) );
-            }
-
-            convertedConfig.put( key, convertedServiceConfig );
-          }
-        } else {
-          convertedConfig.put( key, config.get( key ) );
-        }
-      }
-    }
-
-    return convertedConfig;
   }
 
   private HashMap<String, ?> convertSubConfig( HashMap<String, String> keyMap,
