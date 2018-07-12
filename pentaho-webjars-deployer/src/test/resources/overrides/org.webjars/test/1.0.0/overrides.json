@@ -1,0 +1,8 @@
+{
+  "wrap": {
+    "/test.js": {
+      "pre": "// CODE BEFORE",
+      "pos": "// CODE AFTER"
+    }
+  }
+}

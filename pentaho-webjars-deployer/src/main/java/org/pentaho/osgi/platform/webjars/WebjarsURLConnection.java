@@ -50,6 +50,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -227,6 +228,8 @@ public class WebjarsURLConnection extends URLConnection {
 
         boolean minificationFailed = false;
 
+        Map<String, Object> overrides = RequireJsGenerator.getPackageOverrides( artifactInfo.getGroup(), artifactInfo.getArtifactId(), artifactInfo.getVersion() );
+
         ZipEntry entry;
         while ( ( entry = jarInputStream.getNextJarEntry() ) != null ) {
           String name = entry.getName();
@@ -371,8 +374,9 @@ public class WebjarsURLConnection extends URLConnection {
           if ( requireConfig != null ) {
             try {
               final String exports = !isAmdPackage && !exportedGlobals.isEmpty() ? exportedGlobals.get( 0 ) : null;
+
               final RequireJsGenerator.ModuleInfo moduleInfo =
-                  requireConfig.getConvertedConfig( artifactInfo, isAmdPackage, exports );
+                  requireConfig.getConvertedConfig( artifactInfo, isAmdPackage, exports, overrides );
 
               addContentToZip( jarOutputStream, PENTAHO_RJS_LOCATION, moduleInfo.exportRequireJs() );
 

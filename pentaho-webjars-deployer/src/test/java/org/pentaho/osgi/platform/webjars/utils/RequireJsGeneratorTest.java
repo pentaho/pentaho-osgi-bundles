@@ -29,10 +29,15 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 
 public class RequireJsGeneratorTest {
 
@@ -235,6 +240,85 @@ public class RequireJsGeneratorTest {
     String version = RequireJsGenerator.getWebjarVersionFromPom( getResourceAsStream( POM_WEBJAR_XML ) );
 
     assertEquals( "3.1.1", version );
+  }
+
+  @Test
+  public void testGetExistingPackageOverrides() {
+    Map<String, Object> overrides = RequireJsGenerator.getPackageOverrides( "org.webjars", "test", "1.0.0" );
+
+    assertNotNull( overrides );
+  }
+
+  @Test
+  public void testGetNonExistingPackageOverrides() {
+    Map<String, Object> overrides = RequireJsGenerator.getPackageOverrides( "org.webjars", "not_there", "1.0.0" );
+
+    assertNull( overrides );
+  }
+
+  @Test
+  public void testGetConvertedConfigWithOverrides() {
+    RequireJsGenerator moduleInfo = RequireJsGenerator.emptyGenerator( "angular-ui-router.stateHelper", "1.3.1" );
+
+    assertNull( moduleInfo.getModuleInfo().getExports() );
+
+    RequireJsGenerator.ArtifactInfo artifactInfo = new RequireJsGenerator
+        .ArtifactInfo( "org.webjars.bower", "angular-ui-router.stateHelper", "1.3.1" );
+
+    final HashMap<String, Object> overrides = new HashMap<>();
+    overrides.put( "some", "value" );
+
+    RequireJsGenerator.ModuleInfo infoConvertedFile = moduleInfo
+        .getConvertedConfig( artifactInfo, false, "test_export", overrides );
+
+    assertEquals( ( (HashMap<String, HashMap<String, Object>>) infoConvertedFile.getRequireJs().get( "requirejs-osgi-meta" ) ).get( "overrides" ), overrides );
+  }
+
+  @Test
+  public void testGetConvertedConfigWithoutOverrides() {
+    RequireJsGenerator moduleInfo = RequireJsGenerator.emptyGenerator( "angular-ui-router.stateHelper", "1.3.1" );
+
+    assertNull( moduleInfo.getModuleInfo().getExports() );
+
+    RequireJsGenerator.ArtifactInfo artifactInfo = new RequireJsGenerator
+        .ArtifactInfo( "org.webjars.bower", "angular-ui-router.stateHelper", "1.3.1" );
+
+    RequireJsGenerator.ModuleInfo infoConvertedFile = moduleInfo
+        .getConvertedConfig( artifactInfo, false, "test_export", null );
+
+    assertNull( ( (HashMap<String, HashMap<String, Object>>) infoConvertedFile.getRequireJs().get( "requirejs-osgi-meta" ) ).get( "overrides" ) );
+  }
+
+  @Test
+  public void testGetConvertedConfigWithOverridesIgnoreAmdAndExports() {
+    RequireJsGenerator moduleInfo = RequireJsGenerator.emptyGenerator( "angular-ui-router.stateHelper", "1.3.1" );
+
+    assertNull( moduleInfo.getModuleInfo().getExports() );
+
+    RequireJsGenerator.ArtifactInfo artifactInfo = new RequireJsGenerator
+        .ArtifactInfo( "org.webjars.bower", "angular-ui-router.stateHelper", "1.3.1" );
+
+    RequireJsGenerator.ModuleInfo infoConvertedFile = moduleInfo
+        .getConvertedConfig( artifactInfo, false, "test_export", new HashMap<>() );
+
+    assertTrue( infoConvertedFile.isAmdPackage() );
+    assertNull( infoConvertedFile.getExports() );
+  }
+
+  @Test
+  public void testGetConvertedConfigWithoutOverridesRespectsAmdAndExports() {
+    RequireJsGenerator moduleInfo = RequireJsGenerator.emptyGenerator( "angular-ui-router.stateHelper", "1.3.1" );
+
+    assertNull( moduleInfo.getModuleInfo().getExports() );
+
+    RequireJsGenerator.ArtifactInfo artifactInfo = new RequireJsGenerator
+        .ArtifactInfo( "org.webjars.bower", "angular-ui-router.stateHelper", "1.3.1" );
+
+    RequireJsGenerator.ModuleInfo infoConvertedFile = moduleInfo
+        .getConvertedConfig( artifactInfo, false, "test_export", null );
+
+    assertFalse( infoConvertedFile.isAmdPackage() );
+    assertEquals( "test_export", infoConvertedFile.getExports() );
   }
 
   // region private methods
