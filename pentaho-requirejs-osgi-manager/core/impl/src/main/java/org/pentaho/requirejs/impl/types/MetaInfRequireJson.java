@@ -302,7 +302,7 @@ public class MetaInfRequireJson implements IRequireJsPackage {
       packages.forEach( packageDefinition -> {
         if ( packageDefinition instanceof String ) {
           String packageName = getUnversionedModuleId( moduleIdTranslator, (String) packageDefinition );
-          String path = this.modules.getOrDefault( packageName, packageName );
+          String path = this.modules.getOrDefault( packageName, "/" + packageName );
 
           path = getUnversionedPath( basePaths, path );
 
@@ -312,7 +312,7 @@ public class MetaInfRequireJson implements IRequireJsPackage {
 
           if ( packageObj.containsKey( "name" ) ) {
             String packageName = getUnversionedModuleId( moduleIdTranslator, packageObj.get( "name" ) );
-            String path = packageObj.getOrDefault( "location", packageName );
+            String path = packageObj.getOrDefault( "location", "/" + ( !packageName.equals( name ) ? packageName : "" ) );
             String mainScript = packageObj.getOrDefault( "main", "main" );
 
             path = getUnversionedPath( basePaths, path );
@@ -395,7 +395,7 @@ public class MetaInfRequireJson implements IRequireJsPackage {
           if ( packageDefinition instanceof String ) {
             String packageName = (String) packageDefinition;
 
-            String path = this.modules.getOrDefault( packageName, packageName );
+            String path = this.modules.getOrDefault( packageName, "/" + packageName );
 
             path = getUnversionedPath( basePaths, path );
 
@@ -405,7 +405,7 @@ public class MetaInfRequireJson implements IRequireJsPackage {
 
             if ( packageObj.containsKey( "name" ) ) {
               String packageName = packageObj.get( "name" );
-              String path = packageObj.getOrDefault( "location", packageName );
+              String path = packageObj.getOrDefault( "location", "/" + ( !packageName.equals( name ) ? packageName : "" )  );
               String mainScript = packageObj.getOrDefault( "main", "main" );
 
               path = getUnversionedPath( basePaths, path );
