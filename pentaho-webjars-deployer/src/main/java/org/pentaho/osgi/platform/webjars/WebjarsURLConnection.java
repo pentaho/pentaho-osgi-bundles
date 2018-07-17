@@ -49,6 +49,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -230,6 +231,17 @@ public class WebjarsURLConnection extends URLConnection {
 
         Map<String, Object> overrides = RequireJsGenerator.getPackageOverrides( artifactInfo.getGroup(), artifactInfo.getArtifactId(), artifactInfo.getVersion() );
 
+        Map<String, Map<String, String>> wrap;
+        if ( overrides != null ) {
+          // if there is an explicit override file, don't try to be smart and just assume it's AMD ready
+          isAmdPackage = true;
+
+          wrap = (Map<String, Map<String, String>>) overrides.getOrDefault( "wrap", Collections.<String, Map<String, String>>emptyMap() );
+        } else {
+          // empty map, for simplicity
+          wrap = Collections.emptyMap();
+        }
+
         ZipEntry entry;
         while ( ( entry = jarInputStream.getNextJarEntry() ) != null ) {
           String name = entry.getName();
@@ -255,6 +267,9 @@ public class WebjarsURLConnection extends URLConnection {
             File temporarySourceFile = null;
             BufferedOutputStream temporarySourceFileOutputStream = null;
 
+            String pre = "";
+            String pos = "";
+
             if ( isPackageFile ) {
               // only save to the temp folder resources from the package's source folder
               temporarySourceFile = new File( absoluteTempPath.toAbsolutePath() + File.separator + FilenameUtils.separatorsToSystem( name ) );
@@ -263,11 +278,26 @@ public class WebjarsURLConnection extends URLConnection {
               temporarySourceFile.getParentFile().mkdirs();
 
               temporarySourceFileOutputStream = new BufferedOutputStream( new FileOutputStream( temporarySourceFile ) );
+
+              String fileRelativePath = "/" + absoluteResourcesPath.relativize( temporarySourceFile.toPath() );
+              if ( wrap.containsKey( fileRelativePath ) ) {
+                Map<String, String> wrapCode = wrap.get( fileRelativePath );
+                pre = wrapCode.getOrDefault( "pre", "" );
+                pos = wrapCode.getOrDefault( "pos", "" );
+              }
             }
 
             //region Copy the file from the source jar to the generated jar
             ZipEntry zipEntry = new ZipEntry( name );
             jarOutputStream.putNextEntry( zipEntry );
+
+            if ( isPackageFile && pre.length() > 0 ) {
+              temporarySourceFileOutputStream.write( pre.getBytes() );
+              temporarySourceFileOutputStream.write( "\n".getBytes() );
+
+              jarOutputStream.write( pre.getBytes() );
+              jarOutputStream.write( "\n".getBytes() );
+            }
 
             byte[] bytes = new byte[ BYTES_BUFFER_SIZE ];
             int read;
@@ -278,6 +308,16 @@ public class WebjarsURLConnection extends URLConnection {
               }
 
               jarOutputStream.write( bytes, 0, read );
+            }
+
+            if ( isPackageFile && pos.length() > 0 ) {
+              temporarySourceFileOutputStream.write( "\n".getBytes() );
+              temporarySourceFileOutputStream.write( pos.getBytes() );
+              temporarySourceFileOutputStream.write( "\n".getBytes() );
+
+              jarOutputStream.write( "\n".getBytes() );
+              jarOutputStream.write( pos.getBytes() );
+              jarOutputStream.write( "\n".getBytes() );
             }
 
             jarOutputStream.closeEntry();
@@ -709,7 +749,7 @@ public class WebjarsURLConnection extends URLConnection {
       CompiledScript invoke() throws Exception {
         Compiler compiler = new Compiler();
 
-        compiler.setLoggingLevel( Level.OFF );
+        Compiler.setLoggingLevel( Level.OFF );
 
         SourceFile input = SourceFile.fromFile( srcFile );
         input.setOriginalPath( relSrcFilePath );

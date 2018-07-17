@@ -1,0 +1,18 @@
+{
+  "paths": {
+    "Reselect": "/dist/reselect"
+  },
+  "packages": [
+    {
+      "name": "reselect",
+      "location": "/dist",
+      "main": "reselect"
+    }
+  ],
+  "wrap": {
+    "/dist/reselect.js": {
+      "pre": "define(function() { var define = undefined;",
+      "pos": "return this.Reselect; });"
+    }
+  }
+}

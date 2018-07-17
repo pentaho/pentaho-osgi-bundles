@@ -210,6 +210,13 @@ public class WebjarsURLConnectionTest {
     assertNotNull( entry );
   }
 
+  @Test
+  public void testWrappedResources() throws IOException {
+    ZipFile zipInputStream = getDeployedJar( new URL( "mvn:org.webjars/test/1.0.0" ), true );
+
+    verifyWrapped( zipInputStream, "test/1.0.0", "test.js", "// CODE BEFORE", "// CODE AFTER" );
+  }
+
   private void verifyManifest( ZipFile zipInputStream ) throws IOException {
     ZipEntry entry = zipInputStream.getEntry( "META-INF/MANIFEST.MF" );
     assertNotNull( entry );
@@ -299,6 +306,16 @@ public class WebjarsURLConnectionTest {
     String srcFile = IOUtils.toString( zipInputStream.getInputStream( entry ), "UTF-8" );
 
     assertEquals( minFile, srcFile );
+  }
+
+  private void verifyWrapped( ZipFile zipInputStream, String expectedPath, String file, String pre, String pos ) throws IOException {
+    ZipEntry entry = zipInputStream.getEntry( "META-INF/resources/webjars/" + expectedPath + "/" + file );
+    assertNotNull( entry );
+
+    String srcFile = IOUtils.toString( zipInputStream.getInputStream( entry ), "UTF-8" );
+
+    assertTrue( srcFile.startsWith( pre + "\n" ) );
+    assertTrue( srcFile.endsWith( "\n" + pos + "\n" ) );
   }
 
   private ZipFile getDeployedJar( URL webjar_url, boolean minificationEnabled ) throws IOException {

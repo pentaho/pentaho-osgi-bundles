@@ -1,0 +1,16 @@
+{
+  "dependencies": {
+    "jquery": "^2.0"
+  },
+
+  "shim": {
+    "angular": {
+      "exports": "angular",
+      "deps": ["jquery"]
+    },
+    "angular/angular": {
+      "exports": "angular",
+      "deps": ["jquery"]
+    }
+  }
+}

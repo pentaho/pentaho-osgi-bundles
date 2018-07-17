@@ -1,0 +1,9 @@
+{
+  "packages": [
+    {
+      "name": "redux-thunk",
+      "location": "/dist",
+      "main": "redux-thunk.min"
+    }
+  ]
+}

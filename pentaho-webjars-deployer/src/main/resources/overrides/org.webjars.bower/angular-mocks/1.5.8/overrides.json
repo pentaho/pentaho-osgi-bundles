@@ -1,0 +1,8 @@
+{
+  "wrap": {
+    "/angular-mocks.js": {
+      "pre": "",
+      "pos": "delete window.module;"
+    }
+  }
+}
