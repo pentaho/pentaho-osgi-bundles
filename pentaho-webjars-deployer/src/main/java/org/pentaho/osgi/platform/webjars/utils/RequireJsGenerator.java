@@ -154,14 +154,8 @@ public class RequireJsGenerator {
   }
 
   public static RequireJsGenerator parseJsonPackage( InputStream inputStream ) {
-    InputStreamReader inputStreamReader = null;
-    BufferedReader bufferedReader = null;
-
     try {
-      inputStreamReader = new InputStreamReader( inputStream );
-      bufferedReader = new BufferedReader( inputStreamReader );
-
-      Map<String, Object> json = (Map<String, Object>) parser.parse( bufferedReader );
+      Map<String, Object> json = parseJson( inputStream );
       return new RequireJsGenerator( json );
     } catch ( Exception ignored ) {
       // ignored
@@ -187,6 +181,20 @@ public class RequireJsGenerator {
     } catch ( Exception e ) {
       throw new Exception( "Error reading JS script", e );
     }
+  }
+
+  public static Map<String, Object> getPackageOverrides( String group, String artifactId, String version ) {
+    URL overridesUrl = RequireJsGenerator.class.getResource( "/overrides/" + group + "/" + artifactId + "/" + version + "/overrides.json" );
+
+    Map<String, Object> overrides = null;
+    if ( overridesUrl != null ) {
+      try {
+        overrides = RequireJsGenerator.parseJson( overridesUrl.openStream() );
+      } catch ( IOException | ParseException ignored ) {
+      }
+    }
+
+    return overrides;
   }
 
   public static boolean findAmdDefine( InputStream is, ArrayList<String> exports ) {
@@ -226,6 +234,15 @@ public class RequireJsGenerator {
     return false;
   }
 
+  private static Map<String, Object> parseJson( InputStream inputStream ) throws IOException, ParseException {
+    InputStreamReader inputStreamReader;
+    BufferedReader bufferedReader;
+    inputStreamReader = new InputStreamReader( inputStream );
+    bufferedReader = new BufferedReader( inputStreamReader );
+
+    return (Map<String, Object>) parser.parse( bufferedReader );
+  }
+
   private RequireJsGenerator( Document pom ) throws XPathExpressionException, ParseException {
     requirejsFromPom( pom );
   }
@@ -253,13 +270,11 @@ public class RequireJsGenerator {
     return this.moduleInfo;
   }
 
-  public ModuleInfo getConvertedConfig( ArtifactInfo artifactInfo ) {
-    return this.getConvertedConfig( artifactInfo, true, null );
-  }
-
-  public ModuleInfo getConvertedConfig( ArtifactInfo artifactInfo, boolean isAmdPackage, String exports ) {
-    moduleInfo.setAmdPackage( isAmdPackage );
-    moduleInfo.setExports( exports );
+  public ModuleInfo getConvertedConfig( ArtifactInfo artifactInfo, boolean isAmdPackage, String exports, Map<String, Object> overrides ) {
+    if ( overrides == null ) {
+      moduleInfo.setAmdPackage( isAmdPackage );
+      moduleInfo.setExports( exports );
+    }
 
     final HashMap<String, String> artifactModules = new HashMap<>();
 
@@ -274,6 +289,9 @@ public class RequireJsGenerator {
     HashMap<String, Object> meta = new HashMap<>();
     meta.put( "modules", moduleInfo.getModules() );
     meta.put( "artifacts", artifacts );
+    if ( overrides != null ) {
+      meta.put( "overrides", overrides );
+    }
 
     convertedConfig.put( "requirejs-osgi-meta", meta );
 
@@ -638,44 +656,10 @@ public class RequireJsGenerator {
 
     final HashMap<String, ?> config = (HashMap<String, ?>) requireConfig.get( "config" );
     if ( config != null ) {
-      requirejs.put( "config", convertModulesConfigurations( config ) );
+      requirejs.put( "config", convertSubConfig( keyMap, config ) );
     }
 
     return requirejs;
-  }
-
-  private HashMap<String, ?> convertModulesConfigurations( HashMap<String, ?> config ) {
-    HashMap<String, Object> convertedConfig = new HashMap<>();
-
-    if ( config != null ) {
-      for ( String key : config.keySet() ) {
-        if ( key.equals( "pentaho/modules" ) ) {
-          final HashMap<String, ?> serviceConfig = (HashMap<String, ?>) config.get( key );
-
-          if ( serviceConfig != null ) {
-            HashMap<String, Object> convertedServiceConfig = new HashMap<>();
-
-            for ( String serviceKey : serviceConfig.keySet() ) {
-              String convertedServiceKey = serviceKey;
-
-              if ( !serviceKey.startsWith( moduleInfo.getVersionedName() ) && serviceKey.startsWith( moduleInfo.getName() ) ) {
-                convertedServiceKey = StringUtils.replaceOnce( serviceKey, moduleInfo.getName(), moduleInfo.getVersionedName() );
-              } else if ( serviceKey.startsWith( "./" ) ) {
-                convertedServiceKey = moduleInfo.getVersionedName() + serviceKey.substring( 1 );
-              }
-
-              convertedServiceConfig.put( convertedServiceKey, serviceConfig.get( serviceKey ) );
-            }
-
-            convertedConfig.put( key, convertedServiceConfig );
-          }
-        } else {
-          convertedConfig.put( key, config.get( key ) );
-        }
-      }
-    }
-
-    return convertedConfig;
   }
 
   private HashMap<String, ?> convertSubConfig( HashMap<String, String> keyMap,

@@ -1,0 +1,9 @@
+{
+  "packages": [
+    {
+      "name": "redux",
+      "location": "/dist",
+      "main": "redux.min"
+    }
+  ]
+}
