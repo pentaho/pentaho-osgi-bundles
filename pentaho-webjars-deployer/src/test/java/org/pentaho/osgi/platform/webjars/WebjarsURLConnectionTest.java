@@ -214,7 +214,7 @@ public class WebjarsURLConnectionTest {
   public void testWrappedResources() throws IOException {
     ZipFile zipInputStream = getDeployedJar( new URL( "mvn:org.webjars/test/1.0.0" ), true );
 
-    verifyWrapped( zipInputStream, "test/1.0.0", "test.js", "// CODE BEFORE", "// CODE AFTER" );
+    verifyWrapped( zipInputStream, "test/1.0.0", "dist/test.js", "// CODE BEFORE", "// CODE AFTER" );
   }
 
   private void verifyManifest( ZipFile zipInputStream ) throws IOException {
