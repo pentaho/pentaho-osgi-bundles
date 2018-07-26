@@ -1,6 +1,6 @@
 {
   "wrap": {
-    "/test.js": {
+    "/dist/test.js": {
       "pre": "// CODE BEFORE",
       "pos": "// CODE AFTER"
     }

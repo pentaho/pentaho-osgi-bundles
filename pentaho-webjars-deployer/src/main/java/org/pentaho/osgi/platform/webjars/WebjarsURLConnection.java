@@ -280,6 +280,7 @@ public class WebjarsURLConnection extends URLConnection {
               temporarySourceFileOutputStream = new BufferedOutputStream( new FileOutputStream( temporarySourceFile ) );
 
               String fileRelativePath = "/" + absoluteResourcesPath.relativize( temporarySourceFile.toPath() );
+              fileRelativePath = fileRelativePath.replaceAll( "\\\\", "/" );
               if ( wrap.containsKey( fileRelativePath ) ) {
                 Map<String, String> wrapCode = wrap.get( fileRelativePath );
                 pre = wrapCode.getOrDefault( "pre", "" );
