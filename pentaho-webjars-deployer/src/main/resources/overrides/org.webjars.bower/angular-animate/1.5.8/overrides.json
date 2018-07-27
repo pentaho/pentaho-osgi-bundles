@@ -1,0 +1,8 @@
+{
+  "shim": {
+    "angular-animate/angular-animate": {
+      "exports": "angular",
+      "deps": ["angular"]
+    }
+  }
+}
