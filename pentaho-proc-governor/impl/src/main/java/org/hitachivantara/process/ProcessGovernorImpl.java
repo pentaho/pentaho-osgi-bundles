@@ -104,7 +104,7 @@ public class ProcessGovernorImpl implements ProcessGovernor {
   }
 
   private Process getProcess( String[] command ) throws IOException {
-    ProcessBuilder builder = new ProcessBuilder( command ).inheritIO();
+    ProcessBuilder builder = new ProcessBuilder( command );
 
     return builder.start();
   }
