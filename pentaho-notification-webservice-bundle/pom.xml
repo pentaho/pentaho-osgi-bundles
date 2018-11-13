@@ -14,9 +14,7 @@
   <description>a Pentaho open source project</description>
   <url>http://www.pentaho.com</url>
   <properties>
-    <requirejs.version>2.1.14</requirejs.version>
     <jasmine.serverPort>8234</jasmine.serverPort>
-    <requirejs.version.full>${requirejs.version}-1</requirejs.version.full>
   </properties>
   <dependencies>
     <dependency>
@@ -69,9 +67,8 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.webjars</groupId>
+      <groupId>org.webjars.npm</groupId>
       <artifactId>requirejs</artifactId>
-      <version>${requirejs.version.full}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
