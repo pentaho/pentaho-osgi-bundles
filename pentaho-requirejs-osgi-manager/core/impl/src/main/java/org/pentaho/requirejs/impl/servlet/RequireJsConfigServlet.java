@@ -74,8 +74,14 @@ public class RequireJsConfigServlet extends HttpServlet {
 
       // store webcontext.js' requirejs module configurations if existing
       printWriter.write( "\n  var legacyConfig = null;" );
-      printWriter.write( "\n  if (w.requireCfg != null && w.requireCfg.config != null) {" );
-      printWriter.write( "\n    legacyConfig = w.requireCfg.config;" );
+      printWriter.write( "\n  var legacyWaitSeconds = null;" );
+      printWriter.write( "\n  if (w.requireCfg != null) {" );
+      printWriter.write( "\n    if (w.requireCfg.waitSeconds != null) {" );
+      printWriter.write( "\n      legacyWaitSeconds = w.requireCfg.waitSeconds;" );
+      printWriter.write( "\n    }" );
+      printWriter.write( "\n    if (w.requireCfg.config != null) {" );
+      printWriter.write( "\n      legacyConfig = w.requireCfg.config;" );
+      printWriter.write( "\n    }" );
       printWriter.write( "\n  }" );
       printWriter.write( "\n" );
 
@@ -117,6 +123,12 @@ public class RequireJsConfigServlet extends HttpServlet {
 
       // Ensure embeddability: http://requirejs.org/docs/api.html#config-skipDataMain
       printWriter.write( "\n  requireCfg.skipDataMain = true;" );
+      printWriter.write( "\n" );
+
+      // set the legacy waitSeconds
+      printWriter.write( "\n  if (legacyWaitSeconds != null) {" );
+      printWriter.write( "\n    requireCfg.waitSeconds = legacyWaitSeconds;" );
+      printWriter.write( "\n  }" );
       printWriter.write( "\n" );
 
       // merge the requirejs module's configurations (first level only) to avoid overwriting them

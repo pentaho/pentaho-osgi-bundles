@@ -6,7 +6,7 @@
   <parent>
     <groupId>org.pentaho</groupId>
     <artifactId>requirejs-manager-core-modules</artifactId>
-    <version>8.2.0.0-SNAPSHOT</version>
+    <version>9.0.0.0-SNAPSHOT</version>
   </parent>
 
   <artifactId>requirejs-manager-impl</artifactId>
@@ -65,45 +65,49 @@
           </instructions>
         </configuration>
       </plugin>
+
       <plugin>
         <artifactId>maven-dependency-plugin</artifactId>
-        <version>${maven-dependency-plugin.version}</version>
         <executions>
           <execution>
             <id>unpack2</id>
             <phase>process-sources</phase>
+
             <goals>
               <goal>unpack</goal>
             </goals>
+
             <configuration>
               <artifactItems>
                 <artifactItem>
-                  <groupId>org.webjars</groupId>
+                  <groupId>org.webjars.npm</groupId>
                   <artifactId>requirejs</artifactId>
-                  <version>${requirejs.version}</version>
-                  <outputDirectory>${build.dependenciesDirectory}</outputDirectory>
                 </artifactItem>
               </artifactItems>
             </configuration>
           </execution>
         </executions>
+
         <inherited>false</inherited>
       </plugin>
+
       <plugin>
-        <artifactId>maven-resources-plugin</artifactId>
-        <version>${maven-resources-plugin.version}</version>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
         <executions>
           <execution>
-            <id>copy-resources</id>
-            <phase>process-sources</phase>
+            <id>add-requirejs-resource</id>
+            <phase>generate-resources</phase>
+
             <goals>
-              <goal>copy-resources</goal>
+              <goal>add-resource</goal>
             </goals>
+
             <configuration>
-              <outputDirectory>src/main/resources/js</outputDirectory>
               <resources>
                 <resource>
                   <directory>${build.dependenciesDirectory}/META-INF/resources/webjars/requirejs/${requirejs.version}</directory>
+                  <targetPath>js</targetPath>
                   <includes>
                     <include>require.js</include>
                   </includes>
