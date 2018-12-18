@@ -15,18 +15,19 @@
   <url>http://www.pentaho.com</url>
   <properties>
     <exam.version>4.1.0</exam.version>
-    <springframework.version>3.2.14.RELEASE</springframework.version>
   </properties>
   <dependencies>
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-beans</artifactId>
-      <version>${springframework.version}</version>
     </dependency>
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-core</artifactId>
-      <version>${springframework.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-context</artifactId>
     </dependency>
     <dependency>
       <groupId>org.springframework.osgi</groupId>
@@ -54,7 +55,7 @@
         <extensions>true</extensions>
         <configuration>
           <instructions>
-            <Import-Package>org.springframework.core.io;version="[3.0,4.0)",org.springframework.util;version="[3.0,4.0)",*</Import-Package>
+            <Import-Package>org.springframework.core.io;version="[3.0,5.0)",org.springframework.util;version="[3.0,5.0)",*</Import-Package>
             <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
             <Fragment-Host>org.springframework.osgi.extender</Fragment-Host>
           </instructions>
