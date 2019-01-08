@@ -26,7 +26,6 @@
   <properties>
     <karaf-maven-plugin.version>3.0.8</karaf-maven-plugin.version>
     <karaf-maven-plugin.aggregateFeatures>false</karaf-maven-plugin.aggregateFeatures>
-    <commons-compress.version>1.14</commons-compress.version>
   </properties>
 
   <profiles>
@@ -112,18 +111,6 @@
           <groupId>commons-io</groupId>
           <artifactId>commons-io</artifactId>
           <version>${commons-io.version}</version>
-          <exclusions>
-            <exclusion>
-              <groupId>*</groupId>
-              <artifactId>*</artifactId>
-            </exclusion>
-          </exclusions>
-        </dependency>
-
-        <dependency>
-          <groupId>org.apache.commons</groupId>
-          <artifactId>commons-compress</artifactId>
-          <version>${commons-compress.version}</version>
           <exclusions>
             <exclusion>
               <groupId>*</groupId>
