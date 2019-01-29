@@ -1,7 +1,7 @@
 /*!
  * HITACHI VANTARA PROPRIETARY AND CONFIDENTIAL
  *
- * Copyright 2018 Hitachi Vantara. All rights reserved.
+ * Copyright 2019 Hitachi Vantara. All rights reserved.
  *
  * NOTICE: All information including source code contained herein is, and
  * remains the sole property of Hitachi Vantara and its licensors. The intellectual
@@ -62,12 +62,14 @@ public class ProcessGovernorImpl implements ProcessGovernor {
    * @param command the command to be executed in a separate process
    * @return completable future for the process.
    */
-  @SuppressWarnings( "FutureReturnValueIgnored" )
+  @SuppressWarnings ( "FutureReturnValueIgnored" )
   @Override public synchronized CompletableFuture<Process> start( String... command ) {
-    Preconditions.checkState( semaphore.availablePermits() <= maxProcesses,
-      "Number of permits should never exceed the starting maxProcesses" );
+    if ( logger.isDebugEnabled() ) {
+      Preconditions.checkState( semaphore.availablePermits() <= maxProcesses,
+        "Number of permits should never exceed the starting maxProcesses" );
+      logger.debug( format( "Submitting command for execution [%s]", Arrays.toString( command ) ) );
+    }
 
-    logger.debug( format( "Submitting command for execution [%s]", Arrays.toString( command ) ) );
     CompletableFuture<Process> futureProc = new CompletableFuture<>();
     execService.submit( startProcess( command, futureProc ) );
 
@@ -83,13 +85,16 @@ public class ProcessGovernorImpl implements ProcessGovernor {
       Optional<Integer> exitValue = Optional.empty();
       try {
         semaphore.acquire();
-        logger.debug( "Executing command " + Arrays.toString( command ) );
+        if ( logger.isDebugEnabled() ) {
+          logger.debug( String.format( "Executing command %s", Arrays.toString( command ) ) );
+        }
         Process proc = getProcess( command );
         futureProc.complete( proc );
 
         exitValue = Optional.of( getExitValue( proc ) );
 
       } catch ( IOException | InterruptedException e ) {
+        Thread.currentThread().interrupt();
         logger.error( e.getMessage(), e );
         futureProc.completeExceptionally( e );
       } finally {
@@ -97,8 +102,10 @@ public class ProcessGovernorImpl implements ProcessGovernor {
         String returnCode = exitValue
           .map( Object::toString )
           .orElse( "No exit value. " );
-        logger.debug( format( "Command complete [%s]\nExit value [%s]\nSemaphores available=%s",
-          Arrays.toString( command ), returnCode, availablePermits() ) );
+        if ( logger.isDebugEnabled() ) {
+          logger.debug( format( "Command complete [%s]%nExit value [%s]%nemaphores available=%s",
+            Arrays.toString( command ), returnCode, availablePermits() ) );
+        }
       }
     };
   }
@@ -113,6 +120,7 @@ public class ProcessGovernorImpl implements ProcessGovernor {
     try {
       proc.waitFor();
     } catch ( InterruptedException e ) {
+      Thread.currentThread().interrupt();
       logger.error( "Interrupted while waiting for proc completion." );
     }
     return proc.exitValue();

@@ -1,7 +1,7 @@
 /*!
  * HITACHI VANTARA PROPRIETARY AND CONFIDENTIAL
  *
- * Copyright 2018 Hitachi Vantara. All rights reserved.
+ * Copyright 2019 Hitachi Vantara. All rights reserved.
  *
  * NOTICE: All information including source code contained herein is, and
  * remains the sole property of Hitachi Vantara and its licensors. The intellectual
@@ -38,7 +38,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 
-public class ProcessGovernorImplTest {
+public class ProcessGovernorImplTestIT {
 
   private ExecutorService execSvc = Executors.newCachedThreadPool();
   private ProcessGovernor myService = new ProcessGovernorImpl( execSvc, 1 );
@@ -46,21 +46,25 @@ public class ProcessGovernorImplTest {
   private static final String LINUX_SLEEP = "sleep";
   private static final String WINDOWS_SLEEP = "timeout";
 
+  private static final int MAX_WAIT_SECONDS = 8;
+
   private String sleep = System.getProperty( "os.name" ).toLowerCase()
     .startsWith( "windows" ) ? WINDOWS_SLEEP : LINUX_SLEEP;
 
   @Test
   public void commandsStartedConcurrentlyWith1PermitRunOneAtATime()
     throws InterruptedException, ExecutionException, TimeoutException {
-    CompletableFuture<Process> futureProc = myService.start( sleep, "5" );
-    CompletableFuture<Process> futureProc2 = myService.start( sleep, "5" );
+    CompletableFuture<Process> futureProc = myService.start( sleep, "10" );
+    CompletableFuture<Process> futureProc2 = myService.start( sleep, "10" );
 
-    Process proc = futureProc.get( 1, SECONDS );
+    Process proc = futureProc.get( MAX_WAIT_SECONDS, SECONDS );
     assertThat( myService.availablePermits(), equalTo( 0 ) );
 
     shouldTimeout( () -> futureProc2.get( 1, MILLISECONDS ) );
 
-    assertThat( proc.waitFor( 1, MILLISECONDS ), equalTo( false ) );
+    assertThat( proc.waitFor( MAX_WAIT_SECONDS, MILLISECONDS ), equalTo( false ) );
+    futureProc.cancel( true );
+    futureProc2.cancel( true );
   }
 
   @Test
@@ -69,11 +73,11 @@ public class ProcessGovernorImplTest {
     // set 2 permits
     myService = new ProcessGovernorImpl( execSvc, 2 );
 
-    CompletableFuture<Process> futureProc = myService.start( sleep, "5" );
-    CompletableFuture<Process> futureProc2 = myService.start( sleep, "5" );
+    CompletableFuture<Process> futureProc = myService.start( sleep, "10" );
+    CompletableFuture<Process> futureProc2 = myService.start( sleep, "10" );
 
-    Process proc = futureProc.get( 1, SECONDS );
-    Process proc2 = futureProc2.get( 1, SECONDS );
+    Process proc = futureProc.get( MAX_WAIT_SECONDS, SECONDS );
+    Process proc2 = futureProc2.get( MAX_WAIT_SECONDS, SECONDS );
 
     assertThat( myService.availablePermits(), equalTo( 0 ) );
 
@@ -81,6 +85,9 @@ public class ProcessGovernorImplTest {
 
     assertThat( proc.waitFor( 1, MILLISECONDS ), equalTo( false ) );
     assertThat( proc2.waitFor( 1, MILLISECONDS ), equalTo( false ) );
+
+    futureProc.cancel( true );
+    futureProc2.cancel( true );
   }
 
   private void shouldTimeout( Callable callable ) {
