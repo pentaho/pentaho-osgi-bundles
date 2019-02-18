@@ -83,7 +83,6 @@
     <dependency>
       <groupId>org.ops4j.pax.web</groupId>
       <artifactId>pax-web-spi</artifactId>
-      <version>3.1.4</version>
     </dependency>
     <dependency>
       <groupId>javax.servlet</groupId>

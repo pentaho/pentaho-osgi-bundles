@@ -69,19 +69,6 @@
         </dependency>
 
         <dependency>
-          <groupId>org.ops4j.pax.web</groupId>
-          <artifactId>pax-web-extender-whiteboard</artifactId>
-          <version>${pax-web-extender-whiteboard.version}</version>
-          <scope>provided</scope>
-          <exclusions>
-            <exclusion>
-              <groupId>*</groupId>
-              <artifactId>*</artifactId>
-            </exclusion>
-          </exclusions>
-        </dependency>
-
-        <dependency>
           <groupId>org.slf4j</groupId>
           <artifactId>slf4j-api</artifactId>
           <version>${slf4j-api.version}</version>
