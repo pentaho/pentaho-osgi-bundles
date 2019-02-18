@@ -52,8 +52,6 @@
     <dependency>
       <groupId>org.ops4j.pax.web</groupId>
       <artifactId>pax-web-extender-whiteboard</artifactId>
-      <version>${pax-web-extender-whiteboard.version}</version>
-      <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.felix</groupId>
