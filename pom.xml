@@ -70,6 +70,18 @@
     <!-- Override this property in sub-modules IF it has a different license -->
     <license.licenseName>apache_v2</license.licenseName>
   </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.apache.felix</groupId>
+        <artifactId>org.apache.felix.fileinstall</artifactId>
+        <version>${felix-fileinstall.version}</version>
+        <scope>provided</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
   <build>
     <finalName>${project.artifactId}</finalName>
     <plugins>
