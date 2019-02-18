@@ -18,6 +18,14 @@
   </properties>
   <dependencies>
     <dependency>
+      <groupId>org.osgi</groupId>
+      <artifactId>org.osgi.compendium</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.osgi</groupId>
+      <artifactId>org.osgi.core</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.hamcrest</groupId>
       <artifactId>hamcrest-all</artifactId>
       <version>${hamcrest.version}</version>
@@ -29,8 +37,8 @@
       <version>${platform.version}</version>
       <exclusions>
         <exclusion>
-          <artifactId>xbean</artifactId>
-          <groupId>org.apache.xbean</groupId>
+          <groupId>*</groupId>
+          <artifactId>*</artifactId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -38,14 +46,6 @@
       <groupId>pentaho</groupId>
       <artifactId>pentaho-platform-repository</artifactId>
       <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.osgi</groupId>
-      <artifactId>org.osgi.compendium</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.osgi</groupId>
-      <artifactId>org.osgi.core</artifactId>
     </dependency>
     <dependency>
       <groupId>org.mockito</groupId>

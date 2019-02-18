@@ -16,12 +16,11 @@
   <dependencies>
     <dependency>
       <groupId>org.apache.felix</groupId>
-      <artifactId>org.apache.felix.framework</artifactId>
-      <version>${felix.version}</version>
+      <artifactId>org.apache.felix.fileinstall</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.apache.felix</groupId>
-      <artifactId>org.apache.felix.fileinstall</artifactId>
+      <groupId>org.osgi</groupId>
+      <artifactId>org.osgi.core</artifactId>
     </dependency>
     <dependency>
       <groupId>org.apache.karaf</groupId>

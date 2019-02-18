@@ -16,15 +16,16 @@
  */
 package org.pentaho.platform.pdi;
 
-import org.apache.felix.framework.BundleWiringImpl;
 import org.junit.Test;
 import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleReference;
 
 import java.util.MissingResourceException;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.withSettings;
 
 /**
  * Created by nbaker on 8/15/16.
@@ -109,10 +110,10 @@ public class AgileBiPluginResourceLoaderTest {
     AgileBiPluginResourceLoader pluginResourceLoader = new AgileBiPluginResourceLoader();
     assertNull( pluginResourceLoader.getSymbolicName( getClass() ) );
 
-    BundleWiringImpl.BundleClassLoader classLoader = mock( BundleWiringImpl.BundleClassLoader.class );
+    ClassLoader classLoader = mock( ClassLoader.class, withSettings().extraInterfaces( BundleReference.class ) );
     Bundle bundle = mock( Bundle.class );
     when( bundle.getSymbolicName() ).thenReturn( "test" );
-    when( classLoader.getBundle() ).thenReturn( bundle );
+    when( ((BundleReference)classLoader).getBundle() ).thenReturn( bundle );
     assertEquals( "test", pluginResourceLoader.getSymbolicName( classLoader ) );
 
   }
