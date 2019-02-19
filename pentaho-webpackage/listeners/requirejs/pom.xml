@@ -20,11 +20,6 @@
       <artifactId>core-api</artifactId>
       <version>${project.version}</version>
     </dependency>
-    <dependency>
-      <groupId>org.pentaho.webpackage</groupId>
-      <artifactId>core-impl</artifactId>
-      <version>${project.version}</version>
-    </dependency>
 
     <dependency>
       <groupId>org.pentaho</groupId>
