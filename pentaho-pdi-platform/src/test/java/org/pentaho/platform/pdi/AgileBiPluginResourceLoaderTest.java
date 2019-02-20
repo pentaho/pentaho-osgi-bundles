@@ -16,21 +16,26 @@
  */
 package org.pentaho.platform.pdi;
 
-import org.apache.felix.framework.BundleWiringImpl;
 import org.junit.Test;
 import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleReference;
 
 import java.util.MissingResourceException;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.withSettings;
 
 /**
  * Created by nbaker on 8/15/16.
  */
 public class AgileBiPluginResourceLoaderTest {
-  AgileBiPluginResourceLoader resourceLoader = new AgileBiPluginResourceLoader() {
+  private AgileBiPluginResourceLoader resourceLoader = new AgileBiPluginResourceLoader() {
     @Override protected String getSymbolicName( Class<?> aClass ) {
       return "test";
 
@@ -42,7 +47,7 @@ public class AgileBiPluginResourceLoaderTest {
   };
 
   @Test
-  public void getResourceAsBytes() throws Exception {
+  public void getResourceAsBytes() {
     assertTrue( resourceLoader.getResourceAsBytes( getClass(), "README.md" ).length > 0 );
     assertNull( resourceLoader.getResourceAsBytes( getClass(), "bogus.md" ) );
   }
@@ -63,56 +68,58 @@ public class AgileBiPluginResourceLoaderTest {
   }
 
   @Test
-  public void getResourceAsStream() throws Exception {
+  public void getResourceAsStream() {
 
     assertNotNull( resourceLoader.getResourceAsStream( this.getClass(), "README.md" ) );
     assertNull( resourceLoader.getResourceAsStream( this.getClass(), "bogus.txt" ) );
   }
 
   @Test
-  public void getResourceAsStream1() throws Exception {
+  public void getResourceAsStream1() {
 
     assertNotNull( resourceLoader.getResourceAsStream( getClass().getClassLoader(), "README.md" ) );
     assertNull( resourceLoader.getResourceAsStream( this.getClass().getClassLoader(), "bogus.txt" ) );
   }
 
   @Test
-  public void findResources() throws Exception {
-    assertEquals(1, resourceLoader.findResources( getClass(), "README.md" ).size());
-    assertEquals(0, resourceLoader.findResources( getClass(), "bogus.md" ).size());
+  public void findResources() {
+    assertEquals( 1, resourceLoader.findResources( getClass(), "README.md" ).size() );
+    assertEquals( 0, resourceLoader.findResources( getClass(), "bogus.md" ).size() );
   }
 
   @Test
-  public void findResources1() throws Exception {
-    assertEquals(1, resourceLoader.findResources( getClass().getClassLoader(), "README.md" ).size());
-    assertEquals(0, resourceLoader.findResources( getClass().getClassLoader(), "bogus.md" ).size());
+  public void findResources1() {
+    assertEquals( 1, resourceLoader.findResources( getClass().getClassLoader(), "README.md" ).size() );
+    assertEquals( 0, resourceLoader.findResources( getClass().getClassLoader(), "bogus.md" ).size() );
   }
 
   @Test
-  public void getResourceBundle() throws Exception {
+  public void getResourceBundle() {
     assertEquals( "success", resourceLoader.getResourceBundle( getClass(), "test" ).getString( "test" ) );
     try {
       resourceLoader.getResourceBundle( getClass(), "bogus" );
       fail();
-    } catch( MissingResourceException e ){}
+    } catch ( MissingResourceException e ) {
+      //EXPECTED
+    }
   }
 
   @Test
-  public void testGetPluginSettings() throws Exception {
+  public void testGetPluginSettings() {
     assertNull( resourceLoader.getPluginSetting( getClass(), "" ) );
     assertNull( resourceLoader.getPluginSetting( getClass(), "", "" ) );
     assertNull( resourceLoader.getPluginSetting( getClass().getClassLoader(), "", "" ) );
   }
 
   @Test
-  public void testBundleSymbolidName() throws Exception {
+  public void testBundleSymbolidName() {
     AgileBiPluginResourceLoader pluginResourceLoader = new AgileBiPluginResourceLoader();
     assertNull( pluginResourceLoader.getSymbolicName( getClass() ) );
 
-    BundleWiringImpl.BundleClassLoader classLoader = mock( BundleWiringImpl.BundleClassLoader.class );
+    ClassLoader classLoader = mock( ClassLoader.class, withSettings().extraInterfaces( BundleReference.class ) );
     Bundle bundle = mock( Bundle.class );
     when( bundle.getSymbolicName() ).thenReturn( "test" );
-    when( classLoader.getBundle() ).thenReturn( bundle );
+    when( ((BundleReference) classLoader).getBundle() ).thenReturn( bundle );
     assertEquals( "test", pluginResourceLoader.getSymbolicName( classLoader ) );
 
   }
