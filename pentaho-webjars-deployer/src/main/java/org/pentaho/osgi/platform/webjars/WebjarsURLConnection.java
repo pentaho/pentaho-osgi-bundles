@@ -1,5 +1,5 @@
 /*!
- * Copyright 2010 - 2018 Hitachi Vantara.  All rights reserved.
+ * Copyright 2010 - 2019 Hitachi Vantara.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -503,7 +503,7 @@ public class WebjarsURLConnection extends URLConnection {
           .put( new Attributes.Name( Constants.BUNDLE_SYMBOLICNAME ), "pentaho-webjars-" + artifactInfo.getArtifactId() );
       manifest.getMainAttributes()
           .put( new Attributes.Name( Constants.IMPORT_PACKAGE ),
-              "org.osgi.service.http,org.apache.felix.http.api,org.ops4j.pax.web.extender.whiteboard.runtime,"
+              "org.osgi.service.http,org.ops4j.pax.web.extender.whiteboard.runtime,"
                   + "org.ops4j.pax.web.extender.whiteboard" );
 
       manifest.getMainAttributes()
