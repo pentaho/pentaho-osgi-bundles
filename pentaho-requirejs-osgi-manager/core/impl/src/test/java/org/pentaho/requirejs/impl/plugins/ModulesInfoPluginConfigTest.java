@@ -134,6 +134,46 @@ public class ModulesInfoPluginConfigTest {
   }
 
   @Test
+  public void applyModuleAnnotationsConfig() {
+    Map<String, Map<String, Map<String, Map<String, Object>>>> requireConfig = new HashMap<>();
+    Map<String, Map<String, Map<String, Object>>> config = new HashMap<>();
+    Map<String, Map<String, Object>> module = new HashMap<>();
+
+    Map<String, Object> moduleConfig = new HashMap<>();
+    Map<String, Object> annotations = new HashMap<>();
+    Object annotationA = new Object();
+    annotations.put( "baseA", annotationA );
+
+    Object annotationB = new Object();
+    annotations.put( "baseB", annotationB );
+
+    moduleConfig.put( "annotations", annotations );
+    module.put( "moduleA", moduleConfig );
+
+    config.put( "pentaho/modules", module );
+    requireConfig.put( "config", config );
+
+    this.plugin.apply( null, null, createResolveModuleIdFunction(), requireConfig );
+
+    Map<String, Map<String, Object>> modulesInfo = requireConfig.get( "config" ).get( "pentaho/modules" );
+
+    assertTrue( "Original moduleA removed", !modulesInfo.containsKey( "moduleA" ) );
+    assertTrue( "Added moduleA_resolved", modulesInfo.containsKey( "moduleA_resolved" ) );
+
+    Map<String, Object> moduleA_resolved = modulesInfo.get( "moduleA_resolved" );
+    Map<String, Object> moduleA_annotations = ( Map<String, Object> ) moduleA_resolved.get( "annotations" );
+
+    assertTrue( "Original baseA removed", !moduleA_annotations.containsKey( "baseA" ) );
+    assertTrue( "Original baseB removed", !moduleA_annotations.containsKey( "baseB" ) );
+
+    assertTrue( "Added baseA_resolved", moduleA_annotations.containsKey( "baseA_resolved" ) );
+    assertTrue( "Added baseB_resolved", moduleA_annotations.containsKey( "baseB_resolved" ) );
+
+    assertEquals( "Preserved baseA value", annotationA, moduleA_annotations.get( "baseA_resolved" ) );
+    assertEquals( "Preserved baseB value", annotationB, moduleA_annotations.get( "baseB_resolved" ) );
+  }
+
+  @Test
   public void applyNoConfig() {
     Map<String, Object> requireConfig = new HashMap<>();
 

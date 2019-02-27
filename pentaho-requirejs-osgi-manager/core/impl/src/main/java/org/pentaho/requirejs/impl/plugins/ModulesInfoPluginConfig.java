@@ -52,9 +52,14 @@ public class ModulesInfoPluginConfig implements IRequireJsPackageConfigurationPl
 
       Map<String, Object> config = (Map<String, Object>) configuration.get( moduleId );
       config.forEach( ( key, value ) -> {
-        if ( ( key.equals( "base" ) || key.equals( "type" ) ) && value != null ) {
-          String versionedType = resolveModuleId.apply( (String) value );
-          config.put( key, versionedType );
+        if ( value != null ) {
+          if ( key.equals( "base" ) || key.equals( "type" ) ) {
+            String versionedType = resolveModuleId.apply( (String) value );
+            config.put( key, versionedType );
+          } else if ( key.equals( "annotations" )  ) {
+            Map<String, ?> processedAnnotations = convertModuleAnnotations( ( Map<String, ?> ) value, resolveModuleId );
+            config.put( key, processedAnnotations );
+          }
         }
       } );
 
@@ -62,5 +67,17 @@ public class ModulesInfoPluginConfig implements IRequireJsPackageConfigurationPl
     }
 
     return convertedConfiguration;
+  }
+
+  private Map<String, ?> convertModuleAnnotations( Map<String, ?> annotations, Function<String, String> resolveModuleId ) {
+    HashMap<String, Object> convertedAnnotations = new HashMap<>();
+
+    for ( String moduleId : annotations.keySet() ) {
+      String versionedModuleId = resolveModuleId.apply( moduleId );
+
+      convertedAnnotations.put( versionedModuleId, annotations.get( moduleId ) );
+    }
+
+    return convertedAnnotations;
   }
 }
