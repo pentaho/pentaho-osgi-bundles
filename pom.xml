@@ -61,7 +61,6 @@
     <commons-lang.version>2.6</commons-lang.version>
     <rxjava.version>2.2.3</rxjava.version>
     <platform.version>8.3.0.0-SNAPSHOT</platform.version>
-    <karaf.version>3.0.3</karaf.version>
     <spring-security.version>4.1.5.RELEASE</spring-security.version>
 
     <!-- All 3 of these properties are required -->
