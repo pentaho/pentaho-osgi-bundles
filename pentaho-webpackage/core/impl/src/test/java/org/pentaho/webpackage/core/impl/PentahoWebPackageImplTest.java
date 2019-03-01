@@ -92,7 +92,7 @@ public class PentahoWebPackageImplTest {
     // arrange
     String name = "SomeName";
     String version = "1.2.3";
-    String expectedWebRootPath = "/" + name + "/" + version;
+    String expectedWebRootPath = "/" + name + "@" + version;
     URL mockUrl = this.createMockUrlConnection( mockPackageJson );
     PentahoWebPackageImpl pentahoWebPackage = new PentahoWebPackageImpl( null, mockUrl );
 

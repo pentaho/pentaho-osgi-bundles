@@ -52,59 +52,59 @@
     }
   },
   "paths": {
-    "angular_1.3.0-SNAPSHOT": "angularjs/1.3.0-SNAPSHOT/angular",
-    "angular-ui-router.stateHelper_1.3.1": "angular-ui-router.stateHelper/1.3.1",
-    "smart-table-min_2.0.3-1": "smart-table/2.0.3-1/smart-table.min",
-    "smart-table_2.0.3-1": "smart-table/2.0.3-1/smart-table"
+    "angular@1.3.0-SNAPSHOT": "angularjs@1.3.0-SNAPSHOT/angular",
+    "angular-ui-router.stateHelper@1.3.1": "angular-ui-router.stateHelper@1.3.1",
+    "smart-table-min@2.0.3-1": "smart-table@2.0.3-1/smart-table.min",
+    "smart-table@2.0.3-1": "smart-table@2.0.3-1/smart-table"
   },
   "packages": [
     {
-      "name": "angular-ui-router.stateHelper_1.3.1",
+      "name": "angular-ui-router.stateHelper@1.3.1",
       "main": "statehelper"
     },
     {
       "name": "other",
-      "location": "/smart-table/2.0.3-1/some-folder"
+      "location": "/smart-table@2.0.3-1/some-folder"
     },
     "simple"
   ],
   "shim": {
-    "something-unknown_2.0.1": {
+    "something-unknown@2.0.1": {
       "exports": "something"
     },
-    "angular_1.3.0-SNAPSHOT": {
+    "angular@1.3.0-SNAPSHOT": {
       "exports": "angular"
     },
-    "angular-ui-router.stateHelper_1.3.1": {
+    "angular-ui-router.stateHelper@1.3.1": {
       "deps": [
         "angular",
         "angular-ui-router"
       ]
     },
-    "angular-ui-router.stateHelper_1.3.1/statehelper": {
+    "angular-ui-router.stateHelper@1.3.1/statehelper": {
       "deps": [
         "angular",
         "angular-ui-router"
       ]
     },
-    "smart-table_2.0.3-1": [
+    "smart-table@2.0.3-1": [
       "angular"
     ]
   },
   "map": {
-    "smart-table_2.0.3-1": {
-      "angular_1.3.0-SNAPSHOT": "angular-ui-router.stateHelper_1.3.1",
-      "other-unknown_3.0.7": "better-unknown_3.0.0"
+    "smart-table@2.0.3-1": {
+      "angular@1.3.0-SNAPSHOT": "angular-ui-router.stateHelper@1.3.1",
+      "other-unknown@3.0.7": "better-unknown@3.0.0"
     },
-    "something-unknown_2.0.1": {
-      "angular_1.3.0-SNAPSHOT": "angular-ui-router.stateHelper_1.3.1"
+    "something-unknown@2.0.1": {
+      "angular@1.3.0-SNAPSHOT": "angular-ui-router.stateHelper@1.3.1"
     }
   },
   "config": {
-    "smart-table_2.0.3-1": {
+    "smart-table@2.0.3-1": {
       "stuff": true
     },
-    "something-unknown_2.0.1": {
+    "something-unknown@2.0.1": {
       "stuff": false
     }
   }

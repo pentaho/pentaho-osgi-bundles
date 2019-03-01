@@ -40,9 +40,6 @@ public class RequireJsPackageConfigurationImpl implements IRequireJsPackageConfi
   private Map<String, String> baseModuleIdsMappings;
   private Map<String, String> baseModuleIdsMappingsWithDependencies;
 
-  private String simplePackageOrganization;
-  private String simplePackageName;
-
   private Map<String, String> paths;
   private List<Object> packages;
   private Map<String, Map<String, ?>> shim;
@@ -70,16 +67,6 @@ public class RequireJsPackageConfigurationImpl implements IRequireJsPackageConfi
   public void processRequireJsPackage() {
     this.dependencyCache = null;
     this.baseModuleIdsMappingsWithDependencies = null;
-
-    String name = this.getName();
-    if ( name.startsWith( "@" ) ) {
-      int slashIndex = name.indexOf( '/' );
-      this.simplePackageOrganization = name.substring( 1, slashIndex );
-      this.simplePackageName = name.substring( slashIndex + 1 );
-    } else {
-      this.simplePackageOrganization = null;
-      this.simplePackageName = name;
-    }
 
     this.paths = new HashMap<>();
     this.packages = new ArrayList<>();
@@ -242,23 +229,9 @@ public class RequireJsPackageConfigurationImpl implements IRequireJsPackageConfi
 
   private String initVersionedModuleId( final String moduleId ) {
     if ( !this.preferGlobal() ) {
-      String versionedName = this.getName() + "_" + this.getVersion();
+      String versionedName = this.getName() + "@" + this.getVersion();
 
-      String versionedModuleId = versionedName + "_" + moduleId;
-
-      // trying to get a shorter (and more beautiful) moduleId
-      if ( moduleId.equals( this.simplePackageName ) || moduleId.startsWith( this.simplePackageName + "/" ) ) {
-        versionedModuleId = versionedName + moduleId.substring( this.simplePackageName.length() );
-      } else if ( moduleId.equals( this.simplePackageOrganization + "/" + this.simplePackageName ) || moduleId.startsWith( this.simplePackageOrganization + "/" + this.simplePackageName + "/" ) ) {
-        versionedModuleId = versionedName + moduleId.substring( this.simplePackageOrganization.length() + this.simplePackageName.length() + 1 );
-      } else {
-        String noSlashModuleId = moduleId.replaceAll( "/", "-" );
-        if ( this.simplePackageOrganization == null && ( noSlashModuleId.equals( this.simplePackageName ) || noSlashModuleId.startsWith( this.simplePackageName + "-" ) ) ) {
-          versionedModuleId = versionedName + moduleId.substring( this.simplePackageName.length() );
-        } else if ( noSlashModuleId.equals( this.simplePackageOrganization + "-" + this.simplePackageName ) || noSlashModuleId.startsWith( this.simplePackageOrganization + "-" + this.simplePackageName + "-" ) ) {
-          versionedModuleId = versionedName + moduleId.substring( this.simplePackageOrganization.length() + this.simplePackageName.length() + 1 );
-        }
-      }
+      String versionedModuleId = versionedName + "/" + moduleId;
 
       this.baseModuleIdsMappings.put( moduleId, versionedModuleId );
 

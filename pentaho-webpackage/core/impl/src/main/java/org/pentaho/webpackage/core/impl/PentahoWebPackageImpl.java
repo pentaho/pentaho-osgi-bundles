@@ -65,7 +65,7 @@ public final class PentahoWebPackageImpl implements IPentahoWebPackage {
 
   @Override
   public String getWebRootPath() {
-    return "/" + this.getName() + "/" + this.getVersion();
+    return "/" + this.getName() + "@" + this.getVersion();
   }
 
   @Override

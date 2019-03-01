@@ -76,23 +76,23 @@ public class RequireJsPackageConfigurationImplTest {
     dependencies.put( "@dep/C", "2.5" );
 
     dependencyABaseModuleIdsMapping = new HashMap<>();
-    dependencyABaseModuleIdsMapping.put( "depA", "depA_1.0" );
-    dependencyABaseModuleIdsMapping.put( "depA/hi", "depA_1.0/hi" );
-    dependencyABaseModuleIdsMapping.put( "depA/hello", "depA_1.0/hello" );
+    dependencyABaseModuleIdsMapping.put( "depA", "depA@1.0" );
+    dependencyABaseModuleIdsMapping.put( "depA/hi", "depA@1.0/depA/hi" );
+    dependencyABaseModuleIdsMapping.put( "depA/hello", "depA@1.0/depA/hello" );
 
     dependencyCBaseModuleIdsMapping = new HashMap<>();
-    dependencyCBaseModuleIdsMapping.put( "depC/hi", "depC_1.5_hi" );
-    dependencyCBaseModuleIdsMapping.put( "depC/hello", "depC_1.5_hello" );
+    dependencyCBaseModuleIdsMapping.put( "depC/hi", "depC@1.5/depC/hi" );
+    dependencyCBaseModuleIdsMapping.put( "depC/hello", "depC@1.5/depC/hello" );
 
     expectedModuleIdsMapping = new HashMap<>();
-    expectedModuleIdsMapping.put( "some/module/A", name + "_" + version + "_" + "some/module/A" );
-    expectedModuleIdsMapping.put( "some/module/B", name + "_" + version + "_" + "some/module/B" );
-    expectedModuleIdsMapping.put( "at-root", name + "_" + version + "_" + "at-root" );
-    expectedModuleIdsMapping.put( "depA", "depA_1.0" );
-    expectedModuleIdsMapping.put( "depA/hi", "depA_1.0/hi" );
-    expectedModuleIdsMapping.put( "depA/hello", "depA_1.0/hello" );
-    expectedModuleIdsMapping.put( "depC/hi", "depC_1.5_hi" );
-    expectedModuleIdsMapping.put( "depC/hello", "depC_1.5_hello" );
+    expectedModuleIdsMapping.put( "some/module/A", name + "@" + version + "/" + "some/module/A" );
+    expectedModuleIdsMapping.put( "some/module/B", name + "@" + version + "/" + "some/module/B" );
+    expectedModuleIdsMapping.put( "at-root", name + "@" + version + "/" + "at-root" );
+    expectedModuleIdsMapping.put( "depA", "depA@1.0/depA" );
+    expectedModuleIdsMapping.put( "depA/hi", "depA@1.0/depA/hi" );
+    expectedModuleIdsMapping.put( "depA/hello", "depA@1.0/depA/hello" );
+    expectedModuleIdsMapping.put( "depC/hi", "depC@1.5/depC/hi" );
+    expectedModuleIdsMapping.put( "depC/hello", "depC@1.5/depC/hello" );
   }
 
   @Test(expected = IllegalArgumentException.class)
@@ -137,7 +137,7 @@ public class RequireJsPackageConfigurationImplTest {
   }
 
   @Test
-  public void getBaseModuleIdsMappingPrettyVersionedModuleIdsNameWithOrganization() {
+  public void getBaseModuleIdsMappingModuleIdsWithOrganization() {
     String name = "@tests/basic";
     String version = "1.0";
 
@@ -155,15 +155,16 @@ public class RequireJsPackageConfigurationImplTest {
 
     Map<String, String> baseModuleIdsMapping = packageConfiguration.getBaseModuleIdsMapping();
 
-    assertEquals( "@tests/basic_1.0/A", baseModuleIdsMapping.get( "basic/A" ) );
-    assertEquals( "@tests/basic_1.0_other/A", baseModuleIdsMapping.get( "other/A" ) );
+    // @test/basic@1.0/basic/A/
+    assertEquals( "@tests/basic@1.0/basic/A", baseModuleIdsMapping.get( "basic/A" ) );
+    assertEquals( "@tests/basic@1.0/other/A", baseModuleIdsMapping.get( "other/A" ) );
 
-    assertEquals( "@tests/basic_1.0/A", baseModuleIdsMapping.get( "tests/basic/A" ) );
-    assertEquals( "@tests/basic_1.0_tests/other/A", baseModuleIdsMapping.get( "tests/other/A" ) );
+    assertEquals( "@tests/basic@1.0/tests/basic/A", baseModuleIdsMapping.get( "tests/basic/A" ) );
+    assertEquals( "@tests/basic@1.0/tests/other/A", baseModuleIdsMapping.get( "tests/other/A" ) );
   }
 
   @Test
-  public void getBaseModuleIdsMappingPrettyVersionedModuleIdsNameWithOrganizationAndStructure() {
+  public void getBaseModuleIdsMappingModuleIdsWithOrganizationAndStructure() {
     String name = "@tests/basic-stuff";
     String version = "1.0";
 
@@ -179,12 +180,12 @@ public class RequireJsPackageConfigurationImplTest {
 
     Map<String, String> baseModuleIdsMapping = packageConfiguration.getBaseModuleIdsMapping();
 
-    assertEquals( "@tests/basic-stuff_1.0/A", baseModuleIdsMapping.get( "tests/basic/stuff/A" ) );
-    assertEquals( "@tests/basic-stuff_1.0_basic/stuff/A", baseModuleIdsMapping.get( "basic/stuff/A" ) );
+    assertEquals( "@tests/basic-stuff@1.0/tests/basic/stuff/A", baseModuleIdsMapping.get( "tests/basic/stuff/A" ) );
+    assertEquals( "@tests/basic-stuff@1.0/basic/stuff/A", baseModuleIdsMapping.get( "basic/stuff/A" ) );
   }
 
   @Test
-  public void getBaseModuleIdsMappingPrettyVersionedModuleIdsNameWithoutOrganization() {
+  public void getBaseModuleIdsMappingModuleIdsWithoutOrganization() {
     String name = "basic";
     String version = "1.0";
 
@@ -200,12 +201,12 @@ public class RequireJsPackageConfigurationImplTest {
 
     Map<String, String> baseModuleIdsMapping = packageConfiguration.getBaseModuleIdsMapping();
 
-    assertEquals( "basic_1.0/A", baseModuleIdsMapping.get( "basic/A" ) );
-    assertEquals( "basic_1.0_other/A", baseModuleIdsMapping.get( "other/A" ) );
+    assertEquals( "basic@1.0/basic/A", baseModuleIdsMapping.get( "basic/A" ) );
+    assertEquals( "basic@1.0/other/A", baseModuleIdsMapping.get( "other/A" ) );
   }
 
   @Test
-  public void getBaseModuleIdsMappingPrettyVersionedModuleIdsNameWithoutOrganizationButStructure() {
+  public void getBaseModuleIdsMappingModuleIdsWithoutOrganizationButStructure() {
     String name = "tests-basic";
     String version = "1.0";
 
@@ -223,11 +224,11 @@ public class RequireJsPackageConfigurationImplTest {
 
     Map<String, String> baseModuleIdsMapping = packageConfiguration.getBaseModuleIdsMapping();
 
-    assertEquals( "tests-basic_1.0/A", baseModuleIdsMapping.get( "tests/basic/A" ) );
-    assertEquals( "tests-basic_1.0_tests/other/A", baseModuleIdsMapping.get( "tests/other/A" ) );
+    assertEquals( "tests-basic@1.0/tests/basic/A", baseModuleIdsMapping.get( "tests/basic/A" ) );
+    assertEquals( "tests-basic@1.0/tests/other/A", baseModuleIdsMapping.get( "tests/other/A" ) );
 
-    assertEquals( "tests-basic_1.0_basic/A", baseModuleIdsMapping.get( "basic/A" ) );
-    assertEquals( "tests-basic_1.0_other/A", baseModuleIdsMapping.get( "other/A" ) );
+    assertEquals( "tests-basic@1.0/basic/A", baseModuleIdsMapping.get( "basic/A" ) );
+    assertEquals( "tests-basic@1.0/other/A", baseModuleIdsMapping.get( "other/A" ) );
   }
 
   @Test(expected = UnsupportedOperationException.class)
@@ -859,7 +860,7 @@ public class RequireJsPackageConfigurationImplTest {
     packageConfig.put( "plugin!depA/hi", new HashMap<>() );
     packageConfig.put( "plugin!tests/complex/other", new HashMap<>() );
 
-    packageConfig.put( "depA_1.0_hi", new HashMap<>() );
+    packageConfig.put( "depA@1.0/hi", new HashMap<>() );
 
     doReturn( packageConfig ).when( mockRequireJsPackage ).getConfig();
 

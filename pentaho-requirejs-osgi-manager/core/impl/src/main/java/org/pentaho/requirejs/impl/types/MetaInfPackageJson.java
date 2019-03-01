@@ -80,7 +80,7 @@ public class MetaInfPackageJson implements IRequireJsPackage {
 
   @Override
   public String getWebRootPath() {
-    return this.name + "/" + this.version;
+    return this.name + "@" + this.version;
   }
 
   @Override
@@ -160,8 +160,8 @@ public class MetaInfPackageJson implements IRequireJsPackage {
     this.name = (String) json.get( "name" );
     this.version = (String) json.get( "version" );
 
-    String versionedModuleId = this.name + "_" + this.version;
-    String versionedPath = this.name + "/" + this.version;
+    String versionedModuleId = this.name + "@" + this.version;
+    String versionedPath = this.name + "@" + this.version;
 
     // default module
     this.addModule( this.name, "/" );
