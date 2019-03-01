@@ -25,9 +25,6 @@
   <properties>
     <javax.servlet.version>3.0.1</javax.servlet.version>
     <commons-lang.version>2.6</commons-lang.version>
-
-    <karaf-maven-plugin.version>3.0.8</karaf-maven-plugin.version>
-    <karaf-maven-plugin.aggregateFeatures>false</karaf-maven-plugin.aggregateFeatures>
   </properties>
 
   <dependencyManagement>
@@ -57,43 +54,5 @@
       </dependency>
     </dependencies>
   </dependencyManagement>
-
-  <profiles>
-    <profile>
-      <!-- This profile generates a feature file to deploy in karaf. -->
-      <id>feature-generation</id>
-      <activation>
-        <file>
-          <exists>${basedir}/src/main/feature</exists>
-        </file>
-      </activation>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.apache.karaf.tooling</groupId>
-            <artifactId>karaf-maven-plugin</artifactId>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-  </profiles>
-
-  <build>
-    <pluginManagement>
-      <plugins>
-        <plugin>
-          <groupId>org.apache.karaf.tooling</groupId>
-          <artifactId>karaf-maven-plugin</artifactId>
-          <version>${karaf-maven-plugin.version}</version>
-
-          <extensions>true</extensions>
-
-          <configuration>
-            <aggregateFeatures>${karaf-maven-plugin.aggregateFeatures}</aggregateFeatures>
-          </configuration>
-        </plugin>
-      </plugins>
-    </pluginManagement>
-  </build>
 
 </project>
