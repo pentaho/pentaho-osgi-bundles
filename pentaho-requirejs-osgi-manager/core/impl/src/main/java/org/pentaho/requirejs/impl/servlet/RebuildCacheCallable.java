@@ -94,6 +94,7 @@ public class RebuildCacheCallable implements Callable<String> {
             packageInfo.put( "version", requireJsPackage.getVersion() );
             packageInfo.put( "webRootPath", baseUrl + requireJsPackage.getWebRootPath() );
 
+            // Additionally, `environment` is available and defined in RequireJsConfigServlet.
             sb.append( "\n\n(function(requireCfg, packageInfo, getVersionedModuleId) {\n" );
             sb.append( "  try {\n" );
             appendFromResource( sb, preconfig );

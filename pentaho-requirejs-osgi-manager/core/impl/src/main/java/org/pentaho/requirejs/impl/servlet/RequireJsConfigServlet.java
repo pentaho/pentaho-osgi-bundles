@@ -75,12 +75,14 @@ public class RequireJsConfigServlet extends HttpServlet {
       // store webcontext.js' requirejs module configurations if existing
       printWriter.write( "\n  var legacyConfig = null;" );
       printWriter.write( "\n  var legacyWaitSeconds = null;" );
+      printWriter.write( "\n  var environment = null;" );
       printWriter.write( "\n  if (w.requireCfg != null) {" );
       printWriter.write( "\n    if (w.requireCfg.waitSeconds != null) {" );
       printWriter.write( "\n      legacyWaitSeconds = w.requireCfg.waitSeconds;" );
       printWriter.write( "\n    }" );
       printWriter.write( "\n    if (w.requireCfg.config != null) {" );
       printWriter.write( "\n      legacyConfig = w.requireCfg.config;" );
+      printWriter.write( "\n      environment = legacyConfig[\"pentaho/environment\"];" );
       printWriter.write( "\n    }" );
       printWriter.write( "\n  }" );
       printWriter.write( "\n" );

@@ -33,7 +33,7 @@ public class PentahoWebContextServletImpl extends HttpServlet {
   static final String APPLICATION_REQUEST_PARAM = "application";
 
   private static final String SERVER_ROOT = "/";
-  private static final String REQUIREJS_INIT_LOCATION = "requirejs-manager/js/require-init.js";
+  private static final String REQUIREJS_INIT_LOCATION = "@pentaho/requirejs-manager/js/require-init.js";
 
   private static final String DEFAULT_SERVICES_ROOT = "cxf/";
   private static final Integer DEFAULT_WAIT_TIME = 30;
