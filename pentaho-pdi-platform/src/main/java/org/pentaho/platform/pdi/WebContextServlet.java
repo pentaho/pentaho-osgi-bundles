@@ -47,7 +47,7 @@ public class WebContextServlet extends HttpServlet {
   static final String WEB_CONTEXT_JS = "webcontext.js"; //$NON-NLS-1$
 
   static final String CONTEXT_PATH = "/";
-  private static final String REQUIREJS_INIT_LOCATION = "@pentaho/requirejs-manager/js/require-init.js";
+  private static final String REQUIREJS_INIT_LOCATION = "requirejs-manager/js/require-init.js";
 
   private static final String DEFAULT_SERVICES_ROOT = "cxf/";
   private static final Integer DEFAULT_WAIT_TIME = 30;

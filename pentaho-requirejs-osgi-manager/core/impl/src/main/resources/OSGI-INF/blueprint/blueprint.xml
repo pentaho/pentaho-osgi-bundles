@@ -45,7 +45,7 @@
 
   <service interface="javax.servlet.http.HttpServlet">
     <service-properties>
-      <entry key="alias" value="/@pentaho/requirejs-manager/js/require-init.js"/>
+      <entry key="alias" value="/requirejs-manager/js/require-init.js"/>
     </service-properties>
 
     <bean class="org.pentaho.requirejs.impl.servlet.RequireJsConfigServlet">
