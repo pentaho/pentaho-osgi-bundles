@@ -12,7 +12,7 @@
 * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 * See the GNU Lesser General Public License for more details.
 *
-* Copyright (c) 2002-2019 Hitachi Vantara..  All rights reserved.
+* Copyright (c) 2002-2017 Hitachi Vantara..  All rights reserved.
 */
 
 package org.pentaho.platform.pdi.vfs;
@@ -22,7 +22,7 @@ import org.apache.commons.vfs2.FileObject;
 import org.apache.commons.vfs2.FileSystemConfigBuilder;
 import org.apache.commons.vfs2.FileSystemException;
 import org.apache.commons.vfs2.FileSystemOptions;
-import org.apache.commons.vfs2.provider.AbstractFileProvider;
+import org.apache.commons.vfs2.provider.FileProvider;
 
 import java.util.Collection;
 
@@ -32,7 +32,7 @@ import java.util.Collection;
  *
  * @author Will Gorman (wgorman@pentaho.com)
  */
-public class MetadataToMondrianVfs extends AbstractFileProvider {
+public class MetadataToMondrianVfs implements FileProvider {
 
   public MetadataToMondrianVfs() {
     super();
@@ -52,26 +52,22 @@ public class MetadataToMondrianVfs extends AbstractFileProvider {
     return null;
   }
 
-  @Override
   public FileObject createFileSystem( final String arg0, final FileObject arg1, final FileSystemOptions arg2 )
     throws FileSystemException {
     // not needed for our usage
     return null;
   }
 
-  @Override
   public FileSystemConfigBuilder getConfigBuilder() {
     // not needed for our usage
     return null;
   }
 
-  @Override
   public Collection getCapabilities() {
     // not needed for our usage
     return null;
   }
 
-  @Override
   public FileName parseUri( final FileName arg0, final String arg1 ) throws FileSystemException {
     // not needed for our usage
     return null;
