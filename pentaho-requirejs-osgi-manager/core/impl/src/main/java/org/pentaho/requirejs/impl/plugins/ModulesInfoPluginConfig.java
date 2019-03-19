@@ -1,5 +1,5 @@
 /*!
- * Copyright 2018 Hitachi Vantara.  All rights reserved.
+ * Copyright 2018 - 2019 Hitachi Vantara.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,7 +57,7 @@ public class ModulesInfoPluginConfig implements IRequireJsPackageConfigurationPl
             String versionedType = resolveModuleId.apply( (String) value );
             config.put( key, versionedType );
           } else if ( key.equals( "annotations" )  ) {
-            Map<String, ?> processedAnnotations = convertModuleAnnotations( ( Map<String, ?> ) value, resolveModuleId );
+            Map<String, ?> processedAnnotations = convertModuleAnnotations( (Map<String, ?>) value, resolveModuleId );
             config.put( key, processedAnnotations );
           }
         }
