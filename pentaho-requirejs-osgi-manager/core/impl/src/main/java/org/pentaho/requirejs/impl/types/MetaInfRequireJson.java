@@ -1,5 +1,5 @@
 /*!
- * Copyright 2010 - 2018 Hitachi Vantara.  All rights reserved.
+ * Copyright 2010 - 2019 Hitachi Vantara.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -88,7 +88,7 @@ public class MetaInfRequireJson implements IRequireJsPackage {
 
   @Override
   public String getWebRootPath() {
-    return this.name + "/" + this.version;
+    return this.name.isEmpty() ? "" : ( this.name + "@" + this.version );
   }
 
   @Override
@@ -251,17 +251,17 @@ public class MetaInfRequireJson implements IRequireJsPackage {
     }
 
     if ( artifactId != null ) {
-      moduleIdTranslator.put( artifactId + "_" + this.version, this.name );
+      moduleIdTranslator.put( artifactId + "@" + this.version, this.name );
     }
 
     List<String> basePaths = new ArrayList<>();
 
     availableModules.forEach( ( moduleId, versions ) -> {
       versions.forEach( ( version, moduleInfo ) -> {
-        moduleIdTranslator.put( moduleId + "_" + version, moduleId );
+        moduleIdTranslator.put( moduleId + "@" + version, moduleId );
 
-        basePaths.add( moduleId + "/" + version );
-        basePaths.add( "/" + moduleId + "/" + version );
+        basePaths.add( moduleId + "@" + version );
+        basePaths.add( "/" + moduleId + "@" + version );
 
         if ( moduleInfo.containsKey( "dependencies" ) ) {
           final HashMap<String, String> dependencies = (HashMap<String, String>) moduleInfo.get( "dependencies" );

@@ -710,7 +710,7 @@ public class WebjarsURLConnection extends URLConnection {
 
         final String replacement =
             "../../" + reverseRelPath + WEBJAR_SRC_ALIAS_PREFIX + "/"
-                + packageName + "/"
+                + packageName + "@"
                 + packageVersion + relPath;
 
         lastLocationMapping = new SourceMap.LocationMapping( prefix, replacement );

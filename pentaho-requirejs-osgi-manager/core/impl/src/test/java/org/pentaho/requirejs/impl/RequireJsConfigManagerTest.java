@@ -1,5 +1,5 @@
 /*!
- * Copyright 2018 Hitachi Vantara.  All rights reserved.
+ * Copyright 2018 - 2019 Hitachi Vantara.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -254,9 +254,9 @@ public class RequireJsConfigManagerTest {
     doReturn( webRootPath ).when( config ).getWebRootPath();
 
     packageConfigurationMapping = new HashMap<>();
-    packageConfigurationMapping.put( "depA", "depA_1.0" );
-    packageConfigurationMapping.put( "depA/hi", "depA_1.0/hi" );
-    packageConfigurationMapping.put( "depA/hello", "depA_1.0/hello" );
+    packageConfigurationMapping.put( "depA", "depA@1.0" );
+    packageConfigurationMapping.put( "depA/hi", "depA@1.0/depA/hi" );
+    packageConfigurationMapping.put( "depA/hello", "depA@1.0/depA/hello" );
 
     doReturn( packageConfigurationMapping ).when( config ).getModuleIdsMapping();
 

@@ -1,5 +1,5 @@
 {
   "paths": {
-    "pentaho/i18n-osgi": "/${project.artifactId}/${project.version}/js/i18n"
+    "pentaho/i18n-osgi": "/@pentaho/i18n-osgi@${project.version}/js/i18n"
   }
 }

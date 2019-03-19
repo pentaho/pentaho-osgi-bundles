@@ -4,10 +4,10 @@
       "smart-table": {
         "2.0.3-1": {
           "path": "",
-          "versionedName": "smart-table_2.0.3-1",
+          "versionedName": "smart-table@2.0.3-1",
           "name": "smart-table",
           "isAmdPackage": true,
-          "versionedPath": "smart-table/2.0.3-1",
+          "versionedPath": "smart-table@2.0.3-1",
           "dependencies": {
             "mvn:org.webjars/angularjs": "1.2.27"
           }
@@ -16,10 +16,10 @@
       "smart-table-min": {
         "2.0.3-1": {
           "path": "",
-          "versionedName": "smart-table_2.0.3-1",
+          "versionedName": "smart-table@2.0.3-1",
           "name": "smart-table",
           "isAmdPackage": true,
-          "versionedPath": "smart-table/2.0.3-1",
+          "versionedPath": "smart-table@2.0.3-1",
           "dependencies": {
             "mvn:org.webjars/angularjs": "1.2.27"
           }
@@ -36,12 +36,12 @@
     }
   },
   "shim": {
-    "smart-table_2.0.3-1": [
+    "smart-table@2.0.3-1": [
       "angular"
     ]
   },
   "paths": {
-    "smart-table_2.0.3-1": "smart-table/2.0.3-1/smart-table",
-    "smart-table-min_2.0.3-1": "smart-table/2.0.3-1/smart-table.min"
+    "smart-table@2.0.3-1": "smart-table@2.0.3-1/smart-table",
+    "smart-table-min@2.0.3-1": "smart-table@2.0.3-1/smart-table.min"
   }
 }

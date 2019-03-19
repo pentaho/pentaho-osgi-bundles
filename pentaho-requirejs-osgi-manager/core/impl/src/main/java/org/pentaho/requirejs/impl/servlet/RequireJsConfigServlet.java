@@ -1,5 +1,5 @@
 /*!
- * Copyright 2010 - 2018 Hitachi Vantara.  All rights reserved.
+ * Copyright 2010 - 2019 Hitachi Vantara.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -75,12 +75,14 @@ public class RequireJsConfigServlet extends HttpServlet {
       // store webcontext.js' requirejs module configurations if existing
       printWriter.write( "\n  var legacyConfig = null;" );
       printWriter.write( "\n  var legacyWaitSeconds = null;" );
+      printWriter.write( "\n  var environment = null;" );
       printWriter.write( "\n  if (w.requireCfg != null) {" );
       printWriter.write( "\n    if (w.requireCfg.waitSeconds != null) {" );
       printWriter.write( "\n      legacyWaitSeconds = w.requireCfg.waitSeconds;" );
       printWriter.write( "\n    }" );
       printWriter.write( "\n    if (w.requireCfg.config != null) {" );
       printWriter.write( "\n      legacyConfig = w.requireCfg.config;" );
+      printWriter.write( "\n      environment = legacyConfig[\"pentaho/environment\"];" );
       printWriter.write( "\n    }" );
       printWriter.write( "\n  }" );
       printWriter.write( "\n" );

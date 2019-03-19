@@ -1,5 +1,5 @@
 /*!
- * Copyright 2018 Hitachi Vantara.  All rights reserved.
+ * Copyright 2018 - 2019 Hitachi Vantara.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -91,7 +91,7 @@ public class MetaInfRequireJsonTest {
   public void getWebRootPath() {
     MetaInfRequireJson requireJson = new MetaInfRequireJson( requireMeta );
 
-    assertEquals( "angular/1.3.0-SNAPSHOT", requireJson.getWebRootPath() );
+    assertEquals( "angular@1.3.0-SNAPSHOT", requireJson.getWebRootPath() );
   }
 
   @Test
@@ -169,7 +169,7 @@ public class MetaInfRequireJsonTest {
     final Map<String, ?> config = requireJson.getConfig();
     assertEquals( TEST_FILE_BASE_NUMBER_OF_CONFIGS, config.size() );
     assertTrue( "Remove versioning from known modules", config.containsKey( "smart-table" ) );
-    assertTrue( "Leave as-is unknown modules", config.containsKey( "something-unknown_2.0.1" ) );
+    assertTrue( "Leave as-is unknown modules", config.containsKey( "something-unknown@2.0.1" ) );
   }
 
   @Test
@@ -180,12 +180,12 @@ public class MetaInfRequireJsonTest {
     assertEquals( TEST_FILE_BASE_NUMBER_OF_MAPS, map.size() );
 
     assertTrue( "Remove versioning from known modules", map.containsKey( "smart-table" ) );
-    assertTrue( "Leave as-is unknown modules", map.get( "smart-table" ).containsKey( "other-unknown_3.0.7" ) );
-    assertEquals( "Leave as-is unknown modules", "better-unknown_3.0.0", map.get( "smart-table" ).get( "other-unknown_3.0.7" ) );
+    assertTrue( "Leave as-is unknown modules", map.get( "smart-table" ).containsKey( "other-unknown@3.0.7" ) );
+    assertEquals( "Leave as-is unknown modules", "better-unknown@3.0.0", map.get( "smart-table" ).get( "other-unknown@3.0.7" ) );
 
-    assertTrue( "Leave as-is unknown modules", map.containsKey( "something-unknown_2.0.1" ) );
-    assertTrue( "Remove versioning from known modules", map.get( "something-unknown_2.0.1" ).containsKey( "angular" ) );
-    assertEquals( "Remove versioning from known modules", "angular-ui-router.stateHelper", map.get( "something-unknown_2.0.1" ).get( "angular" ) );
+    assertTrue( "Leave as-is unknown modules", map.containsKey( "something-unknown@2.0.1" ) );
+    assertTrue( "Remove versioning from known modules", map.get( "something-unknown@2.0.1" ).containsKey( "angular" ) );
+    assertEquals( "Remove versioning from known modules", "angular-ui-router.stateHelper", map.get( "something-unknown@2.0.1" ).get( "angular" ) );
   }
 
   @Test
@@ -195,7 +195,7 @@ public class MetaInfRequireJsonTest {
     Map<String, Map<String, ?>> shim = requireJson.getShim();
     assertEquals( TEST_FILE_BASE_NUMBER_OF_SHIMS, shim.size() );
 
-    assertTrue( "Leave as-is unknown modules", shim.containsKey( "something-unknown_2.0.1" ) );
+    assertTrue( "Leave as-is unknown modules", shim.containsKey( "something-unknown@2.0.1" ) );
     assertTrue( "Remove versioning from known modules", shim.containsKey( "angular" ) );
     assertTrue( "Remove versioning from known modules", shim.containsKey( "angular-ui-router.stateHelper" ) );
     assertTrue( "Remove versioning from known modules", shim.containsKey( "angular-ui-router.stateHelper/statehelper" ) );

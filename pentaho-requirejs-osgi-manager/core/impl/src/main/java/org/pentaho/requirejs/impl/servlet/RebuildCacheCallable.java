@@ -1,5 +1,5 @@
 /*!
- * Copyright 2010 - 2018 Hitachi Vantara.  All rights reserved.
+ * Copyright 2010 - 2019 Hitachi Vantara.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -94,6 +94,7 @@ public class RebuildCacheCallable implements Callable<String> {
             packageInfo.put( "version", requireJsPackage.getVersion() );
             packageInfo.put( "webRootPath", baseUrl + requireJsPackage.getWebRootPath() );
 
+            // Additionally, `environment` is available and defined in RequireJsConfigServlet.
             sb.append( "\n\n(function(requireCfg, packageInfo, getVersionedModuleId) {\n" );
             sb.append( "  try {\n" );
             appendFromResource( sb, preconfig );

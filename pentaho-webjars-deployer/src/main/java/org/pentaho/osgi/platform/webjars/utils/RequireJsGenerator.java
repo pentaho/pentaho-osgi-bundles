@@ -1,5 +1,5 @@
 /*!
- * Copyright 2010 - 2018 Hitachi Vantara.  All rights reserved.
+ * Copyright 2010 - 2019 Hitachi Vantara.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -567,7 +567,7 @@ public class RequireJsGenerator {
         if ( key.startsWith( "./" ) ) {
           versionedKey = moduleInfo.getVersionedName() + key.substring( 1 );
         } else {
-          versionedKey = key + "_" + moduleInfo.getVersion();
+          versionedKey = key + "@" + moduleInfo.getVersion();
 
           Map<String, Object> module = new HashMap<>();
           module.put( moduleInfo.getVersion(), moduleDetails );
@@ -702,8 +702,8 @@ public class RequireJsGenerator {
       this.isAmdPackage = true;
       this.exports = null;
 
-      this.versionedModuleId = this.name + "_" + this.version;
-      this.versionedPath = this.name + "/" + this.version;
+      this.versionedModuleId = this.name + "@" + this.version;
+      this.versionedPath = this.name + "@" + this.version;
 
       this.modules = new HashMap<>();
     }
@@ -722,8 +722,8 @@ public class RequireJsGenerator {
 
     public void setVersion( String version ) {
       this.version = version;
-      this.versionedModuleId = this.name + "_" + this.version;
-      this.versionedPath = this.name + "/" + this.version;
+      this.versionedModuleId = this.name + "@" + this.version;
+      this.versionedPath = this.name + "@" + this.version;
     }
 
     public String getPath() {
