@@ -1,5 +1,5 @@
 /*!
- * Copyright 2010 - 2018 Hitachi Vantara.  All rights reserved.
+ * Copyright 2010 - 2019 Hitachi Vantara.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -126,7 +126,8 @@ public class RequireJsConfigManager {
         List<IRequireJsPackageConfiguration> requireJsPackageConfigurations = this.packageConfigurationsTracker.getPackages();
 
         for ( IRequireJsPackageConfiguration requireJsPackage : requireJsPackageConfigurations ) {
-          if ( referer.contains( baseUrl + requireJsPackage.getWebRootPath() ) ) {
+          String webRootPath = requireJsPackage.getWebRootPath();
+          if ( webRootPath != null && !webRootPath.isEmpty() && referer.contains( baseUrl + webRootPath ) ) {
             Map<String, Object> contextConfig = new HashMap<>();
             Map<String, Map<String, String>> topMap = new HashMap<>();
             Map<String, String> map = new HashMap<>();
