@@ -16,7 +16,6 @@
  */
 package org.pentaho.requirejs.impl;
 
-import org.apache.commons.lang.StringUtils;
 import org.json.simple.JSONObject;
 import org.pentaho.requirejs.IRequireJsPackageConfiguration;
 import org.pentaho.requirejs.IRequireJsPackageConfigurationPlugin;
@@ -128,7 +127,7 @@ public class RequireJsConfigManager {
 
         for ( IRequireJsPackageConfiguration requireJsPackage : requireJsPackageConfigurations ) {
           String webRootPath = requireJsPackage.getWebRootPath();
-          if ( !StringUtils.isEmpty( webRootPath ) && referer.contains( baseUrl + webRootPath ) ) {
+          if ( webRootPath != null && !webRootPath.isEmpty() && referer.contains( baseUrl + webRootPath ) ) {
             Map<String, Object> contextConfig = new HashMap<>();
             Map<String, Map<String, String>> topMap = new HashMap<>();
             Map<String, String> map = new HashMap<>();
