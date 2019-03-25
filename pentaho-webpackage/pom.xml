@@ -23,50 +23,12 @@
     <module>assemblies</module>
   </modules>
 
-  <properties>
-    <karaf-maven-plugin.version>3.0.8</karaf-maven-plugin.version>
-    <karaf-maven-plugin.aggregateFeatures>false</karaf-maven-plugin.aggregateFeatures>
-  </properties>
-
-  <profiles>
-    <profile>
-      <!-- This profile generates a feature file to deploy in karaf. -->
-      <id>feature-generation</id>
-      <activation>
-        <file>
-          <exists>${basedir}/src/main/feature</exists>
-        </file>
-      </activation>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.apache.karaf.tooling</groupId>
-            <artifactId>karaf-maven-plugin</artifactId>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-  </profiles>
-
     <dependencyManagement>
       <dependencies>
         <dependency>
           <groupId>org.pentaho</groupId>
           <artifactId>requirejs-manager-api</artifactId>
           <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
-          <groupId>org.slf4j</groupId>
-          <artifactId>slf4j-api</artifactId>
-          <version>${slf4j-api.version}</version>
-          <scope>provided</scope>
-          <exclusions>
-            <exclusion>
-              <groupId>*</groupId>
-              <artifactId>*</artifactId>
-            </exclusion>
-          </exclusions>
         </dependency>
 
         <dependency>
@@ -109,21 +71,4 @@
       </dependencies>
     </dependencyManagement>
 
-  <build>
-    <pluginManagement>
-      <plugins>
-        <plugin>
-          <groupId>org.apache.karaf.tooling</groupId>
-          <artifactId>karaf-maven-plugin</artifactId>
-          <version>${karaf-maven-plugin.version}</version>
-
-          <extensions>true</extensions>
-
-          <configuration>
-            <aggregateFeatures>${karaf-maven-plugin.aggregateFeatures}</aggregateFeatures>
-          </configuration>
-        </plugin>
-      </plugins>
-    </pluginManagement>
-  </build>
 </project>
