@@ -50,7 +50,7 @@ public class PluginXmlStaticPathsHandler extends PluginXmlFileHandler {
   public static final String ALIAS = "alias";
   public static final String PATH = "path";
 
-  public static final String RESOURCE_MAPPING = "org.ops4j.pax.web.extender.whiteboard.ResourceMapping";
+  public static final String RESOURCE_MAPPING = "org.ops4j.pax.web.service.whiteboard.ResourceMapping";
   public static final String DEFAULT_RESOURCE_MAPPING =
     "org.ops4j.pax.web.extender.whiteboard.runtime.DefaultResourceMapping";
 
@@ -109,11 +109,11 @@ public class PluginXmlStaticPathsHandler extends PluginXmlFileHandler {
     }
     if ( foundResources ) {
       Map<String, String> imports = pluginMetadata.getManifestUpdater().getImports();
-      imports.put( "org.ops4j.pax.web.extender.whiteboard", null );
+      imports.put( "org.ops4j.pax.web.service.whiteboard", null );
       imports.put( "org.ops4j.pax.web.extender.whiteboard.runtime", null );
       imports.put( "org.osgi.service.blueprint", "[1.0.0,2.0.0)" );
       pluginMetadata.getManifestUpdater().getExportServices()
-        .add( "org.ops4j.pax.web.extender.whiteboard.ResourceMapping" );
+        .add( "org.ops4j.pax.web.service.whiteboard.ResourceMapping" );
 
       FileWriter fileWriter = null;
       try {

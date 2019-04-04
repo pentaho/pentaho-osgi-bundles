@@ -25,6 +25,7 @@ import org.pentaho.platform.api.engine.IPlatformWebResource;
 
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
+import javax.servlet.WriteListener;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.ByteArrayOutputStream;
@@ -72,7 +73,17 @@ public class WebContextServletTest {
     this.mockResponseOutputStream = new java.io.ByteArrayOutputStream();
     when( mockResponse.getOutputStream() ).thenReturn( new ServletOutputStream() {
       @Override
-      public void write( int b ) throws IOException {
+      public boolean isReady() {
+        return true;
+      }
+
+      @Override
+      public void setWriteListener(WriteListener writeListener) {
+        // noop
+      }
+
+      @Override
+      public void write( int b ) {
         WebContextServletTest.this.mockResponseOutputStream.write( b );
       }
     } );

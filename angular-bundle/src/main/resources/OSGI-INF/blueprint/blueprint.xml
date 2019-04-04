@@ -16,5 +16,5 @@
         <property name="alias" value="/angular-bundle" />
         <property name="path" value="/js" />
     </bean>
-    <service id="resources" ref="resourceMapping" interface="org.ops4j.pax.web.extender.whiteboard.ResourceMapping" />
+    <service id="resources" ref="resourceMapping" interface="org.ops4j.pax.web.service.whiteboard.ResourceMapping" />
 </blueprint>

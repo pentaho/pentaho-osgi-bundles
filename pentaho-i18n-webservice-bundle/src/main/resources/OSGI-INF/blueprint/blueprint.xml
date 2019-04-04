@@ -34,7 +34,7 @@
     <reference id="delegateRef" interface="org.pentaho.osgi.i18n.LocalizationService"/>
 
     <service id="PentahoI18n"
-             interface="org.ops4j.pax.web.extender.whiteboard.ResourceMapping">
+             interface="org.ops4j.pax.web.service.whiteboard.ResourceMapping">
         <bean class="org.ops4j.pax.web.extender.whiteboard.runtime.DefaultResourceMapping">
             <property name="alias" value="/@pentaho/i18n-osgi@${project.version}"/>
             <property name="path" value="/web-pentaho-i18n-webservice"/>

@@ -75,7 +75,7 @@ public class ManifestUpdaterImpl implements ManifestUpdater {
     for ( Map.Entry<Object, Object> entry : entries.entrySet() ) {
       mainAttributes.putValue( entry.getKey().toString(), entry.getValue().toString() );
     }
-    mainAttributes.putValue( "Manifest-Version", "2" );
+    mainAttributes.putValue( "Manifest-Version", "1.0" );
     mainAttributes.putValue( "Bundle-ManifestVersion", "2" );
     mainAttributes.putValue( "Bundle-SymbolicName", bundleName != null ? bundleName : symbolicName );
     mainAttributes.putValue( "Bundle-Name", name );

@@ -25,5 +25,5 @@
   </bean>
 
   <service id="resourcesDist" ref="resourceMappingDist"
-           interface="org.ops4j.pax.web.extender.whiteboard.ResourceMapping"/>
+           interface="org.ops4j.pax.web.service.whiteboard.ResourceMapping"/>
 </blueprint>

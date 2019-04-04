@@ -27,7 +27,7 @@
   <url>http://www.pentaho.com</url>
 
   <properties>
-    <camel.guava.eventbus.version>2.17.7</camel.guava.eventbus.version>
+    <camel.guava.eventbus.version>2.18.0</camel.guava.eventbus.version>
   </properties>
 
   <dependencies>
