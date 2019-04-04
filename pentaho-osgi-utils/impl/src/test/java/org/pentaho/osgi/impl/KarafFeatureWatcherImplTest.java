@@ -285,16 +285,16 @@ public class KarafFeatureWatcherImplTest {
     when( bundleInfo.getState() ).thenReturn( bundleState );
     when( bundleService.getInfo( bundle ) ).thenReturn( bundleInfo );
 
-    List<BundleRequirement> unsatisfiedRquirements = null;
+    List<BundleRequirement> unsatisfiedRequirements = null;
     if ( missingDependencies != null ) {
-      unsatisfiedRquirements = new ArrayList<BundleRequirement>();
+      unsatisfiedRequirements = new ArrayList<>();
       for ( String missingDependency : missingDependencies ) {
         BundleRequirement requirement = mock( BundleRequirement.class );
         when( requirement.toString() ).thenReturn( missingDependency );
-        unsatisfiedRquirements.add( requirement );
+        unsatisfiedRequirements.add( requirement );
       }
     }
-    when( bundleService.getUnsatisfiedRquirements( bundle, null ) ).thenReturn( unsatisfiedRquirements );
+    when( bundleService.getUnsatisfiedRequirements( bundle, null ) ).thenReturn( unsatisfiedRequirements );
 
     BundleInfo featureBundleInfo = mock( BundleInfo.class );
     when( featureBundleInfo.getLocation() ).thenReturn( bundleName );

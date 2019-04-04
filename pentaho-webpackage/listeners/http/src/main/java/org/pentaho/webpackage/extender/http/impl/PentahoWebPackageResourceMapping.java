@@ -16,7 +16,7 @@
  */
 package org.pentaho.webpackage.extender.http.impl;
 
-import org.ops4j.pax.web.extender.whiteboard.ResourceMapping;
+import org.ops4j.pax.web.service.whiteboard.ResourceMapping;
 import org.pentaho.webpackage.core.IPentahoWebPackage;
 
 /**

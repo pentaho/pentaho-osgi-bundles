@@ -18,7 +18,7 @@ package org.pentaho.webpackage.extender.http.impl.osgi;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.ops4j.pax.web.extender.whiteboard.ResourceMapping;
+import org.ops4j.pax.web.service.whiteboard.ResourceMapping;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;

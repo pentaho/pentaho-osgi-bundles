@@ -44,7 +44,7 @@
     <property name="path" value="/web"/>
   </bean>
   <!-- Register Wen Resources -->
-  <service id="resources" ref="resourceMapping" interface="org.ops4j.pax.web.extender.whiteboard.ResourceMapping"/>
+  <service id="resources" ref="resourceMapping" interface="org.ops4j.pax.web.service.whiteboard.ResourceMapping"/>
 
 
 

@@ -277,7 +277,7 @@ public class KarafFeatureWatcherImpl implements IKarafFeatureWatcher {
     }
 
     // Unsatisfied Requirements for this bundle, includes optional requirements
-    List<BundleRequirement> missingDependencies = bundleService.getUnsatisfiedRquirements( bundle, null );
+    List<BundleRequirement> missingDependencies = bundleService.getUnsatisfiedRequirements( bundle, null );
     if ( missingDependencies != null && missingDependencies.isEmpty() == false ) {
       bundleReport += System.lineSeparator() + "\t Unsatisfied Requirements:";
       for ( BundleRequirement missDependency : missingDependencies ) {
