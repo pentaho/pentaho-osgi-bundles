@@ -15,24 +15,23 @@
   <url>http://www.pentaho.com</url>
   <properties>
     <exam.version>4.1.0</exam.version>
+    <springframework.version>3.2.14.RELEASE</springframework.version>
   </properties>
   <dependencies>
     <dependency>
       <groupId>org.springframework</groupId>
-      <artifactId>spring-beans</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework</groupId>
       <artifactId>spring-core</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-context</artifactId>
+      <version>${springframework.version}</version>
     </dependency>
     <dependency>
       <groupId>org.springframework.osgi</groupId>
       <artifactId>spring-osgi-extender</artifactId>
-      <version>1.2.1</version>
+      <version>${spring-osgi.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.osgi</groupId>
+      <artifactId>spring-osgi-core</artifactId>
+      <version>${spring-osgi.version}</version>
     </dependency>
     <dependency>
       <groupId>org.osgi</groupId>
