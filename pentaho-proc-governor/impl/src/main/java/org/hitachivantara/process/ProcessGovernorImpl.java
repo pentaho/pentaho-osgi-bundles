@@ -93,7 +93,10 @@ public class ProcessGovernorImpl implements ProcessGovernor {
 
         exitValue = Optional.of( getExitValue( proc ) );
 
-      } catch ( IOException | InterruptedException e ) {
+      } catch ( IOException e ) {
+        logger.error( e.getMessage(), e );
+        futureProc.completeExceptionally( e );
+      } catch ( InterruptedException e ) {
         Thread.currentThread().interrupt();
         logger.error( e.getMessage(), e );
         futureProc.completeExceptionally( e );
