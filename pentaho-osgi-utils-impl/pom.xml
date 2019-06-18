@@ -5,11 +5,11 @@
   <parent>
     <groupId>pentaho</groupId>
     <artifactId>pentaho-osgi-bundles</artifactId>
-    <version>7.1-SNAPSHOT</version>
+    <version>7.1.0.25-205</version>
   </parent>
   <groupId>pentaho</groupId>
   <artifactId>pentaho-osgi-utils-impl</artifactId>
-  <version>7.1-SNAPSHOT</version>
+  <version>7.1.0.25-205</version>
   <packaging>bundle</packaging>
   <properties>
     <dependency.org.apache.felix.org.apache.felix.configadmin.revision>1.6.0</dependency.org.apache.felix.org.apache.felix.configadmin.revision>
