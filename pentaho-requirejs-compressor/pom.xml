@@ -27,12 +27,11 @@
     <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
-      <version>${commons-io.version>}</version>
+      <version>${commons-io.version}</version>
     </dependency>
     <dependency>
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-classic</artifactId>
-      <version>1.0.13</version>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
