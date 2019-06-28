@@ -12,13 +12,14 @@
  * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  * See the GNU Lesser General Public License for more details.
  *
- * Copyright 2014 Pentaho Corporation. All rights reserved.
+ * Copyright 2014 - 2019 Hitachi Vantara. All rights reserved.
  */
 
 package org.pentaho.platform.osgi.requirejs.api;
 
 
 import org.osgi.framework.Version;
+import org.pentaho.platform.osgi.requirejs.bindings.RequireJsConfig;
 
 /**
  * Created by nbaker on 10/1/14.
