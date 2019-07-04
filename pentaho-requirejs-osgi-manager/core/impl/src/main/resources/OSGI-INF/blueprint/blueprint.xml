@@ -43,9 +43,9 @@
   <!-- This belongs in a pentaho-webjars-deployer's bundle -->
   <bean id="nomAmdPackagePlugin" class="org.pentaho.requirejs.impl.plugins.NomAmdPackageShim" />
 
-  <service interface="javax.servlet.http.HttpServlet">
+  <service interface="javax.servlet.Servlet">
     <service-properties>
-      <entry key="alias" value="/requirejs-manager/js/require-init.js"/>
+      <entry key="osgi.http.whiteboard.servlet.pattern" value="/requirejs-manager/js/require-init.js"/>
     </service-properties>
 
     <bean class="org.pentaho.requirejs.impl.servlet.RequireJsConfigServlet">

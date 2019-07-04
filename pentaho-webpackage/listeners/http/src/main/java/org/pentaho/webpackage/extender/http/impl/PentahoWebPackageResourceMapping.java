@@ -16,13 +16,9 @@
  */
 package org.pentaho.webpackage.extender.http.impl;
 
-import org.ops4j.pax.web.service.whiteboard.ResourceMapping;
 import org.pentaho.webpackage.core.IPentahoWebPackage;
 
-/**
- * A webpackage targeted implementation of {@link ResourceMapping}.
- */
-public class PentahoWebPackageResourceMapping implements ResourceMapping {
+public class PentahoWebPackageResourceMapping {
   private final IPentahoWebPackage pentahoWebPackage;
 
   public PentahoWebPackageResourceMapping( IPentahoWebPackage pentahoWebPackage ) {
@@ -31,17 +27,10 @@ public class PentahoWebPackageResourceMapping implements ResourceMapping {
     this.pentahoWebPackage = pentahoWebPackage;
   }
 
-  @Override
-  public String getHttpContextId() {
-    return null;
-  }
-
-  @Override
   public String getAlias() {
     return this.pentahoWebPackage.getWebRootPath();
   }
 
-  @Override
   public String getPath() {
     String resourceRootPath = this.pentahoWebPackage.getResourceRootPath();
     while ( resourceRootPath.length() > 1 && resourceRootPath.endsWith( "/" ) ) {

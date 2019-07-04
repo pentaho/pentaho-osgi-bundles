@@ -43,19 +43,6 @@ public class PentahoWebPackageResourceMappingTest {
   }
 
   @Test
-  public void testGetHttpContextIdShouldReturnNull() {
-    // arrange
-    this.pentahoWebPackageResourceMapping =
-        new PentahoWebPackageResourceMapping( null /*not relevant */ );
-
-    // act
-    String actualHttpContext = this.pentahoWebPackageResourceMapping.getHttpContextId();
-
-    // assert
-    assertNull( "Should be null", actualHttpContext );
-  }
-
-  @Test
   public void testGetAliasShouldReturnValidWebRootPath() {
     // arrange
     this.pentahoWebPackageResourceMapping =

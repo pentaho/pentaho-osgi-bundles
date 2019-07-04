@@ -569,10 +569,6 @@ public class WebjarsURLConnection extends URLConnection {
       manifest.getMainAttributes().putValue( Constants.BUNDLE_MANIFESTVERSION, "2" );
       manifest.getMainAttributes()
           .put( new Attributes.Name( Constants.BUNDLE_SYMBOLICNAME ), "pentaho-webjars-" + artifactInfo.getArtifactId() );
-      manifest.getMainAttributes()
-          .put( new Attributes.Name( Constants.IMPORT_PACKAGE ),
-              "org.osgi.service.http,org.ops4j.pax.web.extender.whiteboard.runtime,"
-                  + "org.ops4j.pax.web.service.whiteboard" );
 
       manifest.getMainAttributes()
           .put( new Attributes.Name( Constants.BUNDLE_VERSION ), artifactInfo.getOsgiCompatibleVersion() );

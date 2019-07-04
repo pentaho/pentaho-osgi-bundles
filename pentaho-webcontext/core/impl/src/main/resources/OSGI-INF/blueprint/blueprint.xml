@@ -31,8 +31,8 @@
 
   <service interface="javax.servlet.Servlet" id="pentahoWebContext" ref="WebContextServletRef">
     <service-properties>
-      <entry key="alias" value="/*"/>
-      <entry key="servlet-name" value="pentahoWebContext"/>
+      <entry key="osgi.http.whiteboard.servlet.pattern" value="/*"/>
+      <entry key="osgi.http.whiteboard.servlet.name" value="pentahoWebContext"/>
     </service-properties>
   </service>
 
