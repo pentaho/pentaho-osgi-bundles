@@ -18,7 +18,7 @@ package org.pentaho.webpackage.extender.http.impl.osgi;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.ops4j.pax.web.service.whiteboard.ResourceMapping;
+import org.mockito.ArgumentCaptor;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
@@ -26,9 +26,9 @@ import org.osgi.framework.ServiceRegistration;
 import org.pentaho.webpackage.core.IPentahoWebPackage;
 
 import java.net.URL;
+import java.util.Dictionary;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.anyString;
@@ -43,10 +43,17 @@ public class PentahoWebPackageServiceTrackerTest {
   private BundleContext mockBundleContext;
   private ServiceReference mockServiceReference;
   private ServiceRegistration mockServiceRegistration;
+
   private IPentahoWebPackage mockPentahoWebPackage;
+  private String mockWebRootPath;
+  private String mockResourceRootPath;
+
   private URL resourceRootUrl;
 
   private PentahoWebPackageServiceTracker pentahoWebPackageServiceTracker;
+
+  private static final String RESOURCE_PATTERN_KEY = "osgi.http.whiteboard.resource.pattern";
+  private static final String RESOURCE_PREFIX_KEY = "osgi.http.whiteboard.resource.prefix";
 
   @Before
   public void setUp() {
@@ -59,9 +66,14 @@ public class PentahoWebPackageServiceTrackerTest {
     doReturn( this.mockBundleContext ).when( this.mockBundle ).getBundleContext();
 
     this.mockServiceRegistration = mock( ServiceRegistration.class );
-    doReturn( this.mockServiceRegistration ).when( this.mockBundleContext ).registerService( anyString(), anyObject(), eq( null ) );
+    doReturn( this.mockServiceRegistration ).when( this.mockBundleContext ).registerService( anyString(), anyObject(), any( Dictionary.class ) );
 
     this.mockPentahoWebPackage = mock( IPentahoWebPackage.class );
+    this.mockWebRootPath = "/web/path";
+    this.mockResourceRootPath = "/resource/path";
+    doReturn( this.mockWebRootPath ).when( this.mockPentahoWebPackage ).getWebRootPath();
+    doReturn( this.mockResourceRootPath ).when( this.mockPentahoWebPackage ).getResourceRootPath();
+
     doReturn( this.mockPentahoWebPackage ).when( this.mockBundleContext ).getService( any() );
 
     this.resourceRootUrl = this.getClass().getResource( "/" );
@@ -79,7 +91,14 @@ public class PentahoWebPackageServiceTrackerTest {
     // assert
     assertNotNull( serviceRegistration );
 
-    verify( this.mockBundleContext, times( 1 ) ).registerService( eq( ResourceMapping.class.getName() ), any( ResourceMapping.class ), eq( null ) );
+    ArgumentCaptor<Dictionary> servicePropertiesCaptor = ArgumentCaptor.forClass(Dictionary.class);
+
+    verify( this.mockBundleContext, times( 1 ) ).registerService( eq( String.class.getName() ), eq( "" ), servicePropertiesCaptor.capture() );
+
+    Dictionary serviceProperties = servicePropertiesCaptor.getValue();
+
+    assertEquals( this.mockWebRootPath + "/*", serviceProperties.get( RESOURCE_PATTERN_KEY ) );
+    assertEquals( this.mockResourceRootPath, serviceProperties.get( RESOURCE_PREFIX_KEY ) );
   }
 
   @Test
@@ -93,7 +112,7 @@ public class PentahoWebPackageServiceTrackerTest {
     // assert
     assertNull( serviceRegistration );
 
-    verify( mockBundleContext, times( 0 ) ).registerService( anyString(), anyObject(), eq( null ) );
+    verify( mockBundleContext, times( 0 ) ).registerService( anyString(), anyObject(), any() );
   }
 
   @Test
