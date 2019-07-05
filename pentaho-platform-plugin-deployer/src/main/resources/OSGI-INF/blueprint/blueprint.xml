@@ -28,9 +28,9 @@
 
   <service id="platformPluginURLHandlerMvn" interface="org.osgi.service.url.URLStreamHandlerService">
     <service-properties>
-      <entry key="url.handler.protocol" value="pentaho-platform-plugin-mvn" />
+      <entry key="url.handler.protocol" value="pentaho-platform-plugin" />
     </service-properties>
-    <bean class="org.pentaho.osgi.platform.plugin.deployer.PlatformPluginMavenURLHandler">
+    <bean class="org.pentaho.osgi.platform.plugin.deployer.PlatformPluginURLHandler">
       <property name="pluginFileHandlers" ref="pluginFileHandlers"/>
       <property name="bundleStateManager" ref="bundleStateManager"/>
     </bean>
