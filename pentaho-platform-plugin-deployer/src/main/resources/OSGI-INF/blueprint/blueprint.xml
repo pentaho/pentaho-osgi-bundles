@@ -21,7 +21,7 @@
     <service-properties>
       <entry key="url.handler.protocol" value="pentaho-platform-plugin-file" />
     </service-properties>
-    <bean class="org.pentaho.osgi.platform.plugin.deployer.PlatformPluginURLHandler">
+    <bean class="org.pentaho.osgi.platform.plugin.deployer.PlatformPluginFileURLHandler">
       <property name="pluginFileHandlers" ref="pluginFileHandlers"/>
     </bean>
   </service>

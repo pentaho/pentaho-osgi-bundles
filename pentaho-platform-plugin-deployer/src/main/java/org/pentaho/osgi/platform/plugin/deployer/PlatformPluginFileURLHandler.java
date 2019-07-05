@@ -1,5 +1,5 @@
 /*!
- * Copyright 2010 - 2018 Hitachi Vantara.  All rights reserved.
+ * Copyright 2010 - 2019 Hitachi Vantara.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,7 @@ import java.util.List;
 /**
  * Created by bryan on 8/26/14.
  */
-public class PlatformPluginURLHandler extends AbstractURLStreamHandlerService {
+public class PlatformPluginFileURLHandler extends AbstractURLStreamHandlerService {
   private List<PluginFileHandler> pluginFileHandlers;
   private BundleStateManager bundleStateManager;
 
