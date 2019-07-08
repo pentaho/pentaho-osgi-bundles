@@ -1,5 +1,5 @@
 /*!
- * Copyright 2010 - 2018 Hitachi Vantara.  All rights reserved.
+ * Copyright 2010 - 2019 Hitachi Vantara.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,10 +26,10 @@ import static org.junit.Assert.assertTrue;
 /**
  * Created by bryan on 8/26/14.
  */
-public class PlatformPluginURLHandlerTest {
+public class PlatformPluginFileURLHandlerTest {
   @Test
   public void testUrlHandler() throws IOException {
-    PlatformPluginURLHandler platformPluginURLHandler = new PlatformPluginURLHandler();
+    PlatformPluginFileURLHandler platformPluginURLHandler = new PlatformPluginFileURLHandler();
     assertTrue( platformPluginURLHandler.openConnection( new URL( "http://www.pentaho.com" ) ) instanceof  PlatformPluginBundlingURLConnection );
   }
 }

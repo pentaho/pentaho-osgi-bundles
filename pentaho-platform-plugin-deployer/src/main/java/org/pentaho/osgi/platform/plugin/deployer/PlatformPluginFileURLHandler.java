@@ -1,5 +1,5 @@
 /*!
- * Copyright 2010 - 2018 Hitachi Vantara.  All rights reserved.
+ * Copyright 2010 - 2019 Hitachi Vantara.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,21 +26,23 @@ import java.net.URLConnection;
 import java.util.List;
 
 /**
- * Created by bryan on 8/29/14.
+ * Created by bryan on 8/26/14.
  */
-public class PlatformPluginMavenURLHandler extends AbstractURLStreamHandlerService {
+public class PlatformPluginFileURLHandler extends AbstractURLStreamHandlerService {
   private List<PluginFileHandler> pluginFileHandlers;
   private BundleStateManager bundleStateManager;
 
   public void setPluginFileHandlers( List<PluginFileHandler> pluginFileHandlers ) {
     this.pluginFileHandlers = pluginFileHandlers;
   }
+
   public void setBundleStateManager( BundleStateManager bundleStateManager ) {
     this.bundleStateManager = bundleStateManager;
   }
 
   @Override public URLConnection openConnection( URL u ) throws IOException {
-    URL mvnUrl = new URL( "mvn", null, u.getPath() );
-    return new PlatformPluginBundlingURLConnection( mvnUrl, pluginFileHandlers, bundleStateManager );
+    URL fileUrl = new URL( "file", null, u.getPath() );
+    return new PlatformPluginBundlingURLConnection( fileUrl, pluginFileHandlers );
   }
 }
+
