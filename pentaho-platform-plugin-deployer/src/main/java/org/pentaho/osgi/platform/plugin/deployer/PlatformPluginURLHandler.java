@@ -40,6 +40,6 @@ public class PlatformPluginURLHandler extends AbstractURLStreamHandlerService {
   }
 
   @Override public URLConnection openConnection( URL url ) throws IOException {
-    return new PlatformPluginBundlingURLConnection( url, pluginFileHandlers, bundleStateManager );
+    return new PlatformPluginBundlingURLConnection( new URL( url.getPath() ), pluginFileHandlers, bundleStateManager );
   }
 }
