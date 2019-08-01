@@ -12,7 +12,7 @@
  * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
  * See the GNU Lesser General Public License for more details.
  *
- * Copyright 2014 - 2018 Hitachi Vantara. All rights reserved.
+ * Copyright 2014 - 2019 Hitachi Vantara. All rights reserved.
  */
 
 package org.pentaho.osgi.platform.webjars.utils;
@@ -57,12 +57,6 @@ public class RequireJsGeneratorTest {
 
   private static final String BOWER_NO_VERSION_JSON = "bower_no_version.json";
   private static final String BOWER_NO_VERSION_REQUIRE_JSON = "bower_no_version.require.json";
-
-  private static JSONParser parser;
-
-  static {
-    parser = new JSONParser();
-  }
 
   @Before
   public void before() throws MalformedURLException {
@@ -215,8 +209,7 @@ public class RequireJsGeneratorTest {
         .getConvertedConfig( artifactInfo, true, "test_export", null );
 
     assertEquals(
-        getExpectedOutput( BOWER_EXPORTS_REQUIRE_JSON ),
-        parser.parse( infoConvertedFile.exportRequireJs() )
+        getExpectedOutput( BOWER_EXPORTS_REQUIRE_JSON ), (new JSONParser()).parse( infoConvertedFile.exportRequireJs() )
     );
   }
 
@@ -323,7 +316,7 @@ public class RequireJsGeneratorTest {
 
   // region private methods
   private Object getExpectedOutput( String resource ) throws IOException, ParseException {
-    return parser.parse( new InputStreamReader( getResourceAsStream( resource ) ) );
+    return (new JSONParser()).parse( new InputStreamReader( getResourceAsStream( resource ) ) );
   }
 
   private InputStream getResourceAsStream( String resource ) {

@@ -65,8 +65,6 @@ public class RequireJsGenerator {
   private Map<String, Object> requireConfig;
   private HashMap<String, String> dependencies = new HashMap<>();
 
-  private static final JSONParser parser = new JSONParser();
-
   private static final ArrayList<String> JS_KNOWN_GLOBALS;
 
   static {
@@ -240,7 +238,7 @@ public class RequireJsGenerator {
     inputStreamReader = new InputStreamReader( inputStream );
     bufferedReader = new BufferedReader( inputStreamReader );
 
-    return (Map<String, Object>) parser.parse( bufferedReader );
+    return (Map<String, Object>) (new JSONParser()).parse( bufferedReader );
   }
 
   private RequireJsGenerator( Document pom ) throws XPathExpressionException, ParseException {
@@ -312,7 +310,7 @@ public class RequireJsGenerator {
 
     String pomConfig = (String) xPath.evaluate( "/project/properties/requirejs", document, XPathConstants.STRING );
 
-    requireConfig = (Map<String, Object>) parser.parse( pomConfig );
+    requireConfig = (Map<String, Object>) (new JSONParser()).parse( pomConfig );
 
     NodeList pomDependencies = (NodeList) xPath
         .evaluate( "/project/dependencies/dependency[contains(groupId, 'org.webjars')]", document,
@@ -381,7 +379,7 @@ public class RequireJsGenerator {
 
     engine.eval( script );
 
-    requireConfig = (Map<String, Object>) parser.parse( ( (Invocable) engine ).invokeFunction( "processConfig", "" ).toString() );
+    requireConfig = (Map<String, Object>) (new JSONParser()).parse( ( (Invocable) engine ).invokeFunction( "processConfig", "" ).toString() );
   }
 
   // bower.json and package.json follow very similar format, so it can be parsed by the same method

@@ -1,5 +1,5 @@
 /*!
- * Copyright 2010 - 2018 Hitachi Vantara.  All rights reserved.
+ * Copyright 2010 - 2019 Hitachi Vantara.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,6 @@
  */
 package org.pentaho.osgi.i18n.impl;
 
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 import org.osgi.framework.Bundle;
 import org.pentaho.osgi.i18n.LocalizationService;
 import org.pentaho.osgi.i18n.resource.OSGIResourceBundle;
@@ -51,7 +49,6 @@ public class LocalizationManager implements LocalizationService {
   private static Logger log = LoggerFactory.getLogger( LocalizationManager.class );
   private final Map<Long, Map<String, OSGIResourceBundleFactory>> configMap =
     new HashMap<Long, Map<String, OSGIResourceBundleFactory>>();
-  private final JSONParser parser = new JSONParser();
   private ExecutorService executorService;
   private volatile Future<Map<String, OSGIResourceBundle>> cache;
 
@@ -69,7 +66,7 @@ public class LocalizationManager implements LocalizationService {
     this.executorService = executorService;
   }
 
-  public void bundleChanged( Bundle bundle ) throws IOException, ParseException {
+  public void bundleChanged( Bundle bundle ) throws IOException {
     boolean rebuildCache;
     synchronized ( configMap ) {
       rebuildCache = configMap.remove( bundle.getBundleId() ) != null;

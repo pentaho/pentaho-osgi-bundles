@@ -1,5 +1,5 @@
 /*!
- * Copyright 2010 - 2018 Hitachi Vantara.  All rights reserved.
+ * Copyright 2010 - 2019 Hitachi Vantara.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -72,8 +72,6 @@ public class WebPackageURLConnection extends java.net.URLConnection {
     thread.setName( "WebjarsURLConnection pool" );
     return thread;
   } );
-
-  private static final JSONParser parser = new JSONParser();
 
   private final Logger logger = LoggerFactory.getLogger( getClass() );
 
@@ -316,7 +314,7 @@ public class WebPackageURLConnection extends java.net.URLConnection {
         InputStreamReader inputStreamReader = new InputStreamReader( inputStream );
         BufferedReader bufferedReader = new BufferedReader( inputStreamReader );
 
-        return (Map<String, Object>) parser.parse( bufferedReader );
+        return (Map<String, Object>) (new JSONParser()).parse( bufferedReader );
       } catch ( Exception e ) {
         throw new RuntimeException( "Error opening package.json", e );
       }

@@ -29,8 +29,6 @@ import java.util.Map;
 import static org.junit.Assert.*;
 
 public class MetaInfRequireJsonTest {
-  private final JSONParser parser = new JSONParser();
-
   private static final int TEST_FILE_BASE_NUMBER_OF_MODULES = 6;
   private static final int TEST_FILE_BASE_NUMBER_OF_CONFIGS = 2;
   private static final int TEST_FILE_BASE_NUMBER_OF_MAPS = 2;
@@ -41,7 +39,7 @@ public class MetaInfRequireJsonTest {
 
   @Before
   public void setUp() throws Exception {
-    requireMeta = (HashMap<String, Object>) parser.parse( new InputStreamReader( this.getClass().getResourceAsStream( "/require.meta.json" ) ) );
+    requireMeta = (HashMap<String, Object>) (new JSONParser()).parse( new InputStreamReader( this.getClass().getResourceAsStream( "/require.meta.json" ) ) );
   }
 
   @Test
