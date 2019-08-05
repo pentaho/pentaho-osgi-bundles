@@ -1,5 +1,5 @@
 /*!
- * Copyright 2010 - 2018 Hitachi Vantara.  All rights reserved.
+ * Copyright 2010 - 2019 Hitachi Vantara.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -68,8 +68,6 @@ public class RequireJsBundleListener implements BundleListener {
   private Map<Long, ServiceRegistration<?>> serviceRegistrationMap;
   private Map<Long, IPlatformPluginRequireJsConfigurations> requireConfigMap;
 
-  private JSONParser parser;
-
   public void setBundleContext( BundleContext bundleContext ) {
     this.bundleContext = bundleContext;
   }
@@ -79,8 +77,6 @@ public class RequireJsBundleListener implements BundleListener {
   }
 
   public void init() {
-    this.parser = new JSONParser();
-
     this.serviceRegistrationMap = new ConcurrentHashMap<>();
     this.requireConfigMap = new ConcurrentHashMap<>();
 
@@ -263,7 +259,7 @@ public class RequireJsBundleListener implements BundleListener {
       inputStreamReader = new InputStreamReader( urlConnection.getInputStream() );
       bufferedReader = new BufferedReader( inputStreamReader );
 
-      return (Map<String, Object>) this.parser.parse( bufferedReader );
+      return (Map<String, Object>) (new JSONParser()).parse( bufferedReader );
     } finally {
       if ( bufferedReader != null ) {
         bufferedReader.close();

@@ -35,8 +35,6 @@ public final class PentahoWebPackageImpl implements IPentahoWebPackage {
   private final String resourceRootPath;
   private final URL packageJsonUrl;
 
-  private final JSONParser parser = new JSONParser();
-
   public PentahoWebPackageImpl( String resourceRootPath, URL packageJsonUrl ) {
     this.resourceRootPath = resourceRootPath;
     this.packageJsonUrl = packageJsonUrl;
@@ -78,7 +76,7 @@ public final class PentahoWebPackageImpl implements IPentahoWebPackage {
       InputStreamReader inputStreamReader = new InputStreamReader( inputStream );
       BufferedReader bufferedReader = new BufferedReader( inputStreamReader );
 
-      return (Map<String, Object>) parser.parse( bufferedReader );
+      return (Map<String, Object>) (new JSONParser()).parse( bufferedReader );
     } catch ( IOException | ParseException ignored ) {
     }
 

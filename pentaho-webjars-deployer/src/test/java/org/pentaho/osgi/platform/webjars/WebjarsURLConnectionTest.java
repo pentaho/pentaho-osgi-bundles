@@ -45,12 +45,6 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 public class WebjarsURLConnectionTest {
-  private static JSONParser parser;
-
-  static {
-    parser = new JSONParser();
-  }
-
   @Before
   public void before() throws MalformedURLException {
     File input = new File( "src/test/resources/mockRepo" );
@@ -261,7 +255,7 @@ public class WebjarsURLConnectionTest {
 
     String jsonFile = IOUtils.toString( zipInputStream.getInputStream( entry ), "UTF-8" );
 
-    JSONObject json = (JSONObject) parser.parse( jsonFile );
+    JSONObject json = (JSONObject) (new JSONParser()).parse( jsonFile );
 
     assertTrue( "dependency metadata exists", json.containsKey( "requirejs-osgi-meta" ) );
     final JSONObject meta = (JSONObject) json.get( "requirejs-osgi-meta" );
