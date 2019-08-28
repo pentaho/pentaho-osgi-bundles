@@ -157,6 +157,7 @@
         <module>pentaho-webcontext</module>
         <module>pentaho-pdi-platform</module>
         <module>pentaho-camel-guava-eventbus</module>
+        <module>pax-logging-api-wrap</module>
       </modules>
     </profile>
     <profile>
