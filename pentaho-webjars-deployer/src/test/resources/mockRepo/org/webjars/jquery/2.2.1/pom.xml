@@ -11,7 +11,7 @@
     <packaging>jar</packaging>
     <groupId>org.webjars</groupId>
     <artifactId>jquery</artifactId>
-    <version>2.2.1</version>
+    <version>7.1.0.28-223</version>
     <name>jquery</name>
     <description>WebJar for jQuery</description>
     <url>http://webjars.org</url>
