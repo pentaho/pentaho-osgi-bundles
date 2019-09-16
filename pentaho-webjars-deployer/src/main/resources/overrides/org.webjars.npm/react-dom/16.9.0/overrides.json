@@ -1,0 +1,9 @@
+{
+  "packages": [
+    {
+      "name": "react-dom",
+      "location": "/umd",
+      "main": "react-dom.production.min"
+    }
+  ]
+}
