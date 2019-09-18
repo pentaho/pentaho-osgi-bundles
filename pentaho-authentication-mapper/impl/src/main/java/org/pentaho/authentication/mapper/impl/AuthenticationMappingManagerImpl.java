@@ -27,8 +27,6 @@ import java.util.TreeSet;
 import org.pentaho.authentication.mapper.api.AuthenticationMappingManager;
 import org.pentaho.authentication.mapper.api.AuthenticationMappingService;
 import org.pentaho.authentication.mapper.api.MappingException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Multimaps;
 import com.google.common.collect.SortedSetMultimap;
@@ -38,12 +36,15 @@ import com.google.common.collect.SortedSetMultimap;
  */
 public class AuthenticationMappingManagerImpl implements AuthenticationMappingManager {
 
-  private Logger LOGGER = LoggerFactory.getLogger( AuthenticationMappingManagerImpl.class );
   private final SortedSetMultimap<TypePair, RankedAuthService> serviceMap = Multimaps.synchronizedSortedSetMultimap(
       Multimaps.newSortedSetMultimap( new HashMap<>(), TreeSet::new )
   );
 
   public AuthenticationMappingManagerImpl() throws IOException {
+  }
+
+  public AuthenticationMappingManagerImpl( AuthenticationMappingService service ) throws IOException {
+    serviceMap.put( new TypePair( service ), new RankedAuthService( 50, service ) );
   }
 
   @Override
