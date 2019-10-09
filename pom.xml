@@ -156,6 +156,7 @@
         <module>pentaho-webcontext</module>
         <module>pentaho-pdi-platform</module>
         <module>pax-logging-api-wrap</module>
+        <module>spring-security-karaf-login-module</module>
       </modules>
     </profile>
     <profile>
