@@ -1,0 +1,99 @@
+<?xml version="1.0"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>pentaho</groupId>
+    <artifactId>pentaho-osgi-bundles</artifactId>
+    <version>9.0.0.0-SNAPSHOT</version>
+  </parent>
+
+  <groupId>org.pentaho</groupId>
+  <artifactId>spring-security-karaf-login-module</artifactId>
+  <version>9.0.0.0-SNAPSHOT</version>
+  <packaging>bundle</packaging>
+
+  <dependencies>
+    <dependency>
+      <groupId>pentaho</groupId>
+      <artifactId>pentaho-platform-api</artifactId>
+      <version>${project.version}</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>pentaho</groupId>
+      <artifactId>pentaho-platform-core</artifactId>
+      <version>${project.version}</version>
+      <scope>compile</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>commons-httpclient</artifactId>
+          <groupId>commons-httpclient</groupId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>pentaho</groupId>
+      <artifactId>pentaho-platform-repository</artifactId>
+      <version>${project.version}</version>
+      <scope>compile</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.karaf.jaas</groupId>
+      <artifactId>org.apache.karaf.jaas.boot</artifactId>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.karaf.jaas</groupId>
+      <artifactId>org.apache.karaf.jaas.config</artifactId>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.karaf.jaas</groupId>
+      <artifactId>org.apache.karaf.jaas.modules</artifactId>
+      <scope>compile</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.springframework.security</groupId>
+      <artifactId>spring-security-core</artifactId>
+      <scope>compile</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>*</artifactId>
+          <groupId>*</groupId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-all</artifactId>
+      <version>${mockito.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.osgi</groupId>
+      <artifactId>org.osgi.core</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.felix</groupId>
+        <artifactId>maven-bundle-plugin</artifactId>
+
+        <configuration>
+          <instructions>
+            <Import-Package>org.apache.karaf.jaas.config,*</Import-Package>
+          </instructions>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>
