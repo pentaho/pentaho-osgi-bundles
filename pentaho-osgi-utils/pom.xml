@@ -11,7 +11,6 @@
 
   <groupId>org.pentaho</groupId>
   <artifactId>pentaho-osgi-utils-modules</artifactId>
-  <version>9.0.0.0-SNAPSHOT</version>
 
   <packaging>pom</packaging>
 
