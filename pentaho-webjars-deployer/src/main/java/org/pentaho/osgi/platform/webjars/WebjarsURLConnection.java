@@ -45,6 +45,7 @@ import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -82,15 +83,17 @@ public class WebjarsURLConnection extends URLConnection {
   private final Logger logger = LoggerFactory.getLogger( getClass() );
 
   private final boolean minificationEnabled;
+  private final boolean automaticNonAmdShimConfigEnabled;
 
   public WebjarsURLConnection( URL url ) {
-    this( url, true );
+    this( url, false, false );
   }
 
-  public WebjarsURLConnection( URL url, boolean minificationEnabled ) {
+  public WebjarsURLConnection( URL url, boolean minificationEnabled, boolean automaticNonAmdShimConfigEnabled ) {
     super( url );
 
     this.minificationEnabled = minificationEnabled;
+    this.automaticNonAmdShimConfigEnabled = automaticNonAmdShimConfigEnabled;
   }
 
   @Override
@@ -108,7 +111,7 @@ public class WebjarsURLConnection extends URLConnection {
       urlConnection.connect();
       final InputStream originalInputStream = urlConnection.getInputStream();
 
-      transform_thread = EXECUTOR.submit( new WebjarsTransformer( url, originalInputStream, pipedOutputStream, this.minificationEnabled ) );
+      transform_thread = EXECUTOR.submit( new WebjarsTransformer( url, originalInputStream, pipedOutputStream, this.minificationEnabled, this.automaticNonAmdShimConfigEnabled ) );
 
       return pipedInputStream;
     } catch ( Exception e ) {
@@ -155,6 +158,7 @@ public class WebjarsURLConnection extends URLConnection {
     private final OutputStream outputStream;
 
     private final boolean minificationEnabled;
+    private final boolean automaticNonAmdShimConfigEnabled;
 
     //region transformation state
 
@@ -191,15 +195,18 @@ public class WebjarsURLConnection extends URLConnection {
 
     private Path absoluteTempPath;
 
+    private boolean temporarySourceFileIsNeeded;
+
     //endregion
 
-    WebjarsTransformer( URL url, InputStream inputStream, PipedOutputStream outputStream, boolean minificationEnabled ) {
+    WebjarsTransformer( URL url, InputStream inputStream, PipedOutputStream outputStream, boolean minificationEnabled, boolean automaticNonAmdShimConfigEnabled ) {
       this.url = url;
 
       this.inputStream = inputStream;
       this.outputStream = outputStream;
 
       this.minificationEnabled = minificationEnabled;
+      this.automaticNonAmdShimConfigEnabled = automaticNonAmdShimConfigEnabled;
     }
 
     @Override
@@ -220,27 +227,27 @@ public class WebjarsURLConnection extends URLConnection {
     private void transform() throws IOException {
       JarInputStream jarInputStream = new JarInputStream( inputStream );
 
-      try {
-        init();
+      init();
 
+      try {
         extractArtifactInfo( this.url );
 
         this.jarOutputStream = new JarOutputStream( outputStream, getManifest( artifactInfo, jarInputStream ) );
-
-        boolean minificationFailed = false;
 
         Map<String, Object> overrides = RequireJsGenerator.getPackageOverrides( artifactInfo.getGroup(), artifactInfo.getArtifactId(), artifactInfo.getVersion() );
 
         Map<String, Map<String, String>> wrap;
         if ( overrides != null ) {
           // if there is an explicit override file, don't try to be smart and just assume it's AMD ready
-          isAmdPackage = true;
+          this.isAmdPackage = true;
 
           wrap = (Map<String, Map<String, String>>) overrides.getOrDefault( "wrap", Collections.<String, Map<String, String>>emptyMap() );
         } else {
           // empty map, for simplicity
           wrap = Collections.emptyMap();
         }
+
+        boolean packageHasContent = false;
 
         ZipEntry entry;
         while ( ( entry = jarInputStream.getNextJarEntry() ) != null ) {
@@ -252,16 +259,19 @@ public class WebjarsURLConnection extends URLConnection {
             continue;
           }
 
-          if ( name.endsWith( POM_NAME ) && POM_PATTERN.matcher( name ).matches() ) {
-            handlePomFile( jarInputStream );
-
-            // the pom file will not be copied to the generated bundle,
+          if ( handlePackageDescriptor( name, jarInputStream ) ) {
+            // the descriptor file will not be copied to the generated bundle,
             // because it would be troublesome as the entry stream is already consumed
             // and it isn't really needed anyway
+            jarInputStream.closeEntry();
             continue;
           }
 
-          boolean isPackageFile = isPackageFile( name );
+          if ( !isPackageFile( name ) ) {
+            // resources outside the META-INF/resources/webjars/** won't be available so no need to copy them
+            jarInputStream.closeEntry();
+            continue;
+          }
 
           if ( !entry.isDirectory() ) {
             File temporarySourceFile = null;
@@ -270,7 +280,7 @@ public class WebjarsURLConnection extends URLConnection {
             String pre = "";
             String pos = "";
 
-            if ( isPackageFile ) {
+            if( this.temporarySourceFileIsNeeded ) {
               // only save to the temp folder resources from the package's source folder
               temporarySourceFile = new File( absoluteTempPath.toAbsolutePath() + File.separator + FilenameUtils.separatorsToSystem( name ) );
 
@@ -278,133 +288,52 @@ public class WebjarsURLConnection extends URLConnection {
               temporarySourceFile.getParentFile().mkdirs();
 
               temporarySourceFileOutputStream = new BufferedOutputStream( new FileOutputStream( temporarySourceFile ) );
+            }
 
-              String fileRelativePath = "/" + absoluteResourcesPath.relativize( temporarySourceFile.toPath() );
-              fileRelativePath = fileRelativePath.replaceAll( "\\\\", "/" );
-              if ( wrap.containsKey( fileRelativePath ) ) {
-                Map<String, String> wrapCode = wrap.get( fileRelativePath );
-                pre = wrapCode.getOrDefault( "pre", "" );
-                pos = wrapCode.getOrDefault( "pos", "" );
-              }
+            String fileRelativePath = name.substring( relativeResourcesPath.length() );
+            if ( wrap.containsKey( fileRelativePath ) ) {
+              Map<String, String> wrapCode = wrap.get( fileRelativePath );
+              pre = wrapCode.getOrDefault( "pre", "" );
+              pos = wrapCode.getOrDefault( "pos", "" );
             }
 
             //region Copy the file from the source jar to the generated jar
             ZipEntry zipEntry = new ZipEntry( name );
             jarOutputStream.putNextEntry( zipEntry );
 
-            if ( isPackageFile && pre.length() > 0 ) {
-              temporarySourceFileOutputStream.write( pre.getBytes() );
-              temporarySourceFileOutputStream.write( "\n".getBytes() );
-
-              jarOutputStream.write( pre.getBytes() );
-              jarOutputStream.write( "\n".getBytes() );
+            if ( pre.length() > 0 ) {
+              this.writeToOutput( temporarySourceFileOutputStream, (pre + "\n").getBytes() );
             }
 
             byte[] bytes = new byte[ BYTES_BUFFER_SIZE ];
             int read;
             while ( ( read = jarInputStream.read( bytes ) ) != -1 ) {
-              if ( isPackageFile ) {
-                // also output to the temp source file
-                temporarySourceFileOutputStream.write( bytes, 0, read );
-              }
-
-              jarOutputStream.write( bytes, 0, read );
+              this.writeToOutput( temporarySourceFileOutputStream, bytes, read );
             }
 
-            if ( isPackageFile && pos.length() > 0 ) {
-              temporarySourceFileOutputStream.write( "\n".getBytes() );
-              temporarySourceFileOutputStream.write( pos.getBytes() );
-              temporarySourceFileOutputStream.write( "\n".getBytes() );
-
-              jarOutputStream.write( "\n".getBytes() );
-              jarOutputStream.write( pos.getBytes() );
-              jarOutputStream.write( "\n".getBytes() );
+            if ( pos.length() > 0 ) {
+              this.writeToOutput( temporarySourceFileOutputStream, ("\n" + pos + "\n").getBytes() );
             }
 
             jarOutputStream.closeEntry();
             // endregion
 
-            if ( isPackageFile ) {
+            if( this.temporarySourceFileIsNeeded ) {
               temporarySourceFileOutputStream.close();
-
-              if ( !isAmdPackage && isJsFile( name ) && RequireJsGenerator.findAmdDefine( new FileInputStream( temporarySourceFile ), exportedGlobals ) ) {
-                isAmdPackage = true;
-              }
             }
 
-            if ( requireConfig == null || ( isClassicWebjar && !wasReadFromPom ) ) {
-              if ( isClassicWebjar && name.endsWith( WEBJARS_REQUIREJS_NAME ) ) {
-                // next comes the module author's webjars-requirejs.js
-                handleWebjarsRequireJS( name, temporarySourceFile );
-              } else if ( isNpmWebjar && name.endsWith( NPM_NAME ) ) {
-                // try to generate requirejs.json from package.json (Npm WebJars) or bower.json (Bower WebJars)
-                handlePackageJson( name, temporarySourceFile );
-              } else if ( isBowerWebjar && name.endsWith( BOWER_NAME ) ) {
-                // try to generate requirejs.json from package.json (Npm WebJars) or bower.json (Bower WebJars)
-                handleBowerJson( name, temporarySourceFile );
-              }
+            if ( !this.isAmdPackage && isJsFile( name ) && RequireJsGenerator.findAmdDefine( new FileInputStream( temporarySourceFile ), exportedGlobals ) ) {
+              this.isAmdPackage = true;
             }
+
+            packageHasContent = true;
           }
 
           jarInputStream.closeEntry();
         }
 
         // nothing more to do if there aren't any source files
-        if ( absoluteResourcesPath != null ) {
-          Collection<File> scrFiles = FileUtils.listFiles(
-              absoluteResourcesPath.toFile(),
-              TrueFileFilter.INSTANCE,
-              TrueFileFilter.INSTANCE
-          );
-
-          if ( this.minificationEnabled ) {
-            try {
-              CompilerOptions options = initCompilationResources();
-
-              for ( File srcFile : scrFiles ) {
-                final String name = srcFile.getName();
-
-                if ( name.endsWith( WEBJARS_REQUIREJS_NAME ) ) {
-                  continue;
-                }
-
-                final String relSrcFilePath = FilenameUtils.separatorsToUnix( absoluteResourcesPath.relativize( srcFile.toPath() ).toString() );
-                final String relOutFilePath = MINIFIED_RESOURCES_OUTPUT_PATH + "/" + relSrcFilePath;
-
-                if ( isJsFile( name ) ) {
-                  // Check if there is a .map with the same name
-                  // if so, assume it is already minified and just copy both files
-                  File mapFile = new File( name + ".map", srcFile.getParent() );
-                  if ( mapFile.exists() ) {
-                    copyFileToZip( jarOutputStream, relOutFilePath, srcFile );
-                    copyFileToZip( jarOutputStream, relOutFilePath + ".map", mapFile );
-                    continue;
-                  }
-
-                  options.setSourceMapLocationMappings( getLocationMappings( srcFile.toPath().getParent(), absoluteResourcesPath, packageNameFromResourcesPath, packageVersionFromResourcesPath ) );
-
-                  try {
-                    CompiledScript compiledScript = new CompiledScript( srcFile, relSrcFilePath, options ).invoke();
-
-                    addContentToZip( jarOutputStream, relOutFilePath, compiledScript.getCode() );
-                    addContentToZip( jarOutputStream, relOutFilePath + ".map", compiledScript.getSourcemap() );
-                  } catch ( Exception failedCompilationException ) {
-                    logger.warn( webjarUrl + ": error minifing " + relSrcFilePath + ", copied original version" );
-
-                    copyFileToZip( jarOutputStream, relOutFilePath, srcFile );
-                  }
-                } else if ( !isMapFile( name ) ) {
-                  // just copy all resources (except .map files)
-                  copyFileToZip( jarOutputStream, relOutFilePath, srcFile );
-                }
-              }
-            } catch ( Exception e ) {
-              minificationFailed = true;
-
-              logger.warn( webjarUrl + ": exception minifing, serving original files", e );
-            }
-          }
-
+        if ( packageHasContent ) {
           if ( requireConfig == null ) {
             // in last resort generate requirejs config by mapping the root path
             requireConfig = RequireJsGenerator.emptyGenerator( packageNameFromResourcesPath, packageVersionFromResourcesPath );
@@ -413,20 +342,24 @@ public class WebjarsURLConnection extends URLConnection {
           }
 
           if ( requireConfig != null ) {
+            // it's only worthy to do the minification if we have a package with contents and a valid config;
+            // doTheMinification() also checks if minificationEnabled is true.
+            boolean hasMinifiedResources = doTheMinification();
+
             try {
-              final String exports = !isAmdPackage && !exportedGlobals.isEmpty() ? exportedGlobals.get( 0 ) : null;
+              final String exports = !this.isAmdPackage && !exportedGlobals.isEmpty() ? exportedGlobals.get( 0 ) : null;
 
               final RequireJsGenerator.ModuleInfo moduleInfo =
-                  requireConfig.getConvertedConfig( artifactInfo, isAmdPackage, exports, overrides );
+                  requireConfig.getConvertedConfig( artifactInfo, this.isAmdPackage, exports, overrides );
 
               addContentToZip( jarOutputStream, PENTAHO_RJS_LOCATION, moduleInfo.exportRequireJs() );
 
               try {
                 String blueprintTemplate;
-                if ( !this.minificationEnabled || minificationFailed ) {
-                  blueprintTemplate = generateBlueprintWithoutMinifiedResources( relativeResourcesPath, moduleInfo );
-                } else {
+                if ( hasMinifiedResources ) {
                   blueprintTemplate = generateBlueprint( relativeResourcesPath, moduleInfo );
+                } else {
+                  blueprintTemplate = generateBlueprintWithoutMinifiedResources( relativeResourcesPath, moduleInfo );
                 }
 
                 addContentToZip( jarOutputStream, "OSGI-INF/blueprint/blueprint.xml", blueprintTemplate );
@@ -451,10 +384,14 @@ public class WebjarsURLConnection extends URLConnection {
       } catch ( IOException e ) {
         logger.debug( webjarUrl + ": Pipe is closed, no need to continue." );
       } finally {
-        try {
-          FileUtils.deleteDirectory( absoluteTempPath.toFile() );
-        } catch ( IOException ignored ) {
-          // ignored
+        if ( this.absoluteTempPath != null ) {
+          try {
+            FileUtils.deleteDirectory( absoluteTempPath.toFile() );
+          } catch ( IOException ignored ) {
+            // ignored
+          } finally {
+            this.absoluteTempPath = null;
+          }
         }
 
         try {
@@ -465,12 +402,138 @@ public class WebjarsURLConnection extends URLConnection {
       }
     }
 
+    private void writeToOutput( BufferedOutputStream temporarySourceFileOutputStream, byte[] bytes, int read ) throws IOException {
+      if ( this.temporarySourceFileIsNeeded ) {
+        // also output to the temp source file
+        temporarySourceFileOutputStream.write( bytes, 0, read );
+      }
+
+      jarOutputStream.write( bytes, 0, read );
+    }
+
+    private void writeToOutput( BufferedOutputStream temporarySourceFileOutputStream, byte[] bytes ) throws IOException {
+      this.writeToOutput( temporarySourceFileOutputStream, bytes, bytes.length );
+    }
+
+    /**
+     * If minificationEnabled is true and there are any source files, tries to minify the package's source files
+     * using the Google's Closure compiler.
+     *
+     * @return if there are any minified resources to be deployed
+     */
+    private boolean doTheMinification() {
+      if ( !this.minificationEnabled ) {
+        return false;
+      }
+
+      if ( absoluteResourcesPath == null ) {
+        // nothing to do if there aren't any source files
+        return false;
+      }
+
+      Collection<File> scrFiles = FileUtils.listFiles(
+          absoluteResourcesPath.toFile(),
+          TrueFileFilter.INSTANCE,
+          TrueFileFilter.INSTANCE
+      );
+
+      if ( scrFiles.isEmpty() ) {
+        // nothing to do if there aren't any source files
+        return false;
+      }
+
+      try {
+        CompilerOptions options = initCompilationResources();
+
+        for ( File srcFile : scrFiles ) {
+          final String name = srcFile.getName();
+
+          if ( name.endsWith( WEBJARS_REQUIREJS_NAME ) ) {
+            continue;
+          }
+
+          final String relSrcFilePath = FilenameUtils.separatorsToUnix( absoluteResourcesPath.relativize( srcFile.toPath() ).toString() );
+          final String relOutFilePath = MINIFIED_RESOURCES_OUTPUT_PATH + "/" + relSrcFilePath;
+
+          if ( isJsFile( name ) ) {
+            // Check if there is a .map with the same name
+            // if so, assume it is already minified and just copy both files
+            File mapFile = new File( name + ".map", srcFile.getParent() );
+            if ( mapFile.exists() ) {
+              copyFileToZip( jarOutputStream, relOutFilePath, srcFile );
+              copyFileToZip( jarOutputStream, relOutFilePath + ".map", mapFile );
+              continue;
+            }
+
+            options.setSourceMapLocationMappings( getLocationMappings( srcFile.toPath().getParent(), absoluteResourcesPath, packageNameFromResourcesPath, packageVersionFromResourcesPath ) );
+
+            try {
+              CompiledScript compiledScript = new CompiledScript( srcFile, relSrcFilePath, options ).invoke();
+
+              addContentToZip( jarOutputStream, relOutFilePath, compiledScript.getCode() );
+              addContentToZip( jarOutputStream, relOutFilePath + ".map", compiledScript.getSourcemap() );
+            } catch ( Exception failedCompilationException ) {
+              logger.warn( webjarUrl + ": error minifing " + relSrcFilePath + ", copied original version" );
+
+              copyFileToZip( jarOutputStream, relOutFilePath, srcFile );
+            }
+          } else if ( !isMapFile( name ) ) {
+            // just copy all resources (except .map files)
+            copyFileToZip( jarOutputStream, relOutFilePath, srcFile );
+          }
+        }
+
+        return true;
+      } catch ( Exception e ) {
+        logger.warn( webjarUrl + ": exception minifing, serving original files", e );
+
+        return false;
+      }
+    }
+
+    /**
+     * @param name the potential package descriptor file name
+     * @param inputStream the stream from where to read the package descriptor file contents
+     *
+     * @return true if a package descriptor was successfully read and processed, false otherwise
+     */
+    private boolean handlePackageDescriptor( String name, InputStream inputStream ) {
+      if ( name.endsWith( POM_NAME ) && POM_PATTERN.matcher( name ).matches() ) {
+        // try to generate requirejs.json from the pom.xml file (Classic WebJars)
+        // handcrafted requirejs configuration on pom.xml has priority over the author's webjars-requirejs.js
+        // (also collect from the POM file the version, for fallback in Bower WebJars without version information)
+        handlePomFile( inputStream );
+        return true;
+      }
+
+      if ( requireConfig == null || ( isClassicWebjar && !wasReadFromPom ) ) {
+        if ( isClassicWebjar && name.endsWith( WEBJARS_REQUIREJS_NAME ) ) {
+          // try to generate requirejs.json from the module author's webjars-requirejs.js (Classic WebJars)
+          handleWebjarsRequireJS( name, inputStream );
+          return true;
+        } else if ( isNpmWebjar && name.endsWith( NPM_NAME ) ) {
+          // try to generate requirejs.json from the package.json file (Npm WebJars)
+          handlePackageJson( name, inputStream );
+          return true;
+        } else if ( isBowerWebjar && name.endsWith( BOWER_NAME ) ) {
+          // try to generate requirejs.json from the bower.json file (Bower WebJars)
+          handleBowerJson( name, inputStream );
+          return true;
+        }
+      }
+
+      return false;
+    }
+
     private void init() throws IOException {
       this.wasReadFromPom = false;
       this.requireConfig = null;
 
       this.exportedGlobals = new ArrayList<>();
-      this.isAmdPackage = false;
+
+      // if the automatic non-AMD shim config is enabled then the package is not AMD until proven otherwise;
+      // if disabled  just assume the code is AMD ready
+      this.isAmdPackage = !this.automaticNonAmdShimConfigEnabled;
 
       this.pomProjectVersion = null;
 
@@ -479,7 +542,11 @@ public class WebjarsURLConnection extends URLConnection {
       this.relativeResourcesPath = null;
       this.absoluteResourcesPath = null;
 
-      this.absoluteTempPath = Files.createTempDirectory( "WebjarsURLConnection" );
+      this.temporarySourceFileIsNeeded = this.minificationEnabled || this.automaticNonAmdShimConfigEnabled;
+
+      if ( this.temporarySourceFileIsNeeded ) {
+        this.absoluteTempPath = Files.createTempDirectory( "WebjarsURLConnection" );
+      }
     }
 
     private void extractArtifactInfo( URL url ) {
@@ -511,9 +578,9 @@ public class WebjarsURLConnection extends URLConnection {
       return manifest;
     }
 
-    private void handlePomFile( JarInputStream jarInputStream ) {
+    private void handlePomFile( InputStream jarInputStream ) {
       if ( isClassicWebjar ) {
-        // handcrafted requirejs configuration on pom.xml has top prioriy in Classic WebJars
+        // handcrafted requirejs configuration on pom.xml has top priority in Classic WebJars
         try {
           requireConfig = RequireJsGenerator.parsePom( jarInputStream );
           wasReadFromPom = true;
@@ -539,12 +606,12 @@ public class WebjarsURLConnection extends URLConnection {
       }
     }
 
-    private void handleWebjarsRequireJS( String name, File temporarySourceFile ) {
+    private void handleWebjarsRequireJS( String name, InputStream inputStream ) {
       Matcher matcher = MODULE_PATTERN.matcher( name );
       if ( matcher.matches() ) {
         try {
           requireConfig = RequireJsGenerator.processJsScript(
-              matcher.group( 1 ), matcher.group( 2 ), new FileInputStream( temporarySourceFile ) );
+              matcher.group( 1 ), matcher.group( 2 ), inputStream );
 
           logger.debug( webjarUrl + ": Classic WebJar -> read requirejs configuration from webjars-requirejs.js" );
         } catch ( Exception ignored ) {
@@ -553,10 +620,10 @@ public class WebjarsURLConnection extends URLConnection {
       }
     }
 
-    private void handlePackageJson( String name, File temporarySourceFile ) {
+    private void handlePackageJson( String name, InputStream inputStream ) {
       if ( NPM_PATTERN.matcher( name ).matches() ) {
         try {
-          requireConfig = RequireJsGenerator.parseJsonPackage( new FileInputStream( temporarySourceFile ) );
+          requireConfig = RequireJsGenerator.parseJsonPackage( inputStream );
 
           logger.debug( webjarUrl + ": NPM WebJar -> read requirejs configuration from package.json" );
         } catch ( Exception ignored ) {
@@ -565,10 +632,10 @@ public class WebjarsURLConnection extends URLConnection {
       }
     }
 
-    private void handleBowerJson( String name, File temporarySourceFile ) {
+    private void handleBowerJson( String name, InputStream inputStream ) {
       if ( BOWER_PATTERN.matcher( name ).matches() ) {
         try {
-          requireConfig = RequireJsGenerator.parseJsonPackage( new FileInputStream( temporarySourceFile ) );
+          requireConfig = RequireJsGenerator.parseJsonPackage( inputStream );
 
           // on bower webjars, check if the version information is present
           // if not fill it with the version extracted from pom, if already gathered
@@ -597,7 +664,10 @@ public class WebjarsURLConnection extends URLConnection {
           packageVersionFromResourcesPath = matcher.group( 2 );
 
           relativeResourcesPath = "META-INF/resources/webjars/" + packageNameFromResourcesPath + "/" + packageVersionFromResourcesPath;
-          absoluteResourcesPath = absoluteTempPath.resolve( FilenameUtils.separatorsToSystem( relativeResourcesPath ) );
+
+          if ( this.temporarySourceFileIsNeeded ) {
+            absoluteResourcesPath = absoluteTempPath.resolve( FilenameUtils.separatorsToSystem( relativeResourcesPath ) );
+          }
 
           isPackageFile = true;
         }
@@ -671,7 +741,7 @@ public class WebjarsURLConnection extends URLConnection {
     private void addContentToZip( JarOutputStream zip, String entry, String content ) throws IOException {
       ZipEntry zipEntry = new ZipEntry( entry );
       zip.putNextEntry( zipEntry );
-      zip.write( content.getBytes( "UTF-8" ) );
+      zip.write( content.getBytes( StandardCharsets.UTF_8 ) );
       zip.closeEntry();
     }
 

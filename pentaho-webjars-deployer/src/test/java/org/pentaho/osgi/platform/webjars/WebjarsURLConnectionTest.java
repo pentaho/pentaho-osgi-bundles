@@ -121,7 +121,7 @@ public class WebjarsURLConnectionTest {
 
   @Test
   public void testClosingStream() throws IOException {
-    WebjarsURLConnection connection = new WebjarsURLConnection( new URL( "mvn:org.webjars/angular-dateparser/1.0.9" ), false );
+    WebjarsURLConnection connection = new WebjarsURLConnection( new URL( "mvn:org.webjars/angular-dateparser/1.0.9" ), false, false );
     connection.connect();
 
     InputStream inputStream = connection.getInputStream();
@@ -137,7 +137,7 @@ public class WebjarsURLConnectionTest {
 
   @Test( expected = IOException.class )
   public void testInputStreamException() throws IOException {
-    WebjarsURLConnection connection = new WebjarsURLConnection( new URL( "mvn:org.webjars/angular-dateparser/1.0.9xx" ), false );
+    WebjarsURLConnection connection = new WebjarsURLConnection( new URL( "mvn:org.webjars/angular-dateparser/1.0.9xx" ), false, false );
     connection.connect();
 
     connection.getInputStream();
@@ -313,7 +313,7 @@ public class WebjarsURLConnectionTest {
   }
 
   private ZipFile getDeployedJar( URL webjar_url, boolean minificationEnabled ) throws IOException {
-    WebjarsURLConnection connection = new WebjarsURLConnection( webjar_url, minificationEnabled );
+    WebjarsURLConnection connection = new WebjarsURLConnection( webjar_url, minificationEnabled, false );
     connection.connect();
 
     InputStream inputStream = connection.getInputStream();
