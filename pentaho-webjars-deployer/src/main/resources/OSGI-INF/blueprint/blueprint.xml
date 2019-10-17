@@ -8,6 +8,7 @@
   <cm:property-placeholder persistent-id="org.pentaho.osgi.platform.webjars" update-strategy="none">
     <cm:default-properties>
       <cm:property name="webjars.minification.enabled" value="false"/>
+      <cm:property name="webjars.automaticNonAmdShimConfig.enabled" value="false"/>
     </cm:default-properties>
   </cm:property-placeholder>
   <!-- END: Configuration -->
@@ -23,6 +24,7 @@
 
     <bean class="org.pentaho.osgi.platform.webjars.WebjarsUrlHandler">
       <argument value="${webjars.minification.enabled}"/>
+      <argument value="${webjars.automaticNonAmdShimConfig.enabled}"/>
     </bean>
   </service>
 

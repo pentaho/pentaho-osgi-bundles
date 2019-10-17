@@ -27,12 +27,14 @@ import java.net.URLConnection;
  */
 public class WebjarsUrlHandler extends AbstractURLStreamHandlerService {
   private boolean minificationEnabled;
+  private final boolean automaticNonAmdShimConfigEnabled;
 
-  public WebjarsUrlHandler( boolean minificationEnabled ) {
+  public WebjarsUrlHandler( boolean minificationEnabled, boolean automaticNonAmdShimConfigEnabled ) {
     this.minificationEnabled = minificationEnabled;
+    this.automaticNonAmdShimConfigEnabled = automaticNonAmdShimConfigEnabled;
   }
 
   @Override public URLConnection openConnection( URL url ) throws IOException {
-    return new WebjarsURLConnection( new URL( url.getPath() ), this.minificationEnabled );
+    return new WebjarsURLConnection( new URL( url.getPath() ), this.minificationEnabled, this.automaticNonAmdShimConfigEnabled );
   }
 }
