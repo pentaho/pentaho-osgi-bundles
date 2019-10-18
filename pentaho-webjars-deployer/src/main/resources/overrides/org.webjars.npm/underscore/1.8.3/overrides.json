@@ -1,0 +1,10 @@
+{
+  "shim": {
+    "underscore": {
+      "exports": "_"
+    },
+    "underscore/underscore": {
+      "exports": "_"
+    }
+  }
+}
