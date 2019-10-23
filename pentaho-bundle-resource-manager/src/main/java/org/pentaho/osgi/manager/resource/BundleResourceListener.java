@@ -39,7 +39,7 @@ public class BundleResourceListener implements BundleListener {
 
   @Override public void bundleChanged( BundleEvent event ) {
     switch ( event.getType() ) {
-      case BundleEvent.INSTALLED:
+      case BundleEvent.RESOLVED:
         Bundle bundle = event.getBundle();
         if ( bundle != null && resourceHandler.hasManagedResources( bundle ) ) {
           resourceHandler.handleManagedResources( bundle );
