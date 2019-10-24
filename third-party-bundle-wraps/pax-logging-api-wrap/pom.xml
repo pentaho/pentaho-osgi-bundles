@@ -41,7 +41,15 @@
 
         <configuration>
           <instructions>
-            <Embed-Dependency>pax-logging-api</Embed-Dependency>
+            <!--
+              Using inline=true. bnd tool FAQ (https://bnd.bndtools.org/chapters/920-faq.html) states:
+                "Bundle-ClassPath [...] creates unnecessary complexity, it is slower, and it is not necessary.
+                It will also not be compatible with techniques like PojoSR, something that the OSGi is looking
+                into standardizing. [...] If you really need to wrap one or more JARs, use the Include-Resource
+                instruction, it has an option to unroll a JAR resource [...]. This will copy all its contents in
+                the target JAR.
+            -->
+            <Embed-Dependency>pax-logging-api;inline=true</Embed-Dependency>
 
             <Bundle-Name>OPS4J Pax Logging - API (HV wrapped)</Bundle-Name>
             <Bundle-SymbolicName>${project.groupId}.${project.artifactId}</Bundle-SymbolicName>
