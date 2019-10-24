@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>pentaho</groupId>
+    <artifactId>pentaho-osgi-bundles</artifactId>
+    <version>9.0.0.0-SNAPSHOT</version>
+  </parent>
+
+  <groupId>org.hitachivantara</groupId>
+  <artifactId>third-party-bundle-wraps</artifactId>
+  <version>9.0.0.0-SNAPSHOT</version>
+
+  <packaging>pom</packaging>
+
+  <modules>
+    <module>pax-logging-api-wrap</module>
+    <module>cxf-rt-frontend-jaxrs-wrap</module>
+  </modules>
+
+</project>
