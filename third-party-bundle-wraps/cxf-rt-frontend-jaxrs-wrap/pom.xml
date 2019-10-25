@@ -33,26 +33,26 @@
 
     <cxf.osgi.version.clean>${cxf-rt-frontend-jaxrs.version}</cxf.osgi.version.clean>
 
-    <cxf.osgi.javax.servlet.version>[0,4.1)</cxf.osgi.javax.servlet.version>
-    <cxf.osgi.javax.activation.version>[0,2)</cxf.osgi.javax.activation.version>
+    <cxf.osgi.javax.servlet.version.range>[0,4.1)</cxf.osgi.javax.servlet.version.range>
+    <cxf.osgi.javax.activation.version.range>[0,2)</cxf.osgi.javax.activation.version.range>
     <cxf.aries.version.range>[1.0,2)</cxf.aries.version.range>
-    <cxf.osgi.spring.version>[3.1,6)</cxf.osgi.spring.version>
-    <cxf.validation.api.package.version>[1.0.0,2)</cxf.validation.api.package.version>
-    <cxf.osgi.javax.bind.version>[0,3)</cxf.osgi.javax.bind.version>
-    <cxf.osgi.javax.annotation.version>[1.2,2)</cxf.osgi.javax.annotation.version>
+    <cxf.osgi.spring.version.range>[3.1,6)</cxf.osgi.spring.version.range>
+    <cxf.validation.api.package.version.range>[1.0.0,2)</cxf.validation.api.package.version.range>
+    <cxf.osgi.javax.bind.version.range>[0,3)</cxf.osgi.javax.bind.version.range>
+    <cxf.osgi.javax.annotation.version.range>[1.2,2)</cxf.osgi.javax.annotation.version.range>
 
     <cxf.module.name>org.apache.cxf.frontend.jaxrs</cxf.module.name>
 
     <cxf.osgi.import>
-      javax.servlet*;version="${cxf.osgi.javax.servlet.version}";resolution:=optional,
-      javax.activation;version="${cxf.osgi.javax.activation.version}",
+      javax.servlet*;version="${cxf.osgi.javax.servlet.version.range}";resolution:=optional,
+      javax.activation;version="${cxf.osgi.javax.activation.version.range}",
       org.apache.aries*;version="${cxf.aries.version.range}";resolution:=optional,
-      org.springframework*;resolution:="optional";version="${cxf.osgi.spring.version}",
-      javax.validation*;resolution:=optional;version="${cxf.validation.api.package.version}",
+      org.springframework*;resolution:="optional";version="${cxf.osgi.spring.version.range}",
+      javax.validation*;resolution:=optional;version="${cxf.validation.api.package.version.range}",
       javax.ws.rs.client;version="[2.0,3)",
       javax.ws.rs*;version="[2.0,3)",
-      javax.xml.bind*;version="${cxf.osgi.javax.bind.version}",
-      javax.annotation*;version="${cxf.osgi.javax.annotation.version}",
+      javax.xml.bind*;version="${cxf.osgi.javax.bind.version.range}",
+      javax.annotation*;version="${cxf.osgi.javax.annotation.version.range}",
       org.osgi.framework;version="[1.7,2)",
       org.osgi.service.blueprint.container;version="[1.0,2)";resolution:=optional,
       org.osgi.service.blueprint.reflect;version="[1.0,2)";resolution:=optional
