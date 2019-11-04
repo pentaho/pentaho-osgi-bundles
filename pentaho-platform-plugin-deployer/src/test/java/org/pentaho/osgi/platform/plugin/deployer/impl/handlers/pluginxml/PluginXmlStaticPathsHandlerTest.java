@@ -16,6 +16,7 @@
  */
 package org.pentaho.osgi.platform.plugin.deployer.impl.handlers.pluginxml;
 
+import com.sun.org.apache.xerces.internal.dom.ElementNSImpl;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
@@ -49,6 +50,9 @@ import static org.mockito.Mockito.*;
  * Created by bryan on 8/26/14.
  */
 public class PluginXmlStaticPathsHandlerTest {
+  public static final String RESOURCE_PATTERN_KEY = "osgi.http.whiteboard.resource.pattern";
+  public static final String RESOURCE_PREFIX_KEY = "osgi.http.whiteboard.resource.prefix";
+
   private JSONUtil jsonUtil;
 
   @Before
@@ -99,16 +103,16 @@ public class PluginXmlStaticPathsHandlerTest {
     PluginXmlStaticPathsHandler pluginXmlStaticPathsHandler = new PluginXmlStaticPathsHandler();
     pluginXmlStaticPathsHandler.setJsonUtil( new JSONUtil() );
     pluginXmlStaticPathsHandler.handle( "test-plugin/plugin.xml", nodes, pluginMetadata );
-    NodeList nodeList = document.getElementsByTagNameNS( PluginXmlStaticPathsHandler.BLUEPRINT_BEAN_NS, "bean" );
+    NodeList nodeList = document.getElementsByTagNameNS( PluginXmlStaticPathsHandler.BLUEPRINT_BEAN_NS, "service" );
     assertEquals( 1, nodeList.getLength() );
-    Node node = nodeList.item( 0 );
+    Node node = ( (ElementNSImpl) nodeList.item( 0 ) ).getElementsByTagName( "service-properties" ).item( 0 );
     NodeList propertyNodes = node.getChildNodes();
     assertEquals( 2, propertyNodes.getLength() );
     Node aliasNode = propertyNodes.item( 0 );
     Node pathNode = propertyNodes.item( 1 );
-    assertEquals( "alias", ( (Attr) aliasNode.getAttributes().getNamedItem( "name" ) ).getValue() );
-    assertEquals( "/content/common-ui/resources", ( (Attr) aliasNode.getAttributes().getNamedItem( "value" ) ).getValue() );
-    assertEquals( "path", ( (Attr) pathNode.getAttributes().getNamedItem( "name" ) ).getValue() );
+    assertEquals( RESOURCE_PATTERN_KEY, ( (Attr) aliasNode.getAttributes().getNamedItem( "key" ) ).getValue() );
+    assertEquals( "/content/common-ui/resources/*", ( (Attr) aliasNode.getAttributes().getNamedItem( "value" ) ).getValue() );
+    assertEquals( RESOURCE_PREFIX_KEY, ( (Attr) pathNode.getAttributes().getNamedItem( "key" ) ).getValue() );
     assertEquals( "/test-plugin/resources", ( (Attr) pathNode.getAttributes().getNamedItem( "value" ) ).getValue() );
   }
 

@@ -37,16 +37,14 @@
   </bean>
 
 
-  <!-- Create Web Resource Mapping -->
-  <bean id="resourceMapping"
-        class="org.ops4j.pax.web.extender.whiteboard.runtime.DefaultResourceMapping">
-    <property name="alias" value="/i18n"/>
-    <property name="path" value="/web"/>
-  </bean>
   <!-- Register Wen Resources -->
-  <service id="resources" ref="resourceMapping" interface="org.ops4j.pax.web.extender.whiteboard.ResourceMapping"/>
+  <service id="resources" interface="java.lang.String">
+    <service-properties>
+      <entry key="osgi.http.whiteboard.resource.pattern" value="/i18n/*"/>
+      <entry key="osgi.http.whiteboard.resource.prefix" value="/web"/>
+    </service-properties>
 
-
-
+    <bean class="java.lang.String"/>
+  </service>
 
 </blueprint>

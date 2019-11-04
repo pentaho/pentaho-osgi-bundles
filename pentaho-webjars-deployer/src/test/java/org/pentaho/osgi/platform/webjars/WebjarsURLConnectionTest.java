@@ -170,28 +170,28 @@ public class WebjarsURLConnectionTest {
 
     String bpFile = IOUtils.toString( zipInputStream.getInputStream( entry ), "UTF-8" );
 
-    Pattern distPattern = Pattern.compile( "<bean id=\"resourceMappingDist\".*>.*" +
-        "<property name=\"alias\" value=\"\\/smart-table@2.0.3-1\"\\/>.*" +
-        "<property name=\"path\" value=\"\\/META-INF\\/resources\\/dist-gen\"\\/>.*" +
-        "<\\/bean>", Pattern.DOTALL );
+    Pattern distPattern = Pattern.compile( "<service id=\"resourcesDist\".*>.*" +
+        "<entry key=\"osgi\\.http\\.whiteboard\\.resource\\.pattern\" value=\"\\/smart-table@2.0.3-1\\/\\*\"\\/>.*" +
+        "<entry key=\"osgi\\.http\\.whiteboard\\.resource\\.prefix\" value=\"\\/META-INF\\/resources\\/dist-gen\"\\/>.*" +
+        "<\\/service>", Pattern.DOTALL );
 
     Matcher matcher = distPattern.matcher( bpFile );
 
     assertFalse( "blueprint.xml shouldn't include path for minified smart-table", matcher.find() );
 
-    distPattern = Pattern.compile( "<bean id=\"resourceMappingSrc\".*>.*" +
-        "<property name=\"alias\" value=\"\\/webjar-src\\/smart-table@2.0.3-1\"\\/>.*" +
-        "<property name=\"path\" value=\"\\/META-INF\\/resources\\/webjars\\/smart-table/2.0.3-1\"\\/>.*" +
-        "<\\/bean>", Pattern.DOTALL );
+    distPattern = Pattern.compile( "<service id=\"resourcesSrc\".*>.*" +
+        "<entry key=\"osgi\\.http\\.whiteboard\\.resource\\.pattern\" value=\"\\/webjar-src\\/smart-table@2.0.3-1\\/\\*\"\\/>.*" +
+        "<entry key=\"osgi\\.http\\.whiteboard\\.resource\\.prefix\" value=\"\\/META-INF\\/resources\\/webjars\\/smart-table/2.0.3-1\"\\/>.*" +
+        "<\\/service>", Pattern.DOTALL );
 
     matcher = distPattern.matcher( bpFile );
 
     assertFalse( "blueprint.xml shouldn't include path for smart-table sources", matcher.find() );
 
-    distPattern = Pattern.compile( "<bean id=\"resourceMappingDist\".*>.*" +
-        "<property name=\"alias\" value=\"\\/smart-table@2.0.3-1\"\\/>.*" +
-        "<property name=\"path\" value=\"\\/META-INF\\/resources\\/webjars\\/smart-table/2.0.3-1\"\\/>.*" +
-        "<\\/bean>", Pattern.DOTALL );
+    distPattern = Pattern.compile( "<service id=\"resourcesDist\".*>.*" +
+        "<entry key=\"osgi\\.http\\.whiteboard\\.resource\\.pattern\" value=\"\\/smart-table@2.0.3-1\\/\\*\"\\/>.*" +
+        "<entry key=\"osgi\\.http\\.whiteboard\\.resource\\.prefix\" value=\"\\/META-INF\\/resources\\/webjars\\/smart-table/2.0.3-1\"\\/>.*" +
+        "<\\/service>", Pattern.DOTALL );
 
     matcher = distPattern.matcher( bpFile );
 
@@ -225,19 +225,19 @@ public class WebjarsURLConnectionTest {
 
     String bpFile = IOUtils.toString( zipInputStream.getInputStream( entry ), "UTF-8" );
 
-    Pattern distPattern = Pattern.compile( "<bean id=\"resourceMappingDist\".*>.*" +
-        "<property name=\"alias\" value=\"\\/" + expectedAlias + "\"\\/>.*" +
-        "<property name=\"path\" value=\"\\/META-INF\\/resources\\/dist-gen\"\\/>.*" +
-        "<\\/bean>", Pattern.DOTALL );
+    Pattern distPattern = Pattern.compile( "<service id=\"resourcesDist\".*>.*" +
+        "<entry key=\"osgi\\.http\\.whiteboard\\.resource\\.pattern\" value=\"\\/" + expectedAlias + "\\/\\*\"\\/>.*" +
+        "<entry key=\"osgi\\.http\\.whiteboard\\.resource\\.prefix\" value=\"\\/META-INF\\/resources\\/dist-gen\"\\/>.*" +
+        "<\\/service>", Pattern.DOTALL );
 
     Matcher matcher = distPattern.matcher( bpFile );
 
     assertTrue( "blueprint.xml does not include path for minified " + expectedPath, matcher.find() );
 
-    distPattern = Pattern.compile( "<bean id=\"resourceMappingSrc\".*>.*" +
-        "<property name=\"alias\" value=\"\\/webjar-src\\/" + expectedAlias + "\"\\/>.*" +
-        "<property name=\"path\" value=\"\\/META-INF\\/resources\\/webjars\\/" + expectedPath + "\"\\/>.*" +
-        "<\\/bean>", Pattern.DOTALL );
+    distPattern = Pattern.compile( "<service id=\"resourcesSrc\".*>.*" +
+        "<entry key=\"osgi\\.http\\.whiteboard\\.resource\\.pattern\" value=\"\\/webjar-src\\/" + expectedAlias + "\\/\\*\"\\/>.*" +
+        "<entry key=\"osgi\\.http\\.whiteboard\\.resource\\.prefix\" value=\"\\/META-INF\\/resources\\/webjars\\/" + expectedPath + "\"\\/>.*" +
+        "<\\/service>", Pattern.DOTALL );
 
     matcher = distPattern.matcher( bpFile );
 

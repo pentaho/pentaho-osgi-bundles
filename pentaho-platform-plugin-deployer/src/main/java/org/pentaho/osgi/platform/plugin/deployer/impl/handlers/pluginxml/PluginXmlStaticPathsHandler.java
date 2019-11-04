@@ -35,24 +35,22 @@ import java.util.Map;
  */
 public class PluginXmlStaticPathsHandler extends PluginXmlFileHandler {
   public static final String STATIC_RESOURCES_FILE = "META-INF/js/staticResources.json";
+
   public static final String BLUEPRINT_BEAN_NS = "http://www.osgi.org/xmlns/blueprint/v1.0.0";
-  public static final String BEAN = "bean";
-  public static final String PROPERTY = "property";
-  public static final String SERVICE = "service";
+
+  public static final String BEAN_ELEMENT = "bean";
+  public static final String SERVICE_PROPERTIES_ELEMENT = "service-properties";
+  public static final String ENTRY_ELEMENT = "entry";
+  public static final String SERVICE_ELEMENT = "service";
 
   public static final String ID_ATTR = "id";
-  public static final String REF_ATTR = "ref";
   public static final String INTERFACE_ATTR = "interface";
   public static final String CLASS_ATTR = "class";
-  public static final String NAME_ATTR = "name";
+  public static final String KEY_ATTR = "key";
   public static final String VALUE_ATTR = "value";
 
-  public static final String ALIAS = "alias";
-  public static final String PATH = "path";
-
-  public static final String RESOURCE_MAPPING = "org.ops4j.pax.web.extender.whiteboard.ResourceMapping";
-  public static final String DEFAULT_RESOURCE_MAPPING =
-    "org.ops4j.pax.web.extender.whiteboard.runtime.DefaultResourceMapping";
+  public static final String RESOURCE_PATTERN_KEY = "osgi.http.whiteboard.resource.pattern";
+  public static final String RESOURCE_PREFIX_KEY = "osgi.http.whiteboard.resource.prefix";
 
   private JSONUtil jsonUtil;
 
@@ -80,40 +78,52 @@ public class PluginXmlStaticPathsHandler extends PluginXmlFileHandler {
         urls.add( contentUrl );
         for ( String u : urls ) {
           foundResources = true;
-          Node bean = blueprint.createElementNS( BLUEPRINT_BEAN_NS, BEAN );
-
-          Node aliasProperty = blueprint.createElementNS( BLUEPRINT_BEAN_NS, PROPERTY );
-          Node pathProperty = blueprint.createElementNS( BLUEPRINT_BEAN_NS, PROPERTY );
-          Node service = blueprint.createElementNS( BLUEPRINT_BEAN_NS, SERVICE );
-
-          blueprint.getDocumentElement().appendChild( bean );
-          bean.appendChild( aliasProperty );
-          bean.appendChild( pathProperty );
-          blueprint.getDocumentElement().appendChild( service );
 
           String id = getResourceMappingId( u, localFolder );
-          setAttribute( blueprint, bean, ID_ATTR, id );
-          setAttribute( blueprint, bean, CLASS_ATTR, DEFAULT_RESOURCE_MAPPING );
-          setAttribute( blueprint, aliasProperty, NAME_ATTR, ALIAS );
-          setAttribute( blueprint, aliasProperty, VALUE_ATTR, u  );
-          setAttribute( blueprint, pathProperty, NAME_ATTR, PATH );
           String path = "/" + topLevelFolder + "/" + localFolder;
-          setAttribute( blueprint, pathProperty, VALUE_ATTR, path );
+
+          Node service = blueprint.createElementNS( BLUEPRINT_BEAN_NS, SERVICE_ELEMENT );
+
+          Node serviceProperties = blueprint.createElementNS( BLUEPRINT_BEAN_NS, SERVICE_PROPERTIES_ELEMENT );
+
+          Node entry = blueprint.createElementNS( BLUEPRINT_BEAN_NS, ENTRY_ELEMENT );
+
+          setAttribute( blueprint, entry, KEY_ATTR, RESOURCE_PATTERN_KEY );
+          setAttribute( blueprint, entry, VALUE_ATTR, u + "/*" );
+
+          serviceProperties.appendChild( entry );
+
+          entry = blueprint.createElementNS( BLUEPRINT_BEAN_NS, ENTRY_ELEMENT );
+
+          setAttribute( blueprint, entry, KEY_ATTR, RESOURCE_PREFIX_KEY );
+          setAttribute( blueprint, entry, VALUE_ATTR, path );
+
+          serviceProperties.appendChild( entry );
+
+          service.appendChild( serviceProperties );
+
+          Node bean = blueprint.createElementNS( BLUEPRINT_BEAN_NS, BEAN_ELEMENT );
+          setAttribute( blueprint, bean, CLASS_ATTR, "java.lang.String" );
+
           setAttribute( blueprint, service, ID_ATTR, id + "Service" );
-          setAttribute( blueprint, service, REF_ATTR, id );
-          setAttribute( blueprint, service, INTERFACE_ATTR, RESOURCE_MAPPING );
+          setAttribute( blueprint, service, INTERFACE_ATTR, "java.lang.String" );
+
+          service.appendChild( bean );
+
+          blueprint.getDocumentElement().appendChild( service );
+
+          pluginMetadata.getManifestUpdater().getExportServices()
+            .add( "java.lang.String;osgi.http.whiteboard.resource.pattern=" + u
+                    + "/*;osgi.http.whiteboard.resource.prefix=" + path );
 
           urlToResourceMapping.put( u, path );
         }
       }
     }
+
     if ( foundResources ) {
       Map<String, String> imports = pluginMetadata.getManifestUpdater().getImports();
-      imports.put( "org.ops4j.pax.web.extender.whiteboard", null );
-      imports.put( "org.ops4j.pax.web.extender.whiteboard.runtime", null );
       imports.put( "org.osgi.service.blueprint", "[1.0.0,2.0.0)" );
-      pluginMetadata.getManifestUpdater().getExportServices()
-        .add( "org.ops4j.pax.web.extender.whiteboard.ResourceMapping" );
 
       FileWriter fileWriter = null;
       try {

@@ -1,0 +1,133 @@
+<?xml version="1.0"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.hitachivantara</groupId>
+    <artifactId>third-party-bundle-wraps</artifactId>
+    <version>9.0.0.0-SNAPSHOT</version>
+  </parent>
+
+  <artifactId>cxf-rt-frontend-jaxrs-wrap</artifactId>
+
+  <packaging>bundle</packaging>
+
+  <name>Hitachi Vantara wrap of Apache CXF Runtime JAX-RS Frontend</name>
+  <description>Wrap of Apache CXF Runtime JAX-RS Frontend to avoid the import of javax.ws.rs version 1.x.</description>
+
+  <!--
+  Property values and configurations taken from:
+    https://github.com/apache/cxf/blob/cxf-3.3.1/rt/frontend/jaxrs/pom.xml
+     and
+    https://github.com/apache/cxf/blob/cxf-3.3.1/parent/pom.xml
+
+  Changed the javax.ws.rs* import range from [1.0,3) to [2.0,3).
+
+  Recheck and update them when upgrading the cxf-rt-frontend-jaxrs version.
+  -->
+
+  <properties>
+    <!-- When eventually upgrading this version, take care of also verifying and updating if needed
+       the properties and manifest configuration bellow. -->
+    <cxf-rt-frontend-jaxrs.version>3.3.1</cxf-rt-frontend-jaxrs.version>
+
+    <cxf.osgi.version.clean>${cxf-rt-frontend-jaxrs.version}</cxf.osgi.version.clean>
+
+    <cxf.osgi.javax.servlet.version.range>[0,4.1)</cxf.osgi.javax.servlet.version.range>
+    <cxf.osgi.javax.activation.version.range>[0,2)</cxf.osgi.javax.activation.version.range>
+    <cxf.aries.version.range>[1.0,2)</cxf.aries.version.range>
+    <cxf.osgi.spring.version.range>[3.1,6)</cxf.osgi.spring.version.range>
+    <cxf.validation.api.package.version.range>[1.0.0,2)</cxf.validation.api.package.version.range>
+    <cxf.osgi.javax.bind.version.range>[0,3)</cxf.osgi.javax.bind.version.range>
+    <cxf.osgi.javax.annotation.version.range>[1.2,2)</cxf.osgi.javax.annotation.version.range>
+
+    <cxf.module.name>org.apache.cxf.frontend.jaxrs</cxf.module.name>
+
+    <cxf.osgi.import>
+      javax.servlet*;version="${cxf.osgi.javax.servlet.version.range}";resolution:=optional,
+      javax.activation;version="${cxf.osgi.javax.activation.version.range}",
+      org.apache.aries*;version="${cxf.aries.version.range}";resolution:=optional,
+      org.springframework*;resolution:="optional";version="${cxf.osgi.spring.version.range}",
+      javax.validation*;resolution:=optional;version="${cxf.validation.api.package.version.range}",
+      javax.ws.rs.client;version="[2.0,3)",
+      javax.ws.rs*;version="[2.0,3)",
+      javax.xml.bind*;version="${cxf.osgi.javax.bind.version.range}",
+      javax.annotation*;version="${cxf.osgi.javax.annotation.version.range}",
+      org.osgi.framework;version="[1.7,2)",
+      org.osgi.service.blueprint.container;version="[1.0,2)";resolution:=optional,
+      org.osgi.service.blueprint.reflect;version="[1.0,2)";resolution:=optional
+    </cxf.osgi.import>
+
+    <cxf.osgi.export>
+      org.apache.cxf.jaxrs*
+    </cxf.osgi.export>
+    <cxf.export.service>
+      org.apache.aries.blueprint.NamespaceHandler;osgi.service.blueprint.namespace="http://cxf.apache.org/blueprint/jaxrs"
+    </cxf.export.service>
+
+    <cxf.bundle.activator>org.apache.cxf.jaxrs.blueprint.Activator</cxf.bundle.activator>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.apache.cxf</groupId>
+      <artifactId>cxf-rt-frontend-jaxrs</artifactId>
+      <version>${cxf-rt-frontend-jaxrs.version}</version>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.felix</groupId>
+          <artifactId>maven-bundle-plugin</artifactId>
+          <version>4.1.0</version>
+
+          <extensions>true</extensions>
+
+          <configuration>
+            <obrRepository>NONE</obrRepository>
+            <niceManifest>true</niceManifest>
+
+            <instructions>
+              <Embed-Dependency>cxf-rt-frontend-jaxrs;inline=true</Embed-Dependency>
+
+              <Bundle-Name>Apache CXF Runtime JAX-RS Frontend (HV wrapped)</Bundle-Name>
+              <Bundle-SymbolicName>${project.groupId}.${project.artifactId}</Bundle-SymbolicName>
+              <Bundle-Version>${project.version}</Bundle-Version>
+
+              <Bundle-DocURL>http://cxf.apache.org</Bundle-DocURL>
+
+              <Implementation-Vendor>The Apache Software Foundation</Implementation-Vendor>
+              <Implementation-Vendor-Id>org.apache</Implementation-Vendor-Id>
+              <Implementation-Version>${cxf.osgi.version.clean}</Implementation-Version>
+
+              <Specification-Vendor>The Apache Software Foundation</Specification-Vendor>
+              <Specification-Version>${cxf.osgi.version.clean}</Specification-Version>
+
+              <Import-Package>
+                ${cxf.osgi.import},
+                *
+              </Import-Package>
+
+              <Export-Package>${cxf.osgi.export}</Export-Package>
+              <Export-Service>
+                ${cxf.export.service}
+              </Export-Service>
+
+              <Bundle-Activator>${cxf.bundle.activator}</Bundle-Activator>
+              <Bundle-ActivationPolicy>lazy</Bundle-ActivationPolicy>
+
+              <Automatic-Module-Name>${cxf.module.name}</Automatic-Module-Name>
+
+              <_failok>true</_failok>
+              <_nouses>true</_nouses>
+              <_versionpolicy>[$(version;==;$(@)),$(version;+;$(@)))</_versionpolicy>
+            </instructions>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
+</project>

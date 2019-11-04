@@ -11,10 +11,14 @@
   http://camel.apache.org/schema/blueprint http://camel.apache.org/schema/blueprint/camel-blueprint.xsd
   http://aries.apache.org/blueprint/xmlns/blueprint-cm/v1.1.0 http://aries.apache.org/schemas/blueprint-cm/blueprint-cm-1.1.0.xsd
   ">
-    <bean id="resourceMapping"
-               class="org.ops4j.pax.web.extender.whiteboard.runtime.DefaultResourceMapping">
-        <property name="alias" value="/angular-bundle" />
-        <property name="path" value="/js" />
-    </bean>
-    <service id="resources" ref="resourceMapping" interface="org.ops4j.pax.web.extender.whiteboard.ResourceMapping" />
+
+    <service id="resources" interface="java.lang.String">
+        <service-properties>
+            <entry key="osgi.http.whiteboard.resource.pattern" value="/angular-bundle/*"/>
+            <entry key="osgi.http.whiteboard.resource.prefix" value="/js"/>
+        </service-properties>
+
+        <bean class="java.lang.String"/>
+    </service>
+
 </blueprint>

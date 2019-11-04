@@ -41,13 +41,22 @@ import org.pentaho.platform.api.engine.IApplicationContext;
 import org.pentaho.platform.engine.core.system.PentahoSystem;
 import org.junit.Assert;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Dictionary;
 import java.util.Hashtable;
 import java.util.List;
 
 import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.Matchers.empty;
 
-public class KarafFeatureWatcherImplTest {
+public class  KarafFeatureWatcherImplTest {
   private static final String FEATURES_DELIMITER = ",";
   private static final String PENTAHO_FEATURES_CONDIGURATION_NAME = "org.pentaho.features";
   private static final String RUNTIME_FEATURES_PROPERTY_NAME = "runtimeFeatures";
@@ -113,15 +122,15 @@ public class KarafFeatureWatcherImplTest {
   @Before
   public void setUp() {
     LogManager.getRootLogger().addAppender( new TestAppender() );
-  }
 
-  @Test
-  public void testWaitForFeatures() throws Exception {
     // Setting the karaf timeout to 1ms, because this is an unit test
     IApplicationContext applicationContext = mock( IApplicationContext.class );
     PentahoSystem.init( applicationContext );
     when( applicationContext.getProperty( KarafBlueprintWatcherImpl.KARAF_TIMEOUT_PROPERTY ) ).thenReturn( "1" );
+  }
 
+  @Test
+  public void testWaitForFeatures() throws Exception {
     BundleContext bundleContext = mock( BundleContext.class );
 
     ConfigurationAdmin configurationAdmin = mock( ConfigurationAdmin.class );
@@ -249,6 +258,98 @@ public class KarafFeatureWatcherImplTest {
     Assert.fail();
   }
 
+  @Test
+  public void testGetFeaturesNoFeatures() throws Exception {
+    String featuresPropertyValue = "";
+    String featuresPropertyKey = "featuresBoot";
+    String configurationPid = "org.apache.features";
+
+    KarafFeatureWatcherImpl karafFeatureWatcherImpl = this.createKarafFeatureWatcherImplWithConfig( configurationPid,
+      featuresPropertyKey, featuresPropertyValue );
+
+    // Act
+    List<String> actualFeatures = karafFeatureWatcherImpl.getFeatures( configurationPid, featuresPropertyKey );
+
+    // Assert
+    assertThat( actualFeatures, is( empty() ) );
+  }
+
+  @Test
+  public void testGetFeaturesWithParentesisStages() throws Exception {
+    String featuresPropertyValue = "feature1,(feature2,feature3),feature4";
+    String featuresPropertyKey = "featuresBoot";
+    String configurationPid = "org.apache.features";
+
+    KarafFeatureWatcherImpl karafFeatureWatcherImpl = this.createKarafFeatureWatcherImplWithConfig( configurationPid,
+      featuresPropertyKey, featuresPropertyValue );
+
+    // Act
+    List<String> actualFeatures = karafFeatureWatcherImpl.getFeatures( configurationPid, featuresPropertyKey );
+
+    // Assert
+    List<String> expectedFeatures = Arrays.asList( "feature1", "feature2", "feature3", "feature4" );
+    assertEquals( expectedFeatures, actualFeatures );
+  }
+
+  @Test
+  public void testGetFeaturesNoParentesisStages() throws Exception {
+    String featuresPropertyValue = "feature1,feature2,feature3,feature4";
+    String featuresPropertyKey = "featuresBoot";
+    String configurationPid = "org.apache.features";
+
+    KarafFeatureWatcherImpl karafFeatureWatcherImpl = this.createKarafFeatureWatcherImplWithConfig( configurationPid,
+      featuresPropertyKey, featuresPropertyValue );
+
+    // Act
+    List<String> actualFeatures = karafFeatureWatcherImpl.getFeatures( configurationPid, featuresPropertyKey );
+
+    // Assert
+    List<String> expectedFeatures = Arrays.asList( "feature1", "feature2", "feature3", "feature4" );
+    Assert.assertEquals( expectedFeatures, actualFeatures );
+  }
+
+
+  /**
+   * Creates a KarafFeatureWatcherImpl setup with mock configuration.
+   * @param configurationPid The persistent id of the Configuration.
+   * @param featuresPropertyKey The key of the property to add to the configuration.
+   * @param featuresPropertyValue The value of the property to add to the configuration.
+   * @return
+   * @throws IOException
+   */
+  private KarafFeatureWatcherImpl createKarafFeatureWatcherImplWithConfig( String configurationPid,
+                                                                            String featuresPropertyKey,
+                                                                            String featuresPropertyValue )
+    throws IOException {
+    BundleContext bundleContext = mock( BundleContext.class );
+    ConfigurationAdmin configurationAdmin = createMockConfigurationAdmin( bundleContext );
+
+    Dictionary<String, Object> properties = new Hashtable<>();
+    properties.put( featuresPropertyKey, featuresPropertyValue );
+    addConfiguration( configurationAdmin,  configurationPid, properties );
+
+    return new KarafFeatureWatcherImpl( bundleContext );
+  }
+
+  private ConfigurationAdmin createMockConfigurationAdmin( BundleContext bundleContextMock ) {
+    ConfigurationAdmin configurationAdmin = mock( ConfigurationAdmin.class );
+    @SuppressWarnings( "unchecked" )
+    ServiceReference<ConfigurationAdmin> configurationAdminReference =
+      (ServiceReference<ConfigurationAdmin>) mock( ServiceReference.class );
+    when( bundleContextMock.getServiceReference( ConfigurationAdmin.class ) ).thenReturn( configurationAdminReference );
+    when( bundleContextMock.getService( configurationAdminReference ) ).thenReturn( configurationAdmin );
+
+    return configurationAdmin;
+  }
+
+  private void addConfiguration( ConfigurationAdmin configurationAdminMock, String configurationPid, Dictionary<String,Object> properties )
+    throws IOException {
+    // Runtime Features
+    Configuration configuration = mock( Configuration.class );
+    when( configuration.getProperties() ).thenReturn( properties );
+    when( configurationAdminMock.getConfiguration( configurationPid ) ).thenReturn( configuration );
+  }
+
   private Dependency createMockFeature( String name, String version, boolean installed, List<Dependency> dependencies,
       List<BundleInfo> bundles, FeaturesService featuresService ) throws Exception {
     Feature feature = mock( Feature.class );
@@ -285,16 +386,16 @@ public class KarafFeatureWatcherImplTest {
     when( bundleInfo.getState() ).thenReturn( bundleState );
     when( bundleService.getInfo( bundle ) ).thenReturn( bundleInfo );
 
-    List<BundleRequirement> unsatisfiedRquirements = null;
+    List<BundleRequirement> unsatisfiedRequirements = null;
     if ( missingDependencies != null ) {
-      unsatisfiedRquirements = new ArrayList<BundleRequirement>();
+      unsatisfiedRequirements = new ArrayList<>();
       for ( String missingDependency : missingDependencies ) {
         BundleRequirement requirement = mock( BundleRequirement.class );
         when( requirement.toString() ).thenReturn( missingDependency );
-        unsatisfiedRquirements.add( requirement );
+        unsatisfiedRequirements.add( requirement );
       }
     }
-    when( bundleService.getUnsatisfiedRquirements( bundle, null ) ).thenReturn( unsatisfiedRquirements );
+    when( bundleService.getUnsatisfiedRequirements( bundle, null ) ).thenReturn( unsatisfiedRequirements );
 
     BundleInfo featureBundleInfo = mock( BundleInfo.class );
     when( featureBundleInfo.getLocation() ).thenReturn( bundleName );

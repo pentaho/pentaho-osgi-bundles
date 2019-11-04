@@ -33,11 +33,12 @@
 
     <reference id="delegateRef" interface="org.pentaho.osgi.i18n.LocalizationService"/>
 
-    <service id="PentahoI18n"
-             interface="org.ops4j.pax.web.extender.whiteboard.ResourceMapping">
-        <bean class="org.ops4j.pax.web.extender.whiteboard.runtime.DefaultResourceMapping">
-            <property name="alias" value="/@pentaho/i18n-osgi@${project.version}"/>
-            <property name="path" value="/web-pentaho-i18n-webservice"/>
-        </bean>
+    <service id="PentahoI18n" interface="java.lang.String">
+        <service-properties>
+            <entry key="osgi.http.whiteboard.resource.pattern" value="/@pentaho/i18n-osgi@${project.version}/*"/>
+            <entry key="osgi.http.whiteboard.resource.prefix" value="/web-pentaho-i18n-webservice"/>
+        </service-properties>
+
+        <bean class="java.lang.String"/>
     </service>
 </blueprint>

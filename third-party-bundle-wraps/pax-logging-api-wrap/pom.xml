@@ -1,0 +1,107 @@
+<?xml version="1.0"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.hitachivantara</groupId>
+    <artifactId>third-party-bundle-wraps</artifactId>
+    <version>9.0.0.0-SNAPSHOT</version>
+  </parent>
+
+  <artifactId>pax-logging-api-wrap</artifactId>
+
+  <packaging>bundle</packaging>
+
+  <description>
+    This OSGi bundle wraps the org.ops4j.pax.logging/pax-logging-api bundle preventing it
+    from exporting packages from the logging APIs the Pentaho products use and inject from
+    the main classloader (org.apache.commons.logging, org.apache.log4j and org.slf4j).
+  </description>
+
+  <properties>
+    <!-- When eventually upgrading this version, take care of also verifying and updating if needed
+         the manifest configuration bellow. -->
+    <pax-logging-api.version>1.10.2</pax-logging-api.version>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.ops4j.pax.logging</groupId>
+      <artifactId>pax-logging-api</artifactId>
+      <version>${pax-logging-api.version}</version>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.felix</groupId>
+        <artifactId>maven-bundle-plugin</artifactId>
+
+        <configuration>
+          <instructions>
+            <!--
+              Using inline=true. bnd tool FAQ (https://bnd.bndtools.org/chapters/920-faq.html) states:
+                "Bundle-ClassPath [...] creates unnecessary complexity, it is slower, and it is not necessary.
+                It will also not be compatible with techniques like PojoSR, something that the OSGi is looking
+                into standardizing. [...] If you really need to wrap one or more JARs, use the Include-Resource
+                instruction, it has an option to unroll a JAR resource [...]. This will copy all its contents in
+                the target JAR.
+            -->
+            <Embed-Dependency>pax-logging-api;inline=true</Embed-Dependency>
+
+            <Bundle-Name>OPS4J Pax Logging - API (HV wrapped)</Bundle-Name>
+            <Bundle-SymbolicName>${project.groupId}.${project.artifactId}</Bundle-SymbolicName>
+            <Bundle-Version>${project.version}</Bundle-Version>
+
+            <!--
+              Configurations taken from:
+                https://github.com/ops4j/org.ops4j.pax.logging/blob/logging-1.10.2/pax-logging-api/osgi.bnd
+
+              Removed any exports of the org.apache.commons.logging, org.apache.log4j and org.slf4j packages
+              and sub-packages.
+
+              Recheck and update them when upgrading the pax-logging-api version.
+            -->
+
+            <Bundle-Activator>org.ops4j.pax.logging.internal.Activator</Bundle-Activator>
+
+            <Export-Package>
+              org.apache.avalon.framework.logger;-split-package:=merge-first; version=4.3; provider=paxlogging,
+              org.apache.juli.logging; version=5.5.28; provider=paxlogging,
+              org.apache.juli.logging; version=6.0.18; provider=paxlogging,
+              org.apache.logging.log4j; version=2.8.1; provider=paxlogging,
+              org.apache.logging.log4j.message; version=2.8.1; provider=paxlogging,
+              org.apache.logging.log4j.simple; version=2.8.1; provider=paxlogging,
+              org.apache.logging.log4j.spi; version=2.8.1; provider=paxlogging,
+              org.apache.logging.log4j.status; version=2.8.1; provider=paxlogging,
+              org.apache.logging.log4j.util; version=2.8.1; provider=paxlogging,
+              org.knopflerfish.service.log; version=1.1.0; provider=paxlogging,
+              org.ops4j.pax.logging; version=${pax-logging-api.version}; provider=paxlogging,
+              org.ops4j.pax.logging.avalon; version=${pax-logging-api.version}; provider=paxlogging,
+              org.ops4j.pax.logging.slf4j; version=${pax-logging-api.version}; provider=paxlogging,
+              org.ops4j.pax.logging.spi; version=${pax-logging-api.version}; provider=paxlogging,
+              org.osgi.service.log; version=1.3;-split-package:=merge-first,
+              org.jboss.logging; version=3.3.0.Final; provider=paxlogging
+            </Export-Package>
+
+            <Import-Package>
+              org.osgi.framework; version="[1.0.0,2.0.0)",
+              org.osgi.framework.wiring; version="[1.0.0,2.0.0)",
+              org.osgi.util.tracker; version="[1.0.0,2.0.0)",
+              org.ops4j.pax.logging; version="[0.9.5,2.0.0)",
+              org.ops4j.pax.logging.avalon; version="[0.9.5,2.0.0)",
+              org.osgi.service.event; version="[1.0.0,2.0.0)"; resolution:=optional,
+              org.osgi.service.log; version="[1.3.0,2.0.0)",
+              org.apache.log; resolution:=optional,
+              javax.xml.parsers,
+              org.w3c.dom
+            </Import-Package>
+          </instructions>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+
+</project>

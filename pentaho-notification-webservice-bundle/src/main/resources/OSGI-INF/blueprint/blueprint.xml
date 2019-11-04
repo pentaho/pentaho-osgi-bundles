@@ -33,13 +33,15 @@
     <property name="notificationAggregator" ref="notificationAggregatorRef"/>
   </bean>
 
-  <bean id="resourceMapping"
-        class="org.ops4j.pax.web.extender.whiteboard.runtime.DefaultResourceMapping">
-    <property name="alias" value="/notifier"/>
-    <property name="path" value="/js"/>
-  </bean>
+  <service id="resources" interface="java.lang.String">
+    <service-properties>
+      <entry key="osgi.http.whiteboard.resource.pattern" value="/notifier/*"/>
+      <entry key="osgi.http.whiteboard.resource.prefix" value="/js"/>
+    </service-properties>
 
-  <service id="resources" ref="resourceMapping" interface="org.ops4j.pax.web.extender.whiteboard.ResourceMapping"/>
+    <bean class="java.lang.String"/>
+  </service>
+
   <reference id="notificationAggregatorRef" interface="org.pentaho.osgi.notification.api.NotificationAggregator"/>
   <reference-list id="executorServiceRefList" interface="java.util.concurrent.ExecutorService" availability="optional">
     <reference-listener ref="notificationServiceImpl" bind-method="setExecutorService"/>

@@ -20,6 +20,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Dictionary;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
@@ -68,68 +70,37 @@ public class KarafFeatureWatcherImpl implements IKarafFeatureWatcher {
 
   @Override public void waitForFeatures() throws FeatureWatcherException {
 
-
-    // Start the serviceTracker timer
-    ServiceTracker serviceTracker = new ServiceTracker( bundleContext, FeaturesService.class.getName(), null );
-    serviceTracker.open();
     try {
-      serviceTracker.waitForService( timeout );
-    } catch ( InterruptedException e ) {
-      logger.debug( "FeaturesService " + FeaturesService.class.getName() + " ServiceTracker Interrupted" );
-    }
+      List<String> bootFeatures = this.getFeatures( "org.apache.karaf.features", "featuresBoot" );
+      waitForFeatures( bootFeatures );
 
-    ServiceReference<FeaturesService> serviceReference = bundleContext.getServiceReference( FeaturesService.class );
-    if ( serviceReference != null ) {
-      FeaturesService featuresService = bundleContext.getService( serviceReference );
-
-      ServiceReference<ConfigurationAdmin> serviceReference1 =
-          bundleContext.getServiceReference( ConfigurationAdmin.class );
-      ConfigurationAdmin configurationAdmin = bundleContext.getService( serviceReference1 );
-
-      try {
-        List<String> requiredFeatures = new ArrayList<String>();
-
-        Configuration configuration = configurationAdmin.getConfiguration( "org.apache.karaf.features" );
-        String featuresBoot = (String) configuration.getProperties().get( "featuresBoot" );
-        String[] fs = featuresBoot.split( "," );
-        requiredFeatures.addAll( Arrays.asList( fs ) );
-
-        waitForFeatures( requiredFeatures, featuresService );
-
-
-        List<String> extraFeatures = new ArrayList<String>();
-        // Install extra features
-        configuration = configurationAdmin.getConfiguration( "org.pentaho.features" );
-        if ( configuration != null && configuration.getProperties() != null ) {
-          String extraFeaturesStr = (String) configuration.getProperties().get( "runtimeFeatures" );
-          if ( extraFeaturesStr != null ) {
-            fs = extraFeaturesStr.split( "," );
-            extraFeatures.addAll( Arrays.asList( fs ) );
-          }
-          ICapabilityManager manager = DefaultCapabilityManager.getInstance();
-          if ( manager != null ) {
-            for ( String extraFeature : extraFeatures ) {
-              ICapability capability = manager.getCapabilityById( extraFeature );
-              if ( capability != null && !capability.isInstalled() ) {
-                capability.install();
-              }
-            }
+      List<String> runtimeFeatures = this.getFeatures( "org.pentaho.features",  "runtimeFeatures" );
+      // Install extra features
+      ICapabilityManager manager = DefaultCapabilityManager.getInstance();
+      if ( manager != null ) {
+        for ( String runtimeFeature : runtimeFeatures ) {
+          ICapability capability = manager.getCapabilityById( runtimeFeature );
+          if ( capability != null && !capability.isInstalled() ) {
+            capability.install();
           }
         }
-
-        waitForFeatures( extraFeatures, featuresService );
-
-      } catch ( IOException e ) {
-        throw new FeatureWatcherException( "Error accessing ConfigurationAdmin", e );
-      } catch ( Exception e ) {
-        throw new FeatureWatcherException( "Unknown error in KarafWatcher", e );
-      } finally {
-        serviceTracker.close();
       }
+      waitForFeatures( runtimeFeatures );
+
+    } catch ( IOException e ) {
+      throw new FeatureWatcherException( "Error accessing ConfigurationAdmin", e );
+    } catch ( Exception e ) {
+      throw new FeatureWatcherException( "Unknown error in KarafWatcher", e );
     }
   }
 
-  private void waitForFeatures( List<String> requiredFeatures, FeaturesService featuresService ) throws Exception {
+
+  private void waitForFeatures( List<String> requiredFeatures ) throws Exception {
+    FeaturesService featuresService = this.getFeatureService();
+    if ( featuresService == null ) {
+      logger.warn( "Unable to get FeatureService to start waiting for features.");
+      return;
+    }
 
     long entryTime = System.currentTimeMillis();
     // Loop through to see if features are all installed
@@ -164,6 +135,75 @@ public class KarafFeatureWatcherImpl implements IKarafFeatureWatcher {
       break;
     }
   }
+
+  private FeaturesService getFeatureService() {
+    if( this.featuresService == null ) {
+      // Start the serviceTracker timer
+      ServiceTracker serviceTracker = new ServiceTracker( bundleContext, FeaturesService.class.getName(), null );
+      serviceTracker.open();
+      try {
+        serviceTracker.waitForService( timeout );
+      } catch ( InterruptedException e ) {
+        logger.debug( "FeaturesService " + FeaturesService.class.getName() + " ServiceTracker Interrupted" );
+      } finally {
+        serviceTracker.close();
+      }
+
+      ServiceReference<FeaturesService> featureServiceReference = bundleContext.getServiceReference( FeaturesService.class );
+      if( featureServiceReference != null ) {
+        this.featuresService = bundleContext.getService( featureServiceReference );
+      }
+    }
+
+    return this.featuresService;
+  }
+  private FeaturesService featuresService;
+
+  private ConfigurationAdmin getConfigurationAdmin() {
+    if ( this.configurationAdmin == null ) {
+      ServiceReference<ConfigurationAdmin> configurationAdminServiceReference =
+        bundleContext.getServiceReference( ConfigurationAdmin.class );
+      this.configurationAdmin = bundleContext.getService( configurationAdminServiceReference );
+    }
+
+    return this.configurationAdmin;
+  }
+  private ConfigurationAdmin configurationAdmin;
+
+
+  /**
+   * Gets features from a property in a configuration.
+   * @param configPersistentId The persistent id of the Configuration.
+   * @param featuresPropertyKey The property key where the features are declared in the Configuration.
+   * @return an list with requested features,
+   *         an empty list if no Configuration for the persistentId is found,
+   *         an empty list if the features property key is not mapped.
+   * @throws IOException if access to persistent storage fails.
+   */
+  protected List<String> getFeatures( String configPersistentId, String featuresPropertyKey ) throws IOException {
+    Configuration configuration = this.getConfigurationAdmin().getConfiguration( configPersistentId );
+
+    Dictionary<String,Object> properties = configuration.getProperties();
+    if ( properties == null ) {
+      return Collections.emptyList();
+    }
+
+    String featuresPropertyValue = (String) properties.get( featuresPropertyKey );
+    if ( featuresPropertyValue == null ) {
+      return Collections.emptyList();
+    }
+
+    // remove parentesis from feature stages
+    featuresPropertyValue = featuresPropertyValue.replaceAll( "[()]","" );
+    if( featuresPropertyValue.length() == 0 )
+    {
+      return Collections.emptyList();
+    }
+
+    String[] featuresArray = featuresPropertyValue.split( "," );
+    return Arrays.asList( featuresArray );
+  }
+
 
   // All features report
   private String getFeaturesReport( FeaturesService featuresService, List<String> uninstalledFeatures )
@@ -277,7 +317,7 @@ public class KarafFeatureWatcherImpl implements IKarafFeatureWatcher {
     }
 
     // Unsatisfied Requirements for this bundle, includes optional requirements
-    List<BundleRequirement> missingDependencies = bundleService.getUnsatisfiedRquirements( bundle, null );
+    List<BundleRequirement> missingDependencies = bundleService.getUnsatisfiedRequirements( bundle, null );
     if ( missingDependencies != null && missingDependencies.isEmpty() == false ) {
       bundleReport += System.lineSeparator() + "\t Unsatisfied Requirements:";
       for ( BundleRequirement missDependency : missingDependencies ) {
