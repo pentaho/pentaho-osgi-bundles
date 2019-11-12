@@ -43,6 +43,7 @@ import org.osgi.util.tracker.ServiceTracker;
 import org.pentaho.capabilities.api.ICapability;
 import org.pentaho.capabilities.api.ICapabilityManager;
 import org.pentaho.capabilities.impl.DefaultCapabilityManager;
+import org.pentaho.hadoop.shim.DriverManager;
 import org.pentaho.osgi.api.IKarafFeatureWatcher;
 import org.pentaho.platform.engine.core.system.PentahoSystem;
 import org.pentaho.platform.servicecoordination.api.IServiceBarrier;
@@ -87,6 +88,10 @@ public class KarafFeatureWatcherImpl implements IKarafFeatureWatcher {
       }
       waitForFeatures( runtimeFeatures );
 
+      if ( getBooleanProperty( DriverManager.CONFIG_FILE_NAME,  DriverManager.INSTALL_DRIVERS_PROPERTY ) ) {
+        DriverManager.getInstance( bundleContext ).installDrivers();
+      }
+
     } catch ( IOException e ) {
       throw new FeatureWatcherException( "Error accessing ConfigurationAdmin", e );
     } catch ( Exception e ) {
@@ -98,7 +103,7 @@ public class KarafFeatureWatcherImpl implements IKarafFeatureWatcher {
   private void waitForFeatures( List<String> requiredFeatures ) throws Exception {
     FeaturesService featuresService = this.getFeatureService();
     if ( featuresService == null ) {
-      logger.warn( "Unable to get FeatureService to start waiting for features.");
+      logger.warn( "Unable to get FeatureService to start waiting for features." );
       return;
     }
 
@@ -137,7 +142,7 @@ public class KarafFeatureWatcherImpl implements IKarafFeatureWatcher {
   }
 
   private FeaturesService getFeatureService() {
-    if( this.featuresService == null ) {
+    if ( this.featuresService == null ) {
       // Start the serviceTracker timer
       ServiceTracker serviceTracker = new ServiceTracker( bundleContext, FeaturesService.class.getName(), null );
       serviceTracker.open();
@@ -150,7 +155,7 @@ public class KarafFeatureWatcherImpl implements IKarafFeatureWatcher {
       }
 
       ServiceReference<FeaturesService> featureServiceReference = bundleContext.getServiceReference( FeaturesService.class );
-      if( featureServiceReference != null ) {
+      if ( featureServiceReference != null ) {
         this.featuresService = bundleContext.getService( featureServiceReference );
       }
     }
@@ -170,6 +175,31 @@ public class KarafFeatureWatcherImpl implements IKarafFeatureWatcher {
   }
   private ConfigurationAdmin configurationAdmin;
 
+  /**
+   * Gets a boolean from a property in a configuration.
+   * @param configPersistentId The persistent id of the Configuration.
+   * @param featuresPropertyKey The property key where the features are declared in the Configuration.
+   * @return the boolean value of the requested property,
+   *         a false value if no Configuration for the persistentId is found,
+   *         a false value if the features property key is not mapped.
+   *         a false value if the features property has a non-boolean value.
+   * @throws IOException if access to persistent storage fails.
+   */
+  private boolean getBooleanProperty( String configPersistentId, String featuresPropertyKey ) throws IOException {
+    Configuration configuration = this.getConfigurationAdmin().getConfiguration( configPersistentId );
+
+    Dictionary<String, Object> properties = configuration.getProperties();
+    if ( properties == null ) {
+      return false;
+    }
+
+    String featuresPropertyValue = (String) properties.get( featuresPropertyKey );
+    if ( featuresPropertyValue == null ) {
+      return false;
+    }
+
+    return Boolean.parseBoolean( featuresPropertyValue );
+  }
 
   /**
    * Gets features from a property in a configuration.
@@ -183,7 +213,7 @@ public class KarafFeatureWatcherImpl implements IKarafFeatureWatcher {
   protected List<String> getFeatures( String configPersistentId, String featuresPropertyKey ) throws IOException {
     Configuration configuration = this.getConfigurationAdmin().getConfiguration( configPersistentId );
 
-    Dictionary<String,Object> properties = configuration.getProperties();
+    Dictionary<String, Object> properties = configuration.getProperties();
     if ( properties == null ) {
       return Collections.emptyList();
     }
@@ -194,9 +224,8 @@ public class KarafFeatureWatcherImpl implements IKarafFeatureWatcher {
     }
 
     // remove parentesis from feature stages
-    featuresPropertyValue = featuresPropertyValue.replaceAll( "[()]","" );
-    if( featuresPropertyValue.length() == 0 )
-    {
+    featuresPropertyValue = featuresPropertyValue.replaceAll( "[()]", "" );
+    if ( featuresPropertyValue.length() == 0 ) {
       return Collections.emptyList();
     }
 
