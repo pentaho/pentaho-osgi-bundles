@@ -47,6 +47,7 @@ public class DriverManager {
 
   /**
    * Method will return the DriverManager instance configured with the given bundle context.
+   *
    * @param bundleContext - bundleContext to be used by the DriverManager to get the KarService instance
    * @return - DriverManager instance configured with the given bundle context.
    */
@@ -60,27 +61,30 @@ public class DriverManager {
 
   /**
    * Set the bundleContext to be used by the DriverManager to get the KarService instance
+   *
    * @param bundleContext
    */
   private void setBundleContext( BundleContext bundleContext ) {
     this.bundleContext = bundleContext;
   }
 
+  public static String getShimDriverInstallationDirectory() {
+    return System.getProperty( Const.SHIM_DRIVER_DEPLOYMENT_LOCATION, DEFAULT_DRIVERS_DIR );
+  }
+
   /**
-   * Method to install the shim drivers from a given set of Kar files. The location to be searched is configurable
-   * using the kettle property Const.SHIM_DRIVER_DEPLOYMENT_LOCATION. If a Kar file with the same name if already
-   * registered by the KarService, that Kar file will not be installed and will be assumed installed. To refresh
-   * or re-install the Kar files in the drivers directory, clear the Karaf catch and restart the application. To
-   * remove an installed Kar file, delete the Kar file from the drivers directory, clear the Karaf catch and restart
-   * the application.
+   * Method to install the shim drivers from a given set of Kar files. The location to be searched is configurable using
+   * the kettle property Const.SHIM_DRIVER_DEPLOYMENT_LOCATION. If a Kar file with the same name if already registered
+   * by the KarService, that Kar file will not be installed and will be assumed installed. To refresh or re-install the
+   * Kar files in the drivers directory, clear the Karaf catch and restart the application. To remove an installed Kar
+   * file, delete the Kar file from the drivers directory, clear the Karaf catch and restart the application.
    */
   public void installDrivers() {
     logger.info( "Installing driver kars." );
     KarService karService;
     Stream<Path> karFileList = null;
     try {
-      String karSourceDirName =
-        System.getProperties().getProperty( Const.SHIM_DRIVER_DEPLOYMENT_LOCATION, DEFAULT_DRIVERS_DIR );
+      String karSourceDirName = getShimDriverInstallationDirectory();
       File karSourceDir = new File( karSourceDirName );
 
       if ( !karSourceDir.exists() ) {
