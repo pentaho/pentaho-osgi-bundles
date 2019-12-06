@@ -155,7 +155,6 @@
         <module>pentaho-metastore-locator-impl</module>
         <module>pentaho-webcontext</module>
         <module>pentaho-pdi-platform</module>
-        <module>third-party-bundle-wraps</module>
         <module>spring-security-karaf-login-module</module>
       </modules>
     </profile>
