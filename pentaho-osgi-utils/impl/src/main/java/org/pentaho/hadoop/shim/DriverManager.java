@@ -16,6 +16,7 @@
  */
 package org.pentaho.hadoop.shim;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.karaf.kar.KarService;
 import org.osgi.framework.BundleContext;
 import org.pentaho.di.core.Const;
@@ -23,6 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -69,7 +71,18 @@ public class DriverManager {
   }
 
   public static String getShimDriverInstallationDirectory() {
-    return System.getProperty( Const.SHIM_DRIVER_DEPLOYMENT_LOCATION, DEFAULT_DRIVERS_DIR );
+    String driversDir =  System.getProperty( Const.SHIM_DRIVER_DEPLOYMENT_LOCATION, DEFAULT_DRIVERS_DIR );
+    if ( !StringUtils.isEmpty( driversDir ) && driversDir.startsWith( "./" ) ) {
+      try {
+        String appPath = new File( "." ).getCanonicalPath();
+        if ( appPath.endsWith( "tomcat" ) ) {
+          driversDir = driversDir.replace( "./", "./bin/" );
+        }
+      } catch ( IOException ex ) {
+        //Don't update drivers path
+      }
+    }
+    return driversDir;
   }
 
   /**
