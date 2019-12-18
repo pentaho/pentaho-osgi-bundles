@@ -39,7 +39,6 @@ public class DriverManager {
 
   public static final String CONFIG_FILE_NAME = "org.pentaho.features";
   public static final String INSTALL_DRIVERS_PROPERTY = "installDrivers";
-  private static final String DEFAULT_DRIVERS_DIR = "./drivers";
   private static final String DRIVER_FILE_EXTENSION = ".kar";
 
   private DriverManager() {
@@ -68,10 +67,6 @@ public class DriverManager {
     this.bundleContext = bundleContext;
   }
 
-  public static String getShimDriverInstallationDirectory() {
-    return System.getProperty( Const.SHIM_DRIVER_DEPLOYMENT_LOCATION, DEFAULT_DRIVERS_DIR );
-  }
-
   /**
    * Method to install the shim drivers from a given set of Kar files. The location to be searched is configurable using
    * the kettle property Const.SHIM_DRIVER_DEPLOYMENT_LOCATION. If a Kar file with the same name if already registered
@@ -84,7 +79,7 @@ public class DriverManager {
     KarService karService;
     Stream<Path> karFileList = null;
     try {
-      String karSourceDirName = getShimDriverInstallationDirectory();
+      String karSourceDirName = Const.getShimDriverDeploymentLocation();
       File karSourceDir = new File( karSourceDirName );
 
       if ( !karSourceDir.exists() ) {
