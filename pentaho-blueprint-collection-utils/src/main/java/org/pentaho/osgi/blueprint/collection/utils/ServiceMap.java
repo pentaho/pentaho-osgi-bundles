@@ -1,5 +1,5 @@
 /*!
- * Copyright 2010 - 2018 Hitachi Vantara.  All rights reserved.
+ * Copyright 2010 - 2020 Hitachi Vantara.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,8 @@
 package org.pentaho.osgi.blueprint.collection.utils;
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -28,11 +28,13 @@ import com.google.common.annotations.VisibleForTesting;
  */
 public class ServiceMap<T> {
 
-  private final Map<String, MapItem<T>> map = new HashMap<String, MapItem<T>>();
+  private final Map<String, MapItem<T>> map = new ConcurrentHashMap<>();
   public static final String SERVICE_KEY_PROPERTY = "serviceMapKey";
 
   public T getItem( String key ) {
-    return map.get( key ) != null ? map.get( key ).getItem() : null;
+    synchronized ( map ) {
+      return map.get( key ) != null ? map.get( key ).getItem() : null;
+    }
   }
 
   public void itemAdded( T item, @SuppressWarnings( "rawtypes" ) Map config ) {
