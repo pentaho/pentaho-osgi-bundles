@@ -254,7 +254,7 @@ public class WebContextServletTest {
   }
 
   private String getDocumentWriteExpected( String resource ) {
-    String location = "'\" + CONTEXT_PATH + \"" + resource + "'";
+    String location = "'\" + CONTEXT_PATH + \"/" + resource + "'";
 
     if ( resource.endsWith( ".js" ) ) {
       return "document.write(\"<script type='text/javascript' src=" + location + "></scr\" + \"ipt>\");\n";

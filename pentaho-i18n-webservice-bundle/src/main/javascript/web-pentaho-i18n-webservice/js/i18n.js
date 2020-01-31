@@ -29,9 +29,9 @@
         // This resource will be resolved dynamically during run time in the web browser.
         onLoad();
       } else {
-        var baseUrl = CONTEXT_PATH && CONTEXT_PATH == '/' ? CONTEXT_PATH : CONTEXT_PATH + "osgi/";
+        var baseUrl = CONTEXT_PATH;
         var locale = typeof SESSION_LOCALE !== "undefined" ? SESSION_LOCALE : "en";
-        var url = baseUrl + "cxf/i18n/" + bundlePath + "/" + locale;
+        var url = baseUrl + "/cxf/i18n/" + bundlePath + "/" + locale;
         var options = {
           "headers": {
             "Accept": "application/JSON"

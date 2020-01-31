@@ -21,11 +21,13 @@ import org.pentaho.di.ui.spoon.Spoon;
 import org.pentaho.osgi.kettle.repository.locator.api.KettleRepositoryProvider;
 
 import java.util.function.Supplier;
+import java.util.logging.Logger;
 
 /**
  * Created by bryan on 4/15/16.
  */
 public class SpoonRepositoryProvider implements KettleRepositoryProvider {
+  private static Logger log = Logger.getLogger( SpoonRepositoryProvider.class.getName() );
   private final Supplier<Spoon> spoonSupplier;
 
   public SpoonRepositoryProvider() {
@@ -37,6 +39,11 @@ public class SpoonRepositoryProvider implements KettleRepositoryProvider {
   }
 
   @Override public Repository getRepository() {
-    return spoonSupplier.get().getRepository();
+    try {
+      return spoonSupplier.get().getRepository();
+    } catch ( Exception e ) {
+      log.warning( e.getMessage() );
+      return null;
+    }
   }
 }
