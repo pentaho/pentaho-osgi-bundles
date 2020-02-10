@@ -32,6 +32,9 @@ public class ServiceMap<T> {
   public static final String SERVICE_KEY_PROPERTY = "serviceMapKey";
 
   public T getItem( String key ) {
+    if ( key == null ) {
+      return null;
+    }
     synchronized ( map ) {
       return map.get( key ) != null ? map.get( key ).getItem() : null;
     }

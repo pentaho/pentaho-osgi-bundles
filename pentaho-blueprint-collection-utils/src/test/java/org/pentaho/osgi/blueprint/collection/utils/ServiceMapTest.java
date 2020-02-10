@@ -106,7 +106,7 @@ public class ServiceMapTest {
         try {
           serviceMap.getItem( KEY1 );
           serviceMap.getItem( KEY2 );
-        } catch (NullPointerException npe) {
+        } catch ( NullPointerException npe ) {
           atomicInteger.incrementAndGet();
         }
 
@@ -121,4 +121,10 @@ public class ServiceMapTest {
     countDown.await( 5000, TimeUnit.MILLISECONDS );
     Assert.assertEquals( 0, atomicInteger.get() );
   }
+
+  @Test
+  public void nullKeyIsAllowed() {
+    assertNull( serviceMap.getItem( null ) );
+  }
+
 }
