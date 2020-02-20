@@ -1,5 +1,5 @@
 /*!
- * Copyright 2010 - 2018 Hitachi Vantara.  All rights reserved.
+ * Copyright 2010 - 2020 Hitachi Vantara.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,13 @@
 package org.pentaho.osgi.blueprint.collection.utils;
 
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -81,4 +87,44 @@ public class ServiceMapTest {
     serviceMap = new ServiceMap<String>();
     serviceMap.itemAdded( VALUE1, ImmutableMap.of() );
   }
+
+  @Test
+  public void testConcurrency() throws InterruptedException {
+
+    int iterations = 100;
+    int numThreads = 100;
+
+    ImmutableMap<String, String> items = ImmutableMap.of( KEY1, VALUE1, KEY2, VALUE2 );
+    CountDownLatch countDown = new CountDownLatch( numThreads );
+    AtomicInteger atomicInteger = new AtomicInteger( 0 );
+
+    ExecutorService threadPool = Executors.newFixedThreadPool( numThreads );
+    Runnable exec = () -> {
+      for ( int i = 0; i < iterations; i++ ) {
+        serviceMap.itemAdded( VALUE1, ImmutableMap.of( ServiceMap.SERVICE_KEY_PROPERTY, KEY1 ) );
+        serviceMap.itemAdded( VALUE2, ImmutableMap.of( ServiceMap.SERVICE_KEY_PROPERTY, KEY2 ) );
+        try {
+          serviceMap.getItem( KEY1 );
+          serviceMap.getItem( KEY2 );
+        } catch ( NullPointerException npe ) {
+          atomicInteger.incrementAndGet();
+        }
+
+        serviceMap.itemRemoved( VALUE1, ImmutableMap.of( ServiceMap.SERVICE_KEY_PROPERTY, KEY1 ) );
+        serviceMap.itemRemoved( VALUE2, ImmutableMap.of( ServiceMap.SERVICE_KEY_PROPERTY, KEY2 ) );
+      }
+      countDown.countDown();
+    };
+    for ( int i = 0; i < numThreads; i++ ) {
+      threadPool.execute( exec );
+    }
+    countDown.await( 5000, TimeUnit.MILLISECONDS );
+    Assert.assertEquals( 0, atomicInteger.get() );
+  }
+
+  @Test
+  public void nullKeyIsAllowed() {
+    assertNull( serviceMap.getItem( null ) );
+  }
+
 }
