@@ -1,8 +1,0 @@
-{
-  "shim": {
-    "angular-ui-router/release/angular-ui-router": {
-      "exports": "angular",
-      "deps": ["angular"]
-    }
-  }
-}
