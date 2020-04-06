@@ -1,5 +1,5 @@
 /*!
- * Copyright 2010 - 2018 Hitachi Vantara.  All rights reserved.
+ * Copyright 2010 - 2020 Hitachi Vantara.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.pentaho.osgi.metastore.locator.api.impl;
 
 import com.google.common.collect.ImmutableMap;
+import org.pentaho.di.core.logging.LogChannel;
 import org.pentaho.di.core.osgi.api.MetastoreLocatorOsgi;
 import org.pentaho.di.metastore.MetaStoreConst;
 import org.pentaho.metastore.api.IMetaStore;
@@ -58,6 +59,7 @@ public class MetastoreLocatorImpl extends ServiceMap<MetastoreProvider> implemen
       try {
         metaStore = MetaStoreConst.openLocalPentahoMetaStore( false );
       } catch ( MetaStoreException e ) {
+        LogChannel.GENERAL.logError( "Could not load Metastore.", e );
         return null;
       }
     }
@@ -67,16 +69,18 @@ public class MetastoreLocatorImpl extends ServiceMap<MetastoreProvider> implemen
 
   @Override
   public String setEmbeddedMetastore( final IMetaStore metastore ) {
-    MetastoreProvider metastoreProvider = new MetastoreProvider() {
-
-      @Override public IMetaStore getMetastore() {
-        return metastore;
+    MetastoreProvider metastoreProvider = () -> metastore;
+    try {
+      LogChannel.GENERAL.logDebug( "Size of ServiceMap:  " + this.getMap().size() );
+      String providerKey = metastore.getName() == null ? UUID.randomUUID().toString() : metastore.getName();
+      if ( getExplicitMetastore( providerKey ) == null ) {
+        itemAdded( metastoreProvider, ImmutableMap.of( ServiceMap.SERVICE_KEY_PROPERTY, providerKey ) );
       }
-    };
-    UUID uuid = UUID.randomUUID();
-    String providerKey = EMBEDDED_METASTORE_KEY_PREFIX + uuid.toString();
-    itemAdded( metastoreProvider, ImmutableMap.of( ServiceMap.SERVICE_KEY_PROPERTY, providerKey ) );
-    return providerKey;
+      return providerKey;
+    } catch ( MetaStoreException e ) {
+      throw new IllegalStateException( e );
+    }
+
   }
 
   @Override
