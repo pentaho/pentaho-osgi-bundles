@@ -1,5 +1,5 @@
 /*!
- * Copyright 2010 - 2018 Hitachi Vantara.  All rights reserved.
+ * Copyright 2010 - 2020   Hitachi Vantara.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package org.pentaho.osgi.metastore.locator.api.impl;
 import org.junit.Before;
 import org.junit.Test;
 import org.pentaho.metastore.api.IMetaStore;
+import org.pentaho.metastore.api.exceptions.MetaStoreException;
 import org.pentaho.osgi.blueprint.collection.utils.ServiceMap;
 import org.pentaho.osgi.metastore.locator.api.MetastoreLocator;
 import org.pentaho.osgi.metastore.locator.api.MetastoreProvider;
@@ -54,7 +55,7 @@ public class MetastoreLocatorImplTest {
     // Test a null metastore provider that delivers a null metastore
     MetastoreProvider provider = mock( MetastoreProvider.class );
     metastoreLocator.itemAdded( provider, ImmutableMap.of( ServiceMap.SERVICE_KEY_PROPERTY,
-        MetastoreLocator.LOCAL_PROVIDER_KEY ) );
+      MetastoreLocator.LOCAL_PROVIDER_KEY ) );
     assertNull( metastoreLocator.getExplicitMetastore( MetastoreLocator.LOCAL_PROVIDER_KEY ) );
     verify( provider ).getMetastore();
   }
@@ -63,32 +64,34 @@ public class MetastoreLocatorImplTest {
   public void testGetMetastoreTest() {
     //Test that repository metastore gets returned if both local and repository metastore providers exist.
     //Also test that both providers can be accessed directly.
-    MetastoreProvider local_provider = mock( MetastoreProvider.class );
-    IMetaStore local_meta = mock( IMetaStore.class );
-    when( local_provider.getMetastore() ).thenReturn( local_meta );
-    MetastoreProvider repo_provider = mock( MetastoreProvider.class );
-    IMetaStore repo_meta = mock( IMetaStore.class );
-    when( repo_provider.getMetastore() ).thenReturn( repo_meta );
-    metastoreLocator.itemAdded( local_provider, ImmutableMap.of( ServiceMap.SERVICE_KEY_PROPERTY,
-        MetastoreLocator.LOCAL_PROVIDER_KEY ) );
+    MetastoreProvider localProvider = mock( MetastoreProvider.class );
+    IMetaStore localMeta = mock( IMetaStore.class );
+    when( localProvider.getMetastore() ).thenReturn( localMeta );
+    MetastoreProvider repoProvider = mock( MetastoreProvider.class );
+    IMetaStore repoMeta = mock( IMetaStore.class );
+    when( repoProvider.getMetastore() ).thenReturn( repoMeta );
+    metastoreLocator.itemAdded( localProvider, ImmutableMap.of( ServiceMap.SERVICE_KEY_PROPERTY,
+      MetastoreLocator.LOCAL_PROVIDER_KEY ) );
 
-    assertEquals( local_meta, metastoreLocator.getMetastore() );
+    assertEquals( localMeta, metastoreLocator.getMetastore() );
 
-    metastoreLocator.itemAdded( repo_provider, ImmutableMap.of( ServiceMap.SERVICE_KEY_PROPERTY,
-        MetastoreLocator.REPOSITORY_PROVIDER_KEY ) );
-    assertEquals( repo_meta, metastoreLocator.getMetastore() );
+    metastoreLocator.itemAdded( repoProvider, ImmutableMap.of( ServiceMap.SERVICE_KEY_PROPERTY,
+      MetastoreLocator.REPOSITORY_PROVIDER_KEY ) );
+    assertEquals( repoMeta, metastoreLocator.getMetastore() );
 
-    assertEquals( local_meta, metastoreLocator.getExplicitMetastore( MetastoreLocator.LOCAL_PROVIDER_KEY ) );
-    assertEquals( repo_meta, metastoreLocator.getExplicitMetastore( MetastoreLocator.REPOSITORY_PROVIDER_KEY ) );
+    assertEquals( localMeta, metastoreLocator.getExplicitMetastore( MetastoreLocator.LOCAL_PROVIDER_KEY ) );
+    assertEquals( repoMeta, metastoreLocator.getExplicitMetastore( MetastoreLocator.REPOSITORY_PROVIDER_KEY ) );
   }
 
   @Test
-  public void testSetAndDisposeEmbeddedMetastore() {
-    IMetaStore embedded_meta = mock( IMetaStore.class );
-    String key = metastoreLocator.setEmbeddedMetastore( embedded_meta );
+  public void testSetAndDisposeEmbeddedMetastore() throws MetaStoreException {
+    IMetaStore embeddedMeta = mock( IMetaStore.class );
+    when( embeddedMeta.getName() ).thenReturn( "MetastoreUniqueName" );
+    String key = metastoreLocator.setEmbeddedMetastore( embeddedMeta );
+    assertEquals( "MetastoreUniqueName", key );
     assertNotNull( key, "Embedded key value not returned" );
-    assertEquals( embedded_meta, metastoreLocator.getExplicitMetastore( key ) );
-    assertEquals( embedded_meta, metastoreLocator.getMetastore( key ) );
+    assertEquals( embeddedMeta, metastoreLocator.getExplicitMetastore( key ) );
+    assertEquals( embeddedMeta, metastoreLocator.getMetastore( key ) );
 
     metastoreLocator.disposeMetastoreProvider( key );
     assertNull( metastoreLocator.getExplicitMetastore( key ) );
