@@ -137,6 +137,7 @@
         <module>pentaho-bundle-resource-manager</module>
         <module>pentaho-metastore-locator-api</module>
         <module>pentaho-proc-governor</module>
+        <module>osgi-blueprint-api</module>
       </modules>
     </profile>
     <profile>
@@ -157,7 +158,6 @@
         <module>pentaho-pdi-platform</module>
         <module>spring-security-karaf-login-module</module>
         <module>spring-kafka</module>
-        <module>osgi-blueprint-api</module>
       </modules>
     </profile>
     <profile>
