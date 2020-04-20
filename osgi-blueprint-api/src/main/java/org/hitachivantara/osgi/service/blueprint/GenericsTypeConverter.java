@@ -38,6 +38,8 @@ import java.util.Map;
  *
  * For example if you have this classes:
  * <code>
+ * package my.package;
+ *
  * // Generic class
  * public class GenericProperty<T> {
  *   (...)
@@ -58,17 +60,28 @@ import java.util.Map;
  *
  * And you define this in the blueprint:
  * <code>
- * <bean class="MyBean">
+ * <bean class="my.package.MyBean">
  *   <property name="stringGenericProperty">
- *     <bean class="StringGenericProperty"/>
+ *     <bean class="my.package.StringGenericProperty"/>
  *   </property>
  * </bean>
  * </code>
  *
  * It will fail in the wiring because a method can't be found in MyBean class with the name "setStringGenericProperty"
  * which accepts a GenericProperty<String> instance, what is misleading because such a method exists.
- *  *
- * Usage: to use declare this in your blueprint
+ *
+ * To solve the above issue we should define this in our blueprint:
+ *   <type-converters>
+ *     <bean class="org.hitachivantara.osgi.service.blueprint.GenericsTypeConverter">
+ *       <argument>
+ *         <map key-type="java.lang.Class" value-type="java.lang.Class">
+ *           <entry key="my.package.StringGenericProperty" value="my.package.GenericProperty" />
+ *         </map>
+ *       </argument>
+ *     </bean>
+ *   </type-converters>
+ *
+ * Generic usage to declare this in your blueprint
  *   <type-converters>
  *     <bean class="org.hitachivantara.osgi.service.blueprint.GenericsTypeConverter">
  *       <argument>

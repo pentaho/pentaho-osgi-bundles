@@ -47,7 +47,7 @@ public abstract class AbstractRetryMessageListener<K, V> extends AbstractMessage
   }
 
   /**
-   * The initial backoff interval to use on the {@link ExponentialBackOffPolicy} policy
+   * The initial back off interval to use on the {@link ExponentialBackOffPolicy} policy
    * used on the {@link RetryTemplate} applied to the message listener.
    * @param backOffInitialInterval
    */
@@ -71,6 +71,38 @@ public abstract class AbstractRetryMessageListener<K, V> extends AbstractMessage
    */
   public void setBackOffIMultiplier( double backOffIMultiplier ) {
     this.backOffIMultiplier = backOffIMultiplier;
+  }
+
+  /**
+   * Gets the retryMaxAttempts value.
+   * @return the retryMaxAttempts value.
+   */
+  public int getRetryMaxAttempts() {
+    return retryMaxAttempts;
+  }
+
+  /**
+   * Gets the backOffInitialInterval value.
+   * @return the backOffInitialInterval value.
+   */
+  public long getBackOffInitialInterval() {
+    return backOffInitialInterval;
+  }
+
+  /**
+   * Gets the backOffIMaxInterval value.
+   * @return the backOffIMaxInterval value.
+   */
+  public long getBackOffIMaxInterval() {
+    return backOffIMaxInterval;
+  }
+
+  /**
+   * Gets the backOffIMultiplier value.
+   * @return the backOffIMultiplier value.
+   */
+  public double getBackOffIMultiplier() {
+    return backOffIMultiplier;
   }
 
   /**

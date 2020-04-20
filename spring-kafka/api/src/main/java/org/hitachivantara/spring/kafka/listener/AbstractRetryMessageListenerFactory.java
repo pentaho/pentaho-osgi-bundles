@@ -67,16 +67,48 @@ public abstract class AbstractRetryMessageListenerFactory<K, V, L extends Abstra
   }
 
   /**
-   * Gets a {@link AbstractRetryMessageListener} instance. The retryMaxAttempts, backOffInitialInterval,
+   * Gets the retryMaxAttempts value.
+   * @return the retryMaxAttempts value.
+   */
+  public int getRetryMaxAttempts() {
+    return retryMaxAttempts;
+  }
+
+  /**
+   * Gets the backOffInitialInterval value.
+   * @return the backOffInitialInterval value.
+   */
+  public long getBackOffInitialInterval() {
+    return backOffInitialInterval;
+  }
+
+  /**
+   * Gets the backOffIMaxInterval value.
+   * @return the backOffIMaxInterval value.
+   */
+  public long getBackOffIMaxInterval() {
+    return backOffIMaxInterval;
+  }
+
+  /**
+   * Gets the backOffIMultiplier value.
+   * @return the backOffIMultiplier value.
+   */
+  public double getBackOffIMultiplier() {
+    return backOffIMultiplier;
+  }
+
+  /**
+   * Gets a <T> generic class instance. The retryMaxAttempts, backOffInitialInterval,
    * backOffIMaxInterval and backOffIMultiplier are relayed to that instance.
    *
    * @param topic the topic to associate to the listener.
-   * @return A instance of the {@link AbstractRetryMessageListener} abstract class.
+   * @param groupId the group to associate the listener.
+   * @return A instance of the <T> generic.
    */
   @Override
-  public L getInstance( String topic ) {
-    L messageListener = super.getInstance( topic );
-    messageListener.setTopic( topic );
+  public L getInstance( String topic, String groupId ) {
+    L messageListener = super.getInstance( topic, groupId );
     messageListener.setRetryMaxAttempts( retryMaxAttempts );
     messageListener.setBackOffInitialInterval( backOffInitialInterval );
     messageListener.setBackOffIMaxInterval( backOffIMaxInterval );

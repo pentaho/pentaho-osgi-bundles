@@ -5,12 +5,12 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>org.hitachivantara</groupId>
+    <groupId>org.hitachivantara.spring</groupId>
     <artifactId>spring-kafka-module</artifactId>
     <version>9.1.0.0-SNAPSHOT</version>
   </parent>
 
-  <groupId>org.hitachivantara</groupId>
+  <groupId>org.hitachivantara.spring</groupId>
   <artifactId>spring-kafka</artifactId>
   <version>9.1.0.0-SNAPSHOT</version>
   <packaging>feature</packaging>

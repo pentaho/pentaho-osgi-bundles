@@ -25,20 +25,19 @@ package org.hitachivantara.spring.kafka.protobuf;
 import com.google.protobuf.MessageLite;
 import org.junit.Test;
 
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 
 public class KafkaProtobufSerializerTest {
 
   @Test
   public void testSerialize() {
     MessageLite messageLite = mock( MessageLite.class );
+    byte[] mockByteArray = "test".getBytes();
+    when( messageLite.toByteArray() ).thenReturn( mockByteArray );
     KafkaProtobufSerializer<MessageLite> serializer = new KafkaProtobufSerializer();
-    serializer.serialize( "topic", messageLite );
-    serializer.configure( null, false );
-    serializer.close();
-    verify( messageLite ).toByteArray();
-    verifyNoMoreInteractions( messageLite );
+    byte[] result = serializer.serialize( "topic", messageLite );
+    assertEquals( mockByteArray, result );
   }
 }

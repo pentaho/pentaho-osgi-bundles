@@ -24,60 +24,79 @@ package org.hitachivantara.spring.kafka.listener;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.retry.backoff.ExponentialBackOffPolicy;
 import org.springframework.retry.policy.SimpleRetryPolicy;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 
 public class AbstractRetryMessageListenerFactoryTest {
 
-  private AbstractRetryMessageListenerFactory abstractRetryMessageListener;
-  private AbstractRetryMessageListener abstractMessageListener;
+  private AbstractRetryMessageListenerFactory abstractRetryMessageListenerFactory;
+  private AbstractRetryMessageListener abstractRetryMessageListener;
 
   @Before
   public void setup() {
-    abstractMessageListener = mock( AbstractRetryMessageListener.class );
-    abstractRetryMessageListener = new AbstractRetryMessageListenerFactory() {
+    abstractRetryMessageListener = new Listener();
+    abstractRetryMessageListenerFactory = new AbstractRetryMessageListenerFactory() {
 
       @Override
       protected AbstractMessageListener getMessageListenerInstance() {
-        return abstractMessageListener;
+        return abstractRetryMessageListener;
       }
     };
   }
 
   @Test
-  public void getInstance() {
-    AbstractRetryMessageListener instance = abstractRetryMessageListener.getInstance( "topic" );
-
+  public void getInstanceShouldReturnInstanceWithTopicAndGroupSet() {
+    AbstractRetryMessageListener instance = abstractRetryMessageListenerFactory.getInstance( "topic", "groupId" );
     assertNotNull( instance );
-    assertEquals( abstractMessageListener, instance );
-    verify( abstractMessageListener, times( 2 ) ).setTopic( "topic" );
-    verify( abstractMessageListener ).setRetryMaxAttempts( SimpleRetryPolicy.DEFAULT_MAX_ATTEMPTS );
-    verify( abstractMessageListener ).setBackOffInitialInterval( ExponentialBackOffPolicy.DEFAULT_INITIAL_INTERVAL );
-    verify( abstractMessageListener ).setBackOffIMaxInterval( ExponentialBackOffPolicy.DEFAULT_MAX_INTERVAL );
-    verify( abstractMessageListener ).setBackOffIMultiplier( ExponentialBackOffPolicy.DEFAULT_MULTIPLIER );
+    assertEquals( abstractRetryMessageListener, instance );
+    assertEquals( "topic", instance.getTopic() );
+    assertEquals( "groupId", instance.getGroupId() );
   }
 
   @Test
-  public void getInstanceCustomProps() {
-    abstractRetryMessageListener.setRetryMaxAttempts( 11 );
-    abstractRetryMessageListener.setBackOffInitialInterval( 22L );
-    abstractRetryMessageListener.setBackOffIMaxInterval( 33L );
-    abstractRetryMessageListener.setBackOffIMultiplier( 44d );
-
-    AbstractRetryMessageListener instance = abstractRetryMessageListener.getInstance( "topic" );
-
+  public void getInstanceShouldReturnInstanceWithTopicAndGroupEqualToTopic() {
+    AbstractRetryMessageListener instance = abstractRetryMessageListenerFactory.getInstance( "topic", null );
     assertNotNull( instance );
-    assertEquals( abstractMessageListener, instance );
-    verify( abstractMessageListener, times( 2 ) ).setTopic( "topic" );
-    verify( abstractMessageListener ).setRetryMaxAttempts( 11 );
-    verify( abstractMessageListener ).setBackOffInitialInterval(  22L );
-    verify( abstractMessageListener ).setBackOffIMaxInterval( 33L );
-    verify( abstractMessageListener ).setBackOffIMultiplier( 44d );
+    assertEquals( abstractRetryMessageListener, instance );
+    assertEquals( "topic", instance.getTopic() );
+    assertEquals( "topic", instance.getGroupId() );
+  }
+
+  @Test
+  public void getInstanceShouldHaveDefaultValuesForRetryAndBackOff() {
+    AbstractRetryMessageListener instance = abstractRetryMessageListenerFactory.getInstance( "topic", "groupId" );
+    assertNotNull( instance );
+
+    assertEquals( SimpleRetryPolicy.DEFAULT_MAX_ATTEMPTS, instance.getRetryMaxAttempts() );
+    assertEquals( ExponentialBackOffPolicy.DEFAULT_INITIAL_INTERVAL, instance.getBackOffInitialInterval() );
+    assertEquals( ExponentialBackOffPolicy.DEFAULT_MAX_INTERVAL, instance.getBackOffIMaxInterval() );
+    assertEquals( (Double) ExponentialBackOffPolicy.DEFAULT_MULTIPLIER, Double.valueOf( instance.getBackOffIMultiplier() ) );
+  }
+
+  @Test
+  public void getInstanceShouldHaveCustomValuesForRetryAndBackOff() {
+    abstractRetryMessageListenerFactory.setRetryMaxAttempts( 11 );
+    abstractRetryMessageListenerFactory.setBackOffInitialInterval( 22L );
+    abstractRetryMessageListenerFactory.setBackOffIMaxInterval( 33L );
+    abstractRetryMessageListenerFactory.setBackOffIMultiplier( 44d );
+
+    AbstractRetryMessageListener instance = abstractRetryMessageListenerFactory.getInstance( "topic", "groupId" );
+    assertNotNull( instance );
+
+    assertEquals( 11, instance.getRetryMaxAttempts() );
+    assertEquals( 22L, instance.getBackOffInitialInterval() );
+    assertEquals( 33L, instance.getBackOffIMaxInterval() );
+    assertEquals( Double.valueOf( 44d ), Double.valueOf( instance.getBackOffIMultiplier() ) );
+  }
+
+  private class Listener extends AbstractRetryMessageListener {
+
+    @Override public void onMessage( Object o, Acknowledgment acknowledgment ) {
+      // noop
+    }
   }
 }

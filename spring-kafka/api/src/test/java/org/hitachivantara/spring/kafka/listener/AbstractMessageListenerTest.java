@@ -89,56 +89,35 @@ public class AbstractMessageListenerTest {
   }
 
   @Test
-  public void testStartWithoutPreviousAssemble() {
+  public void testStartWithoutPreviousInitShouldCallIt() {
     innerMockedAbstractMessageListener.start();
 
-    verify( innerMockedAbstractMessageListener ).assembleListenerContainer();
+    verify( innerMockedAbstractMessageListener ).init();
     verify( abstractMessageListenerContainer ).start();
   }
 
   @Test
-  public void testStartWithPreviousAssemble() {
-    innerMockedAbstractMessageListener.assembleListenerContainer();
+  public void testStartWithPreviousInitShouldNotCallInitAgain() {
+    innerMockedAbstractMessageListener.init();
     innerMockedAbstractMessageListener.start();
 
-    verify( innerMockedAbstractMessageListener, times( 1 ) ).assembleListenerContainer();
+    verify( innerMockedAbstractMessageListener, times( 1 ) ).init();
     verify( abstractMessageListenerContainer ).start();
   }
 
   @Test
-  public void testStopCallbackWithoutPreviousAssemble() {
-    AtomicBoolean callBackCalled = new AtomicBoolean( false );
-    Runnable callback = () -> callBackCalled.set( true );
-
+  public void testStopCallbackWithoutPreviousInitShouldNotCallStop() {
+    Runnable callback = () -> {};
     innerMockedAbstractMessageListener.stop( callback );
-
     verifyZeroInteractions( abstractMessageListenerContainer );
   }
 
   @Test
-  public void testStopCallbackWithPreviousAssemble() {
-    AtomicBoolean callBackCalled = new AtomicBoolean( false );
-    Runnable callback = () -> callBackCalled.set( true );
-
-    innerMockedAbstractMessageListener.assembleListenerContainer();
+  public void testStopCallbackWithPreviousShouldCallStopWithCallbackAsArgument() {
+    Runnable callback = () -> {};
+    innerMockedAbstractMessageListener.init();
     innerMockedAbstractMessageListener.stop( callback );
-
     verify( abstractMessageListenerContainer ).stop( callback );
-  }
-
-  @Test
-  public void testStopWithoutPreviousAssemble() {
-    innerMockedAbstractMessageListener.stop();
-
-    verifyZeroInteractions( abstractMessageListenerContainer );
-  }
-
-  @Test
-  public void testStopWithPreviousAssemble() {
-    innerMockedAbstractMessageListener.assembleListenerContainer();
-    innerMockedAbstractMessageListener.stop();
-
-    verify( abstractMessageListenerContainer ).stop();
   }
 
   @Test
@@ -148,8 +127,8 @@ public class AbstractMessageListenerTest {
   }
 
   @Test
-  public void testAssembleListenerContainer() {
-    innerMockedAbstractMessageListener.assembleListenerContainer();
+  public void testInitShouldInitializeContainerWithConsumerFactoryAndProperties() {
+    innerMockedAbstractMessageListener.init();
 
     verify( innerMockedAbstractMessageListener ).buildMessageListenerContainer( consumerFactoryCaptor.capture(), containerPropertiesCaptor.capture() );
     verify( innerMockedAbstractMessageListener ).buildContainerProperties();
@@ -158,7 +137,7 @@ public class AbstractMessageListenerTest {
   }
 
   @Test
-  public void testBuildMessageListenerContainer() {
+  public void testBuildMessageListenerContainerShouldReturnMessageListenerContainerInstance() {
     when( containerProperties.getTopics() ).thenReturn( new String[]{ "Topic"} );
     MessageListenerContainer returnObj = abstractMessageListener.buildMessageListenerContainer( consumerFactory, containerProperties );
     assertNotNull( returnObj );
@@ -166,7 +145,7 @@ public class AbstractMessageListenerTest {
   }
 
   @Test
-  public void testBuildContainerProperties() {
+  public void testBuildContainerPropertiesWithoutGroup() {
     abstractMessageListener.setTopic( "topic" );
     ContainerProperties containerPropertiesObj = abstractMessageListener.buildContainerProperties();
 
@@ -177,7 +156,19 @@ public class AbstractMessageListenerTest {
   }
 
   @Test
-  public void testBuildContainerPropertiesCallbacks() {
+  public void testBuildContainerPropertiesWithGroupSpecified() {
+    abstractMessageListener.setTopic( "topic" );
+    abstractMessageListener.setGroupId( "groupId" );
+    ContainerProperties containerPropertiesObj = abstractMessageListener.buildContainerProperties();
+
+    assertEquals( "topic", containerPropertiesObj.getTopics()[0] );
+    assertEquals( "groupId", containerPropertiesObj.getGroupId() );
+    assertEquals( AbstractMessageListenerContainer.AckMode.MANUAL_IMMEDIATE, containerPropertiesObj.getAckMode() );
+    assertEquals( abstractMessageListener, containerPropertiesObj.getMessageListener() );
+  }
+
+  @Test
+  public void testBuildContainerPropertiesCallbacksAreUsed() {
     AtomicBoolean assigned = new AtomicBoolean( false );
     AtomicBoolean revoked = new AtomicBoolean( false );
     Runnable assignedCallback = () -> assigned.set( true );

@@ -3,9 +3,9 @@
   <repository>mvn:org.hitachivantara.karaf.features/spring43/${project.version}/xml/features</repository>
 
   <feature name='${project.artifactId}' description='${project.name}' version='${project.version}'>
-    <feature prerequisite="true" version="[${spring43.bundle.version},4.4)">spring</feature>
-    <feature prerequisite="true" version="[${spring43.bundle.version},4.4)">spring-messaging</feature>
-    <feature prerequisite="true" version="[${spring43.bundle.version},4.4)">spring-tx</feature>
+    <feature dependency="true" version="[${spring43.bundle.version},4.4)">spring</feature>
+    <feature dependency="true" version="[${spring43.bundle.version},4.4)">spring-messaging</feature>
+    <feature dependency="true" version="[${spring43.bundle.version},4.4)">spring-tx</feature>
 
   </feature>
 

@@ -33,6 +33,7 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.verifyZeroInteractions;
 
 public class KafkaProtobufDeserializerTest {
 
@@ -45,6 +46,22 @@ public class KafkaProtobufDeserializerTest {
     deserializer.configure( null, false );
     deserializer.close();
     verifyNoMoreInteractions( parser );
+  }
+
+  @Test
+  public void testConfigurerDoesntInteractParser() {
+    Parser<MessageLite> parser = mock( Parser.class );
+    KafkaProtobufDeserializer<MessageLite> deserializer = new KafkaProtobufDeserializer( parser );
+    deserializer.configure( null, false );
+    verifyZeroInteractions( parser );
+  }
+
+  @Test
+  public void testCloseDoesntInteractParser() {
+    Parser<MessageLite> parser = mock( Parser.class );
+    KafkaProtobufDeserializer<MessageLite> deserializer = new KafkaProtobufDeserializer( parser );
+    deserializer.close();
+    verifyZeroInteractions( parser );
   }
 
   @Test( expected = SerializationException.class )

@@ -25,10 +25,10 @@ package org.hitachivantara.spring.kafka.listener;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.kafka.core.ConsumerFactory;
+import org.springframework.kafka.support.Acknowledgment;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 
 public class AbstractMessageListenerFactoryTest {
 
@@ -37,7 +37,7 @@ public class AbstractMessageListenerFactoryTest {
 
   @Before
   public void setup() {
-    abstractMessageListener = mock( AbstractMessageListener.class );
+    abstractMessageListener = new Listener();
 
     abstractMessageListenerFactory = new AbstractMessageListenerFactory() {
       @Override
@@ -48,14 +48,32 @@ public class AbstractMessageListenerFactoryTest {
   }
 
   @Test
-  public void testSetter() {
+  public void testGetInstanceConsumerFactoryIsSet() {
     ConsumerFactory consumerFactoryMock = mock( ConsumerFactory.class );
     abstractMessageListenerFactory.setConsumerFactory( consumerFactoryMock );
 
-    AbstractMessageListener messageListener = abstractMessageListenerFactory.getInstance( "topic" );
+    AbstractMessageListener messageListener = abstractMessageListenerFactory.getInstance( "topic", "groupId" );
 
     assertEquals( abstractMessageListener, messageListener );
-    verify( abstractMessageListener ).setTopic( "topic" );
-    verify( abstractMessageListener ).setConsumerFactory( consumerFactoryMock );
+    assertEquals( consumerFactoryMock, messageListener.getConsumerFactory() );
+  }
+
+  @Test
+  public void testGetInstanceTopicAndGroupAreSet() {
+    ConsumerFactory consumerFactoryMock = mock( ConsumerFactory.class );
+    abstractMessageListenerFactory.setConsumerFactory( consumerFactoryMock );
+
+    AbstractMessageListener messageListener = abstractMessageListenerFactory.getInstance( "topic", "groupId" );
+
+    assertEquals( abstractMessageListener, messageListener );
+    assertEquals( "topic", messageListener.getTopic() );
+    assertEquals( "groupId", messageListener.getGroupId() );
+  }
+
+  private class Listener extends AbstractMessageListener {
+
+    @Override public void onMessage( Object o, Acknowledgment acknowledgment ) {
+      // noop
+    }
   }
 }

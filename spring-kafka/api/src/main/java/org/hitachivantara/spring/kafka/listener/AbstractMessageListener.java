@@ -39,7 +39,7 @@ import java.util.Map;
 
 /**
  * Class that Kafka message listeners should extend. The implementations should call the
- * assembleContainer method in order to make sure that the listener container is started.
+ * init method in order to make sure that the listener container is started.
  *
  * @param <K> The key type.
  * @param <V> The value type.
@@ -50,6 +50,7 @@ public abstract class AbstractMessageListener<K, V> implements AcknowledgingMess
 
   protected ConsumerFactory<K, V> consumerFactory;
   protected String topic;
+  protected String groupId;
   protected Runnable callbackOnPartitionsAssigned = () -> logger.debug( "Partition assigned for {}", topic );
   protected Runnable callbackOnPartitionsRevoked = () -> logger.debug( "Partition revoked for {}", topic );
 
@@ -61,7 +62,7 @@ public abstract class AbstractMessageListener<K, V> implements AcknowledgingMess
   public void start() {
     if ( this.messageListenerContainer == null ) {
       logger.info( "Listener container is still not assembled. Doing it now for topic {}", this.topic );
-      assembleListenerContainer();
+      init();
     }
     logger.info( "Starting listener: {}", this.messageListenerContainer );
     this.messageListenerContainer.start();
@@ -100,13 +101,13 @@ public abstract class AbstractMessageListener<K, V> implements AcknowledgingMess
   /**
    * Assembles the listener. The container listener is also started here.
    */
-  public void assembleListenerContainer() {
+  public void init() {
     ContainerProperties containerProperties = buildContainerProperties();
     this.messageListenerContainer = buildMessageListenerContainer( consumerFactory, containerProperties );
   }
 
   /**
-   * Builds the message listener to use in the assembleListenerContainer method.
+   * Builds the message listener to use in the init method.
    * @param consumerFactory the consumer factory.
    * @param containerProperties The container properties
    * @return A {@link MessageListenerContainer} instance.
@@ -117,7 +118,7 @@ public abstract class AbstractMessageListener<K, V> implements AcknowledgingMess
 
   /**
    * Builds the container properties. This implementation uses the local topic variable.
-   * This container properties are used in the assembleListenerContainer method that is then passed to
+   * This container properties are used in the init method that is then passed to
    * the buildMessageListenerContainer method.
    *
    * Both the local topic, callbackOnPartitionsRevoked and callbackOnPartitionsAssigned variables
@@ -129,9 +130,9 @@ public abstract class AbstractMessageListener<K, V> implements AcknowledgingMess
    * @return A {@link ContainerProperties} instance.
    */
   protected ContainerProperties buildContainerProperties() {
-    ContainerProperties containerProperties = new ContainerProperties( topic );
+    ContainerProperties containerProperties = new ContainerProperties( getTopic() );
     containerProperties.setMessageListener( this.getMessageListener() );
-    containerProperties.setGroupId( topic );
+    containerProperties.setGroupId( getGroupId() );
     containerProperties.setAckMode( AbstractMessageListenerContainer.AckMode.MANUAL_IMMEDIATE );
     containerProperties.setConsumerRebalanceListener( new ConsumerRebalanceListener() {
       @Override
@@ -139,7 +140,7 @@ public abstract class AbstractMessageListener<K, V> implements AcknowledgingMess
         if ( callbackOnPartitionsRevoked != null ) {
           callbackOnPartitionsRevoked.run();
         } else {
-          logger.debug( "Partition revoked for {}", topic );
+          logger.debug( "Partition revoked for {}", getTopic() );
         }
       }
 
@@ -148,7 +149,7 @@ public abstract class AbstractMessageListener<K, V> implements AcknowledgingMess
         if ( callbackOnPartitionsAssigned != null ) {
           callbackOnPartitionsAssigned.run();
         } else {
-          logger.debug( "Partition assigned for {}", topic );
+          logger.debug( "Partition assigned for {}", getTopic() );
         }
       }
     } );
@@ -180,11 +181,43 @@ public abstract class AbstractMessageListener<K, V> implements AcknowledgingMess
   }
 
   /**
+   * Get the consumer factory.
+   * @return the consumer factory,
+   */
+  public ConsumerFactory<K, V> getConsumerFactory() {
+    return consumerFactory;
+  }
+
+  /**
    * Sets the topic to use
    * @param topic The topic.
    */
   public void setTopic( String topic ) {
     this.topic = topic;
+  }
+
+  /**
+   * Get the topic.
+   * @return The topic.
+   */
+  public String getTopic() {
+    return topic;
+  }
+
+  /**
+   * Get the group id.
+   * @return the group id.
+   */
+  public String getGroupId() {
+    return groupId != null ? groupId : topic;
+  }
+
+  /**
+   * Sets the group id to use. If this value is null it will use the topic value.
+   * @param groupId the group id to use. Set to null to use the topic as the group id.
+   */
+  public void setGroupId( String groupId ) {
+    this.groupId = groupId;
   }
 
   /**
@@ -196,10 +229,26 @@ public abstract class AbstractMessageListener<K, V> implements AcknowledgingMess
   }
 
   /**
+   * Get the partition assigned callback.
+   * @return the partition assigned callback.
+   */
+  public Runnable getCallbackOnPartitionsAssigned() {
+    return callbackOnPartitionsAssigned;
+  }
+
+  /**
    * Sets the partition revoked callback.
    * @param callbackOnPartitionsRevoked the callback to be called when the partition is revoked.
    */
   public void setCallbackOnPartitionsRevoked( Runnable callbackOnPartitionsRevoked ) {
     this.callbackOnPartitionsRevoked = callbackOnPartitionsRevoked;
+  }
+
+  /**
+   * Get the current partition revoked callback.
+   * @return the current partition revoked callback.
+   */
+  public Runnable getCallbackOnPartitionsRevoked() {
+    return callbackOnPartitionsRevoked;
   }
 }

@@ -55,7 +55,7 @@ public class AbstractRetryMessageListenerTest {
   }
 
   @Test
-  public void testGetMessageListener() {
+  public void testMessageListenerFromGetShouldContainTheRetryTemplate() {
     RetryTemplate retryTemplate = mock( RetryTemplate.class );
     when( abstractRetryMessageListener.getRetryTemplate() ).thenReturn( retryTemplate );
 
@@ -66,32 +66,38 @@ public class AbstractRetryMessageListenerTest {
   }
 
   @Test
-  public void testGetRetryTemplate() {
+  public void testGetRetryTemplateShouldHaveTheDefaultSimpleRetryPolicy() {
     RetryPolicy retryPolicy = abstractRetryMessageListener.getRetryPolicy();
     assertNotNull( retryPolicy );
     assertTrue( retryPolicy instanceof SimpleRetryPolicy );
     assertEquals( SimpleRetryPolicy.DEFAULT_MAX_ATTEMPTS, ( (SimpleRetryPolicy) retryPolicy ).getMaxAttempts() );
+  }
 
+  @Test
+  public void testGetRetryTemplateShouldHaveTheCustomRetryMaxAttempts() {
     abstractRetryMessageListener.setRetryMaxAttempts( 99 );
-    retryPolicy = abstractRetryMessageListener.getRetryPolicy();
+    RetryPolicy retryPolicy = abstractRetryMessageListener.getRetryPolicy();
     assertNotNull( retryPolicy );
     assertTrue( retryPolicy instanceof SimpleRetryPolicy );
     assertEquals( 99, ( (SimpleRetryPolicy) retryPolicy ).getMaxAttempts() );
   }
 
   @Test
-  public void testGetBackOffPolicy() {
+  public void testGetBackOffPolicyShouldHaveDefaultExponentialBackOffPolicy() {
     BackOffPolicy backOffPolicy = abstractRetryMessageListener.getBackOffPolicy();
     assertNotNull( backOffPolicy );
     assertTrue( backOffPolicy instanceof ExponentialBackOffPolicy );
     assertEquals( ExponentialBackOffPolicy.DEFAULT_INITIAL_INTERVAL, ( (ExponentialBackOffPolicy) backOffPolicy ).getInitialInterval() );
     assertEquals( ExponentialBackOffPolicy.DEFAULT_MAX_INTERVAL, ( (ExponentialBackOffPolicy) backOffPolicy ).getMaxInterval() );
     assertEquals( Double.valueOf( ExponentialBackOffPolicy.DEFAULT_MULTIPLIER ), Double.valueOf( ( (ExponentialBackOffPolicy) backOffPolicy ).getMultiplier() ) );
+  }
 
+  @Test
+  public void testGetBackOffPolicyShouldHaveCustomBackOffPropertiesSet() {
     abstractRetryMessageListener.setBackOffInitialInterval( 55L );
     abstractRetryMessageListener.setBackOffIMaxInterval( 66L );
     abstractRetryMessageListener.setBackOffIMultiplier( 1.5d );
-    backOffPolicy = abstractRetryMessageListener.getBackOffPolicy();
+    BackOffPolicy backOffPolicy = abstractRetryMessageListener.getBackOffPolicy();
     assertNotNull( backOffPolicy );
     assertTrue( backOffPolicy instanceof ExponentialBackOffPolicy );
     assertEquals( 55L, ( (ExponentialBackOffPolicy) backOffPolicy ).getInitialInterval() );
@@ -100,7 +106,7 @@ public class AbstractRetryMessageListenerTest {
   }
 
   @Test
-  public void testBuildMessageListenerAdaptor() {
+  public void testBuildMessageListenerAdaptorShouldHaveTheRetryTemplateSet() {
     RetryTemplate mockRetryTemplate = mock( RetryTemplate.class );
     AcknowledgingMessageListener mockListener = mock( AcknowledgingMessageListener.class );
     AcknowledgingMessageListener messageListenerAdapter = abstractRetryMessageListener.buildMessageListenerAdapter( mockListener, mockRetryTemplate );
@@ -109,7 +115,7 @@ public class AbstractRetryMessageListenerTest {
   }
 
   @Test
-  public void testRetryException() {
+  public void testRetryExceptionMessageIsSetAndIsRuntimeException() {
     AbstractRetryMessageListener.RetryMessageError exception = new AbstractRetryMessageListener.RetryMessageError("message");
     assertTrue( exception instanceof RuntimeException );
     assertEquals( "message", exception.getMessage() );
