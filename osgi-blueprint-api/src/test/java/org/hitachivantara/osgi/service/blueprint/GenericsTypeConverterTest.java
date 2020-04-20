@@ -35,23 +35,23 @@ import static org.junit.Assert.assertTrue;
 public class GenericsTypeConverterTest {
 
   @Test
-  public void testCanConvertFalse() {
+  public void testCanConvertReturnsFalseClassIsNotFromReifiedType() {
     Map<Class, Class> converterClasses = new HashMap<>();
     GenericsTypeConverter converter = new GenericsTypeConverter( converterClasses );
     assertFalse( converter.canConvert( new A(), new ReifiedType( A.class ) ) );
-  }
-
-  @Test
-  public void testCanConvertTrue() {
-    Map<Class, Class> converterClasses = new HashMap<>();
-    converterClasses.put( C.class, A.class );
-    GenericsTypeConverter converter = new GenericsTypeConverter( converterClasses );
-    assertTrue( converter.canConvert( new C(), new ReifiedType( A.class ) ) );
     assertFalse( converter.canConvert( new B(), new ReifiedType( A.class ) ) );
   }
 
   @Test
-  public void testConvert() throws Exception {
+  public void testCanConvertReturnsTrueClassIsReifiedType() {
+    Map<Class, Class> converterClasses = new HashMap<>();
+    converterClasses.put( C.class, A.class );
+    GenericsTypeConverter converter = new GenericsTypeConverter( converterClasses );
+    assertTrue( converter.canConvert( new C(), new ReifiedType( A.class ) ) );
+  }
+
+  @Test
+  public void testConvertReturnInstanceBecauseIsReifiedTypeOfA() throws Exception {
     Map<Class, Class> converterClasses = new HashMap<>();
     converterClasses.put( C.class, A.class );
     C instance = new C();
@@ -62,7 +62,7 @@ public class GenericsTypeConverterTest {
   }
 
   @Test( expected = Exception.class )
-  public void testConvertFail() throws Exception {
+  public void testConvertFailsInstanceNotReifiedTypeOfA() throws Exception {
     Map<Class, Class> converterClasses = new HashMap<>();
     converterClasses.put( C.class, A.class );
     C instance = new C();
@@ -72,12 +72,12 @@ public class GenericsTypeConverterTest {
     assertEquals( instance, converter.convert( instance, new ReifiedType( B.class ) ) );
   }
 
-  private static class A {
+  private static class A<T> {
   }
 
   private static class B {
   }
 
-  private static class C extends A {
+  private static class C extends A<String> {
   }
 }

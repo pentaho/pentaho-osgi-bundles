@@ -33,10 +33,42 @@ import java.util.Map;
  * as valid ones to use in the injection.
  *
  * See below issues in apache Aries project to more details:
- * https://issues.apache.org/jira/browse/ARIES-1500
- * https://issues.apache.org/jira/browse/ARIES-1607
+ *  https://issues.apache.org/jira/browse/ARIES-1500
+ *  https://issues.apache.org/jira/browse/ARIES-1607
  *
- * To use declare this in your blueprint
+ * For example if you have this classes:
+ * <code>
+ * // Generic class
+ * public class GenericProperty<T> {
+ *   (...)
+ * }
+ *
+ * // The bean we want to create and set a property
+ * public class MyBean {
+ *   public void setStringGenericProperty(GenericProperty<String> prop) {
+ *     (...)
+ *   }
+ * }
+ *
+ * // The bean which we want to inject into the MyBean instance
+ * public class StringGenericProperty extends GenericProperty<String> {
+ *   (...)
+ * }
+ * </code>
+ *
+ * And you define this in the blueprint:
+ * <code>
+ * <bean class="MyBean">
+ *   <property name="stringGenericProperty">
+ *     <bean class="StringGenericProperty"/>
+ *   </property>
+ * </bean>
+ * </code>
+ *
+ * It will fail in the wiring because a method can't be found in MyBean class with the name "setStringGenericProperty"
+ * which accepts a GenericProperty<String> instance, what is misleading because such a method exists.
+ *  *
+ * Usage: to use declare this in your blueprint
  *   <type-converters>
  *     <bean class="org.hitachivantara.osgi.service.blueprint.GenericsTypeConverter">
  *       <argument>
@@ -46,6 +78,8 @@ import java.util.Map;
  *       </argument>
  *     </bean>
  *   </type-converters>
+ *
+ * NOTICE: this converter does not validate that the generic types are valid.
  */
 public class GenericsTypeConverter implements Converter {
 
