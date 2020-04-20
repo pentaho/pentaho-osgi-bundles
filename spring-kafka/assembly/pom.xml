@@ -21,7 +21,7 @@
 
   <dependencies>
     <dependency>
-      <groupId>org.hitachivantara</groupId>
+      <groupId>org.hitachivantara.spring</groupId>
       <artifactId>spring-kafka-module-api</artifactId>
       <version>${project.version}</version>
       <exclusions>
