@@ -57,6 +57,9 @@
     <json-simple.version>1.1.1</json-simple.version>
     <commons-lang.version>2.6</commons-lang.version>
     <rxjava.version>2.2.3</rxjava.version>
+    <kafka-clients.version>1.0.2</kafka-clients.version>
+    <spring-kafka.version>1.3.10.RELEASE</spring-kafka.version>
+    <protoc.version>3.11.4</protoc.version>
     <platform.version>9.1.0.0-SNAPSHOT</platform.version>
 
     <!-- All 3 of these properties are required -->
@@ -134,6 +137,7 @@
         <module>pentaho-bundle-resource-manager</module>
         <module>pentaho-metastore-locator-api</module>
         <module>pentaho-proc-governor</module>
+        <module>osgi-blueprint-api</module>
       </modules>
     </profile>
     <profile>
@@ -153,6 +157,7 @@
         <module>pentaho-webcontext</module>
         <module>pentaho-pdi-platform</module>
         <module>spring-security-karaf-login-module</module>
+        <module>spring-kafka</module>
       </modules>
     </profile>
     <profile>
