@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd" xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.hitachivantara.spring</groupId>
+    <artifactId>spring-framework-features</artifactId>
+    <version>9.1.0.0-SNAPSHOT</version>
+  </parent>
+
+  <groupId>org.hitachivantara.karaf.features</groupId>
+  <artifactId>spring32</artifactId>
+  <packaging>feature</packaging>
+
+  <description>
+    Hitachi Vantara managed Spring features.
+    This project mirrors https://github.com/apache/karaf/blob/karaf-4.2.4/assemblies/features/spring-legacy/src/main/feature/feature.xml#L127-L202
+    in order to just include 3.2.X spring features and to declare maven dependencies.
+  </description>
+
+
+  <properties>
+    <spring.osgi.version>1.2.1</spring.osgi.version>
+    <struts.bundle.version>1.3.10_1</struts.bundle.version>
+
+    <commons-collections.version>3.2.2</commons-collections.version>
+    <commons-beanutils.version>1.9.2</commons-beanutils.version>
+
+    <geronimo.jms-spec.version>1.1.1</geronimo.jms-spec.version>
+    <geronimo.jta-spec.version>1.1.1</geronimo.jta-spec.version>
+    <aopalliance.bundle.version>1.0_6</aopalliance.bundle.version>
+    <portlet-api.version>2.0</portlet-api.version>
+
+    <cglib.bundle.version>3.2.4_1</cglib.bundle.version>
+
+    <karaf-maven-plugin.addBundlesToPrimaryFeature>false</karaf-maven-plugin.addBundlesToPrimaryFeature>
+  </properties>
+
+
+  <dependencies>
+    <dependency>
+      <groupId>org.apache.karaf.features</groupId>
+      <artifactId>standard</artifactId>
+      <version>${karaf.version}</version>
+      <type>xml</type>
+      <classifier>features</classifier>
+      <scope>provided</scope>
+    </dependency>
+
+
+    <dependency>
+      <groupId>org.apache.servicemix.bundles</groupId>
+      <artifactId>org.apache.servicemix.bundles.spring-core</artifactId>
+      <version>${spring32.bundle.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.servicemix.bundles</groupId>
+      <artifactId>org.apache.servicemix.bundles.spring-expression</artifactId>
+      <version>${spring32.bundle.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.servicemix.bundles</groupId>
+      <artifactId>org.apache.servicemix.bundles.spring-beans</artifactId>
+      <version>${spring32.bundle.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.servicemix.bundles</groupId>
+      <artifactId>org.apache.servicemix.bundles.spring-aop</artifactId>
+      <version>${spring32.bundle.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.servicemix.bundles</groupId>
+      <artifactId>org.apache.servicemix.bundles.spring-context</artifactId>
+      <version>${spring32.bundle.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.servicemix.bundles</groupId>
+      <artifactId>org.apache.servicemix.bundles.spring-context-support</artifactId>
+      <version>${spring32.bundle.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.servicemix.bundles</groupId>
+      <artifactId>org.apache.servicemix.bundles.spring-aspects</artifactId>
+      <version>${spring32.bundle.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.servicemix.bundles</groupId>
+      <artifactId>org.apache.servicemix.bundles.spring-instrument</artifactId>
+      <version>${spring32.bundle.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.servicemix.bundles</groupId>
+      <artifactId>org.apache.servicemix.bundles.spring-jdbc</artifactId>
+      <version>${spring32.bundle.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.servicemix.bundles</groupId>
+      <artifactId>org.apache.servicemix.bundles.spring-tx</artifactId>
+      <version>${spring32.bundle.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.servicemix.bundles</groupId>
+      <artifactId>org.apache.servicemix.bundles.spring-jms</artifactId>
+      <version>${spring32.bundle.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.servicemix.bundles</groupId>
+      <artifactId>org.apache.servicemix.bundles.struts</artifactId>
+      <version>${struts.bundle.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.servicemix.bundles</groupId>
+      <artifactId>org.apache.servicemix.bundles.spring-struts</artifactId>
+      <version>${spring32.bundle.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.servicemix.bundles</groupId>
+      <artifactId>org.apache.servicemix.bundles.spring-test</artifactId>
+      <version>${spring32.bundle.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.servicemix.bundles</groupId>
+      <artifactId>org.apache.servicemix.bundles.spring-orm</artifactId>
+      <version>${spring32.bundle.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.servicemix.bundles</groupId>
+      <artifactId>org.apache.servicemix.bundles.spring-oxm</artifactId>
+      <version>${spring32.bundle.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.servicemix.bundles</groupId>
+      <artifactId>org.apache.servicemix.bundles.spring-web</artifactId>
+      <version>${spring32.bundle.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.servicemix.bundles</groupId>
+      <artifactId>org.apache.servicemix.bundles.spring-webmvc</artifactId>
+      <version>${spring32.bundle.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.servicemix.bundles</groupId>
+      <artifactId>org.apache.servicemix.bundles.spring-webmvc-portlet</artifactId>
+      <version>${spring32.bundle.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.servicemix.bundles</groupId>
+      <artifactId>org.apache.servicemix.bundles.aspectj</artifactId>
+      <version>${aspectj.bundle.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.security</groupId>
+      <artifactId>spring-security-core</artifactId>
+      <version>${spring-security.bundle.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.security</groupId>
+      <artifactId>spring-security-config</artifactId>
+      <version>${spring-security.bundle.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.security</groupId>
+      <artifactId>spring-security-web</artifactId>
+      <version>${spring-security.bundle.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.security</groupId>
+      <artifactId>spring-security-acl</artifactId>
+      <version>${spring-security.bundle.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.security</groupId>
+      <artifactId>spring-security-taglibs</artifactId>
+      <version>${spring-security.bundle.version}</version>
+    </dependency>
+
+
+    <dependency>
+      <groupId>commons-collections</groupId>
+      <artifactId>commons-collections</artifactId>
+      <version>${commons-collections.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>commons-beanutils</groupId>
+      <artifactId>commons-beanutils</artifactId>
+      <version>${commons-beanutils.version}</version>
+    </dependency>
+
+
+    <dependency>
+      <groupId>org.apache.geronimo.specs</groupId>
+      <artifactId>geronimo-jta_1.1_spec</artifactId>
+      <version>${geronimo.jta-spec.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.geronimo.specs</groupId>
+      <artifactId>geronimo-jms_1.1_spec</artifactId>
+      <version>${geronimo.jms-spec.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.servicemix.bundles</groupId>
+      <artifactId>org.apache.servicemix.bundles.aopalliance</artifactId>
+      <version>${aopalliance.bundle.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>javax.portlet</groupId>
+      <artifactId>portlet-api</artifactId>
+      <version>${portlet-api.version}</version>
+    </dependency>
+
+  </dependencies>
+
+</project>
