@@ -6,7 +6,7 @@
   <parent>
     <groupId>org.pentaho</groupId>
     <artifactId>requirejs-manager-core-modules</artifactId>
-    <version>8.3.0.0-SNAPSHOT</version>
+    <version>8.3.0.10-816</version>
   </parent>
 
   <artifactId>requirejs-manager-api</artifactId>

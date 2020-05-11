@@ -5,11 +5,11 @@
   <parent>
     <groupId>org.pentaho</groupId>
     <artifactId>pentaho-ce-bundle-parent-pom</artifactId>
-    <version>8.3.0.0-SNAPSHOT</version>
+    <version>8.3.0.10-816</version>
   </parent>
   <groupId>pentaho</groupId>
   <artifactId>pentaho-osgi-bundles</artifactId>
-  <version>8.3.0.0-SNAPSHOT</version>
+  <version>8.3.0.10-816</version>
   <packaging>pom</packaging>
   <name>Pentaho Community Edition Project: ${project.artifactId}</name>
   <description>Parent project for Pentaho OSGI Bundles</description>
@@ -57,7 +57,7 @@
     <json-simple.version>1.1.1</json-simple.version>
     <commons-lang.version>2.6</commons-lang.version>
     <rxjava.version>2.2.3</rxjava.version>
-    <platform.version>8.3.0.0-SNAPSHOT</platform.version>
+    <platform.version>8.3.0.10-816</platform.version>
 
     <!-- All 3 of these properties are required -->
     <license.organizationName>Hitachi Vantara</license.organizationName>

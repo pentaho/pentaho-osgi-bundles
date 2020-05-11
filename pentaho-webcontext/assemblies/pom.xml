@@ -7,7 +7,7 @@
   <parent>
     <groupId>org.pentaho.webcontext</groupId>
     <artifactId>pentaho-webcontext-modules</artifactId>
-    <version>8.3.0.0-SNAPSHOT</version>
+    <version>8.3.0.10-816</version>
   </parent>
 
   <name>Pentaho WebContext Assemblies</name>
