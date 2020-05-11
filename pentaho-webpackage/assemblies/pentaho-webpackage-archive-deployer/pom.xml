@@ -6,7 +6,7 @@
   <parent>
     <groupId>org.pentaho.webpackage</groupId>
     <artifactId>assemblies</artifactId>
-    <version>9.0.0.0-SNAPSHOT</version>
+    <version>9.0.0.2-544</version>
   </parent>
 
   <artifactId>pentaho-webpackage-archive-deployer</artifactId>

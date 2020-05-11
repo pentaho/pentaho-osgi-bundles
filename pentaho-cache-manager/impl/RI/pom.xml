@@ -5,11 +5,11 @@
   <parent>
     <groupId>pentaho</groupId>
     <artifactId>pentaho-cache-manager-parent</artifactId>
-    <version>9.0.0.0-SNAPSHOT</version>
+    <version>9.0.0.2-544</version>
     <relativePath>../../pom.xml</relativePath>
   </parent>
   <artifactId>guava-cache-provider</artifactId>
-  <version>9.0.0.0-SNAPSHOT</version>
+  <version>9.0.0.2-544</version>
   <packaging>bundle</packaging>
   <name>Pentaho Cache Manager: In-Memory Cache Provider</name>
   <description>a Pentaho open source project</description>

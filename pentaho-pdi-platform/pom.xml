@@ -5,16 +5,16 @@
   <parent>
     <groupId>pentaho</groupId>
     <artifactId>pentaho-osgi-bundles</artifactId>
-    <version>9.0.0.0-SNAPSHOT</version>
+    <version>9.0.0.2-544</version>
   </parent>
   <artifactId>pentaho-pdi-platform</artifactId>
-  <version>9.0.0.0-SNAPSHOT</version>
+  <version>9.0.0.2-544</version>
   <packaging>bundle</packaging>
   <name>Pentaho Community Edition Project: ${project.artifactId}</name>
   <description>a Pentaho open source project</description>
   <url>http://www.pentaho.com</url>
   <properties>
-    <mondrian.version>9.0.0.0-SNAPSHOT</mondrian.version>
+    <mondrian.version>9.0.0.2-544</mondrian.version>
   </properties>
   <dependencies>
     <dependency>
