@@ -36,6 +36,11 @@
       <artifactId>protobuf-java</artifactId>
       <version>${protoc.version}</version>
     </dependency>
+    <!-- OSGI -->
+    <dependency>
+      <groupId>org.apache.aries.blueprint</groupId>
+      <artifactId>org.apache.aries.blueprint.api</artifactId>
+    </dependency>
     <!-- Log -->
     <dependency>
       <groupId>org.slf4j</groupId>
