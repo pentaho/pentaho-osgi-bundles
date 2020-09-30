@@ -183,8 +183,8 @@ blueprint [lifecycle callbacks](https://docs.osgi.org/specification/osgi.cmpn/7.
 ## Messages Spec (Protobuf)
 
 We make extended use of Protobuf messages to send message with Kafka. To be able to use Protobuf `.proto` files with the message spec must be authored
-and compiled. In the parent poms a profile is activated when a folder named `proto` exists in a module source. Refer to the parent poms 
-documentation to better understand how the `.proto` files are assembled into Java code.
+and compiled. In the parent poms a profile is activated when a folder named `proto` exists in a module source. Refer to the [parent poms 
+](https://github.com/pentaho/maven-parent-poms/blob/6692f5d4894d65457259f9cec1f7d37ee8ce6d40/pom.xml#L1986) to better understand how the `.proto` files are assembled into Java code.
 
 ### Producer Key & Value Serializer
 When we send messages through Kafka we can use the Kafka provided serializers for `org.apache.kafka.common.serialization.IntegerSerializer`, 
