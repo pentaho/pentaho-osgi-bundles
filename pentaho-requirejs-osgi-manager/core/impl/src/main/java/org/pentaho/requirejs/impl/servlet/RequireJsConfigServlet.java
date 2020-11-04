@@ -202,6 +202,10 @@ public class RequireJsConfigServlet extends HttpServlet {
   }
 
   public class RequestContext {
+
+    private static final int HTTP_DEFAULT_PORT = 80;
+    private static final int HTTPS_DEFAULT_PORT = 443;
+
     private final boolean outputRequireJs;
     private final boolean useFullyQualifiedUrl;
 
@@ -216,8 +220,8 @@ public class RequireJsConfigServlet extends HttpServlet {
       this.referer = req.getHeader( "referer" );
 
       // To be congruent with referer other popular http clients the port should be stripped from the 'Host' field
-      // when the port is 80.
-      this.serverAddress = ( 80 == req.getServerPort() || 443 == req.getServerPort() )
+      // when the port is 80 or 443.
+      this.serverAddress = ( HTTP_DEFAULT_PORT == req.getServerPort() || HTTPS_DEFAULT_PORT == req.getServerPort() )
         ? req.getScheme() + "://" + req.getServerName()
         : req.getScheme() + "://" + req.getServerName() + ":" + req.getServerPort();
 
