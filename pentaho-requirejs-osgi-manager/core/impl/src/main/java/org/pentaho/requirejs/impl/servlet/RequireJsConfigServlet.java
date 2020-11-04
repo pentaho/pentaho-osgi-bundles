@@ -1,5 +1,5 @@
 /*!
- * Copyright 2010 - 2019 Hitachi Vantara.  All rights reserved.
+ * Copyright 2010 - 2020 Hitachi Vantara.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -202,6 +202,10 @@ public class RequireJsConfigServlet extends HttpServlet {
   }
 
   public class RequestContext {
+
+    private static final int HTTP_DEFAULT_PORT = 80;
+    private static final int HTTPS_DEFAULT_PORT = 443;
+
     private final boolean outputRequireJs;
     private final boolean useFullyQualifiedUrl;
 
@@ -214,7 +218,12 @@ public class RequireJsConfigServlet extends HttpServlet {
       this.outputRequireJs = this.getBooleanValue( req.getParameter( "requirejs" ), true );
 
       this.referer = req.getHeader( "referer" );
-      this.serverAddress = req.getScheme() + "://" + req.getServerName() + ":" + req.getServerPort();
+
+      // To be congruent with referer other popular http clients the port should be stripped from the 'Host' field
+      // when the port is 80 or 443.
+      this.serverAddress = ( HTTP_DEFAULT_PORT == req.getServerPort() || HTTPS_DEFAULT_PORT == req.getServerPort() )
+        ? req.getScheme() + "://" + req.getServerName()
+        : req.getScheme() + "://" + req.getServerName() + ":" + req.getServerPort();
 
       // should the CONTEXT_PATH / baseUrl be a fully qualified URL?
       // (defaults to automatically determined using the request's referer)
