@@ -1,5 +1,5 @@
 /*!
- * Copyright 2010 - 2019 Hitachi Vantara.  All rights reserved.
+ * Copyright 2010 - 2020 Hitachi Vantara.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -127,7 +127,8 @@ public class RequireJsConfigManager {
 
         for ( IRequireJsPackageConfiguration requireJsPackage : requireJsPackageConfigurations ) {
           String webRootPath = requireJsPackage.getWebRootPath();
-          if ( webRootPath != null && !webRootPath.isEmpty() && referer.contains( baseUrl + webRootPath ) ) {
+          // Compare values in lowercase to ensure that contains works well, because some http clients force requests to lowercase
+          if ( webRootPath != null && !webRootPath.isEmpty() && referer.toLowerCase().contains( (baseUrl + webRootPath).toLowerCase() ) ) {
             Map<String, Object> contextConfig = new HashMap<>();
             Map<String, Map<String, String>> topMap = new HashMap<>();
             Map<String, String> map = new HashMap<>();
