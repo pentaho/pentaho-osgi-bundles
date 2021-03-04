@@ -1,0 +1,7 @@
+{
+  "shim": {
+    "jquery/dist/jquery": {
+      "exports": "$"
+    }
+  }
+}
