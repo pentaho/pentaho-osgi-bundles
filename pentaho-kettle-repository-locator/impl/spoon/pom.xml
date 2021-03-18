@@ -5,10 +5,10 @@
   <parent>
     <groupId>pentaho</groupId>
     <artifactId>pentaho-kettle-repository-locator-impl</artifactId>
-    <version>9.2.0.0-SNAPSHOT</version>
+    <version>9.2.0.0-242</version>
   </parent>
   <artifactId>pentaho-kettle-repository-locator-impl-spoon</artifactId>
-  <version>9.2.0.0-SNAPSHOT</version>
+  <version>9.2.0.0-242</version>
   <packaging>bundle</packaging>
   <dependencies>
     <dependency>
