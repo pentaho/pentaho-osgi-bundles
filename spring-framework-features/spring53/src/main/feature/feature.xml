@@ -1,0 +1,94 @@
+<!--
+ ~ This program is free software; you can redistribute it and/or modify it under the
+ ~ terms of the GNU Lesser General Public License, version 2.1 as published by the Free Software
+ ~ Foundation.
+ ~
+ ~ You should have received a copy of the GNU Lesser General Public License along with this
+ ~ program; if not, you can obtain a copy at http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html
+ ~ or from the Free Software Foundation, Inc.,
+ ~ 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ ~
+ ~ This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ ~ without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ ~ See the GNU Lesser General Public License for more details.
+ ~
+ ~ Copyright 2021 Hitachi Vantara. All rights reserved.
+ -->
+
+<features name="hitachivantara-${project.artifactId}-repo" xmlns="http://karaf.apache.org/xmlns/features/v1.2.1">
+
+  <feature name="spring" description="Spring 5.3.x support" version="${spring53.bundle.version}">
+    <bundle dependency="true" start-level="30">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.aopalliance/${aopalliance.bundle.version}</bundle>
+    <bundle start-level="30">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.spring-core/${spring53.bundle.version}</bundle>
+    <bundle start-level="30">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.spring-expression/${spring53.bundle.version}</bundle>
+    <bundle start-level="30">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.spring-beans/${spring53.bundle.version}</bundle>
+    <bundle start-level="30">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.spring-aop/${spring53.bundle.version}</bundle>
+    <bundle start-level="30">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.spring-context/${spring53.bundle.version}</bundle>
+    <bundle start-level="30">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.spring-context-support/${spring53.bundle.version}</bundle>
+  </feature>
+
+  <feature name="spring-aspects" description="Spring 5.3.x AOP support" version="${spring53.bundle.version}">
+    <feature version="[${spring53.bundle.version},5.4)">spring</feature>
+    <bundle start-level="30">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.spring-aspects/${spring53.bundle.version}</bundle>
+  </feature>
+
+  <feature name="spring-instrument" description="Spring 5.3.x Instrument support" version="${spring53.bundle.version}">
+    <feature version="[${spring53.bundle.version},5.4)">spring</feature>
+    <bundle start-level="30">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.spring-instrument/${spring53.bundle.version}</bundle>
+  </feature>
+
+  <feature name="spring-jdbc" description="Spring 5.3.x JDBC support" version="${spring53.bundle.version}">
+    <feature version="[${spring53.bundle.version},5.4)">spring-tx</feature>
+    <bundle start-level="30">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.spring-jdbc/${spring53.bundle.version}</bundle>
+  </feature>
+
+  <feature name="spring-jms" description="Spring 5.3.x JMS support" version="${spring53.bundle.version}">
+    <feature version="[${spring53.bundle.version},5.4)">spring-tx</feature>
+    <bundle dependency="true" start-level="10">mvn:org.apache.geronimo.specs/geronimo-jta_1.1_spec/${geronimo.jta-spec.version}</bundle>
+    <bundle dependency="true" start-level="10">mvn:org.apache.geronimo.specs/geronimo-jms_1.1_spec/${geronimo.jms-spec.version}</bundle>
+    <bundle start-level="30">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.spring-jms/${spring53.bundle.version}</bundle>
+  </feature>
+
+  <feature name="spring-messaging" description="Spring 5.3.x Messaging support" version="${spring53.bundle.version}">
+    <feature version="[${spring53.bundle.version},5.4)">spring</feature>
+    <bundle start-level="30">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.spring-messaging/${spring53.bundle.version}</bundle>
+  </feature>
+
+  <feature name="spring-test" description="Spring 5.3.x Test support" version="${spring53.bundle.version}">
+    <feature version="[${spring53.bundle.version},5.4)">spring</feature>
+    <bundle dependency="true">mvn:javax.websocket/javax.websocket-api/${javax.websocket-api.version}</bundle>
+    <bundle dependency="true">mvn:org.apache.httpcomponents/httpcore-osgi/${httpcore-osgi.version}</bundle>
+    <bundle dependency="true">mvn:org.apache.httpcomponents/httpclient-osgi/${httpclient-osgi.version}</bundle>
+    <bundle start-level="30">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.spring-test/${spring53.bundle.version}</bundle>
+  </feature>
+
+  <feature name="spring-orm" description="Spring 5.3.x ORM support" version="${spring53.bundle.version}">
+    <feature version="[${spring53.bundle.version},5.4)">spring-jdbc</feature>
+    <bundle start-level="30">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.spring-orm/${spring53.bundle.version}</bundle>
+  </feature>
+
+  <feature name="spring-oxm" description="Spring 5.3.x OXM support" version="${spring53.bundle.version}">
+    <feature version="[${spring53.bundle.version},5.4)">spring</feature>
+    <bundle start-level="30">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.spring-oxm/${spring53.bundle.version}</bundle>
+  </feature>
+
+  <feature name="spring-tx" description="Spring 5.3.x Transaction (TX) support" version="${spring53.bundle.version}">
+    <feature version="[${spring53.bundle.version},5.4)">spring</feature>
+    <bundle start-level="30">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.spring-tx/${spring53.bundle.version}</bundle>
+  </feature>
+
+  <feature name="spring-web" description="Spring 5.3.x Web support" version="${spring53.bundle.version}">
+    <feature version="[${spring53.bundle.version},5.4)">spring</feature>
+    <feature>http</feature>
+    <bundle start-level="30">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.spring-web/${spring53.bundle.version}</bundle>
+    <bundle start-level="30">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.spring-webmvc/${spring53.bundle.version}</bundle>
+  </feature>
+
+  <feature name="spring-websocket" description="Spring 5.3.x WebSocket support" version="${spring53.bundle.version}">
+    <bundle dependency="true">mvn:javax.websocket/javax.websocket-api/${javax.websocket-api.version}</bundle>
+    <feature version="[${spring53.bundle.version},5.4)">spring-web</feature>
+    <bundle start-level="30">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.spring-websocket/${spring53.bundle.version}</bundle>
+  </feature>
+
+
+</features>

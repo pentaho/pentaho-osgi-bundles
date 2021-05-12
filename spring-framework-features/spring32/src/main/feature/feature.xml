@@ -1,0 +1,134 @@
+<!--
+ ~ This program is free software; you can redistribute it and/or modify it under the
+ ~ terms of the GNU Lesser General Public License, version 2.1 as published by the Free Software
+ ~ Foundation.
+ ~
+ ~ You should have received a copy of the GNU Lesser General Public License along with this
+ ~ program; if not, you can obtain a copy at http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html
+ ~ or from the Free Software Foundation, Inc.,
+ ~ 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ ~
+ ~ This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ ~ without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ ~ See the GNU Lesser General Public License for more details.
+ ~
+ ~ Copyright 2019 Hitachi Vantara. All rights reserved.
+ -->
+
+<features name="hitachivantara-${project.artifactId}-repo" xmlns="http://karaf.apache.org/xmlns/features/v1.2.1">
+
+  <feature name="spring" description="Spring 3.2.x support" version="${spring32.bundle.version}">
+    <bundle dependency="true" start-level="30">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.aopalliance/${aopalliance.bundle.version}</bundle>
+    <bundle start-level="30">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.spring-core/${spring32.bundle.version}</bundle>
+    <bundle start-level="30">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.spring-expression/${spring32.bundle.version}</bundle>
+    <bundle start-level="30">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.spring-beans/${spring32.bundle.version}</bundle>
+    <bundle start-level="30">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.spring-aop/${spring32.bundle.version}</bundle>
+    <bundle start-level="30">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.spring-context/${spring32.bundle.version}</bundle>
+    <bundle start-level="30">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.spring-context-support/${spring32.bundle.version}</bundle>
+  </feature>
+
+  <feature name="spring-aspects" description="Spring 3.2.x AOP support" version="${spring32.bundle.version}">
+    <feature version="[${spring32.bundle.version},3.3)">spring</feature>
+    <bundle start-level="30">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.spring-aspects/${spring32.bundle.version}</bundle>
+  </feature>
+
+  <feature name="spring-instrument" description="Spring 3.2.x Instrument support" version="${spring32.bundle.version}">
+    <feature version="[${spring32.bundle.version},3.3)">spring</feature>
+    <bundle start-level="30">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.spring-instrument/${spring32.bundle.version}</bundle>
+  </feature>
+
+  <feature name="spring-jdbc" description="Spring 3.2.x JDBC support" version="${spring32.bundle.version}">
+    <feature version="[${spring32.bundle.version},3.3)">spring-tx</feature>
+    <bundle start-level="30">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.spring-jdbc/${spring32.bundle.version}</bundle>
+  </feature>
+
+  <feature name="spring-jms" description="Spring 3.2.x JMS support" version="${spring32.bundle.version}">
+    <feature version="[${spring32.bundle.version},3.3)">spring-tx</feature>
+    <bundle dependency="true" start-level="10">mvn:org.apache.geronimo.specs/geronimo-jta_1.1_spec/${geronimo.jta-spec.version}</bundle>
+    <bundle dependency="true" start-level="10">mvn:org.apache.geronimo.specs/geronimo-jms_1.1_spec/${geronimo.jms-spec.version}</bundle>
+    <!-- Only overwrite javax.jms, the remaining packages are equal - Need to be found a better way of doing it -->
+    <bundle start-level="30">wrap:mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.spring-jms/3.2.18.RELEASE_1$overwrite=merge&amp;Import-Package=javax.jms;version="[1.1,2)", *com.fasterxml.jackson.databind;resolution:=optional;version="[2.0.2,3)", com.fasterxml.jackson.databind.type;resolution:=optional;version="[2.0.2,3)", javax.naming;resolution:=optional, javax.resource;resolution:=optional;version="[1.5,2)", javax.resource.spi;resolution:=optional;version="[1.5,2)", javax.resource.spi.endpoint;resolution:=optional;version="[1.5,2)", javax.xml.transform;resolution:=optional, javax.xml.transform.stream;resolution:=optional, org.aopalliance.intercept;resolution:=optional;version="[1,2)", org.apache.commons.logging;resolution:=optional;version="[1.1.1,2)", org.codehaus.jackson.map;resolution:=optional;version="[1.4.2,2)", org.codehaus.jackson.map.type;resolution:=optional;version="[1.4.2,2)", org.codehaus.jackson.type;resolution:=optional;version="[1.4.2,2)", org.springframework.aop.framework;resolution:=optional;version="[3.2.18.RELEASE,3.3)", org.springframework.aop.support;resolution:=optional;version="[3.2.18.RELEASE,3.3)", org.springframework.beans;version="[3.2.18.RELEASE,3.3)", org.springframework.beans.factory;version="[3.2.18.RELEASE,3.3)", org.springframework.beans.factory.config;version="[3.2.18.RELEASE,3.3)", org.springframework.beans.factory.parsing;version="[3.2.18.RELEASE,3.3)", org.springframework.beans.factory.support;version="[3.2.18.RELEASE,3.3)", org.springframework.beans.factory.xml;version="[3.2.18.RELEASE,3.3)", org.springframework.context;resolution:=optional;version="[3.2.18.RELEASE,3.3)", org.springframework.core;version="[3.2.18.RELEASE,3.3)", org.springframework.core.task;version="[3.2.18.RELEASE,3.3)", org.springframework.jca.endpoint;resolution:=optional;version="[3.2.18.RELEASE,3.3)", org.springframework.jndi;resolution:=optional;version="[3.2.18.RELEASE,3.3)", org.springframework.oxm;resolution:=optional;version="[3.2.18.RELEASE,3.3)", org.springframework.remoting;resolution:=optional;version="[3.2.18.RELEASE,3.3)", org.springframework.remoting.support;resolution:=optional;version="[3.2.18.RELEASE,3.3)", org.springframework.scheduling;resolution:=optional;version="[3.2.18.RELEASE,3.3)", org.springframework.transaction;resolution:=optional;version="[3.2.18.RELEASE,3.3)", org.springframework.transaction.support;resolution:=optional;version="[3.2.18.RELEASE,3.3)", org.springframework.util;version="[3.2.18.RELEASE,3.3)", org.w3c.dom;resolution:=optional</bundle>
+  </feature>
+
+  <feature name="spring-struts" description="Spring 3.2.x Struts support" version="${spring32.bundle.version}">
+    <feature version="[${spring32.bundle.version},3.3)">spring-web</feature>
+    <feature>war</feature>
+    <bundle dependency="true" start-level="30">mvn:commons-collections/commons-collections/${commons-collections.version}</bundle>
+    <bundle dependency="true" start-level="30">mvn:commons-beanutils/commons-beanutils/${commons-beanutils.version}</bundle>
+    <bundle dependency="true" start-level="30">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.struts/${struts.bundle.version}</bundle>
+    <bundle start-level="30">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.spring-struts/${spring32.bundle.version}</bundle>
+  </feature>
+
+  <feature name="spring-test" description="Spring 3.2.x Test support" version="${spring32.bundle.version}">
+    <feature version="[${spring32.bundle.version},3.3)">spring</feature>
+    <bundle start-level="30">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.spring-test/${spring32.bundle.version}</bundle>
+  </feature>
+
+  <feature name="spring-orm" description="Spring 3.2.x ORM support" version="${spring32.bundle.version}">
+    <feature version="[${spring32.bundle.version},3.3)">spring-jdbc</feature>
+    <bundle start-level="30">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.spring-orm/${spring32.bundle.version}</bundle>
+  </feature>
+
+  <feature name="spring-oxm" description="Spring 3.2.x OXM support" version="${spring32.bundle.version}">
+    <feature version="[${spring32.bundle.version},3.3)">spring</feature>
+    <bundle start-level="30">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.spring-oxm/${spring32.bundle.version}</bundle>
+  </feature>
+
+  <feature name="spring-tx" description="Spring 3.2.x Transaction (TX) support" version="${spring32.bundle.version}">
+    <feature version="[${spring32.bundle.version},3.3)">spring</feature>
+    <bundle start-level="30">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.spring-tx/${spring32.bundle.version}</bundle>
+  </feature>
+
+  <feature name="spring-web" description="Spring 3.2.x Web support" version="${spring32.bundle.version}">
+    <feature version="[${spring32.bundle.version},3.3)">spring</feature>
+    <feature>http</feature>
+    <bundle start-level="30">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.spring-web/${spring32.bundle.version}</bundle>
+    <bundle start-level="30">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.spring-webmvc/${spring32.bundle.version}</bundle>
+  </feature>
+
+  <feature name="spring-web-portlet" description="Spring 3.2.x Web Portlet support" version="${spring32.bundle.version}">
+    <feature>wrap</feature>
+    <feature version="[${spring32.bundle.version},3.3)">spring-web</feature>
+    <bundle dependency="true" start-level="30">wrap:mvn:javax.portlet/portlet-api/${portlet-api.version}$Export-Package=javax.portlet.*;version=${portlet-api.version}</bundle>
+    <bundle start-level="30">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.spring-webmvc-portlet/${spring32.bundle.version}</bundle>
+  </feature>
+
+  <!-- Spring DM support -->
+  <feature name="spring-dm" description="Spring DM support" version="${spring.osgi.version}">
+    <feature version="[2.5.6,4)">spring</feature>
+    <bundle dependency="true" start-level="30">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.cglib/${cglib.bundle.version}</bundle>
+    <bundle start-level="30">mvn:org.springframework.osgi/spring-osgi-io/${spring.osgi.version}</bundle>
+    <bundle start-level="30">mvn:org.springframework.osgi/spring-osgi-core/${spring.osgi.version}</bundle>
+    <bundle start-level="30">mvn:org.springframework.osgi/spring-osgi-extender/${spring.osgi.version}</bundle>
+    <bundle start-level="30">mvn:org.springframework.osgi/spring-osgi-annotation/${spring.osgi.version}</bundle>
+    <conditional>
+      <condition>deployer</condition>
+      <bundle start-level="30">mvn:org.apache.karaf.deployer/org.apache.karaf.deployer.spring/${karaf.version}</bundle>
+    </conditional>
+    <conditional>
+      <condition>bundle</condition>
+      <bundle start-level="30">mvn:org.apache.karaf.bundle/org.apache.karaf.bundle.springstate/${karaf.version}</bundle>
+    </conditional>
+  </feature>
+
+  <feature name="spring-dm-web" description="Spring DM Web support" version="${spring.osgi.version}">
+    <feature>spring-dm</feature>
+    <feature version="[2.5.6,4)">spring-web</feature>
+    <feature>http</feature>
+    <bundle start-level="30">mvn:org.springframework.osgi/spring-osgi-web/${spring.osgi.version}</bundle>
+  </feature>
+
+  <!-- Spring Security support -->
+  <!-- Spring Security 3 is being served via OSGI, version 4 is being provided outside of it -->
+  <feature name="spring-security" description="Spring Security 3.1.x support" version="${spring-security.bundle.version}">
+    <feature>war</feature>
+    <feature version="[${spring-security.bundle.version},4)">spring-web</feature>
+    <bundle dependency="true">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.aspectj/${aspectj.bundle.version}</bundle>
+    <bundle start-level="30">mvn:org.springframework.security/spring-security-core/${spring-security.bundle.version}</bundle>
+    <bundle start-level="30">mvn:org.springframework.security/spring-security-config/${spring-security.bundle.version}</bundle>
+    <bundle start-level="30">mvn:org.springframework.security/spring-security-web/${spring-security.bundle.version}</bundle>
+    <bundle start-level="30">mvn:org.springframework.security/spring-security-acl/${spring-security.bundle.version}</bundle>
+    <bundle start-level="30">mvn:org.springframework.security/spring-security-taglibs/${spring-security.bundle.version}</bundle>
+  </feature>
+
+</features>

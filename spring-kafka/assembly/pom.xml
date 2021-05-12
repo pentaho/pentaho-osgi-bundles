@@ -1,0 +1,47 @@
+<?xml version="1.0"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>org.hitachivantara.spring</groupId>
+    <artifactId>spring-kafka-module</artifactId>
+    <version>9.3.0.0-SNAPSHOT</version>
+  </parent>
+
+  <artifactId>spring-kafka</artifactId>
+  <packaging>feature</packaging>
+
+  <properties>
+    <spring43.bundle.version>4.3.23.RELEASE_1</spring43.bundle.version>
+  </properties>
+
+  <dependencies>
+    <!-- Kafka & Spring Kafka -->
+    <dependency>
+      <groupId>org.hitachivantara.karaf.features</groupId>
+      <artifactId>spring43</artifactId>
+      <version>${project.version}</version>
+      <classifier>features</classifier>
+      <type>xml</type>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.hitachivantara.spring</groupId>
+      <artifactId>spring-kafka-module-api</artifactId>
+      <version>${project.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.springframework</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.slf4j</groupId>
+          <artifactId>slf4j-api</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+  </dependencies>
+
+</project>
