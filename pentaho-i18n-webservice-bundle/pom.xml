@@ -13,6 +13,9 @@
   <name>Pentaho Community Edition Project: ${project.artifactId}</name>
   <description>a Pentaho open source project</description>
   <url>http://www.pentaho.com</url>
+  <properties>
+    <jaxws-ri.version>2.3.3</jaxws-ri.version>
+  </properties>
   <dependencies>
     <dependency>
       <groupId>pentaho</groupId>
@@ -35,7 +38,7 @@
     <dependency>
       <groupId>com.sun.xml.ws</groupId>
       <artifactId>jaxws-ri</artifactId>
-      <version>2.3.3</version>
+      <version>${jaxws-ri.version}</version>
       <type>pom</type>
     </dependency>
     <dependency>
@@ -84,6 +87,7 @@
           <instructions>
             <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
             <Bundle-Version>${project.version}</Bundle-Version>
+            <Import-Package>!javax.jws,*</Import-Package>
           </instructions>
         </configuration>
       </plugin>
