@@ -1,10 +1,8 @@
 {
-  "shim": {
-    "underscore": {
-      "exports": "_"
-    },
-    "underscore/underscore": {
-      "exports": "_"
+  "wrap": {
+    "/underscore-umd.js": {
+      "pre": "define(function() { var define = undefined;",
+      "pos": "return this._; });"
     }
   }
 }
