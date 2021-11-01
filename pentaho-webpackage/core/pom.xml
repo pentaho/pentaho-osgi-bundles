@@ -7,11 +7,11 @@
   <parent>
     <groupId>org.pentaho.webpackage</groupId>
     <artifactId>pentaho-webpackage-modules</artifactId>
-    <version>9.3.0.0-SNAPSHOT</version>
+    <version>9.3.0.0-237</version>
   </parent>
 
   <artifactId>core-modules</artifactId>
-  <version>9.3.0.0-SNAPSHOT</version>
+  <version>9.3.0.0-237</version>
 
   <packaging>pom</packaging>
 
