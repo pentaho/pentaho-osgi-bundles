@@ -1,5 +1,5 @@
 /*!
- * Copyright 2010 - 2018 Hitachi Vantara.  All rights reserved.
+ * Copyright 2010 - 2021 Hitachi Vantara.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package org.pentaho.platform.pdi;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
+import org.pentaho.di.core.Const;
 import org.pentaho.di.i18n.LanguageChoice;
 import org.pentaho.platform.api.engine.IPlatformWebResource;
 
@@ -99,6 +100,8 @@ public class WebContextServlet extends HttpServlet {
         writeWebContextVar( printWriter, "dojoConfig", "[]", false, false );
 
         writeWebContextVar( printWriter, "CONTEXT_PATH", CONTEXT_PATH );
+
+        writeWebContextVar( printWriter, "IS_RUNNING_ON_WEBSPOON_MODE", String.valueOf( Const.isRunningOnWebspoonMode() ), false, false );
 
         String locale = getLocale( httpRequest );
         writeWebContextVar( printWriter, "SESSION_LOCALE", locale );
