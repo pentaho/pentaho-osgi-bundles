@@ -41,6 +41,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.doReturn;
+import org.pentaho.di.core.Const;
 
 @RunWith( MockitoJUnitRunner.class )
 public class WebContextServletTest {
@@ -254,7 +255,7 @@ public class WebContextServletTest {
   }
 
   private String getDocumentWriteExpected( String resource ) {
-    String location = "'\" + CONTEXT_PATH + \"" + resource + "'";
+    String location = Const.isRunningOnWebspoonMode()? "'\" + CONTEXT_PATH + \"/" + resource + "'" : "'\" + CONTEXT_PATH + \"" + resource + "'";
 
     if ( resource.endsWith( ".js" ) ) {
       return "document.write(\"<script type='text/javascript' src=" + location + "></scr\" + \"ipt>\");\n";
