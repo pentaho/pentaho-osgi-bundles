@@ -38,6 +38,11 @@
           }
         };
 
+        if ( IS_RUNNING_ON_WEBSPOON_MODE ) {
+          baseUrl = CONTEXT_PATH;
+          url = baseUrl + "/cxf/i18n/" + bundlePath + "/" + locale;
+        }
+
         request(url, options).then(function (data) {
           if (data) {
             var bundle = new MessageBundle(JSON.parse(data));
