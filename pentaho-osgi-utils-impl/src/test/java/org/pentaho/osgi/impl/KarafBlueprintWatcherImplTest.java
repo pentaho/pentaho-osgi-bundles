@@ -17,10 +17,10 @@
 package org.pentaho.osgi.impl;
 
 import org.apache.karaf.bundle.core.BundleState;
-import org.apache.log4j.AppenderSkeleton;
-import org.apache.log4j.Level;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.spi.LoggingEvent;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.Appender;
+import org.apache.logging.log4j.core.layout.PatternLayout;
 import org.junit.Before;
 import org.junit.Test;
 import org.osgi.framework.Bundle;
@@ -31,8 +31,10 @@ import org.pentaho.osgi.api.IKarafBlueprintWatcher;
 import org.pentaho.osgi.api.IKarafBlueprintWatcher.BlueprintWatcherException;
 import org.pentaho.platform.api.engine.IApplicationContext;
 import org.pentaho.platform.engine.core.system.PentahoSystem;
+import org.junit.After;
 import org.junit.Assert;
 
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -58,45 +60,66 @@ public class KarafBlueprintWatcherImplTest {
 
   private static final String EXPECTED_REPORT_HEADER =
       System.lineSeparator() + "--------- Karaf Blueprint Watcher Report Begin ---------";
+
   private static final String EXPECTED_REPORT_FOR_FAILED_BLUEPRINT =
-      "\n--------- Karaf Blueprint Watcher Report Begin ---------\nBlueprint Bundle(s) not loaded:\n\tBlueprint Bundle 'Bundle_6':\n \t\t Blueprint Bundle State: Failure\n \t\t Blueprint Bundle ID: 6\n \t\t Missing Dependencies:\n \t\t \tdependency1\n \t\t \tdependency2\n \t\t This blueprint state was caused by: \n \t\t \tjava.lang.Throwable\n \t \t \t\tat declaringClass1.methodName1(filename1:1)\n \t \t \t\tat declaringClass2.methodName2(filename2:2)\n--------- Karaf Blueprint Watcher Report End ---------";
+      //"--------- Karaf Blueprint Watcher Report Begin ---------\nBlueprint Bundle(s) not loaded:\n\tBlueprint Bundle 'Bundle_6':\n \t\t Blueprint Bundle State: Failure\n \t\t Blueprint Bundle ID: 6\n \t\t Missing Dependencies:\n \t\t \tdependency1\n \t\t \tdependency2\n \t\t This blueprint state was caused by: \n \t\t \tjava.lang.Throwable\n \t \t \t\tat declaringClass1.methodName1(filename1:1)\n \t \t \t\tat declaringClass2.methodName2(filename2:2)\n--------- Karaf Blueprint Watcher Report End ---------";
+    "--------- Karaf Blueprint Watcher Report Begin ---------" + System.lineSeparator()
+    + "Blueprint Bundle(s) not loaded:" + System.lineSeparator()
+    + "\tBlueprint Bundle 'Bundle_6':" + System.lineSeparator()
+    + " \t\t Blueprint Bundle State: Failure" + System.lineSeparator()
+    + " \t\t Blueprint Bundle ID: 6" + System.lineSeparator()
+    + " \t\t Missing Dependencies:" + System.lineSeparator()
+    + " \t\t \tdependency1" + System.lineSeparator()
+    + " \t\t \tdependency2" + System.lineSeparator()
+    + " \t\t This blueprint state was caused by: " + System.lineSeparator()
+    + " \t\t \tjava.lang.Throwable" + System.lineSeparator()
+    + " \t \t \t\tat declaringClass1.methodName1(filename1:1)" + System.lineSeparator()
+    + " \t \t \t\tat declaringClass2.methodName2(filename2:2)" + System.lineSeparator()
+    + "--------- Karaf Blueprint Watcher Report End ---------";
+
   private static final String EXPECTED_REPORT_FOR_UNLOADED_BLUEPRINTS =
-      "\n--------- Karaf Blueprint Watcher Report Begin ---------\nBlueprint Bundle(s) not loaded:\n\tBlueprint Bundle 'Bundle_6':\n \t\t Blueprint Bundle State: Failure\n \t\t Blueprint Bundle ID: 6\n \t\t Missing Dependencies:\n \t\t \tdependency1\n \t\t \tdependency2\n \t\t This blueprint state was caused by: \n \t\t \tjava.lang.Throwable\n \t \t \t\tat declaringClass1.methodName1(filename1:1)\n \t \t \t\tat declaringClass2.methodName2(filename2:2)\n\tBlueprint Bundle 'Bundle_12':\n \t\t Blueprint Bundle State: Unknown\n \t\t Blueprint Bundle ID: 12\n\tBlueprint Bundle 'Bundle_7':\n \t\t Blueprint Bundle State: GracePeriod\n \t\t Blueprint Bundle ID: 7\n \t\t Missing Dependencies:\n \t\t \tdependency6\n--------- Karaf Blueprint Watcher Report End ---------";
+    "--------- Karaf Blueprint Watcher Report Begin ---------" + System.lineSeparator()
+    + "Blueprint Bundle(s) not loaded:" + System.lineSeparator()
+    + "\tBlueprint Bundle 'Bundle_6':" + System.lineSeparator()
+    + " \t\t Blueprint Bundle State: Failure" + System.lineSeparator()
+    + " \t\t Blueprint Bundle ID: 6" + System.lineSeparator()
+    + " \t\t Missing Dependencies:" + System.lineSeparator()
+    + " \t\t \tdependency1" + System.lineSeparator()
+    + " \t\t \tdependency2" + System.lineSeparator()
+    + " \t\t This blueprint state was caused by: " + System.lineSeparator()
+    + " \t\t \tjava.lang.Throwable" + System.lineSeparator()
+    + " \t \t \t\tat declaringClass1.methodName1(filename1:1)" + System.lineSeparator()
+    + " \t \t \t\tat declaringClass2.methodName2(filename2:2)" + System.lineSeparator()
+    + "\tBlueprint Bundle 'Bundle_12':" + System.lineSeparator()
+    + " \t\t Blueprint Bundle State: Unknown" + System.lineSeparator()
+    + " \t\t Blueprint Bundle ID: 12" + System.lineSeparator()
+    + "\tBlueprint Bundle 'Bundle_7':" + System.lineSeparator()
+    + " \t\t Blueprint Bundle State: GracePeriod" + System.lineSeparator()
+    + " \t\t Blueprint Bundle ID: 7" + System.lineSeparator()
+    + " \t\t Missing Dependencies:" + System.lineSeparator()
+    + " \t\t \tdependency6" + System.lineSeparator()
+    + "--------- Karaf Blueprint Watcher Report End ---------";
 
-  public List<String> messages = new ArrayList<String>();
-
-  private class TestAppender extends AppenderSkeleton {
-
-    public TestAppender() {
-      super();
-      messages = new ArrayList<String>();
-    }
-
-    public void append( LoggingEvent event ) {
-      if ( event.getLevel().equals( Level.DEBUG ) ) {
-        messages.add( event.getMessage().toString() );
-      }
-    }
-
-    @Override
-    public void close() {
-      messages = null;
-    }
-
-    @Override
-    public boolean requiresLayout() {
-      return false;
-    }
-
-  }
+  private StringWriter sw;
+private Appender appender;
 
   @Before
   public void setUp() {
-    LogManager.getRootLogger().addAppender( new TestAppender() );
+    sw = new StringWriter();
+    appender = LogUtil.makeAppender(
+      "KarafBlueprintWatcherImplTest",
+      sw,
+      PatternLayout.createDefaultLayout().getConversionPattern());
+    LogUtil.addAppender(
+      appender, LogManager.getRootLogger(), Level.DEBUG);
+    LogUtil.setLoggerLevel(LogManager.getRootLogger(), Level.DEBUG);
     MOCK_BUNDLE_FAILED_CAUSE.setStackTrace( STACK_TRACE );
-
   }
 
+  @After
+  public void tearDown() throws Exception {
+    LogUtil.removeAppender(appender, LogManager.getRootLogger());
+  }
 
   @Test
   public void testNonResolvedBundlesSkipped() {
@@ -205,11 +228,11 @@ public class KarafBlueprintWatcherImplTest {
     }
 
     // Test log debug output for failed blueprint
-    String debugOutput = WatchersTestUtils.findKarafDebugOutput( messages, EXPECTED_REPORT_HEADER );
-    if ( debugOutput == null ) {
-      Assert.fail();
+    String output = sw.toString();
+    sw.flush();
+    if (!output.contains(EXPECTED_REPORT_FOR_FAILED_BLUEPRINT)) {
+      Assert.fail("Expected string not found");
     }
-    WatchersTestUtils.testEquivalentReports( debugOutput, EXPECTED_REPORT_FOR_FAILED_BLUEPRINT );
 
     // Test when blueprints are loaded, failed and unloaded
 
@@ -236,11 +259,11 @@ public class KarafBlueprintWatcherImplTest {
       Assert.assertFalse( message.contains( WatchersTestUtils.getBundleName( MOCK_BUNDLE_UNKNOWN_ID ) ) );
       Assert.assertTrue( message.contains( WatchersTestUtils.getBundleName( MOCK_BUNDLE_GRACE_PERIOD_ID ) ) );
 
-      String debugOutputUnloadedBlueprints = WatchersTestUtils.findKarafDebugOutput( messages, EXPECTED_REPORT_HEADER );
-      if ( debugOutputUnloadedBlueprints == null ) {
-        Assert.fail();
+      output = sw.toString();
+      sw.flush();
+      if (!output.contains(EXPECTED_REPORT_FOR_UNLOADED_BLUEPRINTS)) {
+        Assert.fail("Expected string not found");
       }
-      WatchersTestUtils.testEquivalentReports( debugOutputUnloadedBlueprints, EXPECTED_REPORT_FOR_UNLOADED_BLUEPRINTS );
       return;
     }
     Assert.fail();

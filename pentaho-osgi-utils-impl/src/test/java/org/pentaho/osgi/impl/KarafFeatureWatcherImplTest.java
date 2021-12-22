@@ -23,10 +23,10 @@ import org.apache.karaf.features.BundleInfo;
 import org.apache.karaf.features.Dependency;
 import org.apache.karaf.features.Feature;
 import org.apache.karaf.features.FeaturesService;
-import org.apache.log4j.AppenderSkeleton;
-import org.apache.log4j.Level;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.spi.LoggingEvent;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.Appender;
+import org.apache.logging.log4j.core.layout.PatternLayout;
 import org.junit.Before;
 import org.junit.Test;
 import org.osgi.framework.Bundle;
@@ -39,8 +39,10 @@ import org.pentaho.osgi.api.IKarafFeatureWatcher;
 import org.pentaho.osgi.api.IKarafFeatureWatcher.FeatureWatcherException;
 import org.pentaho.platform.api.engine.IApplicationContext;
 import org.pentaho.platform.engine.core.system.PentahoSystem;
+import org.junit.After;
 import org.junit.Assert;
 
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
@@ -82,37 +84,41 @@ public class KarafFeatureWatcherImplTest {
 
   private static final String EXPECTED_REPORT_HEADER = System.lineSeparator() + "--------- Karaf Feature Watcher Report Begin ---------";
   private static final String EXPECTED_REPORT_FOR_NOT_INSTALLED_FEATURES =
-      "\n--------- Karaf Feature Watcher Report Begin ---------\nFeature 'ParentFailedActiveFeature' with version 77.9.81 did not install.\nThe following bundle(s) are not active and they are contained in feature 'ParentFailedActiveFeature'\n\tBundle 'Bundle_6':\n\t\t Bundle State: Failure\n\t\t Bundle ID: 6\n\t\t Unsatisfied Requirements:\n\t\t\tdependency1\n\t\t\tdependency2\nThe following feature(s) are not active and they are contained in feature 'ParentFailedActiveFeature'\n\tFeature 'ChildFailedFeature' did not install.\n\tThe following bundle(s) are not active and they are contained in feature 'ChildFailedFeature'\n\t\tBundle 'Bundle_12':\n\t\t\t Bundle State: Unknown\n\t\t\t Bundle ID: 12\n--------- Karaf Feature Watcher Report End ---------";
-  public List<String> messages = new ArrayList<String>();
+    "--------- Karaf Feature Watcher Report Begin ---------" + System.lineSeparator()
+    + "Feature 'ParentFailedActiveFeature' with version 77.9.81 did not install." + System.lineSeparator()
+    + "The following bundle(s) are not active and they are contained in feature 'ParentFailedActiveFeature'" + System.lineSeparator()
+    + "\tBundle 'Bundle_6':" + System.lineSeparator()
+    + "\t\t Bundle State: Failure" + System.lineSeparator()
+    + "\t\t Bundle ID: 6" + System.lineSeparator()
+    + "\t\t Unsatisfied Requirements:" + System.lineSeparator()
+    + "\t\t\tdependency1" + System.lineSeparator()
+    + "\t\t\tdependency2" + System.lineSeparator()
+    + "The following feature(s) are not active and they are contained in feature 'ParentFailedActiveFeature'" + System.lineSeparator()
+    + "\tFeature 'ChildFailedFeature' did not install." + System.lineSeparator()
+    + "\tThe following bundle(s) are not active and they are contained in feature 'ChildFailedFeature'" + System.lineSeparator()
+    + "\t\tBundle 'Bundle_12':" + System.lineSeparator()
+    + "\t\t\t Bundle State: Unknown" + System.lineSeparator()
+    + "\t\t\t Bundle ID: 12" + System.lineSeparator()
+    + "--------- Karaf Feature Watcher Report End ---------";
 
-  private class TestAppender extends AppenderSkeleton {
-
-    public TestAppender() {
-      super();
-      messages = new ArrayList<String>();
-    }
-
-    public void append( LoggingEvent event ) {
-      if ( event.getLevel().equals( Level.DEBUG ) ) {
-        messages.add( event.getMessage().toString() );
-      }
-    }
-
-    @Override
-    public void close() {
-      messages = null;
-    }
-
-    @Override
-    public boolean requiresLayout() {
-      return false;
-    }
-
-  }
+  private StringWriter sw;
+  private Appender appender;
 
   @Before
   public void setUp() {
-    LogManager.getRootLogger().addAppender( new TestAppender() );
+    sw = new StringWriter();
+    appender = LogUtil.makeAppender(
+      "KarafFeatureWatcherImplTest",
+      sw,
+      PatternLayout.createDefaultLayout().getConversionPattern() );
+    LogUtil.addAppender(
+      appender, LogManager.getRootLogger(), Level.DEBUG );
+    LogUtil.setLoggerLevel( LogManager.getRootLogger(), Level.DEBUG );
+  }
+
+  @After
+  public void tearDown() throws Exception {
+    LogUtil.removeAppender( appender, LogManager.getRootLogger() );
   }
 
   @Test
@@ -121,7 +127,6 @@ public class KarafFeatureWatcherImplTest {
     IApplicationContext applicationContext = mock( IApplicationContext.class );
     PentahoSystem.init( applicationContext );
     when( applicationContext.getProperty( KarafBlueprintWatcherImpl.KARAF_TIMEOUT_PROPERTY ) ).thenReturn( "1" );
-
     BundleContext bundleContext = mock( BundleContext.class );
 
     ConfigurationAdmin configurationAdmin = mock( ConfigurationAdmin.class );
@@ -188,7 +193,11 @@ public class KarafFeatureWatcherImplTest {
       throw e;
     }
 
-    Assert.assertTrue( WatchersTestUtils.findKarafDebugOutput( messages, EXPECTED_REPORT_FOR_NOT_INSTALLED_FEATURES ) == null );
+    String output = sw.toString();
+    sw.flush();
+    if ( output.contains( EXPECTED_REPORT_FOR_NOT_INSTALLED_FEATURES ) ) {
+      Assert.fail( "Expected string not found" );
+    }
 
     // RuntimeFeatures
     List<BundleInfo> childFailedRuntimeBundles = new ArrayList<BundleInfo>();
@@ -239,11 +248,12 @@ public class KarafFeatureWatcherImplTest {
       String message = e.getCause().getMessage();
       Assert.assertTrue( message.contains( PARENT_FAILED_BOOT_FEATURE_NAME ) );
 
-      String debugOutputNotInstalledFeatures = WatchersTestUtils.findKarafDebugOutput( messages, EXPECTED_REPORT_HEADER );
-      if ( debugOutputNotInstalledFeatures == null ) {
-        Assert.fail();
+      output = sw.toString();
+      sw.flush();
+      if (!output.contains( EXPECTED_REPORT_FOR_NOT_INSTALLED_FEATURES ) ) {
+        Assert.assertEquals( EXPECTED_REPORT_FOR_NOT_INSTALLED_FEATURES, output );
+        Assert.fail( "Expected string not found" );
       }
-      WatchersTestUtils.testEquivalentReports( debugOutputNotInstalledFeatures, EXPECTED_REPORT_FOR_NOT_INSTALLED_FEATURES );
       return;
     }
     Assert.fail();
