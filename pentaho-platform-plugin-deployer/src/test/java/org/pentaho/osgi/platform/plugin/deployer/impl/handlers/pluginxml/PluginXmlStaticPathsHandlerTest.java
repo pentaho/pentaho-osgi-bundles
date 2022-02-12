@@ -16,7 +16,7 @@
  */
 package org.pentaho.osgi.platform.plugin.deployer.impl.handlers.pluginxml;
 
-import com.sun.org.apache.xerces.internal.dom.ElementNSImpl;
+import org.apache.xerces.dom.ElementNSImpl;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
