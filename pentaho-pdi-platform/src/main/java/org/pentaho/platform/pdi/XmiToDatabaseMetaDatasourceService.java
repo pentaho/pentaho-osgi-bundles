@@ -1,5 +1,5 @@
 /*!
- * Copyright 2010 - 2018 Hitachi Vantara.  All rights reserved.
+ * Copyright 2010 - 2022 Hitachi Vantara.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import java.util.logging.Logger;
 
 import javax.sql.DataSource;
 
+import org.pentaho.database.model.IDatabaseConnection;
 import org.pentaho.di.core.database.Database;
 import org.pentaho.di.core.database.DatabaseMeta;
 import org.pentaho.di.core.exception.KettleException;
@@ -85,6 +86,10 @@ public class XmiToDatabaseMetaDatasourceService implements IDBDatasourceService 
 
     DatabaseMeta databaseMeta = ThinModelConverter.convertToLegacy( model.getId(), model.getDatasource() );
     return new DatabaseMetaDataSource( databaseMeta );
+  }
+
+  public DataSource resolveDatabaseConnection( IDatabaseConnection databaseConnection ) {
+    throw new UnsupportedOperationException( "resolveDatabaseConnection is not implemented." );
   }
 
   class DatabaseMetaDataSource implements DataSource {
