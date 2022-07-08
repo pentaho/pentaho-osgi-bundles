@@ -139,7 +139,6 @@
         <module>pentaho-spring-dm-extender</module>
         <module>pentaho-object-tunnel</module>
         <module>pentaho-bundle-resource-manager</module>
-        <module>pentaho-metastore-locator-api</module>
         <module>pentaho-proc-governor</module>
         <module>osgi-blueprint-api</module>
         <module>spring-framework-features</module>
@@ -158,8 +157,6 @@
         <module>pentaho-server-bundle</module>
         <module>pentaho-proxy-factory</module>
         <module>pentaho-proxy-spring4</module>
-        <module>pentaho-kettle-repository-locator</module>
-        <module>pentaho-metastore-locator-impl</module>
         <module>pentaho-webcontext</module>
         <module>pentaho-pdi-platform</module>
         <module>spring-security-karaf-login-module</module>
