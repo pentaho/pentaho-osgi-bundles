@@ -16,16 +16,17 @@
  */
 package org.pentaho.hadoop.shim;
 
-import org.apache.karaf.kar.KarService;
 import org.osgi.framework.BundleContext;
 import org.pentaho.di.core.Const;
+import org.pentaho.di.core.plugins.LifecyclePluginType;
+import org.pentaho.di.core.plugins.PluginInterface;
+import org.pentaho.di.core.plugins.PluginRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -39,9 +40,14 @@ public class DriverManager {
 
   public static final String CONFIG_FILE_NAME = "org.pentaho.features";
   public static final String INSTALL_DRIVERS_PROPERTY = "installDrivers";
-  private static final String DRIVER_FILE_EXTENSION = ".kar";
+  private static final String DRIVER_FILE_EXTENSION_KAR = ".kar";
+  private static final String DRIVER_FILE_EXTENSION_ZIP = ".zip";
+
+  private static final String BIG_DATA_PLUGIN_ID = "HadoopSpoonPlugin";
+  private final String BIG_DATA_PLUGIN_DIR;
 
   private DriverManager() {
+    BIG_DATA_PLUGIN_DIR = PluginRegistry.getInstance().getPlugin( LifecyclePluginType.class, BIG_DATA_PLUGIN_ID ).getPluginDirectory().getPath() + "/drivers";
   }
 
   /**
@@ -75,49 +81,55 @@ public class DriverManager {
    * file, delete the Kar file from the drivers directory, clear the Karaf catch and restart the application.
    */
   public void installDrivers() {
-    logger.info( "Installing driver kars." );
-    KarService karService;
-    Stream<Path> karFileList = null;
+    logger.info( "Installing big data drivers." );
+    Stream<Path> driverFileList = null;
     try {
-      String karSourceDirName = Const.getShimDriverDeploymentLocation();
-      File karSourceDir = new File( karSourceDirName );
+      String driverSourceDirName = Const.getShimDriverDeploymentLocation();
+      File driverSourceDir = new File( driverSourceDirName );
 
-      if ( !karSourceDir.exists() ) {
-        String logMessage = String.format( "Drivers installation directory not found: %s", karSourceDirName );
+      if ( !driverSourceDir.exists() ) {
+        String logMessage = String.format( "Drivers installation directory not found: %s", driverSourceDirName );
         logger.info( logMessage );
         return;
       }
-      karService =
-        (KarService) bundleContext.getService( bundleContext.getServiceReference( "org.apache.karaf.kar.KarService" ) );
-      karFileList = Files.list( karSourceDir.toPath() );
-      List<String> karsInDir = karFileList
-        .filter( path -> path.toString().endsWith( DRIVER_FILE_EXTENSION ) )
-        .map( path -> path.getFileName().toString().substring( 0, path.getFileName().toString().length() - 4 ) )
+      driverFileList = Files.list( driverSourceDir.toPath() );
+      List<String> driversInDir = driverFileList
+        .filter( path -> ( path.toString().endsWith( DRIVER_FILE_EXTENSION_KAR ) || path.toString().endsWith( DRIVER_FILE_EXTENSION_ZIP ) ) )
+        .map( path -> path.getFileName().toString() )
         .collect( Collectors.toList() );
-      List<String> karsToInstall = new ArrayList( karsInDir );
-      karsToInstall.removeAll( karService.list() );
+      List<String> driversToInstall = new ArrayList( driversInDir );
 
-      String driverInstallCountMsg = String.format( "%d drivers will be installed.", karsToInstall.size() );
+      String driverInstallCountMsg = String.format( "%d drivers will be installed.", driversToInstall.size() );
       logger.info( driverInstallCountMsg );
 
-      karsToInstall.stream()
-        .forEach( karname -> {
+      driversToInstall.stream()
+        .forEach( driverName -> {
           try {
-            logger.info( String.format( "Installing %s", karname ) );
-            Path karPath = Paths.get( karSourceDir.getAbsolutePath(), karname + DRIVER_FILE_EXTENSION );
-            karService.install( karPath.toUri() );
-            logger.info( String.format( "%s Kar installed.", karname ) );
+            logger.info( String.format( "Installing %s", driverName ) );
+            processDriverFile( driverName, driverSourceDir.getAbsolutePath() );
+            logger.info( String.format( "%s driver installed.", driverName ) );
           } catch ( Exception e ) {
-            logger.error( "Failed installing driver: " + karname + DRIVER_FILE_EXTENSION, e );
+            logger.error( "Failed installing driver: " + driverName, e );
           }
         } );
     } catch ( Exception e ) {
       logger.error( "Failed driver installation process.", e );
     } finally {
-      if ( karFileList != null ) {
-        karFileList.close();
+      if ( driverFileList != null ) {
+        driverFileList.close();
       }
     }
-    logger.info( "Finished installing drivers kars." );
+    logger.info( "Finished installing big data drivers." );
   }
+
+  private void processDriverFile( String driverName, String driverDirectory ) throws Exception {
+    if ( driverName.endsWith( DRIVER_FILE_EXTENSION_ZIP ) ) {
+      DriverZipUtil.unzipFile( driverDirectory + "/" + driverName, BIG_DATA_PLUGIN_DIR );
+    } else if ( driverName.endsWith( DRIVER_FILE_EXTENSION_KAR ) ) {
+      DriverKarUtil.processKarFile( driverName, driverDirectory, BIG_DATA_PLUGIN_DIR );
+    } else {
+      throw new Exception( "Failed processing driver file. Wrong file extension: " + driverDirectory );
+    }
+  }
+
 }
