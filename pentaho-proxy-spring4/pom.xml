@@ -113,7 +113,7 @@
           <instructions>
             <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
             <Bundle-Version>${project.version}</Bundle-Version>
-            <Import-Package>org.springframework.security.authentication;version="[5.0, 5.5)",*</Import-Package>
+            <Import-Package>org.springframework.security.authentication;version="[5.0, 5.8)",*</Import-Package>
           </instructions>
         </configuration>
       </plugin>
