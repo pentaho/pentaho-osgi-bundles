@@ -1,5 +1,5 @@
 /*!
- * Copyright 2010 - 2018 Hitachi Vantara.  All rights reserved.
+ * Copyright 2010 - 2023 Hitachi Vantara.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -125,15 +125,19 @@ public class KarafFeatureWatcherImpl implements IKarafFeatureWatcher {
           IServiceBarrier serviceBarrier =
               IServiceBarrierManager.LOCATOR.getManager().getServiceBarrier( "KarafFeatureWatcherBarrier" );
           if ( serviceBarrier == null || serviceBarrier.isAvailable() ) {
-            logger.debug( getFeaturesReport( featuresService, uninstalledFeatures ) );
+            if ( logger.isDebugEnabled() ) {
+              logger.debug( getFeaturesReport( featuresService, uninstalledFeatures ) );
+            }
             throw new FeatureWatcherException( "Timed out waiting for Karaf features to install: " + StringUtils
                 .join( uninstalledFeatures, "," ) );
           } else {
             entryTime = System.currentTimeMillis();
           }
         }
-        logger.debug( "KarafFeatureWatcher is waiting for the following features to install: " + StringUtils.join(
+        if ( logger.isDebugEnabled() ) {
+          logger.debug( "KarafFeatureWatcher is waiting for the following features to install: " + StringUtils.join(
             uninstalledFeatures, "," ) );
+        }
         Thread.sleep( 100 );
         continue;
       }
@@ -263,11 +267,15 @@ public class KarafFeatureWatcherImpl implements IKarafFeatureWatcher {
     }
 
     // For this feature, we list its non active bundles with additional information
-    if ( feature.getBundles() != null ) {
+    if ( null == bundleService ) {
+      featureReport += "Cannot list bundles; bundleService not available";
+    } else if ( feature.getBundles() != null ) {
       boolean first = true;
       for ( BundleInfo bundleInfo : feature.getBundles() ) {
         Bundle bundle = bundleContext.getBundle( bundleInfo.getLocation() );
-        if ( bundleService.getInfo( bundle ).getState() != BundleState.Active ) {
+        if ( null == bundle ) {
+          featureReport += System.lineSeparator() + "Bundle for " + bundleInfo.getLocation() + " is null.";
+        } else if ( bundleService.getInfo( bundle ).getState() != BundleState.Active ) {
           if ( first == true ) {
             featureReport +=
                 System.lineSeparator() + "The following bundle(s) are not active and they are contained in feature '"
