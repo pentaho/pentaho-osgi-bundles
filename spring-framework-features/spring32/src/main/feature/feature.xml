@@ -118,17 +118,4 @@
     <bundle start-level="30">mvn:org.springframework.osgi/spring-osgi-web/${spring.osgi.version}</bundle>
   </feature>
 
-  <!-- Spring Security support -->
-  <!-- Spring Security 3 is being served via OSGI, version 4 is being provided outside of it -->
-  <feature name="spring-security" description="Spring Security 3.1.x support" version="${spring-security.bundle.version}">
-    <feature>war</feature>
-    <feature version="[${spring-security.bundle.version},4)">spring-web</feature>
-    <bundle dependency="true">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.aspectj/${aspectj.bundle.version}</bundle>
-    <bundle start-level="30">mvn:org.springframework.security/spring-security-core/${spring-security.bundle.version}</bundle>
-    <bundle start-level="30">mvn:org.springframework.security/spring-security-config/${spring-security.bundle.version}</bundle>
-    <bundle start-level="30">mvn:org.springframework.security/spring-security-web/${spring-security.bundle.version}</bundle>
-    <bundle start-level="30">mvn:org.springframework.security/spring-security-acl/${spring-security.bundle.version}</bundle>
-    <bundle start-level="30">mvn:org.springframework.security/spring-security-taglibs/${spring-security.bundle.version}</bundle>
-  </feature>
-
 </features>
