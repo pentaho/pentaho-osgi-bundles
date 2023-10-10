@@ -1,5 +1,5 @@
 /*!
- * Copyright 2010 - 2018 Hitachi Vantara.  All rights reserved.
+ * Copyright 2010 - 2023 Hitachi Vantara.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ package org.pentaho.osgi.api;
  * Created by bmorrise on 9/4/15.
  */
 public interface IKarafBlueprintWatcher {
-  void waitForBlueprint() throws BlueprintWatcherException;
+  void waitForBlueprint() throws BlueprintWatcherException, InterruptedException;
 
 
   class BlueprintWatcherException extends Exception {

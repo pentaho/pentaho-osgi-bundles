@@ -23,6 +23,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Dictionary;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.karaf.bundle.core.BundleService;
@@ -59,17 +60,20 @@ public class KarafFeatureWatcherImpl implements IKarafFeatureWatcher {
   private long timeout;
   private Logger logger = LoggerFactory.getLogger( getClass() );
   private static final String KARAF_TIMEOUT_PROPERTY = "karafWaitForBoot";
+  private AtomicBoolean breakLoop = new AtomicBoolean( false );
 
   public KarafFeatureWatcherImpl( BundleContext bundleContext ) {
 
+    logger.debug( "KarafFeatureWatcherImpl created" );
     this.bundleContext = bundleContext;
+    this.breakLoop.set( false );
     // Default timeout of 2 minutes can be overridden in server.properties
     timeout =
         PentahoSystem.getApplicationContext().getProperty( KARAF_TIMEOUT_PROPERTY ) == null ? 2 * 60 * 1000L : Long
             .valueOf( PentahoSystem.getApplicationContext().getProperty( KARAF_TIMEOUT_PROPERTY ) );
   }
 
-  @Override public void waitForFeatures() throws FeatureWatcherException {
+  @Override public void waitForFeatures() throws FeatureWatcherException, InterruptedException {
 
     try {
       List<String> bootFeatures = this.getFeatures( "org.apache.karaf.features", "featuresBoot" );
@@ -94,6 +98,10 @@ public class KarafFeatureWatcherImpl implements IKarafFeatureWatcher {
 
     } catch ( IOException e ) {
       throw new FeatureWatcherException( "Error accessing ConfigurationAdmin", e );
+    } catch ( InterruptedException e ) {
+      Thread.currentThread().interrupt();
+      logger.debug( "throwing interrupted exception from waitForFeatures()" );
+      throw e;
     } catch ( Exception e ) {
       throw new FeatureWatcherException( "Unknown error in KarafWatcher", e );
     }
@@ -109,7 +117,7 @@ public class KarafFeatureWatcherImpl implements IKarafFeatureWatcher {
 
     long entryTime = System.currentTimeMillis();
     // Loop through to see if features are all installed
-    while ( true ) {
+    while ( !this.breakLoop.get() ) {
 
       List<String> uninstalledFeatures = new ArrayList<String>();
 
@@ -143,6 +151,11 @@ public class KarafFeatureWatcherImpl implements IKarafFeatureWatcher {
       }
       break;
     }
+    if ( this.breakLoop.get() ) {
+      Thread.currentThread().interrupt();
+      logger.debug( "throwing interrupted exception from waitForFeatures( List<String> )" );
+      throw new InterruptedException();
+    }
   }
 
   private FeaturesService getFeatureService() {
@@ -168,16 +181,30 @@ public class KarafFeatureWatcherImpl implements IKarafFeatureWatcher {
   }
   private FeaturesService featuresService;
 
-  private ConfigurationAdmin getConfigurationAdmin() {
-    if ( this.configurationAdmin == null ) {
+  private synchronized ConfigurationAdmin getConfigurationAdmin() throws FeatureWatcherException, InterruptedException {
+    if ( null == bundleContext ) {
+      this.breakLoop.set( true );
+      Thread.currentThread().interrupt();
+      throw new InterruptedException();
+    }
+    try {
       ServiceReference<ConfigurationAdmin> configurationAdminServiceReference =
         bundleContext.getServiceReference( ConfigurationAdmin.class );
-      this.configurationAdmin = bundleContext.getService( configurationAdminServiceReference );
-    }
 
-    return this.configurationAdmin;
+      if ( null != configurationAdminServiceReference ) {
+        return bundleContext.getService( configurationAdminServiceReference );
+      } else {
+        throw new FeatureWatcherException( "Could not get Configuration Admin service; no service reference" );
+      }
+    } catch ( IllegalStateException e ) {
+      if ( e.getMessage().startsWith( "Invalid BundleContext" ) ) {
+        this.breakLoop.set( true );
+        Thread.currentThread().interrupt();
+        throw new InterruptedException();
+      }
+    }
+    return null;
   }
-  private ConfigurationAdmin configurationAdmin;
 
   /**
    * Gets a boolean from a property in a configuration.
@@ -189,7 +216,8 @@ public class KarafFeatureWatcherImpl implements IKarafFeatureWatcher {
    *         a false value if the features property has a non-boolean value.
    * @throws IOException if access to persistent storage fails.
    */
-  private boolean getBooleanProperty( String configPersistentId, String featuresPropertyKey ) throws IOException {
+  private boolean getBooleanProperty( String configPersistentId, String featuresPropertyKey )
+    throws IOException, FeatureWatcherException, InterruptedException {
     Configuration configuration = this.getConfigurationAdmin().getConfiguration( configPersistentId );
 
     Dictionary<String, Object> properties = configuration.getProperties();
@@ -214,7 +242,8 @@ public class KarafFeatureWatcherImpl implements IKarafFeatureWatcher {
    *         an empty list if the features property key is not mapped.
    * @throws IOException if access to persistent storage fails.
    */
-  protected List<String> getFeatures( String configPersistentId, String featuresPropertyKey ) throws IOException {
+  protected List<String> getFeatures( String configPersistentId, String featuresPropertyKey )
+    throws IOException, FeatureWatcherException, InterruptedException {
     Configuration configuration = this.getConfigurationAdmin().getConfiguration( configPersistentId );
 
     Dictionary<String, Object> properties = configuration.getProperties();
@@ -363,5 +392,11 @@ public class KarafFeatureWatcherImpl implements IKarafFeatureWatcher {
     }
 
     return bundleReport;
+  }
+
+  public synchronized void bundleShutdown() {
+    this.breakLoop.set( true );
+    this.bundleContext = null;
+    logger.debug( "Bundle context cleared in KarafFeatureWatcherImpl" );
   }
 }

@@ -1,5 +1,5 @@
 /*!
- * Copyright 2010 - 2018 Hitachi Vantara.  All rights reserved.
+ * Copyright 2010 - 2023 Hitachi Vantara.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,20 +26,27 @@ import org.pentaho.osgi.api.BlueprintStateService;
 import org.pentaho.osgi.api.IKarafBlueprintWatcher;
 import org.pentaho.osgi.api.IKarafFeatureWatcher;
 import org.pentaho.osgi.api.ProxyUnwrapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * User: nbaker Date: 12/17/10
  */
 public class BeanFactoryActivator implements BundleActivator {
+  private KarafFeatureWatcherImpl karafFeatureWatcher;
+  private KarafBlueprintWatcherImpl karafBlueprintWatcher;
+  private Logger logger = LoggerFactory.getLogger( getClass() );
+
 
   @Override
   public void start( BundleContext bundleContext ) throws Exception {
+    logger.debug( "OSGi Utils Started" );
     BlueprintStateServiceImpl blueprintServiceImpl = new BlueprintStateServiceImpl( bundleContext );
     bundleContext
         .registerService( new String[] { BlueprintListener.class.getName(), BlueprintStateService.class.getName() },
             blueprintServiceImpl, null );
 
-    KarafBlueprintWatcherImpl karafBlueprintWatcher = new KarafBlueprintWatcherImpl( bundleContext );
+    karafBlueprintWatcher = new KarafBlueprintWatcherImpl( bundleContext );
     bundleContext.registerService( IKarafBlueprintWatcher.class.getName(), karafBlueprintWatcher, null );
 
     bundleContext.registerService( ProxyUnwrapper.class.getName(), new ProxyUnwrapperImpl( bundleContext ), null );
@@ -47,12 +54,14 @@ public class BeanFactoryActivator implements BundleActivator {
     ServiceReference ref = bundleContext.getServiceReference( ConfigurationAdmin.class.getName() );
     ConfigurationAdmin admin = (ConfigurationAdmin) bundleContext.getService( ref );
 
-    KarafFeatureWatcherImpl karafFeatureWatcher = new KarafFeatureWatcherImpl( bundleContext );
+    karafFeatureWatcher = new KarafFeatureWatcherImpl( bundleContext );
     bundleContext.registerService( IKarafFeatureWatcher.class.getName(), karafFeatureWatcher, null );
   }
 
   @Override
   public void stop( BundleContext bundleContext ) throws Exception {
-
+    logger.debug( "OSGi Utils stopped" );
+    karafFeatureWatcher.bundleShutdown();
+    karafBlueprintWatcher.bundleShutdown();
   }
 }
