@@ -15,7 +15,7 @@
   <url>http://www.pentaho.com</url>
   <properties>
     <exam.version>4.1.0</exam.version>
-    <springframework.version>3.2.14.RELEASE</springframework.version>
+    <springframework.version>6.0.15</springframework.version>
   </properties>
   <dependencies>
     <dependency>
