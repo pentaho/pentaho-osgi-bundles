@@ -21,7 +21,7 @@
   </modules>
 
   <properties>
-    <org.apache.mina.version>2.0.9</org.apache.mina.version>
+    <org.apache.mina.version>2.0.22</org.apache.mina.version>
   </properties>
 
   <dependencyManagement>
