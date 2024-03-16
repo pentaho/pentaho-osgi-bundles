@@ -44,7 +44,7 @@
             <Export-Package>org.pentaho.caching.api;version=${project.version},
                             org.pentaho.caching.spi;version=${project.version}</Export-Package>
             <Import-Package>org.osgi.framework, org.osgi.service.cm,
-                            com.google.common.*, com.google.common.util.concurrent,
+                            com.google.common.*,
                             org.osgi.service.blueprint,
                             !javax.enterprise.util,
                             !javax.management</Import-Package>
