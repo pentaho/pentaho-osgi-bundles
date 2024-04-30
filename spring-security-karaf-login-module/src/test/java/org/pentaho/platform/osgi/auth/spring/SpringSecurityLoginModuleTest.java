@@ -14,7 +14,7 @@
  * See the GNU Lesser General Public License for more details.
  *
  *
- * Copyright (c) 2002-2023 Hitachi Vantara. All rights reserved.
+ * Copyright (c) 2002-2024 Hitachi Vantara. All rights reserved.
  *
  */
 
@@ -50,14 +50,14 @@ import java.util.Set;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import static org.mockito.Matchers.argThat;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class SpringSecurityLoginModuleTest {
 
-  private static class AuthenticationManagerMatcher extends ArgumentMatcher<Authentication> {
+  private static class AuthenticationManagerMatcher implements ArgumentMatcher<Authentication> {
 
     private String user;
 
@@ -66,7 +66,7 @@ public class SpringSecurityLoginModuleTest {
       this.user = user;
     }
 
-    public boolean matches( Object auth ) {
+    @Override public boolean matches( Authentication auth ) {
       return auth instanceof Authentication && ( (Authentication) auth ).getName().equals( user );
     }
   }

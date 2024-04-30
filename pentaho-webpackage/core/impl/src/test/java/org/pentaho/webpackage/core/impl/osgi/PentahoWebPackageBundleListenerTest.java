@@ -1,5 +1,5 @@
 /*!
- * Copyright 2018 Hitachi Vantara.  All rights reserved.
+ * Copyright 2018-2024 Hitachi Vantara.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,12 +17,14 @@
 package org.pentaho.webpackage.core.impl.osgi;
 
 import org.junit.Test;
-import org.osgi.framework.*;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.BundleEvent;
+import org.osgi.framework.ServiceRegistration;
 import org.osgi.framework.wiring.BundleCapability;
 import org.osgi.framework.wiring.BundleWiring;
 import org.pentaho.webpackage.core.IPentahoWebPackage;
 import org.pentaho.webpackage.core.PentahoWebPackageConstants;
-import org.pentaho.webpackage.core.impl.osgi.PentahoWebPackageBundleListener;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -30,13 +32,19 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandler;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.mockito.Matchers.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -106,7 +114,7 @@ public class PentahoWebPackageBundleListenerTest {
     mockWebPackageBundleListener.registerWebPackageServices( null );
 
     // assert
-    verify( mockWebPackageBundleListener, never() ).createWebPackages( anyObject() );
+    verify( mockWebPackageBundleListener, never() ).createWebPackages( any() );
   }
 
   @Test
