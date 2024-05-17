@@ -83,6 +83,12 @@
     </dependency>
 
     <dependency>
+      <groupId>org.openjdk.nashorn</groupId>
+      <artifactId>nashorn-core</artifactId>
+      <version>15.4</version>
+    </dependency>
+
+    <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <version>${junit.version}</version>
@@ -106,7 +112,7 @@
         <configuration>
           <instructions>
             <Embed-Dependency>closure-compiler</Embed-Dependency>
-            <Import-Package>!com.google.errorprone.annotations.concurrent,!com.google.javascript.refactoring,!sun.misc,!org.apache.tools.ant,!org.apache.tools.ant.types,!org.apache.tools.ant.types.resources,*</Import-Package>
+            <Import-Package>!android.content,!clojure.lang,!com.google.appengine.api,!com.google.apphosting.api,!com.google.errorprone.annotations.concurrent,!com.google.javascript.refactoring,!sun.misc,!org.apache.tools.ant,!org.apache.tools.ant.types,!org.apache.tools.ant.types.resources,*</Import-Package>
           </instructions>
         </configuration>
       </plugin>

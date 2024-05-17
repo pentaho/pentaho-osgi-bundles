@@ -1,5 +1,5 @@
 /*!
- * Copyright 2010 - 2018 Hitachi Vantara.  All rights reserved.
+ * Copyright 2010 - 2024 Hitachi Vantara.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,8 +26,11 @@ import java.util.TreeMap;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.nullable;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * Created by bryan on 9/5/14.
@@ -47,7 +50,7 @@ public class OSGIResourceBundleCacheCallableTest {
     OSGIResourceBundleFactory defaultFactory = mock( OSGIResourceBundleFactory.class );
     OSGIResourceBundle defaultBundle = mock( OSGIResourceBundle.class );
     when( defaultBundle.getDefaultName() ).thenReturn( key );
-    when( defaultFactory.getBundle( any( ResourceBundle.class ) ) ).thenReturn( defaultBundle );
+    when( defaultFactory.getBundle( nullable( ResourceBundle.class ) ) ).thenReturn( defaultBundle );
     when( defaultFactory.getPropertyFilePath() ).thenReturn( key + ".properties" );
     bundle1Map.put( defaultFactory.getPropertyFilePath(), defaultFactory );
 
@@ -58,7 +61,7 @@ public class OSGIResourceBundleCacheCallableTest {
     OSGIResourceBundle frenchBundle = mock( OSGIResourceBundle.class );
     when( frenchBundle.getDefaultName() ).thenReturn( key + frenchSuffix);
     when( frenchBundle.getParent() ).thenReturn( defaultBundle );
-    when( frenchFactory.getBundle( any( ResourceBundle.class ) ) ).thenReturn( frenchBundle );
+    when( frenchFactory.getBundle( nullable( ResourceBundle.class ) ) ).thenReturn( frenchBundle );
     when( frenchFactory.getPropertyFilePath() ).thenReturn( key + frenchSuffix + ".properties" );
     bundle2Map.put( frenchFactory.getPropertyFilePath(), frenchFactory );
 
@@ -87,8 +90,7 @@ public class OSGIResourceBundleCacheCallableTest {
     OSGIResourceBundleFactory defaultFactory = mock( OSGIResourceBundleFactory.class );
     OSGIResourceBundle defaultBundle = mock( OSGIResourceBundle.class );
     when( defaultBundle.getDefaultName() ).thenReturn( key );
-    when( defaultFactory.getBundle( any( ResourceBundle.class ) ) ).thenReturn( defaultBundle );
-    when( defaultFactory.getBundle( any( ResourceBundle.class ) ) ).thenReturn( defaultBundle );
+    when( defaultFactory.getBundle( nullable( ResourceBundle.class ) ) ).thenReturn( defaultBundle );
     when( defaultFactory.getPropertyFilePath() ).thenReturn( key + ".properties" );
     bundle1Map.put( defaultFactory.getPropertyFilePath() , defaultFactory );
 
@@ -99,7 +101,7 @@ public class OSGIResourceBundleCacheCallableTest {
     OSGIResourceBundle frenchBundle = mock( OSGIResourceBundle.class );
     when( frenchBundle.getDefaultName() ).thenReturn( key + frenchSuffix);
     when( frenchBundle.getParent() ).thenReturn( defaultBundle );
-    when( frenchFactory.getBundle( any( ResourceBundle.class ) ) ).thenReturn( frenchBundle );
+    when( frenchFactory.getBundle( nullable( ResourceBundle.class ) ) ).thenReturn( frenchBundle );
     when( frenchFactory.getPropertyFilePath() ).thenReturn( key + frenchSuffix + ".properties.5" );
     when( frenchFactory.getPriority() ).thenReturn( new Integer( 5 ) );
     bundle2Map.put( frenchFactory.getPropertyFilePath(), frenchFactory );
@@ -111,7 +113,7 @@ public class OSGIResourceBundleCacheCallableTest {
     OSGIResourceBundle frenchBundle2 = mock( OSGIResourceBundle.class );
     when( frenchBundle2.getDefaultName() ).thenReturn( key + frenchSuffix);
     when( frenchBundle2.getParent() ).thenReturn( frenchBundle );
-    when( frenchFactory2.getBundle( any( ResourceBundle.class ) ) ).thenReturn( frenchBundle2 );
+    when( frenchFactory2.getBundle( nullable( ResourceBundle.class ) ) ).thenReturn( frenchBundle2 );
     when( frenchFactory2.getPropertyFilePath() ).thenReturn( key + frenchSuffix + ".properties.8" );
     when( frenchFactory2.getPriority() ).thenReturn( new Integer( 8 ) );
     bundle3Map.put( frenchFactory2.getPropertyFilePath(), frenchFactory2 );
@@ -123,7 +125,7 @@ public class OSGIResourceBundleCacheCallableTest {
     OSGIResourceBundle frenchBundle3 = mock( OSGIResourceBundle.class );
     when( frenchBundle3.getDefaultName() ).thenReturn( key + frenchSuffix);
     when( frenchBundle3.getParent() ).thenReturn( frenchBundle2 );
-    when( frenchFactory3.getBundle( any( ResourceBundle.class ) ) ).thenReturn( frenchBundle3 );
+    when( frenchFactory3.getBundle( nullable( ResourceBundle.class ) ) ).thenReturn( frenchBundle3 );
     when( frenchFactory3.getPropertyFilePath() ).thenReturn( key + frenchSuffix + ".properties.11" );
     when( frenchFactory3.getPriority() ).thenReturn( new Integer( 11 ) );
     bundle4Map.put( frenchFactory3.getPropertyFilePath(), frenchFactory3 );
@@ -154,7 +156,7 @@ public class OSGIResourceBundleCacheCallableTest {
     OSGIResourceBundleFactory frenchFactory = mock( OSGIResourceBundleFactory.class );
     OSGIResourceBundle frenchBundle = mock( OSGIResourceBundle.class );
     when( frenchBundle.getDefaultName() ).thenReturn( key );
-    when( frenchFactory.getBundle( any( ResourceBundle.class ) ) ).thenReturn( frenchBundle );
+    when( frenchFactory.getBundle( null ) ).thenReturn( frenchBundle );
     when( frenchFactory.getPropertyFilePath() ).thenReturn( key + frenchSuffix + ".properties" );
     bundle2Map.put( frenchFactory.getPropertyFilePath(), frenchFactory );
 

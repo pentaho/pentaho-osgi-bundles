@@ -1,5 +1,5 @@
 /*!
- * Copyright 2018 - 2019 Hitachi Vantara.  All rights reserved.
+ * Copyright 2018 - 2024 Hitachi Vantara.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,10 +36,10 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Matchers.same;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
@@ -678,7 +678,7 @@ public class RequireJsPackageConfigurationImplTest {
     plugins.add( mock( IRequireJsPackageConfigurationPlugin.class ) );
 
     IRequireJsPackageConfigurationPlugin mockPlugin = mock( IRequireJsPackageConfigurationPlugin.class );
-    doThrow( Exception.class ).when( mockPlugin ).apply( same( packageConfiguration ), any(), any(), any() );
+    doThrow( new RuntimeException() ).when( mockPlugin ).apply( same( packageConfiguration ), any(), any(), any() );
 
     plugins.add( mockPlugin );
 

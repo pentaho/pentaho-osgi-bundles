@@ -1,5 +1,5 @@
 /*!
- * Copyright 2010 - 2018 Hitachi Vantara.  All rights reserved.
+ * Copyright 2010 - 2024 Hitachi Vantara.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,7 +36,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 /**
@@ -139,15 +139,15 @@ public class PluginZipFileProcessorTest {
       .putNextEntry( argThat( new ZipEntryMatcher( new ZipEntry( "test-plugin/other-file" ) ) ) );
   }
 
-  private class ZipEntryMatcher extends ArgumentMatcher<ZipEntry> {
+  private class ZipEntryMatcher implements ArgumentMatcher<ZipEntry> {
     private final String name;
 
     public ZipEntryMatcher( ZipEntry zipEntry ) {
       this.name = zipEntry.getName();
     }
 
-    @Override public boolean matches( Object argument ) {
-      return argument instanceof ZipEntry && name.equals( ( (ZipEntry) argument ).getName() );
+    @Override public boolean matches( ZipEntry zipEntry ) {
+      return zipEntry instanceof ZipEntry && name.equals( ( (ZipEntry) zipEntry ).getName() );
     }
   }
 
