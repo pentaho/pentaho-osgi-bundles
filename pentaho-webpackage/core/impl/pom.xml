@@ -41,7 +41,7 @@
     </dependency>
     <dependency>
       <groupId>org.mockito</groupId>
-      <artifactId>mockito-all</artifactId>
+      <artifactId>mockito-core</artifactId>
     </dependency>
   </dependencies>
 
@@ -50,7 +50,6 @@
       <plugin>
         <groupId>org.apache.felix</groupId>
         <artifactId>maven-bundle-plugin</artifactId>
-
         <configuration>
           <instructions>
             <Bundle-Activator>org.pentaho.webpackage.core.impl.osgi.Activator</Bundle-Activator>

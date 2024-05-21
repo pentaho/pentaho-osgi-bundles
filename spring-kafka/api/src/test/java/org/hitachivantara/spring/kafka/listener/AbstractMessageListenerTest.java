@@ -1,7 +1,7 @@
 /*
  * HITACHI VANTARA PROPRIETARY AND CONFIDENTIAL
  *
- * Copyright 2020 Hitachi Vantara. All rights reserved.
+ * Copyright 2020-2024 Hitachi Vantara. All rights reserved.
  *
  * NOTICE: All information including source code contained herein is, and
  * remains the sole property of Hitachi Vantara and its licensors. The intellectual
@@ -41,8 +41,10 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
+
+;
 
 public class AbstractMessageListenerTest {
 
@@ -109,7 +111,7 @@ public class AbstractMessageListenerTest {
   public void testStopCallbackWithoutPreviousInitShouldNotCallStop() {
     Runnable callback = () -> {};
     innerMockedAbstractMessageListener.stop( callback );
-    verifyZeroInteractions( abstractMessageListenerContainer );
+    verifyNoInteractions( abstractMessageListenerContainer );
   }
 
   @Test

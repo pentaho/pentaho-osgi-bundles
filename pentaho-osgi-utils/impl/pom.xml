@@ -15,7 +15,6 @@
   <packaging>bundle</packaging>
 
   <properties>
-    <maven-bundle-plugin.version>3.2.0</maven-bundle-plugin.version>
   </properties>
 
   <dependencies>
@@ -76,7 +75,7 @@
     </dependency>
     <dependency>
       <groupId>org.mockito</groupId>
-      <artifactId>mockito-all</artifactId>
+      <artifactId>mockito-core</artifactId>
       <version>${mockito.version}</version>
       <scope>test</scope>
     </dependency>
@@ -120,7 +119,6 @@
       <plugin>
         <groupId>org.apache.felix</groupId>
         <artifactId>maven-bundle-plugin</artifactId>
-        <version>${maven-bundle-plugin.version}</version>
         <extensions>true</extensions>
         <configuration>
           <instructions>

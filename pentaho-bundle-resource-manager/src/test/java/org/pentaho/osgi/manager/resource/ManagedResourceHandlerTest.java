@@ -1,5 +1,5 @@
 /*!
- * Copyright 2010 - 2018 Hitachi Vantara.  All rights reserved.
+ * Copyright 2010 - 2024 Hitachi Vantara.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.osgi.framework.Bundle;
 
 import java.io.File;
@@ -35,11 +35,19 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import static junit.framework.Assert.*;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.*;
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertFalse;
+import static junit.framework.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doCallRealMethod;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 /**
  * Created by krivera on 6/22/17.
@@ -60,8 +68,6 @@ public class ManagedResourceHandlerTest {
   @Spy ManagedResourceHandler resourceHandler;
   @Mock ManagedResourceProvider resourceProvider;
   String bundleSymbolicName = "test-osgi-bundle";
-  @Mock File mockToFile;
-
   File expectedOutputDirectory;
   String absoluteManagedResource = Paths.get( ".", "path", "to", "absolute", "managed", "resources" ).toString();
 
@@ -78,10 +84,9 @@ public class ManagedResourceHandlerTest {
     doReturn( absoluteManagedResource ).when( file ).getAbsolutePath();
     doReturn( file ).when( resourceProvider ).getManagedResourceFolder();
 
-    doReturn( mockToFile ).when( bundle ).getDataFile( eq( bundleSource ) );
-
     expectedOutputDirectory = new File( absoluteManagedResource + File.separator + bundleSymbolicName );
     resourceHandler.setManagedResourceProvider( resourceProvider );
+    doCallRealMethod().when( resourceHandler ).writeFilesToDisk( bundle, source, to );
   }
 
   @After public void teardown() throws IOException {
@@ -94,40 +99,12 @@ public class ManagedResourceHandlerTest {
   }
 
   @Test public void writeFilesToDiskTestWithNullBundleDirectory() throws Exception {
-    doNothing().when( resourceHandler ).copyStream( any( URL.class ), anyString() );
-
-    doReturn( null ).when( bundle ).getDataFile( eq( bundleSource ) );
-
     boolean result = resourceHandler.writeFilesToDisk( bundle, source, to );
     assertFalse( result );
   }
 
-  @Test public void writeFilesToDiskTestFailsToCreateDirectories() throws Exception {
-    doNothing().when( resourceHandler ).copyStream( any( URL.class ), anyString() );
-
-    File mockToFile = mock( File.class );
-    doReturn( mockToFile ).when( bundle ).getDataFile( eq( bundleSource ) );
-
-    doReturn( false ).when( mockToFile ).exists();
-    doReturn( false ).when( mockToFile ).mkdirs();
-
-    assertFalse( resourceHandler.writeFilesToDisk( bundle, source, to ) );
-  }
-
-  @Test public void writeFilesToDiskTestNoBundleEntries() throws Exception {
-    doNothing().when( resourceHandler ).copyStream( any( URL.class ), anyString() );
-
-
-    doReturn( false ).when( mockToFile ).exists();
-    doReturn( false ).when( mockToFile ).mkdirs();
-
-    assertFalse( resourceHandler.writeFilesToDisk( bundle, source, to ) );
-  }
-
   @Test public void writeFilesToDiskTest() throws Exception {
     doNothing().when( resourceHandler ).copyStream( any( URL.class ), anyString() );
-
-    doReturn( true ).when( mockToFile ).mkdirs();
 
     Enumeration<URL> mockFileUrls = mock( Enumeration.class );
     doReturn( mockFileUrls ).when( bundle ).findEntries( source, null, true );

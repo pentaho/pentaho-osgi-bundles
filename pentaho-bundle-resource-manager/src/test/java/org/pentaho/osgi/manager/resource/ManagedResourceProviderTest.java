@@ -1,5 +1,5 @@
 /*!
- * Copyright 2010 - 2018 Hitachi Vantara.  All rights reserved.
+ * Copyright 2010 - 2024 Hitachi Vantara.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.Spy;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 
@@ -59,7 +59,6 @@ public class ManagedResourceProviderTest {
     ( Paths.get( expectedRelativePath, relativePath, fileName ).toFile() ).createNewFile();
 
     doReturn( bundleName ).when( bundle ).getSymbolicName();
-    doReturn( bundle ).when( bundleContext ).getBundle();
 
     resourceProvider.setBundleContext( bundleContext );
     resourceProvider.init();
@@ -95,11 +94,9 @@ public class ManagedResourceProviderTest {
     assertNull( resourceProvider.validateFolder( null ) );
 
     File folder = mock( File.class );
-    doReturn( false ).when( folder ).exists();
     assertNull( resourceProvider.validateFolder( null ) );
 
     doReturn( true ).when( folder ).exists();
-    doReturn( false ).when( folder ).isDirectory();
     assertNull( resourceProvider.validateFolder( null ) );
 
     doReturn( true ).when( folder ).isDirectory();
@@ -110,11 +107,9 @@ public class ManagedResourceProviderTest {
     assertNull( resourceProvider.validateFile( null ) );
 
     File file = mock( File.class );
-    doReturn( false ).when( file ).exists();
     assertNull( resourceProvider.validateFile( null ) );
 
     doReturn( true ).when( file ).exists();
-    doReturn( false ).when( file ).isDirectory();
     assertNull( resourceProvider.validateFile( null ) );
 
     doReturn( true ).when( file ).isFile();
