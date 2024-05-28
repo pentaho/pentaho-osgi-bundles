@@ -1,5 +1,5 @@
 /*!
- * Copyright 2010 - 2018 Hitachi Vantara.  All rights reserved.
+ * Copyright 2010 - 2023 Hitachi Vantara.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +33,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Created by bmorrise on 9/4/15.
@@ -42,6 +43,7 @@ public class KarafBlueprintWatcherImpl implements IKarafBlueprintWatcher {
   private long timeout;
   private Logger logger = LoggerFactory.getLogger( getClass() );
   public static final String KARAF_TIMEOUT_PROPERTY = "karafWaitForBoot";
+  private final AtomicBoolean breakLoop = new AtomicBoolean( false );
 
   public KarafBlueprintWatcherImpl( BundleContext bundleContext ) {
 
@@ -52,7 +54,7 @@ public class KarafBlueprintWatcherImpl implements IKarafBlueprintWatcher {
         .valueOf( PentahoSystem.getApplicationContext().getProperty( KARAF_TIMEOUT_PROPERTY ) );
   }
 
-  @Override public void waitForBlueprint() throws BlueprintWatcherException {
+  @Override public void waitForBlueprint() throws BlueprintWatcherException, InterruptedException {
     long entryTime = System.currentTimeMillis();
 
     ServiceTracker serviceTracker = new ServiceTracker( bundleContext, BlueprintStateService.class.getName(), null );
@@ -72,7 +74,7 @@ public class KarafBlueprintWatcherImpl implements IKarafBlueprintWatcher {
       List<Bundle> unloadedAndFailedBlueprints = new ArrayList<Bundle>();
 
       try {
-        while ( true ) {
+        while ( !breakLoop.get() ) {
           List<String> unloadedBlueprints = new ArrayList<String>();
           for ( Bundle bundle : bundleContext.getBundles() ) {
             if ( bundle.getState() != Bundle.RESOLVED ) {
@@ -119,6 +121,11 @@ public class KarafBlueprintWatcherImpl implements IKarafBlueprintWatcher {
       } catch ( Exception e ) {
         throw new BlueprintWatcherException( "Unknown error in KarafBlueprintWatcher", e );
       } finally {
+        if ( this.breakLoop.get() ) {
+          Thread.currentThread().interrupt();
+          logger.debug( "throwing interrupted exception from waitForBlueprint()" );
+          throw new InterruptedException();
+        }
         if ( unloadedAndFailedBlueprints.size() > 0 ) {
           logger.debug( System.lineSeparator() + getBlueprintsReport( blueprintStateService,
             unloadedAndFailedBlueprints ) );
@@ -189,5 +196,11 @@ public class KarafBlueprintWatcherImpl implements IKarafBlueprintWatcher {
       return newStackTrace;
     }
     return stackTrace;
+  }
+
+  public synchronized void bundleShutdown() {
+    this.bundleContext = null;
+    this.breakLoop.set( true );
+    logger.debug( "Bundle context cleared in KarafBlueprintWatcherImpl" );
   }
 }
