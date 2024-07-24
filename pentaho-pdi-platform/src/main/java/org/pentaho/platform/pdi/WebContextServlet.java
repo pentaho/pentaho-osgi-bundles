@@ -1,5 +1,5 @@
 /*!
- * Copyright 2010 - 2018 Hitachi Vantara.  All rights reserved.
+ * Copyright 2010 - 2021 Hitachi Vantara.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package org.pentaho.platform.pdi;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
+import org.pentaho.di.core.Const;
 import org.pentaho.di.i18n.LanguageChoice;
 import org.pentaho.platform.api.engine.IPlatformWebResource;
 
@@ -46,8 +47,8 @@ public class WebContextServlet extends HttpServlet {
 
   static final String WEB_CONTEXT_JS = "webcontext.js"; //$NON-NLS-1$
 
-  static final String CONTEXT_PATH = "/";
-  private static final String REQUIREJS_INIT_LOCATION = "requirejs-manager/js/require-init.js";
+  static final String CONTEXT_PATH = Const.isRunningOnWebspoonMode() ? "/spoon/osgi" : "/";
+  private static final String REQUIREJS_INIT_LOCATION = Const.isRunningOnWebspoonMode() ? "requirejs-manager/js/require-init.js?useFullyQualifiedUrl=false" : "requirejs-manager/js/require-init.js";
 
   private static final String DEFAULT_SERVICES_ROOT = "cxf/";
   private static final Integer DEFAULT_WAIT_TIME = 30;
@@ -99,6 +100,8 @@ public class WebContextServlet extends HttpServlet {
         writeWebContextVar( printWriter, "dojoConfig", "[]", false, false );
 
         writeWebContextVar( printWriter, "CONTEXT_PATH", CONTEXT_PATH );
+
+        writeWebContextVar( printWriter, "IS_RUNNING_ON_WEBSPOON_MODE", String.valueOf( Const.isRunningOnWebspoonMode() ), false, false );
 
         String locale = getLocale( httpRequest );
         writeWebContextVar( printWriter, "SESSION_LOCALE", locale );
@@ -200,7 +203,7 @@ public class WebContextServlet extends HttpServlet {
   }
 
   private void writeDocumentWriteResource( PrintWriter writer, String location ) {
-    boolean isJavascript = location.endsWith( ".js" );
+    boolean isJavascript = Const.isRunningOnWebspoonMode() ? location.contains( ".js" ) : location.endsWith( ".js" );
 
     writer.write( "document.write(\"" );
 
@@ -210,7 +213,11 @@ public class WebContextServlet extends HttpServlet {
       writer.write( "<link rel='stylesheet' type='text/css' href=" );
     }
 
-    writer.write( "'\" + CONTEXT_PATH + \"" + location + "'>" );
+    if ( Const.isRunningOnWebspoonMode() ) {
+      writer.write( "'\" + CONTEXT_PATH + \"/" + location + "'>" );
+    } else {
+      writer.write( "'\" + CONTEXT_PATH + \"" + location + "'>" );
+    }
 
     writer.append(  isJavascript ? ( "</scr\" + \"ipt>" ) : "" );
     writer.write( "\");\n" );

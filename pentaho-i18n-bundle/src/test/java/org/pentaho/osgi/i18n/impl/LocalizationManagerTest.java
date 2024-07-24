@@ -1,5 +1,5 @@
 /*!
- * Copyright 2010 - 2018 Hitachi Vantara.  All rights reserved.
+ * Copyright 2010 - 2024 Hitachi Vantara.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,16 +20,15 @@ import org.json.simple.parser.ParseException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Matchers;
 import org.osgi.framework.Bundle;
 import org.pentaho.osgi.i18n.resource.OSGIResourceBundle;
 import org.slf4j.Logger;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.Locale;
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Vector;
 import java.util.concurrent.Callable;
@@ -40,6 +39,7 @@ import java.util.regex.Pattern;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -179,7 +179,7 @@ public class LocalizationManagerTest {
     Future<Map<String, OSGIResourceBundle>> mockF = mock( Future.class );
     when( mockF.get() ).thenThrow( InterruptedException.class );
     ExecutorService service = mock( ExecutorService.class );
-    when( service.submit( Matchers.any( Callable.class ) ) ).thenReturn( mockF );
+    when( service.submit( any( Callable.class ) ) ).thenReturn( mockF );
     return service;
   }
 

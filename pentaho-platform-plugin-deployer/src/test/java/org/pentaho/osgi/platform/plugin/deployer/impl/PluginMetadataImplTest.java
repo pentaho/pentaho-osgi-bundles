@@ -1,5 +1,5 @@
 /*!
- * Copyright 2010 - 2018 Hitachi Vantara.  All rights reserved.
+ * Copyright 2010 - 2024 Hitachi Vantara.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,11 +20,12 @@ import com.google.common.io.Files;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.pentaho.osgi.platform.plugin.deployer.impl.handlers.pluginxml.PluginXmlStaticPathsHandler;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.ByteArrayOutputStream;
@@ -36,8 +37,8 @@ import java.io.OutputStream;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyInt;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 
@@ -73,8 +74,6 @@ public class PluginMetadataImplTest {
   public void testWriteException() throws ParserConfigurationException, IOException {
     PluginMetadataImpl pluginMetadata = new PluginMetadataImpl( new File( "." ) );
     OutputStream outputStream = mock( OutputStream.class );
-    doThrow( new IOException() ).when( outputStream ).write( any( byte[].class ) );
-    doThrow( new IOException() ).when( outputStream ).write( any( byte.class ) );
     doThrow( new IOException() ).when( outputStream ).write( any( byte[].class ), anyInt(), anyInt() );
     pluginMetadata.writeBlueprint( "test", outputStream );
   }

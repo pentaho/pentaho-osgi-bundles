@@ -1,5 +1,5 @@
 /*!
- * Copyright 2010 - 2018 Hitachi Vantara.  All rights reserved.
+ * Copyright 2010 - 2024 Hitachi Vantara.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ import org.apache.commons.lang.StringEscapeUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.pentaho.platform.api.engine.IPlatformWebResource;
 
 import javax.servlet.ServletException;
@@ -41,6 +41,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.doReturn;
+import org.pentaho.di.core.Const;
 
 @RunWith( MockitoJUnitRunner.class )
 public class WebContextServletTest {
@@ -254,7 +255,7 @@ public class WebContextServletTest {
   }
 
   private String getDocumentWriteExpected( String resource ) {
-    String location = "'\" + CONTEXT_PATH + \"" + resource + "'";
+    String location = Const.isRunningOnWebspoonMode()? "'\" + CONTEXT_PATH + \"/" + resource + "'" : "'\" + CONTEXT_PATH + \"" + resource + "'";
 
     if ( resource.endsWith( ".js" ) ) {
       return "document.write(\"<script type='text/javascript' src=" + location + "></scr\" + \"ipt>\");\n";

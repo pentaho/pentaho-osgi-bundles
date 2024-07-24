@@ -14,7 +14,7 @@
  * See the GNU Lesser General Public License for more details.
  *
  *
- * Copyright (c) 2002-2019 Hitachi Vantara. All rights reserved.
+ * Copyright (c) 2002-2023 Hitachi Vantara. All rights reserved.
  *
  */
 package org.pentaho.platform.osgi.auth.spring;
@@ -46,6 +46,7 @@ import java.security.Principal;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * JAAS LoginModule which delegates to the Platform's Spring Security
@@ -58,7 +59,6 @@ import java.util.Map;
  */
 public class SpringSecurityLoginModule extends AbstractKarafLoginModule {
 
-  public static final String    KARAF_ADMIN           = "karaf_admin";
   private AuthenticationManager authenticationManager = null;
   private IAuthorizationPolicy  authorizationPolicy   = null;
 
@@ -180,12 +180,28 @@ public class SpringSecurityLoginModule extends AbstractKarafLoginModule {
 
     // If they have AdministerSecurity, grant the Karaf admin role
     if ( getAuthorizationPolicy().isAllowed( AdministerSecurityAction.NAME ) ) {
-      principals.add( new RolePrincipal( KARAF_ADMIN ) );
+      principals.addAll( getKarafAdminPrincipals() );
     }
 
     succeeded = true;
 
     return true;
+  }
+
+  /**
+   * Retrieve standard installation karaf administrative roles.
+   * List of roles copied from user 'karaf' in file
+   * <a href="https://github.com/pentaho/karaf/blob/master/assemblies/features/base/src/main/resources/resources/etc/users.properties">user.properties</a>
+   * @return set of administrative principals
+   */
+  protected Set<Principal> getKarafAdminPrincipals() {
+    HashSet<Principal> adminPrincipals = new HashSet<Principal>();
+    // copying "etc/users.properties" roles for default installation karaf user
+    String roleNames = "group,admin,manager,viewer,systembundles,ssh";
+    for ( String roleName : roleNames.split( "," )  ) {
+      adminPrincipals.add( new RolePrincipal( roleName ) );
+    }
+    return adminPrincipals;
   }
 
   public boolean abort() throws LoginException {

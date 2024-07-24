@@ -1,5 +1,5 @@
 /*!
- * Copyright 2010 - 2018 Hitachi Vantara.  All rights reserved.
+ * Copyright 2010 - 2024 Hitachi Vantara.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,16 +18,13 @@ package org.pentaho.caching.impl;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import org.hamcrest.Description;
-import org.hamcrest.Matcher;
-import org.hamcrest.TypeSafeMatcher;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceEvent;
 import org.osgi.framework.ServiceListener;
@@ -43,14 +40,12 @@ import java.util.Map;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import static org.hamcrest.Matchers.allOf;
-import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.argThat;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -68,11 +63,6 @@ public class PentahoCacheManagerFactoryTest {
   public static final String MOCK_PID = "org.pentaho.caching-mock";
   public static final String VERSION_PROPERTY = "revision";
 
-  private final Matcher<String> matchesFilter = allOf(
-    containsString( OBJECTCLASS + "=" + PentahoCacheProvidingService.class.getName() ),
-    containsString( PENTAHO_CACHE_PROVIDER + "=*" )
-  );
-
   private PentahoCacheManagerFactory factory;
   @Mock private BundleContext bundleContext;
   @Mock private ServiceRegistration<Object> registration;
@@ -88,18 +78,12 @@ public class PentahoCacheManagerFactoryTest {
     doReturn( registration ).when( bundleContext ).registerService(
       eq( PentahoCacheManager.class ),
       any( PentahoCacheManager.class ),
-      argThat( new TypeSafeMatcher<Dictionary<String, ?>>() {
-        @Override public void describeTo( Description description ) {
-          description.appendText( "Dictionary with " ).appendText( SERVICE_PID ).appendText( " property" );
-        }
-
-        @Override protected boolean matchesSafely( Dictionary<String, ?> dictionary ) {
-          return dictionary.get( SERVICE_PID ) != null;
-        }
-      } )
+      argThat( stringDictionary -> stringDictionary.get( SERVICE_PID ) != null )
     );
 
-    when( bundleContext.getServiceReferences( eq( PentahoCacheProvidingService.class ), argThat( matchesFilter ) ) )
+    when( bundleContext.getServiceReferences( eq( PentahoCacheProvidingService.class ), argThat(
+      s -> s.contains( OBJECTCLASS + "=" + PentahoCacheProvidingService.class.getName() ) && s.contains(
+        PENTAHO_CACHE_PROVIDER + "=*" ) ) ) )
       .thenReturn( ImmutableList.of( serviceReference ) );
     when( serviceReference.getProperty( PENTAHO_CACHE_PROVIDER ) ).thenReturn( MOCK_PID );
     when( bundleContext.getService( serviceReference ) ).thenReturn( providingService );
@@ -161,7 +145,9 @@ public class PentahoCacheManagerFactoryTest {
     Future<PentahoCacheProvidingService> serviceFuture;
 
     factory.init();
-    verify( bundleContext ).addServiceListener( serviceListenerCaptor.capture(), argThat( matchesFilter ) );
+    verify( bundleContext ).addServiceListener( serviceListenerCaptor.capture(),
+      argThat( s -> s.contains( OBJECTCLASS + "=" + PentahoCacheProvidingService.class.getName() ) && s.contains(
+        PENTAHO_CACHE_PROVIDER + "=*" ) ) );
 
     serviceFuture = factory.getProviderService( MOCK_PID );
     assertThat( serviceFuture.isDone(), is( true ) );

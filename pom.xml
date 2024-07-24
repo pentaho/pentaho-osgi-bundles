@@ -5,11 +5,11 @@
   <parent>
     <groupId>org.pentaho</groupId>
     <artifactId>pentaho-ce-bundle-parent-pom</artifactId>
-    <version>9.3.0.0-SNAPSHOT</version>
+    <version>10.3.0.0-SNAPSHOT</version>
   </parent>
   <groupId>pentaho</groupId>
   <artifactId>pentaho-osgi-bundles</artifactId>
-  <version>9.3.0.0-SNAPSHOT</version>
+  <version>10.3.0.0-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>Pentaho Community Edition Project: ${project.artifactId}</name>
   <description>Parent project for Pentaho OSGI Bundles</description>
@@ -44,27 +44,24 @@
     <url>scm:git:git@github.com:pentaho/${project.artifactId}.git</url>
   </scm>
   <properties>
-    <commons-io.version>2.4</commons-io.version>
-    <mockito.version>1.9.5</mockito.version>
+    <mockito.version>5.10.0</mockito.version>
     <hamcrest.version>1.3</hamcrest.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <javax.servlet-api.version>3.1.0</javax.servlet-api.version>
     <javax.ws.rs-api.version>2.0</javax.ws.rs-api.version>
     <junit.version>4.11</junit.version>
     <felix-fileinstall.version>3.6.4</felix-fileinstall.version>
-    <guava.version>17.0</guava.version>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <json-simple.version>1.1.1</json-simple.version>
     <commons-lang.version>2.6</commons-lang.version>
     <rxjava.version>2.2.3</rxjava.version>
-    <kafka-clients.version>1.0.2</kafka-clients.version>
+    <kafka-clients.version>3.4.0</kafka-clients.version>
     <spring-kafka.version>1.3.10.RELEASE</spring-kafka.version>
     <protoc.version>3.11.4</protoc.version>
-    <platform.version>9.3.0.0-SNAPSHOT</platform.version>
-    <spring53.bundle.version>5.3.3_1</spring53.bundle.version>
+    <platform.version>10.3.0.0-SNAPSHOT</platform.version>
+    <spring53.bundle.version>5.3.34_1</spring53.bundle.version>
     <spring43.bundle.version>4.3.23.RELEASE_1</spring43.bundle.version>
     <spring32.bundle.version>3.2.18.RELEASE_1</spring32.bundle.version>
-    <spring-security.bundle.version>3.1.7.RELEASE</spring-security.bundle.version>
     <aspectj.bundle.version>1.7.4_1</aspectj.bundle.version>
 
     <!-- All 3 of these properties are required -->
@@ -140,7 +137,6 @@
         <module>pentaho-spring-dm-extender</module>
         <module>pentaho-object-tunnel</module>
         <module>pentaho-bundle-resource-manager</module>
-        <module>pentaho-metastore-locator-api</module>
         <module>pentaho-proc-governor</module>
         <module>osgi-blueprint-api</module>
         <module>spring-framework-features</module>
@@ -159,8 +155,6 @@
         <module>pentaho-server-bundle</module>
         <module>pentaho-proxy-factory</module>
         <module>pentaho-proxy-spring4</module>
-        <module>pentaho-kettle-repository-locator</module>
-        <module>pentaho-metastore-locator-impl</module>
         <module>pentaho-webcontext</module>
         <module>pentaho-pdi-platform</module>
         <module>spring-security-karaf-login-module</module>
@@ -221,7 +215,7 @@
     <repository>
       <id>pentaho-public</id>
       <name>Pentaho Public</name>
-      <url>http://nexus.pentaho.org/content/groups/omni/</url>
+      <url>https://repo.orl.eng.hitachivantara.com/artifactory/pnt-mvn/</url>
       <releases>
         <enabled>true</enabled>
         <updatePolicy>daily</updatePolicy>
@@ -232,5 +226,20 @@
       </snapshots>
     </repository>
   </repositories>
+
+  <pluginRepositories>
+    <pluginRepository>
+      <id>pentaho-public-plugins</id>
+      <name>Pentaho Public Plugins</name>
+      <url>https://repo.orl.eng.hitachivantara.com/artifactory/pnt-mvn/</url>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+      <releases>
+        <updatePolicy>never</updatePolicy>
+      </releases>
+    </pluginRepository>
+  </pluginRepositories>
+
 
 </project>

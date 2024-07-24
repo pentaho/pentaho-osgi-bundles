@@ -5,10 +5,10 @@
   <parent>
     <groupId>pentaho</groupId>
     <artifactId>pentaho-cache-manager-parent</artifactId>
-    <version>9.3.0.0-SNAPSHOT</version>
+    <version>10.3.0.0-SNAPSHOT</version>
   </parent>
   <artifactId>pentaho-cache-manager-api</artifactId>
-  <version>9.3.0.0-SNAPSHOT</version>
+  <version>10.3.0.0-SNAPSHOT</version>
   <packaging>bundle</packaging>
   <name>Pentaho Community Edition Project: Cache Manager</name>
   <description>a Pentaho open source project</description>
@@ -33,7 +33,6 @@
       <plugin>
         <groupId>org.apache.felix</groupId>
         <artifactId>maven-bundle-plugin</artifactId>
-        <version>2.3.7</version>
         <extensions>true</extensions>
         <configuration>
           <instructions>
@@ -45,7 +44,7 @@
             <Export-Package>org.pentaho.caching.api;version=${project.version},
                             org.pentaho.caching.spi;version=${project.version}</Export-Package>
             <Import-Package>org.osgi.framework, org.osgi.service.cm,
-                            com.google.common.*, com.google.common.util.concurrent,
+                            com.google.common.*,
                             org.osgi.service.blueprint,
                             !javax.enterprise.util,
                             !javax.management</Import-Package>

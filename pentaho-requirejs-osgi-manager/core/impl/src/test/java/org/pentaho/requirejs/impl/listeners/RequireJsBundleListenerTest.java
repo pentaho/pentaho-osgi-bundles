@@ -1,5 +1,5 @@
 /*!
- * Copyright 2018 Hitachi Vantara.  All rights reserved.
+ * Copyright 2018-2024 Hitachi Vantara.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,9 +38,10 @@ import java.util.List;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Matchers.same;
+import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.same;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -225,14 +226,15 @@ public class RequireJsBundleListenerTest {
   public void testAddBundleException() {
     Bundle mockBundle = this.createMockBundle( "some-mockBundle", "2.0.0", Bundle.ACTIVE );
 
-    doThrow( IOException.class ).when( mockBundle ).getResource( RequireJsBundleListener.REQUIRE_JSON_PATH );
+    doThrow( new RuntimeException() ).when( mockBundle ).getResource( RequireJsBundleListener.REQUIRE_JSON_PATH );
 
     boolean shouldInvalidate = this.requireJsBundleListener.addBundle( mockBundle );
 
     // check that shouldInvalidate is true
     assertTrue( shouldInvalidate );
 
-    verify( mockBundleMockContexts.get( (int) mockBundle.getBundleId() ), times( 0 ) ).registerService( eq( IRequireJsPackage.class ), any( IRequireJsPackage.class ), any() );
+    verify( mockBundleMockContexts.get( (int) mockBundle.getBundleId() ), times( 0 ) ).registerService(
+      eq( IRequireJsPackage.class ), any( IRequireJsPackage.class ), any() );
   }
 
   @Test

@@ -1,5 +1,5 @@
 /*!
- * Copyright 2010 - 2018 Hitachi Vantara.  All rights reserved.
+ * Copyright 2010 - 2024 Hitachi Vantara.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,7 @@
  */
 package org.pentaho.authentication.mapper.impl;
 
-import java.util.List;
-import java.util.Map;
-
+import com.google.common.collect.ImmutableMap;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -27,24 +25,24 @@ import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
-
+import org.mockito.junit.MockitoJUnitRunner;
 import org.pentaho.authentication.mapper.api.AuthenticationMappingManager;
 import org.pentaho.authentication.mapper.api.AuthenticationMappingService;
 import org.pentaho.authentication.mapper.api.MappingException;
 
-import com.google.common.collect.ImmutableMap;
+import java.util.List;
+import java.util.Map;
 
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.nullValue;
-
 import static org.junit.Assert.assertThat;
 
 /**
  * @author nhudak
  */
 
-@RunWith( org.mockito.runners.MockitoJUnitRunner.class )
+@RunWith( MockitoJUnitRunner.class )
 public class AuthenticationMappingManagerImplTest {
   @Rule public TemporaryFolder etc = new TemporaryFolder();
   @Rule public ExpectedException exception = ExpectedException.none();

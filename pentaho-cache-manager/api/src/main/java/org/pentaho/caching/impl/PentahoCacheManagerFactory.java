@@ -23,6 +23,7 @@ import com.google.common.collect.Sets;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.SettableFuture;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.InvalidSyntaxException;
@@ -228,7 +229,7 @@ public class PentahoCacheManagerFactory implements ManagedServiceFactory {
         @Override public void onFailure( Throwable t ) {
           logger.log( Level.WARNING, "Caching Service startup failed", t );
         }
-      } );
+      }, MoreExecutors.newDirectExecutorService() );
     }
 
     public void shutdownService() {
@@ -246,7 +247,7 @@ public class PentahoCacheManagerFactory implements ManagedServiceFactory {
             logger.log( Level.WARNING, "Caching Service shutdown failed", t );
           }
         }
-      } );
+      }, MoreExecutors.newDirectExecutorService() );
     }
   }
 }

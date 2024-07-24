@@ -1,7 +1,7 @@
 /*
  * HITACHI VANTARA PROPRIETARY AND CONFIDENTIAL
  *
- * Copyright 2020 Hitachi Vantara. All rights reserved.
+ * Copyright 2020-2024 Hitachi Vantara. All rights reserved.
  *
  * NOTICE: All information including source code contained herein is, and
  * remains the sole property of Hitachi Vantara and its licensors. The intellectual
@@ -28,12 +28,12 @@ import com.google.protobuf.Parser;
 import org.apache.kafka.common.errors.SerializationException;
 import org.junit.Test;
 
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.mockito.Mockito.verifyNoInteractions;
 
 public class KafkaProtobufDeserializerTest {
 
@@ -53,7 +53,7 @@ public class KafkaProtobufDeserializerTest {
     Parser<MessageLite> parser = mock( Parser.class );
     KafkaProtobufDeserializer<MessageLite> deserializer = new KafkaProtobufDeserializer( parser );
     deserializer.configure( null, false );
-    verifyZeroInteractions( parser );
+    verifyNoInteractions( parser );
   }
 
   @Test
@@ -61,7 +61,7 @@ public class KafkaProtobufDeserializerTest {
     Parser<MessageLite> parser = mock( Parser.class );
     KafkaProtobufDeserializer<MessageLite> deserializer = new KafkaProtobufDeserializer( parser );
     deserializer.close();
-    verifyZeroInteractions( parser );
+    verifyNoInteractions( parser );
   }
 
   @Test( expected = SerializationException.class )
