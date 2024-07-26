@@ -20,16 +20,13 @@
     <module>assemblies</module>
   </modules>
 
-  <properties>
-    <org.apache.mina.version>2.0.9</org.apache.mina.version>
-  </properties>
 
   <dependencyManagement>
     <dependencies>
       <dependency>
         <groupId>org.apache.mina</groupId>
         <artifactId>mina-core</artifactId>
-        <version>${org.apache.mina.version}</version>
+        <version>${mina-core.version}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
