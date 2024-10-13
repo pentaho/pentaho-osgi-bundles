@@ -5,11 +5,11 @@
   <parent>
     <groupId>org.pentaho</groupId>
     <artifactId>pentaho-ce-bundle-parent-pom</artifactId>
-    <version>10.2.0.0-SNAPSHOT</version>
+    <version>10.2.0.0-222</version>
   </parent>
   <groupId>pentaho</groupId>
   <artifactId>pentaho-osgi-bundles</artifactId>
-  <version>10.2.0.0-SNAPSHOT</version>
+  <version>10.2.0.0-222</version>
   <packaging>pom</packaging>
   <name>Pentaho Community Edition Project: ${project.artifactId}</name>
   <description>Parent project for Pentaho OSGI Bundles</description>
@@ -58,7 +58,7 @@
     <kafka-clients.version>3.4.0</kafka-clients.version>
     <spring-kafka.version>1.3.10.RELEASE</spring-kafka.version>
     <protoc.version>3.11.4</protoc.version>
-    <platform.version>10.2.0.0-SNAPSHOT</platform.version>
+    <platform.version>10.2.0.0-222</platform.version>
     <spring53.bundle.version>5.3.34_1</spring53.bundle.version>
     <spring43.bundle.version>4.3.23.RELEASE_1</spring43.bundle.version>
     <spring32.bundle.version>3.2.18.RELEASE_1</spring32.bundle.version>

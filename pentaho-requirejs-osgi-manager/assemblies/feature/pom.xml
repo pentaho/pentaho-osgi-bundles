@@ -6,7 +6,7 @@
   <parent>
     <groupId>org.pentaho</groupId>
     <artifactId>requirejs-manager-assemblies</artifactId>
-    <version>10.2.0.0-SNAPSHOT</version>
+    <version>10.2.0.0-222</version>
   </parent>
 
   <artifactId>pentaho-requirejs-osgi-manager</artifactId>
