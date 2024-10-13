@@ -31,7 +31,8 @@ public class AgileBiAuthorizationPolicy implements IAuthorizationPolicy {
 
   private static final List<String> ALLOWED_ACTIONS =
     Arrays.asList( "org.pentaho.repository.read", "org.pentaho.repository.create",
-      "org.pentaho.security.administerSecurity" );
+      "org.pentaho.security.administerSecurity", "org.pentaho.scheduler.manage",
+      "org.pentaho.platform.dataaccess.datasource.security.manage" );
 
   @Override public boolean isAllowed( String s ) {
     return true;
