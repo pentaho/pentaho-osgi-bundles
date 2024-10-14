@@ -40,7 +40,8 @@ public class AgileBiAuthorizationPolicyTest {
   public void getAllowedActions() throws Exception {
     assertThat( authorizationPolicy.getAllowedActions( "anything" ), equalTo( Arrays
       .asList( "org.pentaho.repository.read", "org.pentaho.repository.create",
-        "org.pentaho.security.administerSecurity" )));
+        "org.pentaho.security.administerSecurity", "org.pentaho.scheduler.manage",
+      "org.pentaho.platform.dataaccess.datasource.security.manage" )));
   }
 
 }
