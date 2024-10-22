@@ -29,7 +29,7 @@
   </bean>
 
 
-  <service interface="javax.servlet.Servlet" id="pentahoWebContext" ref="WebContextServletRef">
+  <service interface="jakarta.servlet.Servlet" id="pentahoWebContext" ref="WebContextServletRef">
     <service-properties>
       <entry key="osgi.http.whiteboard.servlet.pattern" value="/*"/>
       <entry key="osgi.http.whiteboard.servlet.name" value="pentahoWebContext"/>
