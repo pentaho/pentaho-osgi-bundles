@@ -24,15 +24,14 @@
 
   <properties>
     <java-semver.version>0.9.0</java-semver.version>
-    <javax.servlet-api.version>3.0.1</javax.servlet-api.version>
   </properties>
 
   <dependencyManagement>
     <dependencies>
       <dependency>
-        <groupId>javax.servlet</groupId>
-        <artifactId>javax.servlet-api</artifactId>
-        <version>${javax.servlet-api.version}</version>
+        <groupId>jakarta.servlet</groupId>
+        <artifactId>jakarta.servlet-api</artifactId>
+        <version>${jakarta.servlet.version}</version>
         <scope>provided</scope>
         <exclusions>
           <exclusion>

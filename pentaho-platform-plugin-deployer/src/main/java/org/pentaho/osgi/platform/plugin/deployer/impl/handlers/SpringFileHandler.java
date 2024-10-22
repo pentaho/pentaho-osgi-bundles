@@ -1,5 +1,5 @@
 /*!
- * Copyright 2010 - 2018 Hitachi Vantara.  All rights reserved.
+ * Copyright 2010 - 2024 Hitachi Vantara.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -119,7 +119,7 @@ public class SpringFileHandler implements PluginFileHandler {
             String beanId = matcher.group( 1 );
             Document blueprint = pluginMetadata.getBlueprint();
             Element service = blueprint.createElementNS( BLUEPRINT_BEAN_NS, "service" );
-            service.setAttribute( "interface", "javax.servlet.Servlet" );
+            service.setAttribute( "interface", "jakarta.servlet.Servlet" );
 
             Element props = blueprint.createElementNS( BLUEPRINT_BEAN_NS, "service-properties" );
             Element entry = blueprint.createElementNS( BLUEPRINT_BEAN_NS, "entry" );

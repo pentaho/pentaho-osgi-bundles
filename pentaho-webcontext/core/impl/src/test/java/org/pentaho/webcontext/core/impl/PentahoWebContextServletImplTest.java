@@ -1,5 +1,5 @@
 /*!
- * Copyright 2018 Hitachi Vantara.  All rights reserved.
+ * Copyright 2018-2024 Hitachi Vantara.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,14 +16,15 @@
  */
 package org.pentaho.webcontext.core.impl;
 
+import jakarta.servlet.WriteListener;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.pentaho.webcontext.core.impl.PentahoWebContextServletImpl;
 
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
@@ -57,6 +58,15 @@ public class PentahoWebContextServletImplTest {
 
     this.mockResponseOutputStream = new java.io.ByteArrayOutputStream();
     when( mockResponse.getOutputStream() ).thenReturn( new ServletOutputStream() {
+      @Override
+      public boolean isReady() {
+        return false;
+      }
+
+      @Override
+      public void setWriteListener( WriteListener writeListener ) {
+      }
+
       @Override
       public void write( int b ) throws IOException {
         PentahoWebContextServletImplTest.this.mockResponseOutputStream.write( b );

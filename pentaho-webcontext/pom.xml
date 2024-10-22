@@ -23,16 +23,15 @@
   </modules>
 
   <properties>
-    <javax.servlet.version>3.0.1</javax.servlet.version>
     <commons-lang.version>2.6</commons-lang.version>
   </properties>
 
   <dependencyManagement>
     <dependencies>
       <dependency>
-        <groupId>javax.servlet</groupId>
-        <artifactId>javax.servlet-api</artifactId>
-        <version>${javax.servlet.version}</version>
+        <groupId>jakarta.servlet</groupId>
+        <artifactId>jakarta.servlet-api</artifactId>
+        <version>${jakarta.servlet.version}</version>
         <exclusions>
           <exclusion>
             <groupId>*</groupId>

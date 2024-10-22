@@ -1,5 +1,5 @@
 /*!
- * Copyright 2020 Hitachi Vantara.  All rights reserved.
+ * Copyright 2020-2024 Hitachi Vantara.  All rights reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ package org.pentaho.requirejs.impl.servlet;
 
 import org.junit.Test;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;

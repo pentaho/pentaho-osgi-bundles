@@ -23,7 +23,6 @@
     <geronimo.jms-spec.version>1.1.1</geronimo.jms-spec.version>
     <geronimo.jta-spec.version>1.1.1</geronimo.jta-spec.version>
     <aopalliance.bundle.version>1.0_6</aopalliance.bundle.version>
-    <javax.websocket-api.version>1.1</javax.websocket-api.version>
     <portlet-api.version>2.0</portlet-api.version>
 
     <karaf-maven-plugin.addBundlesToPrimaryFeature>false</karaf-maven-plugin.addBundlesToPrimaryFeature>
@@ -145,9 +144,14 @@
     </dependency>
 
     <dependency>
-      <groupId>javax.websocket</groupId>
-      <artifactId>javax.websocket-api</artifactId>
-      <version>${javax.websocket-api.version}</version>
+      <groupId>jakarta.websocket</groupId>
+      <artifactId>jakarta.websocket-api</artifactId>
+      <version>${jakarta.websocket-api.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>jakarta.websocket</groupId>
+      <artifactId>jakarta.websocket-client-api</artifactId>
+      <version>${jakarta.websocket-api.version}</version>
     </dependency>
 
     <dependency>

@@ -56,7 +56,8 @@
 
   <feature name="spring-test" description="Spring 4.3.x Test support" version="${spring43.bundle.version}">
     <feature version="[${spring43.bundle.version},4.4)">spring</feature>
-    <bundle dependency="true">mvn:javax.websocket/javax.websocket-api/${javax.websocket-api.version}</bundle>
+    <bundle dependency="true">mvn:jakarta.websocket/jakarta.websocket-api/${jakarta.websocket-api.version}</bundle>
+    <bundle dependency="true">mvn:jakarta.websocket/jakarta.websocket-client-api/${jakata.websocket-api.version}</bundle>
     <bundle dependency="true">mvn:org.apache.httpcomponents/httpcore-osgi/${httpcore-osgi.version}</bundle>
     <bundle dependency="true">mvn:org.apache.httpcomponents/httpclient-osgi/${httpclient-osgi.version}</bundle>
     <bundle start-level="30">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.spring-test/${spring43.bundle.version}</bundle>
@@ -92,7 +93,8 @@
   </feature>
 
   <feature name="spring-websocket" description="Spring 4.3.x WebSocket support" version="${spring43.bundle.version}">
-    <bundle dependency="true">mvn:javax.websocket/javax.websocket-api/${javax.websocket-api.version}</bundle>
+    <bundle dependency="true">mvn:jakarta.websocket/jakarta.websocket-api/${jakarta.websocket-api.version}</bundle>
+    <bundle dependency="true">mvn:jakarta.websocket/jakarta.websocket-client-api/${jakata.websocket-api.version}</bundle>
     <feature version="[${spring43.bundle.version},4.4)">spring-web</feature>
     <bundle start-level="30">mvn:org.apache.servicemix.bundles/org.apache.servicemix.bundles.spring-websocket/${spring43.bundle.version}</bundle>
   </feature>
