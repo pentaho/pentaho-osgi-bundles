@@ -25,7 +25,7 @@ import org.ops4j.pax.exam.spi.reactors.PerMethod;
 //import org.pentaho.platform.api.engine.IServiceBarrier;
 //import org.pentaho.platform.api.engine.IServiceBarrierManager;
 
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
