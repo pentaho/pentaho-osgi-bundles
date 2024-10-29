@@ -11,7 +11,7 @@
 
   <groupId>pentaho</groupId>
   <artifactId>pentaho-osgi-utils-impl</artifactId>
-
+  <version>9.3.0.6-C284</version>
   <packaging>bundle</packaging>
 
   <properties>
@@ -40,7 +40,7 @@
     <dependency>
       <groupId>pentaho</groupId>
       <artifactId>pentaho-osgi-utils-api</artifactId>
-      <version>${project.version}</version>
+      <version>9.3.0.6-786</version>
     </dependency>
     <dependency>
       <groupId>org.apache.aries.blueprint</groupId>
@@ -89,24 +89,24 @@
     <dependency>
       <groupId>pentaho</groupId>
       <artifactId>pentaho-capability-manager</artifactId>
-      <version>${project.version}</version>
+      <version>9.3.0.6-786</version>
     </dependency>
     <dependency>
       <groupId>pentaho</groupId>
       <artifactId>pentaho-platform-api</artifactId>
-      <version>${platform.version}</version>
+      <version>9.3.0.6-786</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>pentaho</groupId>
       <artifactId>pentaho-platform-core</artifactId>
-      <version>${platform.version}</version>
+      <version>9.3.0.6-786</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>pentaho</groupId>
       <artifactId>pentaho-service-coordinator</artifactId>
-      <version>${platform.version}</version>
+      <version>9.3.0.6-786</version>
       <scope>compile</scope>
     </dependency>
     <dependency>
