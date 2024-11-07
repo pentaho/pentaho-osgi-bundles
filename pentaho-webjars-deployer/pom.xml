@@ -17,7 +17,7 @@
   <dependencies>
     <dependency>
       <groupId>org.osgi</groupId>
-      <artifactId>org.osgi.core</artifactId>
+      <artifactId>osgi.core</artifactId>
       <scope>provided</scope>
       <exclusions>
         <exclusion>
@@ -112,7 +112,14 @@
         <configuration>
           <instructions>
             <Embed-Dependency>closure-compiler</Embed-Dependency>
-            <Import-Package>!android.content,!clojure.lang,!com.google.appengine.api,!com.google.apphosting.api,!com.google.errorprone.annotations.concurrent,!com.google.javascript.refactoring,!sun.misc,!org.apache.tools.ant,!org.apache.tools.ant.types,!org.apache.tools.ant.types.resources,*</Import-Package>
+            <Import-Package>
+              !android.content,!clojure.lang,!com.google.appengine.api,!com.google.apphosting.api,
+              !com.google.errorprone.annotations.concurrent,!com.google.javascript.refactoring,
+              !sun.misc,!org.apache.tools.ant,!org.apache.tools.ant.types,
+              !org.apache.tools.ant.types.resources,
+              org.osgi.framework;version="[1,3)",
+              *
+            </Import-Package>
           </instructions>
         </configuration>
       </plugin>
