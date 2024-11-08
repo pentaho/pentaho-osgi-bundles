@@ -21,11 +21,12 @@
     </dependency>
     <dependency>
       <groupId>org.osgi</groupId>
-      <artifactId>org.osgi.core</artifactId>
+      <artifactId>osgi.core</artifactId>
+      <version>${osgi.core.version}</version>
     </dependency>
     <dependency>
       <groupId>org.osgi</groupId>
-      <artifactId>org.osgi.compendium</artifactId>
+      <artifactId>osgi.cmpn</artifactId>
     </dependency>
   </dependencies>
   <build>
@@ -43,7 +44,7 @@
                             javax.cache.*;version=${cache-api.version}</_exportcontents>
             <Export-Package>org.pentaho.caching.api;version=${project.version},
                             org.pentaho.caching.spi;version=${project.version}</Export-Package>
-            <Import-Package>org.osgi.framework, org.osgi.service.cm,
+            <Import-Package>org.osgi.framework;version="[1,3)", org.osgi.service.cm,
                             com.google.common.*,
                             org.osgi.service.blueprint,
                             !javax.enterprise.util,
