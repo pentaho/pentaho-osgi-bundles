@@ -17,11 +17,11 @@
   <dependencies>
     <dependency>
       <groupId>org.osgi</groupId>
-      <artifactId>org.osgi.core</artifactId>
+      <artifactId>osgi.core</artifactId>
     </dependency>
     <dependency>
-      <groupId>org.apache.karaf.bundle</groupId>
-      <artifactId>org.apache.karaf.bundle.core</artifactId>
+      <groupId>org.hitachivantara.karaf.bundle</groupId>
+      <artifactId>org.hitachivantara.karaf.bundle.core</artifactId>
     </dependency>
   </dependencies>
 
