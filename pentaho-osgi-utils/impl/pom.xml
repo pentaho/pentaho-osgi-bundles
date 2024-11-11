@@ -15,6 +15,7 @@
   <packaging>bundle</packaging>
 
   <properties>
+    <log4j-slf4j2.version>2.24.1</log4j-slf4j2.version>
   </properties>
 
   <dependencies>
@@ -33,7 +34,8 @@
     <!-- Need log implementation to runtime unit tests -->
     <dependency>
       <groupId>org.apache.logging.log4j</groupId>
-      <artifactId>log4j-slf4j-impl</artifactId>
+      <artifactId>log4j-slf4j2-impl</artifactId>
+      <version>${log4j-slf4j2.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
