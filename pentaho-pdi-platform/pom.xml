@@ -196,7 +196,7 @@
                   <type>jar</type>
                   <classifier>sources</classifier>
                   <outputDirectory>target/additional-sources/java</outputDirectory>
-                  <includes>**/ServletBase.java</includes>
+                  <includes>**/ServletBase.java,**/WebUtil.java</includes>
                 </artifactItem>
               </artifactItems>
             </configuration>
