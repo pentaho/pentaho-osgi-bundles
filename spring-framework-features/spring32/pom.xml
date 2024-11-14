@@ -38,7 +38,7 @@
 
   <dependencies>
     <dependency>
-      <groupId>org.apache.karaf.features</groupId>
+      <groupId>org.hitachivantara.karaf.features</groupId>
       <artifactId>standard</artifactId>
       <version>${karaf.version}</version>
       <type>xml</type>

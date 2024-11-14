@@ -15,11 +15,19 @@
   <url>http://www.pentaho.com</url>
   <properties>
     <mondrian.version>10.3.0.0-SNAPSHOT</mondrian.version>
+    <pdi.version>10.3.0.0-SNAPSHOT</pdi.version>
+    <javax.servlet-api.version>3.1.0</javax.servlet-api.version>
+    <pentaho-metadata.version>10.3.0.0-SNAPSHOT</pentaho-metadata.version>
   </properties>
   <dependencies>
     <dependency>
+      <groupId>jakarta.ws.rs</groupId>
+      <artifactId>jakarta.ws.rs-api</artifactId>
+      <version>2.1.6</version>
+    </dependency>
+    <dependency>
       <groupId>org.osgi</groupId>
-      <artifactId>org.osgi.core</artifactId>
+      <artifactId>osgi.core</artifactId>
     </dependency>
 
     <dependency>
@@ -82,6 +90,11 @@
       <artifactId>pax-web-spi</artifactId>
     </dependency>
     <dependency>
+      <groupId>org.ops4j.pax.swissbox</groupId>
+      <artifactId>pax-swissbox-core</artifactId>
+      <version>1.8.2</version>
+    </dependency>
+    <dependency>
       <groupId>javax.servlet</groupId>
       <artifactId>javax.servlet-api</artifactId>
       <version>${javax.servlet-api.version}</version>
@@ -103,6 +116,43 @@
         </exclusion>
       </exclusions>
     </dependency>
+
+    <!-- Dependency needed by Karaf 4.4.6 -->
+    <dependency>
+      <groupId>pentaho</groupId>
+      <artifactId>pentaho-platform-extensions</artifactId>
+      <version>10.3.0.0-SNAPSHOT</version>
+      <classifier>sources</classifier>
+      <scope>provided</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>*</groupId>
+          <artifactId>*</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-context</artifactId>
+      <version>5.3.34</version>
+    </dependency>
+    <dependency>
+      <groupId>com.google.gwt</groupId>
+      <artifactId>gwt-servlet</artifactId>
+      <version>2.10.0</version>
+    </dependency>
+    <dependency>
+      <groupId>pentaho-kettle</groupId>
+      <artifactId>kettle-core</artifactId>
+      <version>${pdi.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.pentaho</groupId>
+      <artifactId>pentaho-metadata</artifactId>
+      <version>${pentaho-metadata.version}</version>
+    </dependency>
+
   </dependencies>
   <build>
     <resources>
@@ -126,6 +176,52 @@
     </resources>
     <finalName>${project.artifactId}</finalName>
     <plugins>
+      <!-- Karaf 4.4.6 requires the ServletBase.java to be in a bundle classloader. -->
+      <!-- Bring the ServletBase.java file -->
+      <plugin>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>src-dependencies</id>
+            <phase>generate-resources</phase>
+            <goals>
+              <goal>unpack</goal>
+            </goals>
+            <configuration>
+              <artifactItems>
+                <artifactItem>
+                  <groupId>pentaho</groupId>
+                  <artifactId>pentaho-platform-extensions</artifactId>
+                  <type>jar</type>
+                  <classifier>sources</classifier>
+                  <outputDirectory>target/additional-sources/java</outputDirectory>
+                  <includes>**/ServletBase.java</includes>
+                </artifactItem>
+              </artifactItems>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <!-- Add the destination of ServletBase.java to the sources -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <version>3.6.0</version>
+        <executions>
+          <execution>
+            <id>add-source</id>
+            <phase>generate-sources</phase>
+            <goals>
+              <goal>add-source</goal>
+            </goals>
+            <configuration>
+              <sources>
+                <source>target/additional-sources/java</source>
+              </sources>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
       <plugin>
         <groupId>org.apache.felix</groupId>
         <artifactId>maven-bundle-plugin</artifactId>
@@ -135,7 +231,32 @@
             <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
             <Bundle-Version>${project.version}</Bundle-Version>
             <Bundle-Activator>org.pentaho.platform.pdi.PdiPlatformActivator</Bundle-Activator>
-            <Import-Package>org.pentaho.platform.pdi.vfs,*</Import-Package>
+            <Import-Package>
+              !com.google.gwt.user.client.rpc,
+              !com.google.gwt.user.server.rpc,
+              !com.google.gwt.user.server.rpc.impl,
+              !com.ice.tar,
+              !com.sun.jersey.api.container,
+              !com.sun.jersey.api.core,
+              !com.sun.jersey.api.wadl.config,
+              !com.sun.jersey.server.impl,
+              !com.sun.jersey.server.probes,
+              !com.sun.jersey.server.wadl.generators.resourcedoc,
+              !com.sun.jersey.spi,
+              !com.sun.jersey.spi.container,
+              !com.sun.jersey.spi.container.servlet,
+              !com.sun.jersey.spi.spring.container.servlet,
+              !com.sun.xml.ws.transport.http.servlet,
+              !org.apache.commons.fileupload,
+              !org.apache.commons.fileupload.disk,
+              !org.apache.commons.fileupload.servlet,
+              !org.pentaho.actionsequence.dom,
+              !org.springframework.http,
+              !org.springframework.web.context,
+              !org.springframework.web.context.support,
+              org.pentaho.platform.pdi.vfs,
+              *
+            </Import-Package>
           </instructions>
         </configuration>
       </plugin>

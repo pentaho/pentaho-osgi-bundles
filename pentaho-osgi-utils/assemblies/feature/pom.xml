@@ -47,13 +47,13 @@
 
     <!-- these bring a lot of transitive bundles, assume they're provided -->
     <dependency>
-      <groupId>org.apache.karaf.bundle</groupId>
-      <artifactId>org.apache.karaf.bundle.core</artifactId>
+      <groupId>org.hitachivantara.karaf.bundle</groupId>
+      <artifactId>org.hitachivantara.karaf.bundle.core</artifactId>
       <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>org.apache.karaf.features</groupId>
-      <artifactId>org.apache.karaf.features.core</artifactId>
+      <groupId>org.hitachivantara.karaf.features</groupId>
+      <artifactId>org.hitachivantara.karaf.features.core</artifactId>
       <scope>provided</scope>
     </dependency>
   </dependencies>
