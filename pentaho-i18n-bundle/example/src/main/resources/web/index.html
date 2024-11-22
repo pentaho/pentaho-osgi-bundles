@@ -9,7 +9,7 @@
   <script type="text/javascript" src="../webcontext.js?requireJsOnly=true"></script>
 
   <script type="text/javascript">
-    require(["dojo/request", "dojo/dom", "dojo/on", "dojo/domReady!"], function (request, dom, on) {
+    require(["dojo/request", "dojo/dom", "dojo/on", "dojo/domReady!", "common-ui/util/xss"], function (request, dom, on, xssUtil) {
 
       var region = dom.byId("region");
       var bundle = dom.byId("bundle");
@@ -26,18 +26,18 @@
 
         // Call our custom REST service
         request("/cxf/localize", {query: q}).then(function (data) {
-          val.innerHTML = key.value + " : " + data;
+          xssUtil.setHtml(val, key.value + " : " + data);
         }, function (err) {
-          val.innerHTML = "Error: <br/>" + err;
+          xssUtil.setHtml(val, "Error: <br/>" + err);
         }, function (evt) {
         });
 
 
         // Call the standard webservice provifed by pentaho-i18n-webservice-bundle
         request("/cxf/i18n/" + region.value + "/" + bundle.value.replace("\/", ".") + "/en").then(function (data) {
-          bundleDiv.innerHTML = data;
+          xssUtil.setHtml(bundleDiv, data);
         }, function (err) {
-          bundleDiv.innerHTML = "Error: <br/>" + err;
+          xssUtil.setHtml(bundleDiv, "Error: <br/>" + err);
         }, function (evt) {
         });
 
