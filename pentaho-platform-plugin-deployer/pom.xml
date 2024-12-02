@@ -16,7 +16,7 @@
   <dependencies>
     <dependency>
       <groupId>org.osgi</groupId>
-      <artifactId>org.osgi.core</artifactId>
+      <artifactId>osgi.core</artifactId>
     </dependency>
     <dependency>
       <groupId>commons-io</groupId>
@@ -81,7 +81,7 @@
               org.pentaho.osgi.platform.plugin.deployer.impl,
               org.pentaho.osgi.platform.plugin.deployer.impl.handlers,
               org.pentaho.osgi.platform.plugin.deployer.impl.handlers.pluginxml</Private-Package>
-            <Import-Package>!org.pentaho.osgi.platform.plugin.deployer.api,!org.pentaho.osgi.platform.plugin,*</Import-Package>
+            <Import-Package>org.osgi.framework;version="[1,3)",!org.pentaho.osgi.platform.plugin.deployer.api,!org.pentaho.osgi.platform.plugin,*</Import-Package>
           </instructions>
         </configuration>
       </plugin>
