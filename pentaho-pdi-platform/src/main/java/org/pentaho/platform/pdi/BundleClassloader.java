@@ -12,7 +12,6 @@
 
 package org.pentaho.platform.pdi;
 
-import org.ops4j.pax.web.service.spi.util.ResourceDelegatingBundleClassLoader;
 import org.osgi.framework.Bundle;
 
 import java.net.URL;
