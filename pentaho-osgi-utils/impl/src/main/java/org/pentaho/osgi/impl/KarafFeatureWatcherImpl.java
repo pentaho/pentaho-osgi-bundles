@@ -214,7 +214,7 @@ public class KarafFeatureWatcherImpl implements IKarafFeatureWatcher {
    *         an empty list if the features property key is not mapped.
    * @throws IOException if access to persistent storage fails.
    */
-  protected List<String> getFeatures( String configPersistentId, String featuresPropertyKey ) throws IOException {
+  public List<String> getFeatures( String configPersistentId, String featuresPropertyKey ) throws IOException {
     Configuration configuration = this.getConfigurationAdmin().getConfiguration( configPersistentId );
 
     Dictionary<String, Object> properties = configuration.getProperties();
@@ -226,6 +226,8 @@ public class KarafFeatureWatcherImpl implements IKarafFeatureWatcher {
     if ( featuresPropertyValue == null ) {
       return Collections.emptyList();
     }
+
+    logger.debug( "Reading config {} property {} value {}", configPersistentId, featuresPropertyKey, featuresPropertyValue );
 
     // remove parentesis from feature stages
     featuresPropertyValue = featuresPropertyValue.replaceAll( "[()]", "" );
