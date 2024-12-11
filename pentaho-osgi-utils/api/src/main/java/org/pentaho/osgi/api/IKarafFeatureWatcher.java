@@ -12,6 +12,9 @@
 
 package org.pentaho.osgi.api;
 
+import java.io.IOException;
+import java.util.List;
+
 /**
  * Interface defining a class which serves one purpose, block until all features defined in the Karaf featuresBoot are
  * installed.
@@ -21,6 +24,7 @@ package org.pentaho.osgi.api;
 public interface IKarafFeatureWatcher {
   void waitForFeatures() throws FeatureWatcherException;
 
+  List<String> getFeatures( String configPersistentId, String featuresPropertyKey ) throws IOException;
 
   class FeatureWatcherException extends Exception {
     public FeatureWatcherException( String message ) {
