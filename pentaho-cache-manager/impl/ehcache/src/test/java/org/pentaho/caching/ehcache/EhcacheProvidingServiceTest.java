@@ -2,7 +2,7 @@
  *
  * Pentaho
  *
- * Copyright (C) 2024 by Hitachi Vantara, LLC : http://www.pentaho.com
+ * Copyright (C) 2024-2025 by Hitachi Vantara, LLC : http://www.pentaho.com
  *
  * Use of this software is governed by the Business Source License included
  * in the LICENSE.TXT file.
@@ -28,7 +28,7 @@ public class EhcacheProvidingServiceTest {
     CacheManager cacheManager = service.createCacheManager( mock( PentahoCacheSystemConfiguration.class ) );
     assertNotNull( cacheManager );
     try {
-      cacheManager.unwrap( net.sf.ehcache.CacheManager.class );
+      cacheManager.unwrap( javax.cache.CacheManager.class );
     } catch ( IllegalArgumentException iae ) {
       fail( "Expected CacheManager to be backed by ehcache CacheManager." );
     }
