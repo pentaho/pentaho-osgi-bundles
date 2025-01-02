@@ -53,7 +53,7 @@
     <module>impl/ehcache</module>
   </modules>
   <properties>
-    <cache-api.version>1.0.0</cache-api.version>
+    <cache-api.version>1.1.1</cache-api.version>
   </properties>
   <dependencies>
     <dependency>
