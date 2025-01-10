@@ -18,8 +18,6 @@ import javax.cache.spi.CachingProvider;
 import org.pentaho.caching.api.PentahoCacheSystemConfiguration;
 import org.pentaho.caching.spi.AbstractCacheProvidingService;
 
-import java.net.URI;
-
 /**
  *  PentahoCacheProvidingService implementation which leverages the
  *  org.ehcache.jcache project to provide a JCache CacheManager wrapping
@@ -32,7 +30,7 @@ public class EhcacheProvidingService extends AbstractCacheProvidingService {
 
   @Override public javax.cache.CacheManager createCacheManager( PentahoCacheSystemConfiguration systemConfiguration ) {
     CachingProvider cachingProvider= Caching.getCachingProvider( this.getClass().getClassLoader() );
-    return cachingProvider.getCacheManager( URI.create( getClass().getName() ), this.getClass().getClassLoader() );
+    return cachingProvider.getCacheManager();
   }
 
 }
