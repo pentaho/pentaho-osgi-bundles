@@ -23,7 +23,7 @@
     <dependency>
       <groupId>org.ehcache</groupId>
       <artifactId>ehcache</artifactId>
-      <version>${ehcache-core.version}</version>
+      <version>${ehcache-osgi.version}</version>
     </dependency>
     <dependency>
       <groupId>javax.cache</groupId>
