@@ -34,7 +34,7 @@
     <dependency>
       <groupId>org.hitachivantara.karaf.features</groupId>
       <artifactId>standard</artifactId>
-      <version>${karaf.version}</version>
+      <version>${pentaho.custom.karaf.version}</version>
       <type>xml</type>
       <classifier>features</classifier>
       <scope>provided</scope>
