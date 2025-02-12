@@ -34,14 +34,14 @@
     </reference-list>
 
 
-    <service interface="javax.servlet.Servlet" id="webContext"
+    <service interface="jakarta.servlet.Servlet" id="webContext"
              ref="WebContext">
         <service-properties>
             <entry key="osgi.http.whiteboard.servlet.pattern" value="/*"/>
             <entry key="osgi.http.whiteboard.servlet.name" value="webContext"/>
         </service-properties>
     </service>
-    <service interface="javax.servlet.Servlet" id="i18nServlet">
+    <service interface="jakarta.servlet.Servlet" id="i18nServlet">
         <service-properties>
             <entry key="osgi.http.whiteboard.servlet.pattern" value="/i18n"/>
             <entry key="osgi.http.whiteboard.servlet.name" value="LocalizationServlet"/>

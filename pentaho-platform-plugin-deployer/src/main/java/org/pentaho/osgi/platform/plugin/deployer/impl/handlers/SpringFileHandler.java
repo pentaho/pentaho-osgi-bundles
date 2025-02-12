@@ -115,7 +115,7 @@ public class SpringFileHandler implements PluginFileHandler {
             String beanId = matcher.group( 1 );
             Document blueprint = pluginMetadata.getBlueprint();
             Element service = blueprint.createElementNS( BLUEPRINT_BEAN_NS, "service" );
-            service.setAttribute( "interface", "javax.servlet.Servlet" );
+            service.setAttribute( "interface", "jakarta.servlet.Servlet" );
 
             Element props = blueprint.createElementNS( BLUEPRINT_BEAN_NS, "service-properties" );
             Element entry = blueprint.createElementNS( BLUEPRINT_BEAN_NS, "entry" );
