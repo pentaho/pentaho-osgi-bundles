@@ -21,7 +21,7 @@ import org.osgi.service.cm.ConfigurationAdmin;
 import org.pentaho.platform.api.engine.IApplicationContext;
 import org.pentaho.platform.engine.core.system.PentahoSystem;
 
-import javax.servlet.ServletContext;
+import jakarta.servlet.ServletContext;
 import java.util.Dictionary;
 
 import static org.junit.Assert.*;
