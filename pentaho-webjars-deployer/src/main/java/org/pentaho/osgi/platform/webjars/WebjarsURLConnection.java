@@ -24,7 +24,6 @@ import com.google.javascript.jscomp.WarningLevel;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.io.filefilter.TrueFileFilter;
 import org.osgi.framework.Constants;
 import org.pentaho.osgi.platform.webjars.utils.RequireJsGenerator;
 import org.slf4j.Logger;
@@ -41,11 +40,11 @@ import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.net.URL;
 import java.net.URLConnection;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -60,12 +59,15 @@ import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import java.util.zip.ZipEntry;
 
 /**
- * Created by nbaker on 9/6/14.
+ * Delivers a minified version of the webjar with source mapping
  */
 public class WebjarsURLConnection extends URLConnection {
+
+  private static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
 
   private static final ExecutorService EXECUTOR = Executors.newFixedThreadPool( 5, r -> {
     Thread thread = Executors.defaultThreadFactory().newThread( r );
@@ -232,16 +234,7 @@ public class WebjarsURLConnection extends URLConnection {
 
         Map<String, Object> overrides = RequireJsGenerator.getPackageOverrides( artifactInfo.getGroup(), artifactInfo.getArtifactId(), artifactInfo.getVersion() );
 
-        Map<String, Map<String, String>> wrap;
-        if ( overrides != null ) {
-          // if there is an explicit override file, don't try to be smart and just assume it's AMD ready
-          this.isAmdPackage = true;
-
-          wrap = (Map<String, Map<String, String>>) overrides.getOrDefault( "wrap", Collections.<String, Map<String, String>>emptyMap() );
-        } else {
-          // empty map, for simplicity
-          wrap = Collections.emptyMap();
-        }
+        Map<String, Map<String, String>> wrap = getWrap( overrides );
 
         boolean packageHasContent = false;
 
@@ -398,6 +391,16 @@ public class WebjarsURLConnection extends URLConnection {
       }
     }
 
+    @SuppressWarnings( "unchecked" )
+    private Map<String, Map<String, String>> getWrap( Map<String, Object> overrides ) {
+      Map<String, Map<String, String>> wrap = null;
+      if ( overrides != null ) {
+        this.isAmdPackage = true;
+        wrap = (Map<String, Map<String, String>>) overrides.get( "wrap" );
+      }
+      return wrap == null ? Collections.emptyMap() : wrap;
+    }
+
     private void writeToOutput( BufferedOutputStream temporarySourceFileOutputStream, byte[] bytes, int read ) throws IOException {
       if ( this.temporarySourceFileIsNeeded ) {
         // also output to the temp source file
@@ -427,63 +430,68 @@ public class WebjarsURLConnection extends URLConnection {
         return false;
       }
 
-      Collection<File> scrFiles = FileUtils.listFiles(
-          absoluteResourcesPath.toFile(),
-          TrueFileFilter.INSTANCE,
-          TrueFileFilter.INSTANCE
-      );
-
-      if ( scrFiles.isEmpty() ) {
-        // nothing to do if there aren't any source files
+      List<Path> srcFiles;
+      try {
+         srcFiles = Files.list( absoluteResourcesPath ).collect( Collectors.toList() );
+      } catch ( IOException e ) {
+        logger.error( "Error listing resources in {}", absoluteResourcesPath, e );
         return false;
       }
 
+      if ( srcFiles.isEmpty() ) {
+        // nothing to do if there aren't any source files
+        return false;
+      }
       try {
         CompilerOptions options = initCompilationResources();
-
-        for ( File srcFile : scrFiles ) {
-          final String name = srcFile.getName();
-
-          if ( name.endsWith( WEBJARS_REQUIREJS_NAME ) ) {
-            continue;
-          }
-
-          final String relSrcFilePath = FilenameUtils.separatorsToUnix( absoluteResourcesPath.relativize( srcFile.toPath() ).toString() );
-          final String relOutFilePath = MINIFIED_RESOURCES_OUTPUT_PATH + "/" + relSrcFilePath;
-
-          if ( isJsFile( name ) ) {
-            // Check if there is a .map with the same name
-            // if so, assume it is already minified and just copy both files
-            File mapFile = new File( name + ".map", srcFile.getParent() );
-            if ( mapFile.exists() ) {
-              copyFileToZip( jarOutputStream, relOutFilePath, srcFile );
-              copyFileToZip( jarOutputStream, relOutFilePath + ".map", mapFile );
-              continue;
-            }
-
-            options.setSourceMapLocationMappings( getLocationMappings( srcFile.toPath().getParent(), absoluteResourcesPath, packageNameFromResourcesPath, packageVersionFromResourcesPath ) );
-
-            try {
-              CompiledScript compiledScript = new CompiledScript( srcFile, relSrcFilePath, options ).invoke();
-
-              addContentToZip( jarOutputStream, relOutFilePath, compiledScript.getCode() );
-              addContentToZip( jarOutputStream, relOutFilePath + ".map", compiledScript.getSourcemap() );
-            } catch ( Exception failedCompilationException ) {
-              logger.warn( webjarUrl + ": error minifing " + relSrcFilePath + ", copied original version" );
-
-              copyFileToZip( jarOutputStream, relOutFilePath, srcFile );
-            }
-          } else if ( !isMapFile( name ) ) {
-            // just copy all resources (except .map files)
-            copyFileToZip( jarOutputStream, relOutFilePath, srcFile );
-          }
+        for ( Path srcFile : srcFiles ) {
+          minifyFile( options, srcFile );
         }
-
         return true;
       } catch ( Exception e ) {
         logger.warn( webjarUrl + ": exception minifing, serving original files", e );
-
         return false;
+      }
+    }
+
+    /**
+     * Minifies file and adds it to to the jar
+     */
+    private void minifyFile( CompilerOptions options, Path srcFile ) throws IOException {
+      final String name = srcFile.getFileName().toString();
+
+      if ( name.endsWith( WEBJARS_REQUIREJS_NAME ) ) {
+        return;
+      }
+
+      final String relSrcFilePath = FilenameUtils.separatorsToUnix( absoluteResourcesPath.relativize( srcFile ).toString() );
+      final String relOutFilePath = MINIFIED_RESOURCES_OUTPUT_PATH + "/" + relSrcFilePath;
+
+      if ( isJsFile( name ) ) {
+        // Check if there is a .map with the same name
+        // if so, assume it is already minified and just copy both files
+        Path mapFile = srcFile.getParent().resolve( name + ".map" );
+        if ( Files.exists( mapFile ) ) {
+          copyFileToZip( jarOutputStream, relOutFilePath, srcFile );
+          copyFileToZip( jarOutputStream, relOutFilePath + ".map", mapFile );
+          return;
+        }
+
+        options.setSourceMapLocationMappings( getLocationMappings( srcFile.getParent(), absoluteResourcesPath, packageNameFromResourcesPath, packageVersionFromResourcesPath ) );
+
+        try {
+          CompiledScript compiledScript = new CompiledScript( srcFile, relSrcFilePath, options ).invoke();
+
+          addContentToZip( jarOutputStream, relOutFilePath, compiledScript.getCode() );
+          addContentToZip( jarOutputStream, relOutFilePath + ".map", compiledScript.getSourcemap() );
+        } catch ( Exception failedCompilationException ) {
+          logger.warn( webjarUrl + ": error minifing " + relSrcFilePath + ", copied original version" );
+
+          copyFileToZip( jarOutputStream, relOutFilePath, srcFile );
+        }
+      } else if ( !isMapFile( name ) ) {
+        // just copy all resources (except .map files)
+        copyFileToZip( jarOutputStream, relOutFilePath, srcFile );
       }
     }
 
@@ -675,7 +683,7 @@ public class WebjarsURLConnection extends URLConnection {
       String blueprintTemplate;
       blueprintTemplate =
           IOUtils.toString( getClass().getResourceAsStream(
-              "/org/pentaho/osgi/platform/webjars/blueprint-minified-template.xml" ) );
+              "/org/pentaho/osgi/platform/webjars/blueprint-minified-template.xml" ), DEFAULT_CHARSET );
 
       blueprintTemplate = blueprintTemplate.replace( "{src_path}", relSrcPath );
       blueprintTemplate = blueprintTemplate
@@ -689,7 +697,7 @@ public class WebjarsURLConnection extends URLConnection {
     private String generateBlueprintWithoutMinifiedResources( String relSrcPath, RequireJsGenerator.ModuleInfo moduleInfo ) throws IOException {
       String blueprintTemplate;
       blueprintTemplate = IOUtils.toString( getClass().getResourceAsStream(
-          "/org/pentaho/osgi/platform/webjars/blueprint-template.xml" ) );
+          "/org/pentaho/osgi/platform/webjars/blueprint-template.xml" ), DEFAULT_CHARSET );
 
       blueprintTemplate = blueprintTemplate.replace( "{dist_path}", relSrcPath );
       blueprintTemplate = blueprintTemplate.replace( "{dist_alias}", moduleInfo.getVersionedPath() );
@@ -704,30 +712,17 @@ public class WebjarsURLConnection extends URLConnection {
       return name.endsWith( ".map" );
     }
 
-    private void copyFileToZip( JarOutputStream zip, String entry, File file ) throws IOException {
-      int bytesIn;
-      byte[] readBuffer = new byte[ BYTES_BUFFER_SIZE ];
-
-      FileInputStream inputStream = null;
+    private void copyFileToZip( JarOutputStream zip, String entry, Path file ) throws IOException {
+      InputStream inputStream = null;
       try {
-        inputStream = new FileInputStream( file );
+        inputStream = Files.newInputStream( file );
 
         ZipEntry zipEntry = new ZipEntry( entry );
         zip.putNextEntry( zipEntry );
 
-        bytesIn = inputStream.read( readBuffer );
-        while ( bytesIn != -1 ) {
-          zip.write( readBuffer, 0, bytesIn );
-          bytesIn = inputStream.read( readBuffer );
-        }
+        IOUtils.copy( inputStream, zip, BYTES_BUFFER_SIZE );
       } finally {
-        try {
-          if ( inputStream != null ) {
-            inputStream.close();
-          }
-        } catch ( IOException ignored ) {
-          // ignored
-        }
+        IOUtils.closeQuietly( inputStream );
       }
     }
 
@@ -776,7 +771,7 @@ public class WebjarsURLConnection extends URLConnection {
                 + packageName + "@"
                 + packageVersion + relPath;
 
-        lastLocationMapping = new SourceMap.LocationMapping( prefix, replacement );
+        lastLocationMapping = new SourceMap.PrefixLocationMapping( prefix, replacement );
 
         lastPrefix = prefix;
       }
@@ -789,14 +784,14 @@ public class WebjarsURLConnection extends URLConnection {
     private static class CompiledScript {
       private static final SourceFile EMPTY_EXTERNS_SOURCE_FILE = SourceFile.fromCode( "externs.js", "" );
 
-      private final File srcFile;
+      private final Path srcFile;
       private final String relSrcFilePath;
       private final CompilerOptions options;
 
       private StringBuilder code;
       private StringBuilder sourcemap;
 
-      CompiledScript( File srcFile, String relSrcFilePath, CompilerOptions options ) {
+      CompiledScript( Path srcFile, String relSrcFilePath, CompilerOptions options ) {
         this.srcFile = srcFile;
         this.relSrcFilePath = relSrcFilePath;
         this.options = options;
@@ -815,12 +810,11 @@ public class WebjarsURLConnection extends URLConnection {
 
         Compiler.setLoggingLevel( Level.OFF );
 
-        SourceFile input = SourceFile.fromFile( srcFile );
-        input.setOriginalPath( relSrcFilePath );
+        SourceFile input = SourceFile.builder().withPath( srcFile ).withOriginalPath( relSrcFilePath ).build();
 
         Result res = compiler.compile( EMPTY_EXTERNS_SOURCE_FILE, input, options );
         if ( res.success ) {
-          String name = srcFile.getName();
+          String name = srcFile.getFileName().toString();
 
           code = new StringBuilder( compiler.toSource() );
           code.append( "\n//# sourceMappingURL=" ).append( name ).append( ".map" );

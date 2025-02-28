@@ -64,7 +64,7 @@
     <dependency>
       <groupId>com.google.javascript</groupId>
       <artifactId>closure-compiler</artifactId>
-      <version>v20161201</version>
+      <version>v20240317</version>
       <exclusions>
         <exclusion>
           <groupId>*</groupId>
