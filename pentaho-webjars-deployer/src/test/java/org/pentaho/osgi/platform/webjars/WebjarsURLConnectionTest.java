@@ -18,6 +18,8 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.junit.Before;
 import org.junit.Test;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -27,14 +29,15 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathFactory;
+
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -53,8 +56,8 @@ public class WebjarsURLConnectionTest {
   }
 
   @Test
-  public void testClassicWebjarPomConfig() throws IOException, ParseException {
-    ZipFile zipInputStream = getDeployedJar( new URL( "mvn:org.webjars/smart-table/2.0.3-1" ), true );
+  public void testClassicWebjarPomConfig() throws Exception {
+    ZipFile zipInputStream = getDeployedJar( new URL( "mvn:org.webjars/smart-table/2.0.3-1" ) );
 
     verifyManifest( zipInputStream );
     verifyBlueprint( zipInputStream, "smart-table@2.0.3-1", "smart-table/2.0.3-1" );
@@ -63,7 +66,7 @@ public class WebjarsURLConnectionTest {
 
   @Test
   public void testNoSourceFolder() throws IOException, ParseException {
-    ZipFile zipInputStream = getDeployedJar( new URL( "mvn:org.webjars/smart-table/2.0.3-1-no-source-folder" ), true );
+    ZipFile zipInputStream = getDeployedJar( new URL( "mvn:org.webjars/smart-table/2.0.3-1-no-source-folder" ) );
 
     verifyManifest( zipInputStream );
     verifyNoRequireJson( zipInputStream );
@@ -72,7 +75,7 @@ public class WebjarsURLConnectionTest {
 
   @Test
   public void testNoResourceFolder() throws IOException, ParseException {
-    ZipFile zipInputStream = getDeployedJar( new URL( "mvn:org.webjars/smart-table/2.0.3-1-no-resource-folder" ), true );
+    ZipFile zipInputStream = getDeployedJar( new URL( "mvn:org.webjars/smart-table/2.0.3-1-no-resource-folder" ) );
 
     verifyManifest( zipInputStream );
     verifyNoRequireJson( zipInputStream );
@@ -80,8 +83,8 @@ public class WebjarsURLConnectionTest {
   }
 
   @Test
-  public void testClassicWebjarScriptedConfig() throws IOException, ParseException {
-    ZipFile zipInputStream = getDeployedJar( new URL( "mvn:org.webjars/jquery/2.2.1" ), true );
+  public void testClassicWebjarScriptedConfig() throws Exception {
+    ZipFile zipInputStream = getDeployedJar( new URL( "mvn:org.webjars/jquery/2.2.1" ) );
 
     verifyManifest( zipInputStream );
     verifyBlueprint( zipInputStream, "jquery@2.2.1", "jquery/2.2.1" );
@@ -89,8 +92,8 @@ public class WebjarsURLConnectionTest {
   }
 
   @Test
-  public void testNpmWebjar() throws IOException, ParseException {
-    ZipFile zipInputStream = getDeployedJar( new URL( "mvn:org.webjars.npm/asap/2.0.3" ), true );
+  public void testNpmWebjar() throws Exception {
+    ZipFile zipInputStream = getDeployedJar( new URL( "mvn:org.webjars.npm/asap/2.0.3" ) );
 
     verifyManifest( zipInputStream );
     verifyBlueprint( zipInputStream, "asap@2.0.3", "asap/2.0.3"  );
@@ -98,8 +101,8 @@ public class WebjarsURLConnectionTest {
   }
 
   @Test
-  public void testBowerWebjar() throws IOException, ParseException {
-    ZipFile zipInputStream = getDeployedJar( new URL( "mvn:org.webjars.bower/angular-ui-router.stateHelper/1.3.1" ), true );
+  public void testBowerWebjar() throws Exception {
+    ZipFile zipInputStream = getDeployedJar( new URL( "mvn:org.webjars.bower/angular-ui-router.stateHelper/1.3.1" ) );
 
     verifyManifest( zipInputStream );
     verifyBlueprint( zipInputStream, "angular-ui-router.stateHelper@1.3.1", "angular-ui-router.stateHelper/1.3.1" );
@@ -107,8 +110,8 @@ public class WebjarsURLConnectionTest {
   }
 
   @Test
-  public void testMalformedWebjarFallback() throws IOException, ParseException {
-    ZipFile zipInputStream = getDeployedJar( new URL( "mvn:org.webjars/angular-dateparser/1.0.9" ), true );
+  public void testMalformedWebjarFallback() throws Exception {
+    ZipFile zipInputStream = getDeployedJar( new URL( "mvn:org.webjars/angular-dateparser/1.0.9" ) );
 
     verifyManifest( zipInputStream );
     verifyBlueprint( zipInputStream, "angular-dateparser@1.0.9", "angular-dateparser/1.0.9" );
@@ -117,7 +120,7 @@ public class WebjarsURLConnectionTest {
 
   @Test
   public void testClosingStream() throws IOException {
-    WebjarsURLConnection connection = new WebjarsURLConnection( new URL( "mvn:org.webjars/angular-dateparser/1.0.9" ), false, false );
+    WebjarsURLConnection connection = new WebjarsURLConnection( new URL( "mvn:org.webjars/angular-dateparser/1.0.9" ), false );
     connection.connect();
 
     InputStream inputStream = connection.getInputStream();
@@ -133,76 +136,15 @@ public class WebjarsURLConnectionTest {
 
   @Test( expected = IOException.class )
   public void testInputStreamException() throws IOException {
-    WebjarsURLConnection connection = new WebjarsURLConnection( new URL( "mvn:org.webjars/angular-dateparser/1.0.9xx" ), false, false );
+    WebjarsURLConnection connection = new WebjarsURLConnection( new URL( "mvn:org.webjars/angular-dateparser/1.0.9xx" ), false );
     connection.connect();
 
     connection.getInputStream();
   }
 
   @Test
-  public void testMinifiedResources() throws IOException {
-    ZipFile zipInputStream = getDeployedJar( new URL( "mvn:org.webjars/smart-table/2.0.3-1" ), true );
-
-    verifyBlueprint( zipInputStream, "smart-table@2.0.3-1", "smart-table/2.0.3-1" );
-
-    verifyMinified( zipInputStream, "smart-table/2.0.3-1", "smart-table.js" );
-  }
-
-  @Test
-  public void testFailedMinification() throws IOException {
-    ZipFile zipInputStream = getDeployedJar( new URL( "mvn:org.webjars/smart-table/2.0.3-1-fail-minification" ), true );
-
-    verifyBlueprint( zipInputStream, "smart-table@2.0.3-1", "smart-table/2.0.3-1" );
-
-    verifyNotMinified( zipInputStream, "smart-table/2.0.3-1", "smart-table.js" );
-  }
-
-  @Test
-  public void testDisabledMinification() throws IOException {
-    ZipFile zipInputStream = getDeployedJar( new URL( "mvn:org.webjars/smart-table/2.0.3-1" ), false );
-
-    ZipEntry entry = zipInputStream.getEntry( "OSGI-INF/blueprint/blueprint.xml" );
-    assertNotNull( entry );
-
-    String bpFile = IOUtils.toString( zipInputStream.getInputStream( entry ), "UTF-8" );
-
-    Pattern distPattern = Pattern.compile( "<service id=\"resourcesDist\".*>.*" +
-        "<entry key=\"osgi\\.http\\.whiteboard\\.resource\\.pattern\" value=\"\\/smart-table@2.0.3-1\\/\\*\"\\/>.*" +
-        "<entry key=\"osgi\\.http\\.whiteboard\\.resource\\.prefix\" value=\"\\/META-INF\\/resources\\/dist-gen\"\\/>.*" +
-        "<\\/service>", Pattern.DOTALL );
-
-    Matcher matcher = distPattern.matcher( bpFile );
-
-    assertFalse( "blueprint.xml shouldn't include path for minified smart-table", matcher.find() );
-
-    distPattern = Pattern.compile( "<service id=\"resourcesSrc\".*>.*" +
-        "<entry key=\"osgi\\.http\\.whiteboard\\.resource\\.pattern\" value=\"\\/webjar-src\\/smart-table@2.0.3-1\\/\\*\"\\/>.*" +
-        "<entry key=\"osgi\\.http\\.whiteboard\\.resource\\.prefix\" value=\"\\/META-INF\\/resources\\/webjars\\/smart-table/2.0.3-1\"\\/>.*" +
-        "<\\/service>", Pattern.DOTALL );
-
-    matcher = distPattern.matcher( bpFile );
-
-    assertFalse( "blueprint.xml shouldn't include path for smart-table sources", matcher.find() );
-
-    distPattern = Pattern.compile( "<service id=\"resourcesDist\".*>.*" +
-        "<entry key=\"osgi\\.http\\.whiteboard\\.resource\\.pattern\" value=\"\\/smart-table@2.0.3-1\\/\\*\"\\/>.*" +
-        "<entry key=\"osgi\\.http\\.whiteboard\\.resource\\.prefix\" value=\"\\/META-INF\\/resources\\/webjars\\/smart-table/2.0.3-1\"\\/>.*" +
-        "<\\/service>", Pattern.DOTALL );
-
-    matcher = distPattern.matcher( bpFile );
-
-    assertTrue( "blueprint.xml should include path for original smart-table", matcher.find() );
-
-    entry = zipInputStream.getEntry( "META-INF/resources/dist-gen/smart-table.js" );
-    assertNull( entry );
-
-    entry = zipInputStream.getEntry( "META-INF/resources/webjars/smart-table/2.0.3-1/smart-table.js");
-    assertNotNull( entry );
-  }
-
-  @Test
   public void testWrappedResources() throws IOException {
-    ZipFile zipInputStream = getDeployedJar( new URL( "mvn:org.webjars/test/1.0.0" ), true );
+    ZipFile zipInputStream = getDeployedJar( new URL( "mvn:org.webjars/test/1.0.0" ) );
 
     verifyWrapped( zipInputStream, "test/1.0.0", "dist/test.js", "// CODE BEFORE", "// CODE AFTER" );
   }
@@ -215,29 +157,25 @@ public class WebjarsURLConnectionTest {
         manifest.getMainAttributes().getValue( "Bundle-SymbolicName" ).startsWith( "pentaho-webjars-" ) );
   }
 
-  private void verifyBlueprint( ZipFile zipInputStream, String expectedAlias, String expectedPath ) throws IOException {
+  private void verifyBlueprint( ZipFile zipInputStream, String expectedAlias, String expectedPath ) throws Exception {
     ZipEntry entry = zipInputStream.getEntry( "OSGI-INF/blueprint/blueprint.xml" );
     assertNotNull( entry );
 
-    String bpFile = IOUtils.toString( zipInputStream.getInputStream( entry ), "UTF-8" );
+    Document blueprint = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse( zipInputStream.getInputStream(
+      entry ) );
+    XPath xp = XPathFactory.newInstance().newXPath();
+    Node resourcesDistProps = (Node) xp.evaluate( "//service[@id='resourcesDist']/service-properties", blueprint,
+      XPathConstants.NODE );
+    assertNotNull( resourcesDistProps );
 
-    Pattern distPattern = Pattern.compile( "<service id=\"resourcesDist\".*>.*" +
-        "<entry key=\"osgi\\.http\\.whiteboard\\.resource\\.pattern\" value=\"\\/" + expectedAlias + "\\/\\*\"\\/>.*" +
-        "<entry key=\"osgi\\.http\\.whiteboard\\.resource\\.prefix\" value=\"\\/META-INF\\/resources\\/dist-gen\"\\/>.*" +
-        "<\\/service>", Pattern.DOTALL );
+    String pattern = (String) xp.evaluate( "./entry[@key='osgi.http.whiteboard.resource.pattern']/@value",
+      resourcesDistProps, XPathConstants.STRING );
+    assertEquals( "/" + expectedAlias + "/*", pattern );
 
-    Matcher matcher = distPattern.matcher( bpFile );
-
-    assertTrue( "blueprint.xml does not include path for minified " + expectedPath, matcher.find() );
-
-    distPattern = Pattern.compile( "<service id=\"resourcesSrc\".*>.*" +
-        "<entry key=\"osgi\\.http\\.whiteboard\\.resource\\.pattern\" value=\"\\/webjar-src\\/" + expectedAlias + "\\/\\*\"\\/>.*" +
-        "<entry key=\"osgi\\.http\\.whiteboard\\.resource\\.prefix\" value=\"\\/META-INF\\/resources\\/webjars\\/" + expectedPath + "\"\\/>.*" +
-        "<\\/service>", Pattern.DOTALL );
-
-    matcher = distPattern.matcher( bpFile );
-
-    assertTrue( "blueprint.xml does not include path for " + expectedPath + " " + bpFile + " sources", matcher.find() );
+    String prefix = (String) xp.evaluate( "./entry[@key='osgi.http.whiteboard.resource.prefix']/@value",
+      resourcesDistProps, XPathConstants.STRING );
+    assertEquals( "blueprint.xml does not include path for " + expectedPath, "/META-INF/resources/webjars/"
+      + expectedPath, prefix );
   }
 
   private void verifyNoBlueprint( ZipFile zipInputStream ) {
@@ -270,34 +208,6 @@ public class WebjarsURLConnectionTest {
     assertNull( entry );
   }
 
-  private void verifyMinified( ZipFile zipInputStream, String expectedPath, String file ) throws IOException {
-    ZipEntry entry = zipInputStream.getEntry( "META-INF/resources/dist-gen/" + file );
-    assertNotNull( entry );
-
-    String minFile = IOUtils.toString( zipInputStream.getInputStream( entry ), "UTF-8" );
-
-    entry = zipInputStream.getEntry( "META-INF/resources/webjars/" + expectedPath + "/" + file );
-    assertNotNull( entry );
-
-    String srcFile = IOUtils.toString( zipInputStream.getInputStream( entry ), "UTF-8" );
-
-    assertNotEquals( minFile, srcFile );
-  }
-
-  private void verifyNotMinified( ZipFile zipInputStream, String expectedPath, String file ) throws IOException {
-    ZipEntry entry = zipInputStream.getEntry( "META-INF/resources/dist-gen/" + file );
-    assertNotNull( entry );
-
-    String minFile = IOUtils.toString( zipInputStream.getInputStream( entry ), "UTF-8" );
-
-    entry = zipInputStream.getEntry( "META-INF/resources/webjars/" + expectedPath + "/" + file );
-    assertNotNull( entry );
-
-    String srcFile = IOUtils.toString( zipInputStream.getInputStream( entry ), "UTF-8" );
-
-    assertEquals( minFile, srcFile );
-  }
-
   private void verifyWrapped( ZipFile zipInputStream, String expectedPath, String file, String pre, String pos ) throws IOException {
     ZipEntry entry = zipInputStream.getEntry( "META-INF/resources/webjars/" + expectedPath + "/" + file );
     assertNotNull( entry );
@@ -308,8 +218,8 @@ public class WebjarsURLConnectionTest {
     assertTrue( srcFile.endsWith( "\n" + pos + "\n" ) );
   }
 
-  private ZipFile getDeployedJar( URL webjar_url, boolean minificationEnabled ) throws IOException {
-    WebjarsURLConnection connection = new WebjarsURLConnection( webjar_url, minificationEnabled, false );
+  private ZipFile getDeployedJar( URL webjar_url ) throws IOException {
+    WebjarsURLConnection connection = new WebjarsURLConnection( webjar_url, false );
     connection.connect();
 
     InputStream inputStream = connection.getInputStream();

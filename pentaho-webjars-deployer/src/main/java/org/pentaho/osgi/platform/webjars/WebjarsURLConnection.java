@@ -12,19 +12,9 @@
 
 package org.pentaho.osgi.platform.webjars;
 
-import com.google.javascript.jscomp.CheckLevel;
-import com.google.javascript.jscomp.CompilationLevel;
-import com.google.javascript.jscomp.Compiler;
-import com.google.javascript.jscomp.CompilerOptions;
-import com.google.javascript.jscomp.DiagnosticGroups;
-import com.google.javascript.jscomp.Result;
-import com.google.javascript.jscomp.SourceFile;
-import com.google.javascript.jscomp.SourceMap;
-import com.google.javascript.jscomp.WarningLevel;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.io.filefilter.TrueFileFilter;
 import org.osgi.framework.Constants;
 import org.pentaho.osgi.platform.webjars.utils.RequireJsGenerator;
 import org.slf4j.Logger;
@@ -45,9 +35,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -57,7 +45,6 @@ import java.util.jar.Attributes;
 import java.util.jar.JarInputStream;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
-import java.util.logging.Level;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
@@ -78,17 +65,15 @@ public class WebjarsURLConnection extends URLConnection {
 
   private final Logger logger = LoggerFactory.getLogger( getClass() );
 
-  private final boolean minificationEnabled;
   private final boolean automaticNonAmdShimConfigEnabled;
 
   public WebjarsURLConnection( URL url ) {
-    this( url, false, false );
+    this( url, false );
   }
 
-  public WebjarsURLConnection( URL url, boolean minificationEnabled, boolean automaticNonAmdShimConfigEnabled ) {
+  public WebjarsURLConnection( URL url, boolean automaticNonAmdShimConfigEnabled ) {
     super( url );
 
-    this.minificationEnabled = minificationEnabled;
     this.automaticNonAmdShimConfigEnabled = automaticNonAmdShimConfigEnabled;
   }
 
@@ -107,7 +92,7 @@ public class WebjarsURLConnection extends URLConnection {
       urlConnection.connect();
       final InputStream originalInputStream = urlConnection.getInputStream();
 
-      transform_thread = EXECUTOR.submit( new WebjarsTransformer( url, originalInputStream, pipedOutputStream, this.minificationEnabled, this.automaticNonAmdShimConfigEnabled ) );
+      transform_thread = EXECUTOR.submit( new WebjarsTransformer( url, originalInputStream, pipedOutputStream, this.automaticNonAmdShimConfigEnabled ) );
 
       return pipedInputStream;
     } catch ( Exception e ) {
@@ -143,8 +128,6 @@ public class WebjarsURLConnection extends URLConnection {
         Pattern.compile( "META-INF/resources/webjars/([^/]+)/([^/]+)/.*" );
 
     private static final int BYTES_BUFFER_SIZE = 4096;
-    private static final String WEBJAR_SRC_ALIAS_PREFIX = "webjar-src";
-    private static final String MINIFIED_RESOURCES_OUTPUT_PATH = "META-INF/resources/dist-gen";
 
     private final Logger logger = LoggerFactory.getLogger( getClass() );
 
@@ -153,7 +136,6 @@ public class WebjarsURLConnection extends URLConnection {
     private final InputStream inputStream;
     private final OutputStream outputStream;
 
-    private final boolean minificationEnabled;
     private final boolean automaticNonAmdShimConfigEnabled;
 
     //region transformation state
@@ -175,10 +157,6 @@ public class WebjarsURLConnection extends URLConnection {
     private ArrayList<String> exportedGlobals;
     private boolean isAmdPackage;
 
-    /* source map location cache */
-    private String lastPrefix;
-    private SourceMap.LocationMapping lastLocationMapping;
-
     /* other */
     private String webjarUrl;
 
@@ -187,7 +165,6 @@ public class WebjarsURLConnection extends URLConnection {
     private String packageVersionFromResourcesPath;
 
     private String relativeResourcesPath;
-    private Path absoluteResourcesPath;
 
     private Path absoluteTempPath;
 
@@ -195,13 +172,12 @@ public class WebjarsURLConnection extends URLConnection {
 
     //endregion
 
-    WebjarsTransformer( URL url, InputStream inputStream, PipedOutputStream outputStream, boolean minificationEnabled, boolean automaticNonAmdShimConfigEnabled ) {
+    WebjarsTransformer( URL url, InputStream inputStream, PipedOutputStream outputStream, boolean automaticNonAmdShimConfigEnabled ) {
       this.url = url;
 
       this.inputStream = inputStream;
       this.outputStream = outputStream;
 
-      this.minificationEnabled = minificationEnabled;
       this.automaticNonAmdShimConfigEnabled = automaticNonAmdShimConfigEnabled;
     }
 
@@ -232,16 +208,7 @@ public class WebjarsURLConnection extends URLConnection {
 
         Map<String, Object> overrides = RequireJsGenerator.getPackageOverrides( artifactInfo.getGroup(), artifactInfo.getArtifactId(), artifactInfo.getVersion() );
 
-        Map<String, Map<String, String>> wrap;
-        if ( overrides != null ) {
-          // if there is an explicit override file, don't try to be smart and just assume it's AMD ready
-          this.isAmdPackage = true;
-
-          wrap = (Map<String, Map<String, String>>) overrides.getOrDefault( "wrap", Collections.<String, Map<String, String>>emptyMap() );
-        } else {
-          // empty map, for simplicity
-          wrap = Collections.emptyMap();
-        }
+        Map<String, Map<String, String>> wrap = getWrap( overrides );
 
         boolean packageHasContent = false;
 
@@ -338,9 +305,6 @@ public class WebjarsURLConnection extends URLConnection {
           }
 
           if ( requireConfig != null ) {
-            // it's only worthy to do the minification if we have a package with contents and a valid config;
-            // doTheMinification() also checks if minificationEnabled is true.
-            boolean hasMinifiedResources = doTheMinification();
 
             try {
               final String exports = !this.isAmdPackage && !exportedGlobals.isEmpty() ? exportedGlobals.get( 0 ) : null;
@@ -352,11 +316,7 @@ public class WebjarsURLConnection extends URLConnection {
 
               try {
                 String blueprintTemplate;
-                if ( hasMinifiedResources ) {
-                  blueprintTemplate = generateBlueprint( relativeResourcesPath, moduleInfo );
-                } else {
-                  blueprintTemplate = generateBlueprintWithoutMinifiedResources( relativeResourcesPath, moduleInfo );
-                }
+                blueprintTemplate = generateBlueprint( relativeResourcesPath, moduleInfo );
 
                 addContentToZip( jarOutputStream, "OSGI-INF/blueprint/blueprint.xml", blueprintTemplate );
               } catch ( Exception e ) {
@@ -398,6 +358,16 @@ public class WebjarsURLConnection extends URLConnection {
       }
     }
 
+    @SuppressWarnings( "unchecked" )
+    private Map<String, Map<String, String>> getWrap( Map<String, Object> overrides ) {
+      Map<String, Map<String, String>> wrap = null;
+      if ( overrides != null ) {
+        this.isAmdPackage = true;
+        wrap = (Map<String, Map<String, String>>) overrides.get( "wrap" );
+      }
+      return wrap == null ? Collections.emptyMap() : wrap;
+    }
+
     private void writeToOutput( BufferedOutputStream temporarySourceFileOutputStream, byte[] bytes, int read ) throws IOException {
       if ( this.temporarySourceFileIsNeeded ) {
         // also output to the temp source file
@@ -411,81 +381,6 @@ public class WebjarsURLConnection extends URLConnection {
       this.writeToOutput( temporarySourceFileOutputStream, bytes, bytes.length );
     }
 
-    /**
-     * If minificationEnabled is true and there are any source files, tries to minify the package's source files
-     * using the Google's Closure compiler.
-     *
-     * @return if there are any minified resources to be deployed
-     */
-    private boolean doTheMinification() {
-      if ( !this.minificationEnabled ) {
-        return false;
-      }
-
-      if ( absoluteResourcesPath == null ) {
-        // nothing to do if there aren't any source files
-        return false;
-      }
-
-      Collection<File> scrFiles = FileUtils.listFiles(
-          absoluteResourcesPath.toFile(),
-          TrueFileFilter.INSTANCE,
-          TrueFileFilter.INSTANCE
-      );
-
-      if ( scrFiles.isEmpty() ) {
-        // nothing to do if there aren't any source files
-        return false;
-      }
-
-      try {
-        CompilerOptions options = initCompilationResources();
-
-        for ( File srcFile : scrFiles ) {
-          final String name = srcFile.getName();
-
-          if ( name.endsWith( WEBJARS_REQUIREJS_NAME ) ) {
-            continue;
-          }
-
-          final String relSrcFilePath = FilenameUtils.separatorsToUnix( absoluteResourcesPath.relativize( srcFile.toPath() ).toString() );
-          final String relOutFilePath = MINIFIED_RESOURCES_OUTPUT_PATH + "/" + relSrcFilePath;
-
-          if ( isJsFile( name ) ) {
-            // Check if there is a .map with the same name
-            // if so, assume it is already minified and just copy both files
-            File mapFile = new File( name + ".map", srcFile.getParent() );
-            if ( mapFile.exists() ) {
-              copyFileToZip( jarOutputStream, relOutFilePath, srcFile );
-              copyFileToZip( jarOutputStream, relOutFilePath + ".map", mapFile );
-              continue;
-            }
-
-            options.setSourceMapLocationMappings( getLocationMappings( srcFile.toPath().getParent(), absoluteResourcesPath, packageNameFromResourcesPath, packageVersionFromResourcesPath ) );
-
-            try {
-              CompiledScript compiledScript = new CompiledScript( srcFile, relSrcFilePath, options ).invoke();
-
-              addContentToZip( jarOutputStream, relOutFilePath, compiledScript.getCode() );
-              addContentToZip( jarOutputStream, relOutFilePath + ".map", compiledScript.getSourcemap() );
-            } catch ( Exception failedCompilationException ) {
-              logger.warn( webjarUrl + ": error minifing " + relSrcFilePath + ", copied original version" );
-
-              copyFileToZip( jarOutputStream, relOutFilePath, srcFile );
-            }
-          } else if ( !isMapFile( name ) ) {
-            // just copy all resources (except .map files)
-            copyFileToZip( jarOutputStream, relOutFilePath, srcFile );
-          }
-        }
-
-        return true;
-      } catch ( Exception e ) {
-        logger.warn( webjarUrl + ": exception minifing, serving original files", e );
-
-        return false;
-      }
-    }
 
     /**
      * @param name the potential package descriptor file name
@@ -536,9 +431,8 @@ public class WebjarsURLConnection extends URLConnection {
       this.packageNameFromResourcesPath = null;
       this.packageVersionFromResourcesPath = null;
       this.relativeResourcesPath = null;
-      this.absoluteResourcesPath = null;
 
-      this.temporarySourceFileIsNeeded = this.minificationEnabled || this.automaticNonAmdShimConfigEnabled;
+      this.temporarySourceFileIsNeeded = this.automaticNonAmdShimConfigEnabled;
 
       if ( this.temporarySourceFileIsNeeded ) {
         this.absoluteTempPath = Files.createTempDirectory( "WebjarsURLConnection" );
@@ -658,10 +552,6 @@ public class WebjarsURLConnection extends URLConnection {
 
           relativeResourcesPath = "META-INF/resources/webjars/" + packageNameFromResourcesPath + "/" + packageVersionFromResourcesPath;
 
-          if ( this.temporarySourceFileIsNeeded ) {
-            absoluteResourcesPath = absoluteTempPath.resolve( FilenameUtils.separatorsToSystem( relativeResourcesPath ) );
-          }
-
           isPackageFile = true;
         }
       } else {
@@ -673,23 +563,8 @@ public class WebjarsURLConnection extends URLConnection {
 
     private String generateBlueprint( String relSrcPath, RequireJsGenerator.ModuleInfo moduleInfo ) throws IOException {
       String blueprintTemplate;
-      blueprintTemplate =
-          IOUtils.toString( getClass().getResourceAsStream(
-              "/org/pentaho/osgi/platform/webjars/blueprint-minified-template.xml" ) );
-
-      blueprintTemplate = blueprintTemplate.replace( "{src_path}", relSrcPath );
-      blueprintTemplate = blueprintTemplate
-          .replace( "{src_alias}", WEBJAR_SRC_ALIAS_PREFIX + "/" + moduleInfo.getVersionedPath() );
-
-      blueprintTemplate = blueprintTemplate.replace( "{dist_path}", MINIFIED_RESOURCES_OUTPUT_PATH );
-      blueprintTemplate = blueprintTemplate.replace( "{dist_alias}", moduleInfo.getVersionedPath() );
-      return blueprintTemplate;
-    }
-
-    private String generateBlueprintWithoutMinifiedResources( String relSrcPath, RequireJsGenerator.ModuleInfo moduleInfo ) throws IOException {
-      String blueprintTemplate;
       blueprintTemplate = IOUtils.toString( getClass().getResourceAsStream(
-          "/org/pentaho/osgi/platform/webjars/blueprint-template.xml" ) );
+          "/org/pentaho/osgi/platform/webjars/blueprint-template.xml" ), StandardCharsets.UTF_8 );
 
       blueprintTemplate = blueprintTemplate.replace( "{dist_path}", relSrcPath );
       blueprintTemplate = blueprintTemplate.replace( "{dist_alias}", moduleInfo.getVersionedPath() );
@@ -700,36 +575,6 @@ public class WebjarsURLConnection extends URLConnection {
       return name.endsWith( ".js" );
     }
 
-    private boolean isMapFile( String name ) {
-      return name.endsWith( ".map" );
-    }
-
-    private void copyFileToZip( JarOutputStream zip, String entry, File file ) throws IOException {
-      int bytesIn;
-      byte[] readBuffer = new byte[ BYTES_BUFFER_SIZE ];
-
-      FileInputStream inputStream = null;
-      try {
-        inputStream = new FileInputStream( file );
-
-        ZipEntry zipEntry = new ZipEntry( entry );
-        zip.putNextEntry( zipEntry );
-
-        bytesIn = inputStream.read( readBuffer );
-        while ( bytesIn != -1 ) {
-          zip.write( readBuffer, 0, bytesIn );
-          bytesIn = inputStream.read( readBuffer );
-        }
-      } finally {
-        try {
-          if ( inputStream != null ) {
-            inputStream.close();
-          }
-        } catch ( IOException ignored ) {
-          // ignored
-        }
-      }
-    }
 
     private void addContentToZip( JarOutputStream zip, String entry, String content ) throws IOException {
       ZipEntry zipEntry = new ZipEntry( entry );
@@ -738,102 +583,5 @@ public class WebjarsURLConnection extends URLConnection {
       zip.closeEntry();
     }
 
-    private CompilerOptions initCompilationResources() {
-      CompilerOptions options = new CompilerOptions();
-      CompilationLevel.SIMPLE_OPTIMIZATIONS.setOptionsForCompilationLevel( options );
-
-      options.setSourceMapOutputPath( "." );
-
-      WarningLevel.QUIET.setOptionsForWarningLevel( options );
-      options.setWarningLevel( DiagnosticGroups.LINT_CHECKS, CheckLevel.OFF );
-
-      options.setLanguageIn( CompilerOptions.LanguageMode.ECMASCRIPT5 );
-
-      // make sure these are clear
-      this.lastPrefix = null;
-      this.lastLocationMapping = null;
-
-      return options;
-    }
-
-    private List<SourceMap.LocationMapping> getLocationMappings( Path srcFileFolder, Path absSrcPath, String packageName, String packageVersion ) {
-      // reuses the lastLocationMapping if the script's folder is the same than the previous processed script
-
-      final String prefix = FilenameUtils.separatorsToUnix( srcFileFolder.toString() );
-      if ( lastPrefix == null || !lastPrefix.equals( prefix ) ) {
-        String relPath = FilenameUtils.separatorsToUnix( absSrcPath.relativize( srcFileFolder ).toString() );
-        if ( !relPath.isEmpty() ) {
-          relPath = "/" + relPath;
-        }
-
-        String reverseRelPath = FilenameUtils.separatorsToUnix( srcFileFolder.relativize( absSrcPath ).toString() );
-        if ( !reverseRelPath.isEmpty() ) {
-          reverseRelPath += "/";
-        }
-
-        final String replacement =
-            "../../" + reverseRelPath + WEBJAR_SRC_ALIAS_PREFIX + "/"
-                + packageName + "@"
-                + packageVersion + relPath;
-
-        lastLocationMapping = new SourceMap.LocationMapping( prefix, replacement );
-
-        lastPrefix = prefix;
-      }
-
-      List<SourceMap.LocationMapping> lms = new ArrayList<>();
-      lms.add( lastLocationMapping );
-      return lms;
-    }
-
-    private static class CompiledScript {
-      private static final SourceFile EMPTY_EXTERNS_SOURCE_FILE = SourceFile.fromCode( "externs.js", "" );
-
-      private final File srcFile;
-      private final String relSrcFilePath;
-      private final CompilerOptions options;
-
-      private StringBuilder code;
-      private StringBuilder sourcemap;
-
-      CompiledScript( File srcFile, String relSrcFilePath, CompilerOptions options ) {
-        this.srcFile = srcFile;
-        this.relSrcFilePath = relSrcFilePath;
-        this.options = options;
-      }
-
-      String getCode() {
-        return code.toString();
-      }
-
-      String getSourcemap() {
-        return sourcemap.toString();
-      }
-
-      CompiledScript invoke() throws Exception {
-        Compiler compiler = new Compiler();
-
-        Compiler.setLoggingLevel( Level.OFF );
-
-        SourceFile input = SourceFile.fromFile( srcFile );
-        input.setOriginalPath( relSrcFilePath );
-
-        Result res = compiler.compile( EMPTY_EXTERNS_SOURCE_FILE, input, options );
-        if ( res.success ) {
-          String name = srcFile.getName();
-
-          code = new StringBuilder( compiler.toSource() );
-          code.append( "\n//# sourceMappingURL=" ).append( name ).append( ".map" );
-
-          sourcemap = new StringBuilder();
-          SourceMap sm = compiler.getSourceMap();
-          sm.appendTo( sourcemap, name );
-
-          return this;
-        }
-
-        throw new Exception( "Failed script compilation" );
-      }
-    }
   }
 }

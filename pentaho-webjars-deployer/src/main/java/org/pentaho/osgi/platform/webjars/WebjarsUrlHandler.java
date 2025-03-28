@@ -22,15 +22,13 @@ import java.net.URLConnection;
  * Created by nbaker on 9/6/14.
  */
 public class WebjarsUrlHandler extends AbstractURLStreamHandlerService {
-  private boolean minificationEnabled;
   private final boolean automaticNonAmdShimConfigEnabled;
 
-  public WebjarsUrlHandler( boolean minificationEnabled, boolean automaticNonAmdShimConfigEnabled ) {
-    this.minificationEnabled = minificationEnabled;
+  public WebjarsUrlHandler( boolean automaticNonAmdShimConfigEnabled ) {
     this.automaticNonAmdShimConfigEnabled = automaticNonAmdShimConfigEnabled;
   }
 
   @Override public URLConnection openConnection( URL url ) throws IOException {
-    return new WebjarsURLConnection( new URL( url.getPath() ), this.minificationEnabled, this.automaticNonAmdShimConfigEnabled );
+    return new WebjarsURLConnection( new URL( url.getPath() ), this.automaticNonAmdShimConfigEnabled );
   }
 }
