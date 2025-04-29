@@ -170,12 +170,10 @@
   <build>
     <plugins>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-install-plugin</artifactId>
-        <version>${maven-install-plugin.version}</version>
-        <configuration>
-          <allowIncompleteProjects>true</allowIncompleteProjects>
-        </configuration>
+        <groupId>org.apache.karaf.tooling</groupId>
+        <artifactId>karaf-maven-plugin</artifactId>
+        <version>${karaf-maven-plugin.version}</version>
+        <extensions>true</extensions>
       </plugin>
     </plugins>
   </build>
