@@ -5,20 +5,20 @@
   <parent>
     <groupId>pentaho</groupId>
     <artifactId>pentaho-osgi-bundles</artifactId>
-    <version>10.3.0.0-SNAPSHOT</version>
+    <version>10.3.0.0-351</version>
   </parent>
   <artifactId>pentaho-pdi-platform</artifactId>
-  <version>10.3.0.0-SNAPSHOT</version>
+  <version>10.3.0.0-351</version>
   <packaging>bundle</packaging>
   <name>Pentaho Community Edition Project: ${project.artifactId}</name>
   <description>a Pentaho open source project</description>
   <url>http://www.pentaho.com</url>
   <properties>
-    <mondrian.version>10.3.0.0-SNAPSHOT</mondrian.version>
-    <pdi.version>10.3.0.0-SNAPSHOT</pdi.version>
+    <mondrian.version>10.3.0.0-351</mondrian.version>
+    <pdi.version>10.3.0.0-351</pdi.version>
     <javax.servlet-api.version>3.1.0</javax.servlet-api.version>
-    <pentaho-metadata.version>10.3.0.0-SNAPSHOT</pentaho-metadata.version>
-    <platform.version>10.3.0.0-SNAPSHOT</platform.version>
+    <pentaho-metadata.version>10.3.0.0-351</pentaho-metadata.version>
+    <platform.version>10.3.0.0-351</platform.version>
   </properties>
   <dependencies>
     <dependency>
