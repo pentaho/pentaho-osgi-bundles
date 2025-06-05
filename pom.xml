@@ -59,9 +59,7 @@
     <spring-kafka.version>1.3.10.RELEASE</spring-kafka.version>
     <protoc.version>3.11.4</protoc.version>
     <platform.version>10.2.0.0-SNAPSHOT</platform.version>
-    <spring53.bundle.version>5.3.34_1</spring53.bundle.version>
     <spring43.bundle.version>4.3.23.RELEASE_1</spring43.bundle.version>
-    <spring32.bundle.version>3.2.18.RELEASE_1</spring32.bundle.version>
     <aspectj.bundle.version>1.7.4_1</aspectj.bundle.version>
 
     <!-- All 3 of these properties are required -->
@@ -134,7 +132,6 @@
         <module>pentaho-capability-manager</module>
         <module>pentaho-cache-manager</module>
         <module>pentaho-authentication-mapper</module>
-        <module>pentaho-spring-dm-extender</module>
         <module>pentaho-object-tunnel</module>
         <module>pentaho-bundle-resource-manager</module>
         <module>pentaho-proc-governor</module>
