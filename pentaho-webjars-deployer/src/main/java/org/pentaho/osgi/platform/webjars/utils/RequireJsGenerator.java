@@ -129,8 +129,8 @@ public class RequireJsGenerator {
 
       DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
       documentBuilderFactory.setFeature( XMLConstants.FEATURE_SECURE_PROCESSING, true );
-      documentBuilderFactory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
-      documentBuilderFactory.setAttribute(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
+      documentBuilderFactory.setAttribute( XMLConstants.ACCESS_EXTERNAL_DTD, "" );
+      documentBuilderFactory.setAttribute( XMLConstants.ACCESS_EXTERNAL_SCHEMA, "" );
       documentBuilderFactory.setFeature( "http://apache.org/xml/features/disallow-doctype-decl", true );
       Document pom = documentBuilderFactory.newDocumentBuilder().parse( new ByteArrayInputStream( bytes ) );
       return new RequireJsGenerator( pom );
@@ -168,8 +168,8 @@ public class RequireJsGenerator {
     try {
       byte[] bytes = IOUtils.toByteArray( inputStream );
       DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
-      documentBuilderFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-      documentBuilderFactory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+      documentBuilderFactory.setFeature( XMLConstants.FEATURE_SECURE_PROCESSING, true );
+      documentBuilderFactory.setAttribute( XMLConstants.ACCESS_EXTERNAL_DTD, "" );
       Document pom = documentBuilderFactory.newDocumentBuilder().parse( new ByteArrayInputStream( bytes ) );
 
       XPath xPath = XPathFactory.newInstance().newXPath();

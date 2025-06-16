@@ -99,9 +99,9 @@ public class ResourceBundleMessageBodyWriter implements MessageBodyWriter<Resour
         Source input = new DOMSource( document );
         try {
           TransformerFactory tf = TransformerFactory.newInstance();
-          tf.setFeature( XMLConstants.FEATURE_SECURE_PROCESSING, true);
-          tf.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
-          tf.setAttribute(XMLConstants.ACCESS_EXTERNAL_STYLESHEET, "");
+          tf.setFeature( XMLConstants.FEATURE_SECURE_PROCESSING, true );
+          tf.setAttribute( XMLConstants.ACCESS_EXTERNAL_DTD, "" );
+          tf.setAttribute( XMLConstants.ACCESS_EXTERNAL_STYLESHEET, "" );
           Transformer transformer = tf.newTransformer();
           transformer.setOutputProperty( OutputKeys.INDENT, "yes" );
           transformer.setOutputProperty( "{http://xml.apache.org/xslt}indent-amount", "2" );
