@@ -20,7 +20,6 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
@@ -114,11 +113,7 @@ public class PluginMetadataImpl implements PluginMetadata {
     blueprint.getDocumentElement().appendChild( service );
     Source input = new DOMSource( blueprint );
     try {
-      TransformerFactory tf = TransformerFactory.newInstance();
-      tf.setFeature( XMLConstants.FEATURE_SECURE_PROCESSING, true );
-      tf.setAttribute( XMLConstants.ACCESS_EXTERNAL_DTD, "" );
-      tf.setAttribute( XMLConstants.ACCESS_EXTERNAL_STYLESHEET, "" );
-      Transformer transformer = tf.newTransformer();
+      Transformer transformer = TransformerFactory.newInstance().newTransformer();
       transformer.setOutputProperty( OutputKeys.INDENT, "yes" );
       transformer.setOutputProperty( "{http://xml.apache.org/xslt}indent-amount", "2" );
       transformer.transform( input, output );
