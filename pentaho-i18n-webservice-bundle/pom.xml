@@ -15,8 +15,6 @@
   <url>http://www.pentaho.com</url>
   <properties>
     <jaxws-ri.version>2.3.3</jaxws-ri.version>
-    <jakarta.xml.ws-api.version>2.3.3</jakarta.xml.ws-api.version>
-    <jakarta.xml.bind-api.version>2.3.3</jakarta.xml.bind-api.version>
   </properties>
   <dependencies>
     <dependency>
@@ -36,7 +34,7 @@
     <dependency>
       <groupId>jakarta.xml.ws</groupId>
       <artifactId>jakarta.xml.ws-api</artifactId>
-      <version>${jakarta.xml.ws-api.version}</version>
+      <version>${jakarta.xml.ws-osgi.version}</version>
     </dependency>
     <dependency>
       <groupId>com.sun.xml.ws</groupId>
@@ -62,7 +60,7 @@
       <dependency>
         <groupId>jakarta.xml.bind</groupId>
         <artifactId>jakarta.xml.bind-api</artifactId>
-        <version>${jakarta.xml.bind-api.version}</version>
+        <version>${jakarta.xml.bind-osgi.version}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
