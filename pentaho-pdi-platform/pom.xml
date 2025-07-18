@@ -16,7 +16,6 @@
   <properties>
     <mondrian.version>11.0.0.0-SNAPSHOT</mondrian.version>
     <pdi.version>11.0.0.0-SNAPSHOT</pdi.version>
-    <javax.servlet-api.version>3.1.0</javax.servlet-api.version>
     <pentaho-metadata.version>11.0.0.0-SNAPSHOT</pentaho-metadata.version>
     <platform.version>11.0.0.0-SNAPSHOT</platform.version>
   </properties>
@@ -24,7 +23,7 @@
     <dependency>
       <groupId>jakarta.ws.rs</groupId>
       <artifactId>jakarta.ws.rs-api</artifactId>
-      <version>2.1.6</version>
+      <version>${jakarta.ws.rs-api.version}</version>
     </dependency>
     <dependency>
       <groupId>org.osgi</groupId>
@@ -87,18 +86,14 @@
       </exclusions>
     </dependency>
     <dependency>
-      <groupId>org.ops4j.pax.web</groupId>
-      <artifactId>pax-web-spi</artifactId>
-    </dependency>
-    <dependency>
       <groupId>org.ops4j.pax.swissbox</groupId>
       <artifactId>pax-swissbox-core</artifactId>
       <version>1.8.2</version>
     </dependency>
     <dependency>
-      <groupId>javax.servlet</groupId>
-      <artifactId>javax.servlet-api</artifactId>
-      <version>${javax.servlet-api.version}</version>
+      <groupId>jakarta.servlet</groupId>
+      <artifactId>jakarta.servlet-api</artifactId>
+      <version>${jakarta.servlet.version}</version>
     </dependency>
     <dependency>
       <groupId>pentaho</groupId>
@@ -138,9 +133,9 @@
       <version>5.3.34</version>
     </dependency>
     <dependency>
-      <groupId>com.google.gwt</groupId>
-      <artifactId>gwt-servlet</artifactId>
-      <version>2.10.0</version>
+      <groupId>org.gwtproject</groupId>
+      <artifactId>gwt-servlet-jakarta</artifactId>
+      <version>${gwt-servlet-jakarta.version}</version>
     </dependency>
     <dependency>
       <groupId>pentaho-kettle</groupId>

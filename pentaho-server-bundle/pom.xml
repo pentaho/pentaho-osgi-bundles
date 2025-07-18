@@ -34,9 +34,9 @@
       <artifactId>osgi.core</artifactId>
     </dependency>
     <dependency>
-      <groupId>javax.servlet</groupId>
-      <artifactId>javax.servlet-api</artifactId>
-      <version>${javax.servlet-api.version}</version>
+      <groupId>jakarta.servlet</groupId>
+      <artifactId>jakarta.servlet-api</artifactId>
+      <version>${jakarta.servlet.version}</version>
     </dependency>
     <dependency>
       <groupId>org.mockito</groupId>
@@ -72,7 +72,7 @@
             <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
             <Bundle-Version>${project.version}</Bundle-Version>
             <Bundle-Activator>org.pentaho.platform.server.osgi.PentahoOSGIActivator</Bundle-Activator>
-            <Import-Package>javax.servlet;version="[2.0, 3.1]";resolution:=optional,*</Import-Package>
+            <Import-Package>jakarta.servlet;version="[5.0, 7.0)";resolution:=optional,*</Import-Package>
           </instructions>
         </configuration>
       </plugin>
