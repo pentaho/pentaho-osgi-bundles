@@ -52,9 +52,6 @@
     <module>impl/RI</module>
     <module>impl/ehcache</module>
   </modules>
-  <properties>
-    <cache-api.version>1.1.1</cache-api.version>
-  </properties>
   <dependencies>
     <dependency>
       <groupId>com.google.guava</groupId>
