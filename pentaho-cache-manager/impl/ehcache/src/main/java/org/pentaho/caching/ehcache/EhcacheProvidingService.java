@@ -29,8 +29,7 @@ public class EhcacheProvidingService extends AbstractCacheProvidingService {
 
 
   @Override public javax.cache.CacheManager createCacheManager( PentahoCacheSystemConfiguration systemConfiguration ) {
-    CachingProvider cachingProvider= Caching.getCachingProvider( this.getClass().getClassLoader() );
-    return cachingProvider.getCacheManager();
+    return Caching.getCachingProvider( this.getClass().getClassLoader() ).getCacheManager();
   }
 
 }
