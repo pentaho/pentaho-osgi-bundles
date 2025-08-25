@@ -5,18 +5,15 @@
   <parent>
     <groupId>pentaho</groupId>
     <artifactId>pentaho-cache-manager-parent</artifactId>
-    <version>10.3.0.0-SNAPSHOT</version>
+    <version>11.0.0.0-SNAPSHOT</version>
     <relativePath>../../pom.xml</relativePath>
   </parent>
   <artifactId>pentaho-ehcache-provider</artifactId>
-  <version>10.3.0.0-SNAPSHOT</version>
+  <version>11.0.0.0-SNAPSHOT</version>
   <packaging>bundle</packaging>
   <name>Pentaho Cache Manager: ehcache Cache Provider</name>
   <description>a Pentaho open source project</description>
   <url>http://www.pentaho.com</url>
-  <properties>
-    <net.sf.ehcache-core.version>2.8.3</net.sf.ehcache-core.version>
-  </properties>
   <dependencies>
     <dependency>
       <groupId>pentaho</groupId>
@@ -24,14 +21,14 @@
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>net.sf.ehcache.internal</groupId>
-      <artifactId>ehcache-core</artifactId>
-      <version>2.8.3</version>
+      <groupId>org.ehcache</groupId>
+      <artifactId>ehcache</artifactId>
+      <version>${ehcache-osgi.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.ehcache</groupId>
-      <artifactId>jcache</artifactId>
-      <version>1.0.0</version>
+      <groupId>javax.cache</groupId>
+      <artifactId>cache-api</artifactId>
+      <version>${cache-api.version}</version>
     </dependency>
     <dependency>
       <groupId>org.osgi</groupId>
@@ -53,12 +50,10 @@
         <configuration>
           <instructions>
             <Bundle-SymbolicName>${project.artifactId}</Bundle-SymbolicName>
-            <Bundle-Activator>org.pentaho.caching.ehcache.Activator</Bundle-Activator>
+            <Embed-Dependency>ehcache</Embed-Dependency>
+            <Embed-Transitive>true</Embed-Transitive>
             <Import-Package>
               org.osgi.framework;version="[1,3)",
-              org.terracotta.statistics,
-              org.terracotta.context,
-              net.sf.ehcache.*;version="${net.sf.ehcache-core.version}",
               *
             </Import-Package>
           </instructions>

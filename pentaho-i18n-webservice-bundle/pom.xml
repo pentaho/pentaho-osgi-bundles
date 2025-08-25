@@ -5,10 +5,10 @@
   <parent>
     <groupId>pentaho</groupId>
     <artifactId>pentaho-osgi-bundles</artifactId>
-    <version>10.3.0.0-SNAPSHOT</version>
+    <version>11.0.0.0-SNAPSHOT</version>
   </parent>
   <artifactId>pentaho-i18n-webservice-bundle</artifactId>
-  <version>10.3.0.0-SNAPSHOT</version>
+  <version>11.0.0.0-SNAPSHOT</version>
   <packaging>bundle</packaging>
   <name>Pentaho Community Edition Project: ${project.artifactId}</name>
   <description>a Pentaho open source project</description>
@@ -34,6 +34,7 @@
     <dependency>
       <groupId>jakarta.xml.ws</groupId>
       <artifactId>jakarta.xml.ws-api</artifactId>
+      <version>${jakarta.xml.ws-osgi.version}</version>
     </dependency>
     <dependency>
       <groupId>com.sun.xml.ws</groupId>
@@ -54,6 +55,15 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>jakarta.xml.bind</groupId>
+        <artifactId>jakarta.xml.bind-api</artifactId>
+        <version>${jakarta.xml.bind-osgi.version}</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
   <build>
     <resources>
       <resource>

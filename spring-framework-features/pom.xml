@@ -5,7 +5,7 @@
   <parent>
     <groupId>pentaho</groupId>
     <artifactId>pentaho-osgi-bundles</artifactId>
-    <version>10.3.0.0-SNAPSHOT</version>
+    <version>11.0.0.0-SNAPSHOT</version>
   </parent>
 
   <groupId>org.hitachivantara.spring</groupId>
@@ -13,9 +13,7 @@
   <packaging>pom</packaging>
 
   <modules>
-    <module>spring53</module>
     <module>spring43</module>
-    <module>spring32</module>
   </modules>
 
 </project>
