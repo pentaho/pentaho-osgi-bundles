@@ -170,6 +170,7 @@ public class RequireJsGenerator {
       DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
       documentBuilderFactory.setFeature( XMLConstants.FEATURE_SECURE_PROCESSING, true );
       documentBuilderFactory.setAttribute( XMLConstants.ACCESS_EXTERNAL_DTD, "" );
+      documentBuilderFactory.setAttribute( XMLConstants.ACCESS_EXTERNAL_SCHEMA, "" );
       Document pom = documentBuilderFactory.newDocumentBuilder().parse( new ByteArrayInputStream( bytes ) );
 
       XPath xPath = XPathFactory.newInstance().newXPath();
