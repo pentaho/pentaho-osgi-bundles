@@ -129,6 +129,8 @@ public class RequireJsGenerator {
 
       DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
       documentBuilderFactory.setFeature( XMLConstants.FEATURE_SECURE_PROCESSING, true );
+      documentBuilderFactory.setAttribute( XMLConstants.ACCESS_EXTERNAL_DTD, "" );
+      documentBuilderFactory.setAttribute( XMLConstants.ACCESS_EXTERNAL_SCHEMA, "" );
       documentBuilderFactory.setFeature( "http://apache.org/xml/features/disallow-doctype-decl", true );
       Document pom = documentBuilderFactory.newDocumentBuilder().parse( new ByteArrayInputStream( bytes ) );
       return new RequireJsGenerator( pom );
@@ -165,7 +167,11 @@ public class RequireJsGenerator {
   public static String getWebjarVersionFromPom( InputStream inputStream ) throws Exception {
     try {
       byte[] bytes = IOUtils.toByteArray( inputStream );
-      Document pom = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse( new ByteArrayInputStream( bytes ) );
+      DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+      documentBuilderFactory.setFeature( XMLConstants.FEATURE_SECURE_PROCESSING, true );
+      documentBuilderFactory.setAttribute( XMLConstants.ACCESS_EXTERNAL_DTD, "" );
+      documentBuilderFactory.setAttribute( XMLConstants.ACCESS_EXTERNAL_SCHEMA, "" );
+      Document pom = documentBuilderFactory.newDocumentBuilder().parse( new ByteArrayInputStream( bytes ) );
 
       XPath xPath = XPathFactory.newInstance().newXPath();
 
