@@ -138,9 +138,9 @@
       <version>5.3.34</version>
     </dependency>
     <dependency>
-      <groupId>com.google.gwt</groupId>
+      <groupId>org.gwtproject</groupId>
       <artifactId>gwt-servlet</artifactId>
-      <version>2.10.0</version>
+      <version>${gwt.version}</version>
     </dependency>
     <dependency>
       <groupId>pentaho-kettle</groupId>
