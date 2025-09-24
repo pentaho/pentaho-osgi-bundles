@@ -6,14 +6,14 @@
   <parent>
     <groupId>pentaho</groupId>
     <artifactId>pentaho-osgi-bundles</artifactId>
-    <version>11.0.0.0-SNAPSHOT</version>
+    <version>11.0.0.0-112</version>
   </parent>
 
   <name>Pentaho WebContext Modules</name>
 
   <groupId>org.pentaho.webcontext</groupId>
   <artifactId>pentaho-webcontext-modules</artifactId>
-  <version>11.0.0.0-SNAPSHOT</version>
+  <version>11.0.0.0-112</version>
 
   <packaging>pom</packaging>
 
