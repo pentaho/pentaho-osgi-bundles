@@ -39,7 +39,6 @@ import org.osgi.util.tracker.ServiceTracker;
 import org.pentaho.capabilities.api.ICapability;
 import org.pentaho.capabilities.api.ICapabilityManager;
 import org.pentaho.capabilities.impl.DefaultCapabilityManager;
-import org.pentaho.hadoop.shim.DriverManager;
 import org.pentaho.osgi.api.IKarafFeatureWatcher;
 import org.pentaho.platform.engine.core.system.PentahoSystem;
 import org.pentaho.platform.servicecoordination.api.IServiceBarrier;
@@ -83,10 +82,6 @@ public class KarafFeatureWatcherImpl implements IKarafFeatureWatcher {
         }
       }
       waitForFeatures( runtimeFeatures );
-
-      if ( getBooleanProperty( DriverManager.CONFIG_FILE_NAME,  DriverManager.INSTALL_DRIVERS_PROPERTY ) ) {
-        DriverManager.getInstance( bundleContext ).installDrivers();
-      }
 
     } catch ( IOException e ) {
       throw new FeatureWatcherException( "Error accessing ConfigurationAdmin", e );
