@@ -130,7 +130,6 @@
         <module>pentaho-service-coordinator</module>
         <module>pentaho-capability-manager</module>
         <module>pentaho-cache-manager</module>
-        <module>pentaho-authentication-mapper</module>
         <module>pentaho-object-tunnel</module>
         <module>pentaho-bundle-resource-manager</module>
         <module>pentaho-proc-governor</module>
