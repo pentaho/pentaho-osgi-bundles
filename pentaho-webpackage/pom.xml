@@ -7,12 +7,12 @@
   <parent>
     <groupId>pentaho</groupId>
     <artifactId>pentaho-osgi-bundles</artifactId>
-    <version>11.0.0.0-196</version>
+    <version>11.0.0.0-latest</version>
   </parent>
 
   <groupId>org.pentaho.webpackage</groupId>
   <artifactId>pentaho-webpackage-modules</artifactId>
-  <version>11.0.0.0-196</version>
+  <version>11.0.0.0-latest</version>
 
   <packaging>pom</packaging>
 

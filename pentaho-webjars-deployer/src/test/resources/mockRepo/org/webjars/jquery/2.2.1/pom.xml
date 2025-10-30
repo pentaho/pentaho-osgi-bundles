@@ -9,7 +9,7 @@
   </parent>
   <groupId>org.webjars</groupId>
   <artifactId>jquery</artifactId>
-  <version>11.0.0.0-196</version>
+  <version>11.0.0.0-latest</version>
   <name>jquery</name>
   <description>WebJar for jQuery</description>
   <url>http://webjars.org</url>
