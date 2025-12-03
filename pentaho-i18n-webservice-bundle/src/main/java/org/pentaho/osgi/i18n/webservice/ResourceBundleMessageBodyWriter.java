@@ -22,6 +22,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.MessageBodyWriter;
 import javax.ws.rs.ext.Provider;
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
@@ -97,7 +98,11 @@ public class ResourceBundleMessageBodyWriter implements MessageBodyWriter<Resour
         Result output = new StreamResult( entityStream );
         Source input = new DOMSource( document );
         try {
-          Transformer transformer = TransformerFactory.newInstance().newTransformer();
+          TransformerFactory tf = TransformerFactory.newInstance();
+          tf.setFeature( XMLConstants.FEATURE_SECURE_PROCESSING, true );
+          tf.setAttribute( XMLConstants.ACCESS_EXTERNAL_DTD, "" );
+          tf.setAttribute( XMLConstants.ACCESS_EXTERNAL_STYLESHEET, "" );
+          Transformer transformer = tf.newTransformer();
           transformer.setOutputProperty( OutputKeys.INDENT, "yes" );
           transformer.setOutputProperty( "{http://xml.apache.org/xslt}indent-amount", "2" );
           transformer.transform( input, output );
