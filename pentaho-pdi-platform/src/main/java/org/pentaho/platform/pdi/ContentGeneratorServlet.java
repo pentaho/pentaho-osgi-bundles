@@ -75,7 +75,6 @@ public class ContentGeneratorServlet extends HttpServlet {
         req,
         resp,
         Collections.emptyList(),
-        null,
         req.getPathInfo() != null ? req.getPathInfo().substring( 1 ) : beanId.substring( beanId.lastIndexOf( "." ) + 1 )
     );
 
