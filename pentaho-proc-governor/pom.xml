@@ -7,14 +7,14 @@
   <parent>
     <groupId>pentaho</groupId>
     <artifactId>pentaho-osgi-bundles</artifactId>
-    <version>10.2.0.4-354</version>
+    <version>10.2.0.4-354-CUST-311</version>
   </parent>
 
   <name>Pentaho Process Governor</name>
 
   <groupId>org.hitachivantara</groupId>
   <artifactId>pentaho-proc-governor</artifactId>
-  <version>10.2.0.4-354</version>
+  <version>10.2.0.4-354-CUST-311</version>
 
   <packaging>pom</packaging>
 

@@ -6,12 +6,12 @@
   <parent>
     <groupId>pentaho</groupId>
     <artifactId>pentaho-osgi-bundles</artifactId>
-    <version>10.2.0.4-354</version>
+    <version>10.2.0.4-354-CUST-311</version>
   </parent>
 
   <groupId>org.pentaho</groupId>
   <artifactId>spring-security-karaf-login-module</artifactId>
-  <version>10.2.0.4-354</version>
+  <version>10.2.0.4-354-CUST-311</version>
   <packaging>bundle</packaging>
 
   <dependencies>

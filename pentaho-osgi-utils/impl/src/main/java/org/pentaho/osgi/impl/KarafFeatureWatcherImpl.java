@@ -39,7 +39,7 @@ import org.osgi.util.tracker.ServiceTracker;
 import org.pentaho.capabilities.api.ICapability;
 import org.pentaho.capabilities.api.ICapabilityManager;
 import org.pentaho.capabilities.impl.DefaultCapabilityManager;
-import org.pentaho.hadoop.shim.DriverManager;
+import org.pentaho.hadoop.shim.drivermanager.DriverManager;
 import org.pentaho.osgi.api.IKarafFeatureWatcher;
 import org.pentaho.platform.engine.core.system.PentahoSystem;
 import org.pentaho.platform.servicecoordination.api.IServiceBarrier;

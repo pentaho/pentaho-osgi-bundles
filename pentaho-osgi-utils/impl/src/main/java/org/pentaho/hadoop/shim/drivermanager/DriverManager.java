@@ -10,7 +10,7 @@
  * Change Date: 2028-08-13
  ******************************************************************************/
 
-package org.pentaho.hadoop.shim;
+package org.pentaho.hadoop.shim.drivermanager;
 
 import org.apache.karaf.kar.KarService;
 import org.osgi.framework.BundleContext;

@@ -6,7 +6,7 @@
   <parent>
     <groupId>org.pentaho</groupId>
     <artifactId>pentaho-osgi-utils-assemblies</artifactId>
-    <version>10.2.0.4-354</version>
+    <version>10.2.0.4-354-CUST-311</version>
   </parent>
 
   <artifactId>pentaho-osgi-utils</artifactId>
@@ -29,13 +29,13 @@
     <dependency>
       <groupId>pentaho</groupId>
       <artifactId>pentaho-capability-manager</artifactId>
-      <version>${project.version}</version>
+      <version>10.2.0.4-354</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>pentaho</groupId>
       <artifactId>pentaho-service-coordinator</artifactId>
-      <version>${project.version}</version>
+      <version>10.2.0.4-354</version>
       <scope>provided</scope>
     </dependency>
 

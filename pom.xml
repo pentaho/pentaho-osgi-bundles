@@ -9,7 +9,7 @@
   </parent>
   <groupId>pentaho</groupId>
   <artifactId>pentaho-osgi-bundles</artifactId>
-  <version>10.2.0.4-354</version>
+  <version>10.2.0.4-354-CUST-311</version>
   <packaging>pom</packaging>
   <name>Pentaho Community Edition Project: ${project.artifactId}</name>
   <description>Parent project for Pentaho OSGI Bundles</description>
@@ -149,12 +149,12 @@
       </activation>
       <modules>
         <module>pentaho-osgi-utils</module>
-        <module>pentaho-server-bundle</module>
-        <module>pentaho-proxy-factory</module>
-        <module>pentaho-proxy-spring4</module>
-        <module>pentaho-webcontext</module>
-        <module>pentaho-pdi-platform</module>
-        <module>spring-security-karaf-login-module</module>
+<!--        <module>pentaho-server-bundle</module>-->
+<!--        <module>pentaho-proxy-factory</module>-->
+<!--        <module>pentaho-proxy-spring4</module>-->
+<!--        <module>pentaho-webcontext</module>-->
+<!--        <module>pentaho-pdi-platform</module>-->
+<!--        <module>spring-security-karaf-login-module</module>-->
       </modules>
     </profile>
     <profile>
