@@ -104,13 +104,17 @@
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-lang3</artifactId>
       <version>${commons-lang3.version}</version>
-      <scope>test</scope>
       <exclusions>
         <exclusion>
           <artifactId>*</artifactId>
           <groupId>*</groupId>
         </exclusion>
       </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-text</artifactId>
+      <version>${commons-text.version}</version>
     </dependency>
 
     <!-- Dependency needed by Karaf 4.4.6 -->

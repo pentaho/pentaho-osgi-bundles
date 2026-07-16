@@ -12,8 +12,8 @@
 
 package org.pentaho.webcontext.core.impl;
 
-import org.apache.commons.lang.StringEscapeUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.text.StringEscapeUtils;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -135,7 +135,7 @@ public class PentahoWebContextServletImpl extends HttpServlet {
       return null;
     }
 
-    return "\"" + StringEscapeUtils.escapeJavaScript( variable ) + "\"";
+    return "\"" + StringEscapeUtils.escapeEcmaScript( variable ) + "\"";
   }
 
   /**

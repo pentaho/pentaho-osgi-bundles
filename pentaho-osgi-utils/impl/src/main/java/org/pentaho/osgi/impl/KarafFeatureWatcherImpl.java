@@ -20,7 +20,7 @@ import java.util.Collections;
 import java.util.Dictionary;
 import java.util.List;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.karaf.bundle.core.BundleService;
 import org.apache.karaf.bundle.core.BundleState;
 import org.apache.karaf.bundle.core.BundleStateService;

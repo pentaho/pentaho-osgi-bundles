@@ -13,8 +13,8 @@
 package org.pentaho.platform.pdi;
 
 import org.apache.commons.collections.CollectionUtils;
-import org.apache.commons.lang.StringEscapeUtils;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.pentaho.di.core.Const;
 import org.pentaho.di.i18n.LanguageChoice;
 import org.pentaho.platform.api.engine.IPlatformWebResource;
@@ -225,7 +225,7 @@ public class WebContextServlet extends HttpServlet {
       return null;
     }
 
-    return "\"" + StringEscapeUtils.escapeJavaScript( variable ) + "\"";
+    return "\"" + StringEscapeUtils.escapeEcmaScript( variable ) + "\"";
   }
 
   List<String> getWebResources( String context, String filePattern ) {

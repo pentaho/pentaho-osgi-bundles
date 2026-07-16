@@ -12,7 +12,7 @@
 
 package org.pentaho.webcontext.core.impl;
 
-import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.text.StringEscapeUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.pentaho.webcontext.core.impl.PentahoWebContextServletImpl;
@@ -146,7 +146,7 @@ public class PentahoWebContextServletImplTest {
   }
 
   private String escapeEnvironmentVariable( String value ) {
-    return "\"" + StringEscapeUtils.escapeJavaScript( value ) + "\"";
+    return "\"" + StringEscapeUtils.escapeEcmaScript( value ) + "\"";
   }
   // endregion
 }
