@@ -24,7 +24,6 @@
 
   <properties>
     <javax.servlet.version>3.0.1</javax.servlet.version>
-    <commons-lang.version>2.6</commons-lang.version>
   </properties>
 
   <dependencyManagement>
@@ -42,9 +41,9 @@
       </dependency>
 
       <dependency>
-        <groupId>commons-lang</groupId>
-        <artifactId>commons-lang</artifactId>
-        <version>${commons-lang.version}</version>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-lang3</artifactId>
+        <version>${commons-lang3.version}</version>
         <exclusions>
           <exclusion>
             <groupId>*</groupId>

@@ -12,7 +12,7 @@
 
 package org.pentaho.osgi.impl;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.karaf.bundle.core.BundleService;
 import org.apache.karaf.bundle.core.BundleState;
 import org.apache.karaf.features.BundleInfo;

@@ -12,8 +12,8 @@
 
 package org.pentaho.osgi.impl;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.karaf.bundle.core.BundleState;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
