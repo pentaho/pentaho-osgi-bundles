@@ -49,9 +49,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 
-/**
- * Created by nbaker on 9/6/14.
- */
 public class WebjarsURLConnection extends URLConnection {
 
   private static final ExecutorService EXECUTOR = Executors.newFixedThreadPool( 5, r -> {
@@ -309,6 +306,17 @@ public class WebjarsURLConnection extends URLConnection {
             try {
               final String exports = !this.isAmdPackage && !exportedGlobals.isEmpty() ? exportedGlobals.get( 0 ) : null;
 
+              // Final fallback: if the version is still null (e.g., bower webjars without "version" in bower.json
+              // and pom.xml parsing failed), use the version from the physical resources path. This must happen
+              // before getConvertedConfig(), which bakes the (possibly still-null) version into the "modules" and
+              // "artifacts" maps of require.json - setting it afterward only fixes the Blueprint output.
+              final RequireJsGenerator.ModuleInfo preliminaryModuleInfo = requireConfig.getModuleInfo();
+              if ( preliminaryModuleInfo.getVersion() == null && packageVersionFromResourcesPath != null ) {
+                preliminaryModuleInfo.setVersion( packageVersionFromResourcesPath );
+                logger.debug( "{}: using version from resources path as fallback: {}", webjarUrl,
+                    packageVersionFromResourcesPath );
+              }
+
               final RequireJsGenerator.ModuleInfo moduleInfo =
                   requireConfig.getConvertedConfig( artifactInfo, this.isAmdPackage, exports, overrides );
 
@@ -391,7 +399,7 @@ public class WebjarsURLConnection extends URLConnection {
     private boolean handlePackageDescriptor( String name, InputStream inputStream ) {
       if ( name.endsWith( POM_NAME ) && POM_PATTERN.matcher( name ).matches() ) {
         // try to generate requirejs.json from the pom.xml file (Classic WebJars)
-        // handcrafted requirejs configuration on pom.xml has priority over the author's webjars-requirejs.js
+        // handcrafted RequireJS configuration on pom.xml has priority over the author's webjars-requirejs.js
         // (also collect from the POM file the version, for fallback in Bower WebJars without version information)
         handlePomFile( inputStream );
         return true;

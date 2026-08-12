@@ -131,7 +131,7 @@ public class PentahoWebPackageBundleListener implements BundleListener {
       // **don't register this capability?** <-- this is what we're doing now
       // ignore and use only the capability info?
       // don't register all the bundle's capabilities?
-      // this is all post-bundle wiring phase, so only the requirejs configuration is affected
+      // this is all post-bundle wiring phase, so only the RequireJS configuration is affected
       // the bundle is started and nothing will change that... or should we bundle.stop()?
     }
 

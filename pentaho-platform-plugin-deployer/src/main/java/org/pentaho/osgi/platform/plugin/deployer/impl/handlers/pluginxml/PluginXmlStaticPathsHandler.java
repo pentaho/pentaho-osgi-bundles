@@ -26,9 +26,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Created by bryan on 8/26/14.
- */
 public class PluginXmlStaticPathsHandler extends PluginXmlFileHandler {
   public static final String STATIC_RESOURCES_FILE = "META-INF/js/staticResources.json";
 
@@ -44,6 +41,7 @@ public class PluginXmlStaticPathsHandler extends PluginXmlFileHandler {
   public static final String CLASS_ATTR = "class";
   public static final String KEY_ATTR = "key";
   public static final String VALUE_ATTR = "value";
+  public static final String REF_ATTR = "ref";
 
   public static final String RESOURCE_PATTERN_KEY = "osgi.http.whiteboard.resource.pattern";
   public static final String RESOURCE_PREFIX_KEY = "osgi.http.whiteboard.resource.prefix";
