@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+         http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+  <!-- Two plugin: locations whose file names are the same; each must resolve to its own path. -->
+  <bean id="propsA" class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+    <property name="location" value="plugin:a/config.properties"/>
+  </bean>
+  <bean id="propsB" class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+    <property name="location" value="plugin:b/config.properties"/>
+  </bean>
+
+</beans>
