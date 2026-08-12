@@ -309,6 +309,17 @@ public class WebjarsURLConnection extends URLConnection {
             try {
               final String exports = !this.isAmdPackage && !exportedGlobals.isEmpty() ? exportedGlobals.get( 0 ) : null;
 
+              // Final fallback: if the version is still null (e.g., bower webjars without "version" in bower.json
+              // and pom.xml parsing failed), use the version from the physical resources path. This must happen
+              // before getConvertedConfig(), which bakes the (possibly still-null) version into the "modules" and
+              // "artifacts" maps of require.json - setting it afterwards only fixes the Blueprint output.
+              final RequireJsGenerator.ModuleInfo preliminaryModuleInfo = requireConfig.getModuleInfo();
+              if ( preliminaryModuleInfo.getVersion() == null && packageVersionFromResourcesPath != null ) {
+                preliminaryModuleInfo.setVersion( packageVersionFromResourcesPath );
+                logger.debug( "{}: using version from resources path as fallback: {}", webjarUrl,
+                    packageVersionFromResourcesPath );
+              }
+
               final RequireJsGenerator.ModuleInfo moduleInfo =
                   requireConfig.getConvertedConfig( artifactInfo, this.isAmdPackage, exports, overrides );
 
