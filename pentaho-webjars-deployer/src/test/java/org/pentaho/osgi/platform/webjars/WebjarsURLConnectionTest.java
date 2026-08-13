@@ -12,6 +12,7 @@
 
 package org.pentaho.osgi.platform.webjars;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -109,6 +110,28 @@ public class WebjarsURLConnectionTest {
     verifyRequireJson( zipInputStream, "org.webjars.bower/angular-ui-router.stateHelper", "1.3.1" );
   }
 
+  /**
+   * [PDI-20686] A bower webjar whose {@code bower.json} carries no {@code version} <em>and</em> whose
+   * {@code pom.xml} is absent (so Maven metadata cannot supply one either) must still be versioned,
+   * using the version embedded in the physical {@code META-INF/resources/webjars/<name>/<version>}
+   * path. Without that fallback the RequireJS mappings are generated with a null version and every
+   * mapped resource 404s - which is what broke DET's pivot table (all datatables.net* assets).
+   */
+  @Test
+  public void testBowerWebjarWithoutVersionAnywhereFallsBackToResourcesPath() throws Exception {
+    ZipFile zipInputStream =
+        getDeployedJar( new URL( "mvn:org.webjars.bower/angular-ui-router.stateHelper/1.3.1-no-pom" ) );
+
+    verifyManifest( zipInputStream );
+    // The resources path says 1.3.1, so that is the version the mappings must use - not "null".
+    verifyBlueprint( zipInputStream, "angular-ui-router.stateHelper@1.3.1",
+        "angular-ui-router.stateHelper/1.3.1" );
+    // The Maven coordinate itself is still "1.3.1-no-pom" (that's what makes this fixture distinct from
+    // the "1.3.1" one); what matters is that the nested version fell back to "1.3.1", not "null".
+    verifyRequireJson( zipInputStream, "org.webjars.bower/angular-ui-router.stateHelper", "1.3.1-no-pom" );
+    verifyRequireJsonModuleVersion( zipInputStream, "angular-ui-router.stateHelper", "1.3.1" );
+  }
+
   @Test
   public void testMalformedWebjarFallback() throws Exception {
     ZipFile zipInputStream = getDeployedJar( new URL( "mvn:org.webjars/angular-dateparser/1.0.9" ) );
@@ -147,6 +170,95 @@ public class WebjarsURLConnectionTest {
     ZipFile zipInputStream = getDeployedJar( new URL( "mvn:org.webjars/test/1.0.0" ) );
 
     verifyWrapped( zipInputStream, "test/1.0.0", "dist/test.js", "// CODE BEFORE", "// CODE AFTER" );
+  }
+
+  /** The single-arg constructor must behave exactly like {@code automaticNonAmdShimConfigEnabled=false}. */
+  @Test
+  public void testSingleArgConstructorDefaultsToAutomaticNonAmdShimConfigDisabled() throws Exception {
+    WebjarsURLConnection connection = new WebjarsURLConnection( new URL( "mvn:org.webjars/jquery/2.2.1" ) );
+    connection.connect();
+
+    InputStream inputStream = connection.getInputStream();
+    File tempFile = File.createTempFile( "webjar_test_single_arg", ".zip" );
+    try ( FileOutputStream fileOutputStream = new FileOutputStream( tempFile ) ) {
+      IOUtils.copy( inputStream, fileOutputStream );
+    }
+
+    try ( ZipFile zipFile = new ZipFile( tempFile ) ) {
+      verifyManifest( zipFile );
+      verifyBlueprint( zipFile, "jquery@2.2.1", "jquery/2.2.1" );
+    }
+  }
+
+  /**
+   * [PDI-20686] With {@code automaticNonAmdShimConfigEnabled=true}, source files are additionally
+   * buffered to a temporary directory (so their content can be scanned for an AMD {@code define()} call)
+   * and that directory is cleaned up once the transform finishes. This exercises that whole code path,
+   * which is otherwise dead when the flag defaults to {@code false} (as in every other test here).
+   */
+  @Test
+  public void testAutomaticNonAmdShimConfigEnabledUsesAndCleansUpATemporaryDirectory() throws IOException {
+    // Deliberately not "org.webjars/test/1.0.0": that fixture carries a wrap override
+    // (src/test/resources/overrides/org.webjars/test/1.0.0/overrides.json) which forces isAmdPackage
+    // true unconditionally in getWrap(), short-circuiting the AMD-detection branch this test targets.
+    ZipFile zipInputStream = getDeployedJarWithAutomaticNonAmdShimConfig(
+        new URL( "mvn:org.webjars/jquery/2.2.1" ) );
+
+    // The transform must still succeed and produce the same resource entries, whether or not the
+    // temporary-file bookkeeping is enabled.
+    ZipEntry entry = zipInputStream.getEntry( "META-INF/resources/webjars/jquery/2.2.1/jquery.js" );
+    assertNotNull( entry );
+  }
+
+  /**
+   * A source stream that is a truncated/corrupted jar must fail inside {@code transform()} (while
+   * reading an entry's compressed data); the {@code Callable.call()} wrapper must log the failure,
+   * close the piped output stream so the consumer doesn't hang forever, and rethrow so the
+   * {@code Future} completes exceptionally.
+   */
+  @Test
+  public void testTransformFailureClosesThePipeAndPropagatesThroughTheFuture() throws Exception {
+    File original = new File( "src/test/resources/mockRepo/org/webjars/jquery/2.2.1/jquery-2.2.1.jar" );
+    byte[] fullJar = FileUtils.readFileToByteArray( original );
+    File truncatedJar = File.createTempFile( "webjar_test_truncated", ".jar" );
+    // Cut the file so short that JarInputStream's constructor itself fails while reading the manifest
+    // - the one failure point in transform() that isn't already swallowed by its internal exception
+    // handling, so it reliably propagates to Callable's outer catch block instead.
+    try ( FileOutputStream out = new FileOutputStream( truncatedJar ) ) {
+      out.write( fullJar, 0, 100 );
+    }
+
+    WebjarsURLConnection connection = new WebjarsURLConnection( truncatedJar.toURI().toURL(), false );
+    connection.connect();
+
+    InputStream inputStream = connection.getInputStream();
+    try {
+      // The consumer sees the pipe closed early rather than hanging or silently truncating output.
+      IOUtils.toByteArray( inputStream );
+    } catch ( IOException ignored ) {
+      // Expected: reading from a piped stream whose writer closed early surfaces as an IOException.
+    }
+
+    try {
+      connection.transform_thread.get();
+      fail( "expected the transform thread to have failed on truncated jar content" );
+    } catch ( java.util.concurrent.ExecutionException expected ) {
+      assertTrue( expected.getCause() instanceof IOException );
+    }
+  }
+
+  private ZipFile getDeployedJarWithAutomaticNonAmdShimConfig( URL webjarUrl ) throws IOException {
+    WebjarsURLConnection connection = new WebjarsURLConnection( webjarUrl, true );
+    connection.connect();
+
+    InputStream inputStream = connection.getInputStream();
+    File tempFile = File.createTempFile( "webjar_test_amd_shim", ".zip" );
+
+    try ( FileOutputStream fileOutputStream = new FileOutputStream( tempFile ) ) {
+      IOUtils.copy( inputStream, fileOutputStream );
+    }
+
+    return new ZipFile( tempFile );
   }
 
   private void verifyManifest( ZipFile zipInputStream ) throws IOException {
@@ -206,6 +318,33 @@ public class WebjarsURLConnectionTest {
   private void verifyNoRequireJson( ZipFile zipInputStream ) {
     ZipEntry entry = zipInputStream.getEntry( "META-INF/js/require.json" );
     assertNull( entry );
+  }
+
+  /**
+   * [PDI-20686] Directly checks the {@code modules} section of require.json, which is where the null
+   * version regression actually showed up: the top-level {@code artifacts} map is keyed by the raw
+   * Maven coordinate version and was never null, but each module's own version entry (and its
+   * {@code versionedName}/{@code versionedPath}) came from {@code moduleInfo}, which fell back too
+   * late and kept baking in the literal string {@code "null"}.
+   */
+  private void verifyRequireJsonModuleVersion( ZipFile zipInputStream, String moduleName, String expectedVersion )
+      throws IOException, ParseException {
+    ZipEntry entry = zipInputStream.getEntry( "META-INF/js/require.json" );
+    assertNotNull( entry );
+
+    String jsonFile = IOUtils.toString( zipInputStream.getInputStream( entry ), "UTF-8" );
+    JSONObject json = (JSONObject) ( new JSONParser() ).parse( jsonFile );
+
+    final JSONObject meta = (JSONObject) json.get( "requirejs-osgi-meta" );
+    final JSONObject modules = (JSONObject) meta.get( "modules" );
+    assertTrue( "module " + moduleName + " exists", modules.containsKey( moduleName ) );
+    final JSONObject moduleVersions = (JSONObject) modules.get( moduleName );
+
+    assertTrue( "module version is not \"null\"", !moduleVersions.containsKey( "null" ) );
+    assertTrue( "module version is " + expectedVersion, moduleVersions.containsKey( expectedVersion ) );
+
+    final JSONObject versionedDetails = (JSONObject) moduleVersions.get( expectedVersion );
+    assertEquals( moduleName + "@" + expectedVersion, versionedDetails.get( "versionedName" ) );
   }
 
   private void verifyWrapped( ZipFile zipInputStream, String expectedPath, String file, String pre, String pos ) throws IOException {
