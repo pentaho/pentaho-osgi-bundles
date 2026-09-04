@@ -21,7 +21,9 @@ import org.pentaho.platform.servicecoordination.api.IPhasedLifecycleListener;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.locks.LockSupport;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
@@ -89,11 +91,7 @@ public class CountdownLatchServiceLifecycleManagerTest {
       }
     } );
     t1.start();
-    int fatalCount = 0;
-    do {
-      Thread.sleep( 10 );
-    } while ( t1.getState() != Thread.State.WAITING && ++fatalCount < 10 );
-    assertTrue( t1.getState() == Thread.State.WAITING );
+    awaitThreadState( t1, Thread.State.WAITING );
     latch.countDown();
     t1.join();
     assertTrue( completed.get() );
@@ -123,11 +121,7 @@ public class CountdownLatchServiceLifecycleManagerTest {
       }
     } );
     t1.start();
-    int fatalCount = 0;
-    do {
-      Thread.sleep( 10 );
-    } while ( t1.getState() != Thread.State.WAITING && ++fatalCount < 10 );
-    assertTrue( t1.getState() == Thread.State.WAITING );
+    awaitThreadState( t1, Thread.State.WAITING );
     latch.countDown();
     t1.join();
     assertTrue( completed.get() );
@@ -160,11 +154,7 @@ public class CountdownLatchServiceLifecycleManagerTest {
       }
     } );
     t1.start();
-    int fatalCount = 0;
-    do {
-      Thread.sleep( 10 );
-    } while ( t1.getState() != Thread.State.WAITING && ++fatalCount < 10 );
-    assertTrue( t1.getState() == Thread.State.WAITING );
+    awaitThreadState( t1, Thread.State.WAITING );
     latch.countDown();
     t1.join();
     assertTrue( completed.get() );
@@ -225,11 +215,9 @@ public class CountdownLatchServiceLifecycleManagerTest {
       }
     } );
     t1.start();
-    int fatalCount = 0;
-    do {
-      Thread.sleep( 10 );
-    } while ( t1.getState() != Thread.State.WAITING && ++fatalCount < 20 );
-    assertTrue( t1.getState() == Thread.State.WAITING );
+    // Waiting for WAITING also guarantees the manager has recorded its locking thread,
+    // so terminate() is able to interrupt it.
+    awaitThreadState( t1, Thread.State.WAITING );
     manager.terminate();
     t1.join();
     assertTrue( interrupted.get() );
@@ -269,6 +257,10 @@ public class CountdownLatchServiceLifecycleManagerTest {
     } );
     t1.start();
 
+    // t1 must be holding the manager's monitor and blocked in the listener before t2 starts,
+    // otherwise advance() completes immediately instead of blocking.
+    awaitThreadState( t1, Thread.State.WAITING );
+
     Thread t2 = new Thread( new Runnable() {
       @Override public void run() {
         try {
@@ -281,15 +273,29 @@ public class CountdownLatchServiceLifecycleManagerTest {
     } );
     t2.start();
 
-    int fatalCount = 0;
-    do {
-      Thread.sleep( 10 );
-    } while ( t1.getState() != Thread.State.WAITING && ++fatalCount < 10 );
+    awaitThreadState( t2, Thread.State.BLOCKED );
     assertFalse( completed.get() );
 
     latch.countDown();
     t2.join();
     assertTrue( completed.get() );
+  }
+
+  /**
+   * Waits for a thread to reach the given state, tolerating arbitrary scheduling delays on a
+   * loaded build machine. The timeout only bounds a hung test; a healthy run settles immediately.
+   * A terminated thread can never reach the expected state, so it fails fast instead of waiting
+   * out the deadline. The state is sampled once per iteration so the reported value is the same
+   * one that ended the loop.
+   */
+  private static void awaitThreadState( Thread thread, Thread.State expected ) {
+    long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos( 30 );
+    Thread.State actual = thread.getState();
+    while ( actual != expected && actual != Thread.State.TERMINATED && System.nanoTime() < deadline ) {
+      LockSupport.parkNanos( TimeUnit.MILLISECONDS.toNanos( 1 ) );
+      actual = thread.getState();
+    }
+    assertEquals( "Thread " + thread.getName() + " never reached state " + expected, expected, actual );
   }
 
   private class LatchWaitingPhaseListener implements IPhasedLifecycleListener<TestEvent> {
