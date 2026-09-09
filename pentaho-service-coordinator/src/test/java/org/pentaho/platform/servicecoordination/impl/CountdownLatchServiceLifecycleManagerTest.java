@@ -278,12 +278,19 @@ public class CountdownLatchServiceLifecycleManagerTest {
         completed.set( true );
       }
     } );
-    t2.start();
 
     int fatalCount = 0;
     do {
       Thread.sleep( 10 );
-    } while ( t1.getState() != Thread.State.WAITING && ++fatalCount < 10 );
+    } while ( t1.getState() != Thread.State.WAITING && ++fatalCount < 20 );
+    assertSame( "First operation should be waiting for the listener", Thread.State.WAITING, t1.getState() );
+    t2.start();
+
+    fatalCount = 0;
+    do {
+      t2.join( 10 );
+    } while ( t2.getState() != Thread.State.BLOCKED && ++fatalCount < 20 );
+    assertSame( "Second operation should be blocked by the first", Thread.State.BLOCKED, t2.getState() );
     assertFalse( completed.get() );
 
     latch.countDown();
