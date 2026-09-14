@@ -16,22 +16,23 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.InputStream;
 
-
 import org.apache.commons.vfs2.FileObject;
-import org.apache.commons.vfs2.FileSystemManager;
 import org.apache.commons.vfs2.VFS;
 import org.apache.commons.vfs2.impl.DefaultFileSystemManager;
 import org.junit.Test;
-import org.pentaho.platform.pdi.vfs.MetadataToMondrianVfs;
 
 public class MetadataToMondrianVfsTest {
   
   @Test
   public void testVfs() throws Exception {
+
+    // VFS.getManager() is a process-wide singleton, so another test (or a real bundle start()) may have
+    // already registered "mtm" on it; removing first makes this registration idempotent regardless of
+    // execution order, mirroring what PdiPlatformActivator itself does in production.
+    DefaultFileSystemManager fsManager = (DefaultFileSystemManager) VFS.getManager();
+    fsManager.removeProvider("mtm");
+    fsManager.addProvider("mtm", new MetadataToMondrianVfs());
     
-    ((DefaultFileSystemManager)VFS.getManager()).addProvider("mtm", new MetadataToMondrianVfs());
-    
-    FileSystemManager fsManager = VFS.getManager();
     FileObject fobj = fsManager.resolveFile("mtm:src/test/resources/example_olap.xmi");
     StringBuilder buf = new StringBuilder(1000);
     InputStream in = fobj.getContent().getInputStream();
@@ -41,6 +42,6 @@ public class MetadataToMondrianVfsTest {
     }
     in.close();
     String results = buf.toString();
-    assertTrue(results.indexOf("<Cube name=\"customer2 Table\">") >= 0);
+    assertTrue(results.contains("<Cube name=\"customer2 Table\">"));
   }
 }

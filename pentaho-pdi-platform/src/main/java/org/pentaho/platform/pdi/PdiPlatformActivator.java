@@ -73,14 +73,14 @@ public class PdiPlatformActivator implements BundleActivator {
     }
 
     try {
-      ( (DefaultFileSystemManager) VFS.getManager() ).addProvider( "mtm", new MetadataToMondrianVfs() );
+      DefaultFileSystemManager fsManager = (DefaultFileSystemManager) VFS.getManager();
+      // [PDI-20686] Replace any provider left behind by a previous incarnation of this bundle: after a
+      // bundle refresh the old provider still points at an invalidated class loader, which surfaces as
+      // a NoClassDefFoundError the first time an 'mtm' URL is opened.
+      fsManager.removeProvider( "mtm" );
+      fsManager.addProvider( "mtm", new MetadataToMondrianVfs() );
     } catch ( FileSystemException e ) {
-      if ( e.getCode().equals( "vfs.impl/multiple-providers-for-scheme.error" ) ) {
-        // it's already registered. just log it as info
-        logger.error( "There is already a vfs provider registered for scheme mtm", e );
-      } else {
-        logger.error( "There is already a vfs provider registered for scheme mtm", e );
-      }
+      logger.error( "Error registering the VFS provider for scheme mtm", e );
     }
 
   }
