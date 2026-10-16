@@ -13,17 +13,24 @@
 
 package org.pentaho.platform.servicecoordination.impl;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.mockito.ArgumentCaptor;
 import org.pentaho.platform.servicecoordination.api.IPhasedLifecycleEvent;
 import org.pentaho.platform.servicecoordination.api.IPhasedLifecycleListener;
 
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 @SuppressWarnings( "unchecked" )
@@ -36,7 +43,7 @@ public class CountdownLatchServiceLifecycleManagerTest {
   }
   static TestEvent DUMMY_EVENT = new TestEvent();
 
-  @Before
+  @BeforeEach
   public void setup() {
     manager = new BaseCountdownLatchLifecycleManager<TestEvent>(){
       @Override protected TestEvent getNotificationObject() {
@@ -204,37 +211,32 @@ public class CountdownLatchServiceLifecycleManagerTest {
   }
 
   @Test
+  @DisplayName( "terminate() interrupts a thread blocked waiting for listeners to accept a phase change" )
+  @Timeout( value = 30, unit = TimeUnit.SECONDS )
   public void testTerminate() throws Exception {
+    CountDownLatch listenerNotified = new CountDownLatch( 1 );
+    // The listener never calls accept(), so setPhaseAndWait() stays blocked until terminate() interrupts it.
+    IPhasedLifecycleListener<TestEvent> listener = event -> listenerNotified.countDown();
+    manager.addLifecycleListener( listener );
 
+    ExecutorService executor = Executors.newSingleThreadExecutor();
+    try {
+      Future<Void> waiting = executor.submit( () -> {
+        manager.setPhaseAndWait( 3 );
+        return null;
+      } );
 
-    final CountDownLatch latch = new CountDownLatch( 1 );
-    final IPhasedLifecycleListener<TestEvent> listener = mock( IPhasedLifecycleListener.class );
+      // The listener runs on the waiting thread right before it blocks, so no polling is needed.
+      assertTrue( listenerNotified.await( 10, TimeUnit.SECONDS ), "listener was not notified" );
 
-    final AtomicBoolean interrupted = new AtomicBoolean( false );
-    manager.setPhase( 1 );
+      manager.terminate();
 
-    Thread t1 = new Thread( new Runnable() {
-      @Override public void run() {
-
-        manager.addLifecycleListener( listener );
-        try {
-          manager.setPhaseAndWait( 3 );
-        } catch ( InterruptedException e ) {
-          interrupted.set( true );
-        }
-      }
-    } );
-    t1.start();
-    int fatalCount = 0;
-    do {
-      Thread.sleep( 10 );
-    } while ( t1.getState() != Thread.State.WAITING && ++fatalCount < 20 );
-    assertTrue( t1.getState() == Thread.State.WAITING );
-    manager.terminate();
-    t1.join();
-    assertTrue( interrupted.get() );
-    assertTrue( manager.isTerminated() );
-
+      ExecutionException e = assertThrows( ExecutionException.class, () -> waiting.get( 10, TimeUnit.SECONDS ) );
+      assertInstanceOf( InterruptedException.class, e.getCause() );
+      assertTrue( manager.isTerminated() );
+    } finally {
+      executor.shutdownNow();
+    }
   }
 
   @Test
@@ -284,14 +286,14 @@ public class CountdownLatchServiceLifecycleManagerTest {
     do {
       Thread.sleep( 10 );
     } while ( t1.getState() != Thread.State.WAITING && ++fatalCount < 20 );
-    assertSame( "First operation should be waiting for the listener", Thread.State.WAITING, t1.getState() );
+    assertSame( Thread.State.WAITING, t1.getState(), "First operation should be waiting for the listener" );
     t2.start();
 
     fatalCount = 0;
     do {
       t2.join( 10 );
     } while ( t2.getState() != Thread.State.BLOCKED && ++fatalCount < 20 );
-    assertSame( "Second operation should be blocked by the first", Thread.State.BLOCKED, t2.getState() );
+    assertSame( Thread.State.BLOCKED, t2.getState(), "Second operation should be blocked by the first" );
     assertFalse( completed.get() );
 
     latch.countDown();
